@@ -1,0 +1,60 @@
+# my-noodles — agent instructions
+
+Food-discovery store for imported snacks. We sell **discovery**, not a product grid.
+
+**Read first:** [VISION.md](./VISION.md) — the north star for every feature, screen, and line of code.
+
+## Litmus test (apply before every change)
+
+Before proposing or shipping anything, ask:
+
+> **Does this make the customer feel more welcome, more delighted, and more confident — and convinced — to try something new today?**
+
+If the answer is not a clear **yes**, reconsider. The target feeling:
+
+> *"Everything looks so tasty — what should I try?!"*
+
+**Customer first, always.** Convenience for builders is secondary.
+
+## What we are building (MVP)
+
+Mobile-first, SEO-oriented food-import storefront. Behavioral data via a slick catalog, honest product cards, curated Collections, and cart → checkout. Ukrainian now, i18n-ready.
+
+**Technical plan:** [docs/mvp-plan.md](./docs/mvp-plan.md) — architecture, resolved decisions, pinned versions, and phased checklist. Follow it unless the user explicitly overrides.
+
+**Planned monorepo layout:**
+
+```text
+apps/web/          # Next.js App Router, MUI, next-intl, React Query
+apps/api/          # NestJS, TypeORM, Postgres
+packages/theme/    # MUI design system + country/brand skin engine
+packages/api-clients/  # OpenAPI-generated axios client + domain wrappers
+configs/eslint/    # shared flat-config presets
+```
+
+Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v9, react-hook-form + Zod, Zustand cart, NestJS + class-validator DTOs, JSONB i18n columns, ISR + View Transitions.
+
+## How to work in this repo
+
+### Code discipline
+
+- Match existing conventions; smallest correct diff.
+- No over-engineering, no unrelated changes, no drive-by refactors.
+- Prefer extending existing patterns over inventing new ones.
+- Comments only for non-obvious business logic.
+- Do not add tests unless asked or they cover meaningful behavior.
+- Do not create commits or PRs unless explicitly requested.
+
+### Product vs plumbing
+
+- **Product:** how it feels, what the customer sees, honest copy, discovery, trust, delight.
+- **Plumbing:** monorepo setup, linting, API shape, DB schema — necessary, but always in service of the experience above.
+
+When trade-offs arise, choose the option that better serves the litmus test, even if it costs more implementation effort.
+
+## Key references
+
+| Document | Purpose |
+|----------|---------|
+| [VISION.md](./VISION.md) | Why we exist, who we serve, experience promise, what we are *not* |
+| [docs/mvp-plan.md](./docs/mvp-plan.md) | MVP scope, technical decisions, implementation phases |
