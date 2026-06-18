@@ -1,0 +1,59 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreDependencies": ["@openapitools/openapi-generator-cli", "eslint-config-prettier"],
+  "workspaces": {
+    "apps/web": {
+      "entry": ["next.config.ts", "src/**/*.{ts,tsx}"],
+      "project": ["src/**/*.{ts,tsx}", "e2e/**/*.ts", "vitest.config.ts", "playwright.config.ts"],
+      "ignoreDependencies": [
+        "@types/react",
+        "@types/react-dom",
+        "@emotion/react",
+        "@emotion/styled",
+        "@hookform/resolvers",
+        "@mui/material",
+        "@mui/material-nextjs",
+        "@my-noodles/theme",
+        "@next/third-parties",
+        "@tanstack/react-query",
+        "motion",
+        "next-intl",
+        "nuqs",
+        "react-hook-form",
+        "zod",
+        "zustand"
+      ]
+    },
+    "apps/api": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts", "jest.config.cjs"],
+      "ignoreDependencies": [
+        "@nestjs/swagger",
+        "@nestjs/throttler",
+        "@nestjs/typeorm",
+        "@opentelemetry/api",
+        "@opentelemetry/auto-instrumentations-node",
+        "@opentelemetry/exporter-logs-otlp-proto",
+        "@opentelemetry/exporter-trace-otlp-proto",
+        "@opentelemetry/instrumentation-winston",
+        "@opentelemetry/sdk-node",
+        "@opentelemetry/winston-transport",
+        "nest-winston",
+        "pg",
+        "typeorm",
+        "winston",
+        "tsx"
+      ]
+    },
+    "packages/theme": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.{ts,tsx}", "vitest.config.ts"]
+    },
+    "packages/api-clients": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["generated/**"],
+      "ignoreDependencies": ["axios"]
+    }
+  }
+}

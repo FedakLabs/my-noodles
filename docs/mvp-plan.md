@@ -15,10 +15,10 @@ Mobile-first, SEO-optimized full-stack MVP for the food-discovery store. Nx mono
 - **Endpoint protection**: NestJS **Throttler** (global ~60 req/min per IP; `POST /api/orders` tighter at ~5/min per IP) + class-validator DTOs + form **honeypot** (hidden `company` field — reject if filled); no CAPTCHA.
 - **Transitions**: **native View Transitions** via React `<ViewTransition>` + Next 16 `experimental.viewTransition` (no third-party lib). Patterns per the official Next guide: shared-element **morph** (catalog card image -> product hero via matching `name`), **Suspense reveals** for loading skeletons (`enter`/`exit`), **directional slides** via `Link`/`useRouter` `transitionTypes` (`nav-forward`/`nav-back`, header anchored), same-route **crossfade** (`key` + `share/enter="auto"`) for tab/facet swaps. `prefers-reduced-motion` zeroes durations via a `::view-transition-*` media query. `motion` for micro-interactions. Rationale: transitions are progressive enhancement (no-op without browser support), so the experimental flag is low-risk, and native is more future-proof than the pre-1.0 `next-view-transitions` wrapper (dropped).
 - **Forms/validation**: FE **react-hook-form + zod**; BE **class-validator/class-transformer** DTOs (clean OpenAPI -> quality generated client).
-- **Collections vs intrinsic dimensions**: `Category`, `Brand`, `Country` are **intrinsic per-product dimensions** (manufacturer / product qualities / origin). A `Collection` is an **editorial, manually curated grouping** (TikTok Foods, Around the World, Month-seasoned, etc.) decided by content/food managers (the owner for now) — not derived from product attributes. Implementation: a collection is just another *dimension* on the products list, so its products are fetched via `GET /api/products?collection=<code>`. `Collection` is a lightweight entity (code/slug, localized name/description, hero, optional `themeKey`, manual M2M to products); `GET /api/collections` serves the list/metadata for nav + the indexable landing pages.
+- **Collections vs intrinsic dimensions**: `Category`, `Brand`, `Country` are **intrinsic per-product dimensions** (manufacturer / product qualities / origin). A `Collection` is an **editorial, manually curated grouping** (TikTok Foods, Around the World, Month-seasoned, etc.) decided by content/food managers (the owner for now) — not derived from product attributes. Implementation: a collection is just another _dimension_ on the products list, so its products are fetched via `GET /api/products?collection=<code>`. `Collection` is a lightweight entity (code/slug, localized name/description, hero, optional `themeKey`, manual M2M to products); `GET /api/collections` serves the list/metadata for nav + the indexable landing pages.
 - **Catalog filtering**: **server-side** via query params (React Query key includes filters). Filter combos canonical -> `/catalog`; Collection pages are real indexable routes.
 - **Faceted filtering (lean, discovery-oriented)**: core facets only -> **Category** + **Country** (multi-select, with counts), **Price** (from/to slider bounded by real min/max), **Sort** (popular/new/price asc/desc), and toggles `isTriedByUs` + `inStock`. Taste axes (spice/sweet) deferred. **Availability-aware** counts with **disjunctive faceting** (a facet's own selection is excluded when counting its options) so users never select into zero results. Mobile: filter bottom-sheet + live result count + removable active-filter chips + reset + friendly empty state.
-- **Facets endpoint + zero handling**: facets/stats served by a **separate `GET /api/products/facets`** keyed by *filters only* (so they survive pagination and power a live preview), distinct from `GET /api/products` (keyed by filters + page). Zero-dead-end rules: a **currently-selected option is always rendered** (so it never vanishes mid-selection); **non-selected options with count 0 are shown disabled** (labeled `(0)`); boolean toggles compute their would-be count under the other filters and render **disabled when turning them on would yield 0**. Together these make an empty result unreachable via the UI (only stale stock / hand-edited URLs hit the empty state). **MVP v1**: implement facet counts as plain counts under the *current* active filters (simple `GROUP BY`); the endpoint contract (`{total, facets}`) and all UI behavior stay identical, so upgrading to full disjunctive counting later is a backend-only change.
+- **Facets endpoint + zero handling**: facets/stats served by a **separate `GET /api/products/facets`** keyed by _filters only_ (so they survive pagination and power a live preview), distinct from `GET /api/products` (keyed by filters + page). Zero-dead-end rules: a **currently-selected option is always rendered** (so it never vanishes mid-selection); **non-selected options with count 0 are shown disabled** (labeled `(0)`); boolean toggles compute their would-be count under the other filters and render **disabled when turning them on would yield 0**. Together these make an empty result unreachable via the UI (only stale stock / hand-edited URLs hit the empty state). **MVP v1**: implement facet counts as plain counts under the _current_ active filters (simple `GROUP BY`); the endpoint contract (`{total, facets}`) and all UI behavior stay identical, so upgrading to full disjunctive counting later is a backend-only change.
 - **Monorepo**: **pnpm workspaces + Nx**.
 - **Visual identity**: **playful-premium**; Cyrillic fonts — **display: Unbounded**, **body: Manrope** (both Google Fonts, SIL OFL licensed, self-hosted via `next/font`).
 - **Mobile-first UX (responsive, not mobile-only)**: primary users browse on phones (often deciding what to eat on the go), so the **phone layout is designed first** and every flow (browse -> product -> cart -> checkout) is tuned for one-thumb use: large tap targets, bottom-sheets, sticky add-to-cart / primary CTAs, minimal typing (free-text Nova Poshta fields), and **progressive disclosure** so a product page reveals depth on demand instead of overwhelming. This is explicitly **not** mobile-only — the same components **scale up responsively** through MUI breakpoints to comfortable tablet/desktop layouts (filter bottom-sheet -> sidebar, single-column -> multi-column grid, wider max-width with generous spacing). The quality bar is an **emotional, near-native feel** (smooth View Transitions, tactile micro-interactions, playful-premium skins) that makes discovery and buying feel delightful and effortless rather than information-dense — the experience itself is part of what sells.
@@ -177,7 +177,7 @@ apps/api/src/
 
 - Controllers = HTTP + validation only; services = logic. Storefront is public, so controllers are public (the `.controller.public.ts` variant is reserved for if/when auth is added).
 - `application/products/facets/` (sub-feature) implements `GET /products/facets`.
-- Telegram lives in `infrastructure/services/Telegram/client/` (hand-written Bot API), called by `OrdersService`. `infrastructure/services/<Service>/generated/` is reserved for any *third-party* OpenAPI client (distinct from `packages/api-clients`, which is OUR API's client for the web app).
+- Telegram lives in `infrastructure/services/Telegram/client/` (hand-written Bot API), called by `OrdersService`. `infrastructure/services/<Service>/generated/` is reserved for any _third-party_ OpenAPI client (distinct from `packages/api-clients`, which is OUR API's client for the web app).
 - Jest `testMatch` includes the tilde pattern (`**/~*.test.ts`); ESLint/knip configured to recognize it.
 
 ## Design system: `packages/theme`
@@ -264,18 +264,18 @@ OpenTelemetry-first, with Winston as the logger wired into OTel:
 
 ## Code quality & validation pipeline
 
-**Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. Two composite commands layer on top of the atomic targets (`format` / `lint` / `type-check` / `test` / `knip`):
+**Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. Two composite commands layer on top of the atomic targets (`format` / `format-check` / `lint` / `lint-check` / `type-check` / `test` / `knip`):
 
-- `quality-check` (inner-loop / **AI self-check**): `format` (`prettier --check`) -> `lint` (ESLint, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api). Fast, deterministic pass/fail an agent runs to verify its own work mid-development. **Excludes knip and Playwright `e2e`** (heavier, not inner-loop).
-- `validate` (full pre-push/CI gate): `quality-check` + `knip` (dead-code / unused-deps). Playwright `e2e` stays a separate target.
+- `fix` (inner-loop / **AI self-check**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api). Auto-fixes what it can, then verifies. **Excludes knip and Playwright `e2e`** (heavier, not inner-loop).
+- `validate` (full pre-push/CI gate): `format-check` -> `lint-check` -> `type-check` -> `test` -> `knip` (read-only; fails if anything still needs fixing). Playwright `e2e` stays a separate target.
 
 Per-project composition:
 
-- `apps/web`: quality-check = format -> ESLint (web preset) -> `tsc --noEmit` -> Vitest; validate adds knip; `e2e` (Playwright funnel) separate.
-- `apps/api`: quality-check = format -> ESLint (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e); validate adds knip.
-- `packages/*`: quality-check = format -> ESLint (base preset) -> `tsc --noEmit` -> Vitest (where tests exist); validate adds knip.
+- `apps/web`: fix = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest; validate = read-only format/lint checks + type-check + test + knip; `e2e` (Playwright funnel) separate.
+- `apps/api`: fix = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e); validate adds read-only checks + knip.
+- `packages/*`: fix = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist); validate adds read-only checks + knip. `api-clients` has no tests.
 
-Root scripts: `pnpm quality-check` = `nx run-many -t quality-check` (use `nx affected -t quality-check` for incremental); `pnpm validate` = `nx run-many -t validate`; `pnpm format` = `prettier --write` (the fix command when `quality-check`'s format step reports diffs). CI runs `nx affected -t validate` + `e2e` as the authoritative gate.
+Root scripts: `pnpm fix` = `nx run-many -t fix` (use `nx affected -t fix` for incremental); `pnpm validate` = `nx run-many -t validate`; `pnpm format` = `prettier --write` (repo-wide format shortcut). CI runs `nx affected -t validate` + `e2e` as the authoritative gate.
 
 Prettier config is **shared at the root** (uniform formatting everywhere): 2-space, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
 
@@ -292,7 +292,7 @@ TypeScript: shared base `tsconfig` with **`strict: true`** + `noUncheckedIndexed
 
 ## Build order
 
-1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/lint-staged/commitlint; per-project `quality-check` (AI inner-loop) + `validate` (= quality-check + knip), husky pre-commit runs `lint-staged` only, pre-push runs `nx affected -t validate` + `e2e`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
+1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/lint-staged/commitlint; per-project `fix` (AI inner-loop) + `validate` (read-only CI gate), husky pre-commit runs `lint-staged` only, pre-push runs `nx affected -t validate` + `e2e`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
 2. `packages/theme` design system (tokens, MUI theme, Cyrillic fonts) + skin engine.
 3. next-intl setup + message catalogs.
 4. NestJS API: OTel instrumentation + winston logging, entities (JSONB i18n), migrations, DTOs, endpoints (incl. `?collection=`), Swagger, Throttler, seed, Telegram notify.
@@ -304,7 +304,7 @@ TypeScript: shared base `tsconfig` with **`strict: true`** + `noUncheckedIndexed
 
 ## Entity-relationship diagram (reference)
 
-Intrinsic dimensions are **single-valued**: `Product` is many-to-one to `Brand`, `Country`, and `Category` (a product *is* one brand / one origin / one primary category). The only multi-valued axis is the editorial `Collection` (many-to-many). Orders are an immutable snapshot: `Order` one-to-many `OrderItem`, each line referencing a `Product` and copying price/title at purchase time (so later catalog edits never mutate past orders).
+Intrinsic dimensions are **single-valued**: `Product` is many-to-one to `Brand`, `Country`, and `Category` (a product _is_ one brand / one origin / one primary category). The only multi-valued axis is the editorial `Collection` (many-to-many). Orders are an immutable snapshot: `Order` one-to-many `OrderItem`, each line referencing a `Product` and copying price/title at purchase time (so later catalog edits never mutate past orders).
 
 ```mermaid
 erDiagram
@@ -384,21 +384,21 @@ erDiagram
 
 ## Implementation steps (execution checklist)
 
-Ordered, dependency-aware steps to build the MVP. Each box is a self-contained unit that ends green on `pnpm quality-check`.
+Ordered, dependency-aware steps to build the MVP. Each box is a self-contained unit that ends green on `pnpm fix`.
 
 ### Phase 0 - Foundation
 
-- [ ] Init pnpm + Nx monorepo (`pnpm-workspace.yaml`, `nx.json`); create `apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`, `configs/eslint`.
-- [ ] Shared base `tsconfig` (`strict: true` + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes`); each project extends it.
-- [ ] Pin all dependencies to the versions in "Pinned versions"; install.
-- [ ] `docker-compose.yml`: Postgres service + `grafana/otel-lgtm` under an opt-in `observability` profile.
+- [x] Init pnpm + Nx monorepo (`pnpm-workspace.yaml`, `nx.json`); create `apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`, `configs/eslint`.
+- [x] Shared base `tsconfig` (`strict: true` + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes`); each project extends it.
+- [x] Pin all dependencies to the versions in "Pinned versions"; install.
+- [x] `docker-compose.yml`: Postgres service + `grafana/otel-lgtm` under an opt-in `observability` profile.
 
 ### Phase 1 - Quality gate
 
-- [ ] `configs/eslint` flat-config presets: base / web / node (+ Nx module boundaries, `eslint-config-prettier` last).
-- [ ] Root Prettier config; per-project atomic Nx targets (`format`/`lint`/`type-check`/`test`/`knip`).
-- [ ] Compose `quality-check` (format->lint->type-check->test) and `validate` (= quality-check + knip); root `pnpm quality-check` / `pnpm validate` / `pnpm format`.
-- [ ] husky: pre-commit (`lint-staged` only), commit-msg (`commitlint`), pre-push (`nx affected -t validate` + `e2e`).
+- [x] `configs/eslint` flat-config presets: base / web / node (+ Nx module boundaries, `eslint-config-prettier` last).
+- [x] Root Prettier config; per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`).
+- [x] Compose `fix` (format->lint->type-check->test) and `validate` (read-only format-check/lint-check + type-check + test + knip); root `pnpm fix` / `pnpm validate` / `pnpm format`.
+- [x] husky: pre-commit (`lint-staged` only), commit-msg (`commitlint`), pre-push (`nx affected -t validate` + `e2e`).
 
 ### Phase 2 - Design system + skins
 

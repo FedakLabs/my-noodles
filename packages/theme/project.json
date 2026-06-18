@@ -1,0 +1,66 @@
+{
+  "name": "theme",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/theme/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib"],
+  "targets": {
+    "build": {
+      "command": "tsc -p tsconfig.json",
+      "options": {
+        "cwd": "packages/theme"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write .",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "format-check": {
+      "command": "prettier --check .",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "test": {
+      "command": "vitest run",
+      "options": {
+        "cwd": "packages/theme"
+      }
+    },
+    "knip": {
+      "command": "knip --workspace packages/theme",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "fix": {
+      "dependsOn": ["format", "lint", "type-check", "test"],
+      "executor": "nx:noop"
+    },
+    "validate": {
+      "dependsOn": ["format-check", "lint-check", "type-check", "test", "knip"],
+      "executor": "nx:noop"
+    }
+  }
+}

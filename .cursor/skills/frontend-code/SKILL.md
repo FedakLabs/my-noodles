@@ -1,6 +1,6 @@
 ---
 name: frontend-code
-description: "Primary skill for all frontend code changes — features, bug fixes, refactors, and design implementations. Use whenever the user asks to add, change, fix, or build anything in the UI. Covers Next.js App Router, screens, components, forms, API hooks, cart, i18n, and MUI theming. Consult references/common-patterns.md and references/code-style-guide.md before writing code. Stack: TS strict, React 19, Next.js 16, TanStack Query, MUI v9 (packages/theme), react-hook-form + Zod, next-intl, nuqs, Zustand, Vitest."
+description: 'Primary skill for all frontend code changes — features, bug fixes, refactors, and design implementations. Use whenever the user asks to add, change, fix, or build anything in the UI. Covers Next.js App Router, screens, components, forms, API hooks, cart, i18n, and MUI theming. Consult references/common-patterns.md and references/code-style-guide.md before writing code. Stack: TS strict, React 19, Next.js 16, TanStack Query, MUI v9 (packages/theme), react-hook-form + Zod, next-intl, nuqs, Zustand, Vitest.'
 ---
 
 # Frontend Implementation (my-noodles storefront)
@@ -23,7 +23,7 @@ Given a requirement (design, bug, or feature), implement it by:
 **CRITICAL:** Implementation is NOT complete until:
 
 ```bash
-pnpm nx run web:quality-check
+pnpm nx run web:fix
 ```
 
 (format → lint → type-check → Vitest). Use the actual Nx target names once wired.
@@ -103,7 +103,7 @@ Co-located Vitest tests: render, interaction, validation, edge cases.
 ### Step 5: Quality checks
 
 ```bash
-pnpm nx run web:quality-check
+pnpm nx run web:fix
 ```
 
 Fix and re-run until green.
@@ -119,7 +119,7 @@ Report check results and files touched only after all checks pass.
 
 ## Notes
 
-- **Verify in repo first** — patterns in reference files describe *this* project; if code is not scaffolded yet, follow mvp-plan and keep implementations minimal.
+- **Verify in repo first** — patterns in reference files describe _this_ project; if code is not scaffolded yet, follow mvp-plan and keep implementations minimal.
 - **Tests are part of the task**
 - **Ask before** new cross-cutting architecture (global providers, new packages)
 - **No magic strings** — next-intl for all UI copy

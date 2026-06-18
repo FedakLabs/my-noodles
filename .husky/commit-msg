@@ -1,0 +1,30 @@
+pnpm commitlint --edit "$1" || {
+  msg=$(head -n 1 "$1")
+
+  echo ""
+  echo "Commit message format:"
+  echo "  <type>(<optional scope>): <subject>"
+  echo ""
+  echo "Examples:"
+  echo "  chore: bootstrap nx monorepo (phase 0 & phase 1)"
+  echo "  feat(web): add product card to catalog"
+  echo "  fix(api): handle missing product slug"
+  echo "  docs: update mvp implementation plan"
+  echo ""
+  echo "Allowed types:"
+  echo "  build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test"
+  echo ""
+  echo "Received:"
+  echo "  $msg"
+  echo ""
+
+  if echo "$msg" | grep -q ':'; then
+    bad_type=$(echo "$msg" | cut -d: -f1 | sed 's/(.*//')
+    subject=$(echo "$msg" | sed 's/^[^:]*:[[:space:]]*//')
+    echo "Hint: \"$bad_type\" is not a valid type. For this message, try:"
+    echo "  chore: $subject"
+    echo ""
+  fi
+
+  exit 1
+}

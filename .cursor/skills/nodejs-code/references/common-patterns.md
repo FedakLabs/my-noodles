@@ -23,13 +23,13 @@ Recipes for `apps/api`. **Grep the repo first** — use domain names from this p
 
 **Example:** `GET /api/products/:slug`
 
-| File | Change |
-| --- | --- |
-| `products.dto.ts` | `ProductDetailQueryDto` (`locale`) |
-| `products.controller.ts` | `@Get(':slug')` |
-| `products.service.ts` | `getBySlug()` + localized JSONB resolution |
-| `products.exceptions.ts` | `ProductNotFoundException` |
-| `~products.test.ts` | unit + supertest |
+| File                     | Change                                     |
+| ------------------------ | ------------------------------------------ |
+| `products.dto.ts`        | `ProductDetailQueryDto` (`locale`)         |
+| `products.controller.ts` | `@Get(':slug')`                            |
+| `products.service.ts`    | `getBySlug()` + localized JSONB resolution |
+| `products.exceptions.ts` | `ProductNotFoundException`                 |
+| `~products.test.ts`      | unit + supertest                           |
 
 ```ts
 @Get(':slug')
@@ -186,5 +186,5 @@ Cover: validation 400, not-found 404, honeypot, Telegram failure tolerance.
 
 ```bash
 pnpm nx run api:test
-pnpm nx run api:quality-check
+pnpm nx run api:fix
 ```

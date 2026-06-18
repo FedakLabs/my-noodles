@@ -1,6 +1,6 @@
 ---
 name: nodejs-code
-description: "Backend code changes in NestJS + TypeORM services (apps/api). TRIGGER when: adding/changing/fixing controllers, services, modules, entities, DTOs, exceptions, TypeORM migrations, external API clients (hand-written or OpenAPI-generated), guards/interceptors/pipes; any file under apps/api/src/application/ or apps/api/src/infrastructure/. SKIP: pure docs, OpenSpec proposals, CI/CD config."
+description: 'Backend code changes in NestJS + TypeORM services (apps/api). TRIGGER when: adding/changing/fixing controllers, services, modules, entities, DTOs, exceptions, TypeORM migrations, external API clients (hand-written or OpenAPI-generated), guards/interceptors/pipes; any file under apps/api/src/application/ or apps/api/src/infrastructure/. SKIP: pure docs, OpenSpec proposals, CI/CD config.'
 ---
 
 # Backend Implementation (NestJS + TypeORM)
@@ -16,7 +16,7 @@ Consult [references/common-patterns.md](./references/common-patterns.md) and [re
 1. Identify affected feature module(s) and layers (controller → service → repository/client)
 2. Use NestJS modules, DTOs, and TypeORM patterns
 3. Keep controllers thin; services own logic
-4. Pass **`pnpm nx run api:quality-check`**
+4. Pass **`pnpm nx run api:fix`**
 
 Migration after schema changes:
 
@@ -49,7 +49,7 @@ If preconditions fail, stop and tell the user.
 3. **Plan** files (DTO, controller, service, module, migration, tests)
 4. **Implement** — validators on all inputs; migrations for schema
 5. **Test** — unit + supertest where applicable
-6. **Run** `pnpm nx run api:quality-check`
+6. **Run** `pnpm nx run api:fix`
 
 ## Reference Files
 

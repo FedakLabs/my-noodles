@@ -1,0 +1,29 @@
+{
+  "name": "@my-noodles/api-clients",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./storefront": {
+      "types": "./dist/storefront/index.d.ts",
+      "import": "./dist/storefront/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json"
+  },
+  "dependencies": {
+    "axios": "1.9.0"
+  },
+  "devDependencies": {
+    "@my-noodles/eslint-config": "workspace:*",
+    "@openapitools/openapi-generator-cli": "2.38.0",
+    "eslint": "10.5.0",
+    "eslint-config-prettier": "10.1.8"
+  }
+}

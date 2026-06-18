@@ -1,0 +1,78 @@
+{
+  "name": "web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/web/src",
+  "projectType": "application",
+  "tags": ["scope:web", "type:app"],
+  "targets": {
+    "dev": {
+      "command": "next dev",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "build": {
+      "command": "next build",
+      "options": {
+        "cwd": "apps/web"
+      },
+      "outputs": ["{projectRoot}/.next"]
+    },
+    "format": {
+      "command": "prettier --write .",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "format-check": {
+      "command": "prettier --check .",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "test": {
+      "command": "vitest run",
+      "options": {
+        "cwd": "apps/web"
+      }
+    },
+    "knip": {
+      "command": "knip --workspace apps/web",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "fix": {
+      "dependsOn": ["format", "lint", "type-check", "test"],
+      "executor": "nx:noop"
+    },
+    "validate": {
+      "dependsOn": ["format-check", "lint-check", "type-check", "test", "knip"],
+      "executor": "nx:noop"
+    },
+    "e2e": {
+      "command": "playwright test",
+      "options": {
+        "cwd": "apps/web"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "api-clients",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/api-clients/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib"],
+  "targets": {
+    "build": {
+      "command": "tsc -p tsconfig.json",
+      "options": {
+        "cwd": "packages/api-clients"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write .",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
+    "format-check": {
+      "command": "prettier --check .",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
+    "knip": {
+      "command": "knip --workspace packages/api-clients",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "fix": {
+      "dependsOn": ["format", "lint", "type-check"],
+      "executor": "nx:noop"
+    },
+    "validate": {
+      "dependsOn": ["format-check", "lint-check", "type-check", "knip"],
+      "executor": "nx:noop"
+    }
+  }
+}

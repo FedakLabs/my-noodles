@@ -12,7 +12,7 @@ Before proposing or shipping anything, ask:
 
 If the answer is not a clear **yes**, reconsider. The target feeling:
 
-> *"Everything looks so tasty — what should I try?!"*
+> _"Everything looks so tasty — what should I try?!"_
 
 **Customer first, always.** Convenience for builders is secondary.
 
@@ -54,7 +54,7 @@ When trade-offs arise, choose the option that better serves the litmus test, eve
 
 ## Key references
 
-| Document | Purpose |
-|----------|---------|
-| [VISION.md](./VISION.md) | Why we exist, who we serve, experience promise, what we are *not* |
-| [docs/mvp-plan.md](./docs/mvp-plan.md) | MVP scope, technical decisions, implementation phases |
+| Document                               | Purpose                                                           |
+| -------------------------------------- | ----------------------------------------------------------------- |
+| [VISION.md](./VISION.md)               | Why we exist, who we serve, experience promise, what we are _not_ |
+| [docs/mvp-plan.md](./docs/mvp-plan.md) | MVP scope, technical decisions, implementation phases             |

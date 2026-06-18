@@ -19,6 +19,7 @@ Conventions for `apps/web`. When unsure, grep the nearest analogous module. Arch
 ## TypeScript Standards
 
 **Always:**
+
 - Strict mode — no implicit `any`
 - Export types for public component/hook APIs
 - Prefer `unknown` + narrowing over `any`
@@ -120,6 +121,7 @@ apps/web/src/
 ```
 
 **Rules:**
+
 - Layer by technical concern, group by feature inside each folder
 - Co-locate `*.test.tsx` with source
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
@@ -129,16 +131,16 @@ apps/web/src/
 
 ## Anti-Patterns
 
-| Don't | Do |
-| --- | --- |
-| Import `@merchant-portal/*` or assume `packages/ui` exists | Use `packages/theme` + local `components/` |
-| TanStack Router / `pages/` SPA routing | Next App Router + `screens/` |
-| `public/locales/…` without checking repo | Follow next-intl message file layout in repo |
-| Raw axios in components | `apps/web/src/api` hooks |
-| Magic strings in JSX | `useTranslations` |
-| Skip empty/error/loading | Handle all four states |
-| Deep `sx` overrides on every element | Theme tokens + MUI variants |
-| Cart persisted to server before checkout | Zustand until `POST /orders` |
+| Don't                                                      | Do                                           |
+| ---------------------------------------------------------- | -------------------------------------------- |
+| Import `@merchant-portal/*` or assume `packages/ui` exists | Use `packages/theme` + local `components/`   |
+| TanStack Router / `pages/` SPA routing                     | Next App Router + `screens/`                 |
+| `public/locales/…` without checking repo                   | Follow next-intl message file layout in repo |
+| Raw axios in components                                    | `apps/web/src/api` hooks                     |
+| Magic strings in JSX                                       | `useTranslations`                            |
+| Skip empty/error/loading                                   | Handle all four states                       |
+| Deep `sx` overrides on every element                       | Theme tokens + MUI variants                  |
+| Cart persisted to server before checkout                   | Zustand until `POST /orders`                 |
 
 ---
 
@@ -150,4 +152,4 @@ apps/web/src/
 - [ ] Client boundary justified
 - [ ] Theme tokens, not raw hex
 - [ ] Tests co-located
-- [ ] `pnpm nx run web:quality-check` passes
+- [ ] `pnpm nx run web:fix` passes

@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "generator-cli": {
+    "version": "7.12.0"
+  },
+  "inputSpec": "http://localhost:3001/api/docs-json",
+  "generatorName": "typescript-axios",
+  "output": "../../generated/storefront",
+  "additionalProperties": {
+    "withSeparateModelsAndApi": true,
+    "stringEnums": true,
+    "supportsES6": true,
+    "withInterfaces": true
+  }
+}

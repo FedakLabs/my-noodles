@@ -1,0 +1,72 @@
+{
+  "name": "api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/api/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app"],
+  "targets": {
+    "serve": {
+      "command": "tsx watch src/index.ts",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "build": {
+      "command": "tsc -p tsconfig.build.json",
+      "options": {
+        "cwd": "apps/api"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write .",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "format-check": {
+      "command": "prettier --check .",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "test": {
+      "command": "jest",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "knip": {
+      "command": "knip --workspace apps/api",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "fix": {
+      "dependsOn": ["format", "lint", "type-check", "test"],
+      "executor": "nx:noop"
+    },
+    "validate": {
+      "dependsOn": ["format-check", "lint-check", "type-check", "test", "knip"],
+      "executor": "nx:noop"
+    }
+  }
+}

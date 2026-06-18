@@ -29,16 +29,19 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 ## 1. Language & TypeScript
 
 ### Module system
+
 - Follow the project's `apps/api` tsconfig (Nx monorepo). Use standard ESM/CJS as configured — **do not** add `.ts` extensions to imports unless the repo already does.
 - Prefer `import type` for type-only imports.
 
 ### Strictness
+
 - Monorepo base enables `strict: true`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, etc. No `any` without a comment justifying it.
 - Prefer `unknown` + narrowing over `any`.
 - Avoid `!` non-null assertions unless the value was just validated or loaded from a required DB column.
 - Use `readonly` on constructor-injected dependencies.
 
 ### Decorators
+
 - NestJS, TypeORM, class-validator, and Swagger all use decorators — keep `emitDecoratorMetadata` enabled in tsconfig.
 - Follow decorator order used in neighbouring controllers (route decorators before param decorators).
 
@@ -47,6 +50,7 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 ## 2. File & Class Naming
 
 ### Files
+
 - **kebab-case** for files and folders.
 - Feature modules under `src/application/<feature>/`.
 - Suffixes:
@@ -61,6 +65,7 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 - Sub-features: nested folder (e.g. `application/products/facets/facets.controller.ts`).
 
 ### Classes
+
 - **PascalCase** with role suffix:
   - `ProductsController`, `ProductsService`, `ProductsModule`
   - `Product` (entity)
@@ -69,6 +74,7 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 - MVP storefront is public — no separate authenticated controller variants unless auth is added later.
 
 ### Barrel `index.ts`
+
 Re-export public symbols for cross-module convenience:
 
 ```ts
@@ -93,13 +99,16 @@ Controllers → Services → Repositories / External clients → Postgres / HTTP
 ```
 
 ### Controllers
+
 **Only:**
+
 1. Declare routes (`@Controller`, HTTP method decorators).
 2. Accept validated input (`@Body`, `@Query`, `@Param` typed as DTOs — validated by global `ValidationPipe`).
 3. Apply route-level guards/interceptors/throttle decorators when needed.
 4. Delegate to a service and return the result.
 
 Controllers must **not**:
+
 - Contain business logic, transactions, or direct `@InjectRepository` usage.
 - Call external APIs directly.
 - Orchestrate multiple services when one service method should own the flow.
@@ -118,6 +127,7 @@ export class OrdersController {
 ```
 
 ### Services
+
 - `@Injectable()` business logic and orchestration.
 - Inject repositories via `@InjectRepository(Entity)`.
 - Inject other services and infra clients via constructor.
@@ -125,6 +135,7 @@ export class OrdersController {
 - Own transactions (`DataSource.transaction` or `EntityManager`).
 
 ### Repositories / clients
+
 - TypeORM `Repository<Entity>` — IO only.
 - External clients: `@Injectable()` classes in `infrastructure/services/<Name>/client/`.
 
@@ -147,11 +158,13 @@ export class ProductsModule {}
 Register in `AppModule.imports`. Export providers other modules need.
 
 ### Injection
+
 - **Default**: constructor injection — Nest resolves automatically.
 - **Circular dependency** (rare): `forwardRef(() => OtherService)` on both sides — prefer redesign over lazy hacks.
 - **Custom tokens**: `@Inject('TELEGRAM_CLIENT')` only when necessary (config providers).
 
 ### Shared / infra modules
+
 - `TypeOrmModule.forRoot(...)` (or async factory) in `AppModule` using `ormconfig.ts`.
 - Third-party modules: `ThrottlerModule.forRoot(...)`, `WinstonModule.forRoot(...)`.
 
@@ -160,6 +173,7 @@ Register in `AppModule.imports`. Export providers other modules need.
 ## 5. HTTP & Controllers
 
 ### Global setup (bootstrap)
+
 - `app.setGlobalPrefix('api')` — routes are `/api/...`, no versioning.
 - Global `ValidationPipe`: `whitelist: true`, `transform: true`, `forbidNonWhitelisted: true`.
 - Swagger at `/api/docs-json` via `@nestjs/swagger`.
@@ -179,21 +193,20 @@ export class ProductsController {
   }
 
   @Get(':slug')
-  async getBySlug(
-    @Param('slug') slug: string,
-    @Query() query: LocaleQueryDto,
-  ): Promise<ProductDetailDto> {
+  async getBySlug(@Param('slug') slug: string, @Query() query: LocaleQueryDto): Promise<ProductDetailDto> {
     return this.productsService.getBySlug(slug, query.locale);
   }
 }
 ```
 
 ### Query / path / body
+
 - **Query DTOs** for filters, pagination (`page`, `limit` required when paginating, max 100), `locale`.
 - **Body DTOs** for POST/PATCH with class-validator decorators.
 - **Path params**: simple `@Param('slug')` or a small param DTO if multiple params need validation.
 
 ### Public storefront (MVP)
+
 - No JWT guards on catalog/order endpoints.
 - Honeypot on order POST: reject if hidden `company` field is filled (validated in DTO/service).
 
@@ -202,6 +215,7 @@ export class ProductsController {
 ## 6. Exceptions
 
 ### Domain exceptions
+
 Live in `<feature>.exceptions.ts`. Extend Nest HTTP exceptions:
 
 ```ts
@@ -217,6 +231,7 @@ export class ProductNotFoundException extends NotFoundException {
 Use the matching built-in when sufficient: `BadRequestException`, `ConflictException`, `TooManyRequestsException`.
 
 ### Wrapping external errors
+
 Services translate infra/client errors — never leak raw axios errors to the client.
 
 ```ts
@@ -238,6 +253,7 @@ throw err;
 ```
 
 ### Do not
+
 - `console.log` / `console.error` in feature code — use injected Nest `Logger` or Winston.
 - Swallow errors with empty `catch {}` unless explicitly best-effort (document why).
 
@@ -246,10 +262,12 @@ throw err;
 ## 7. DTOs & Validation
 
 ### Layout
+
 - All DTOs in `<feature>.dto.ts` (request, query, response shapes as needed).
 - Regex/constants above the classes that use them.
 
 ### class-validator
+
 Every input field gets validators:
 
 ```ts
@@ -272,13 +290,16 @@ export class CreateOrderDto {
 ```
 
 ### Swagger
+
 Add `@ApiProperty()` on DTO fields exposed in OpenAPI (follow existing modules).
 
 ### Shared validators
+
 - Reusable field decorators or small validator classes in `src/utils/validators/`.
 - Pagination: validate `page`, `limit` (required when paginating, `limit` ≤ 100).
 
 ### DTO ↔ entity
+
 - Response DTOs / mappers in the service — do not return raw entities with relations unless intentional.
 - Localized JSONB fields: resolve by `?locale` in the service, expose plain strings in responses.
 
@@ -287,28 +308,35 @@ Add `@ApiProperty()` on DTO fields exposed in OpenAPI (follow existing modules).
 ## 8. TypeORM Entities
 
 ### Naming
+
 - Table: `@Entity({ name: 'products' })` — snake_case plural.
 - Columns: camelCase in TS, snake_case in DB via `@Column({ name: 'price_minor' })`.
 - Entity class: singular (`Product`, `Order`).
 
 ### Primary keys
+
 - UUID: `@PrimaryGeneratedColumn('uuid')` (matches mvp-plan ER diagram).
 
 ### Timestamps
+
 - `@CreateDateColumn()` on persistent entities; `@UpdateDateColumn()` where rows are updated.
 
 ### Localized JSONB (mvp-plan)
+
 ```ts
 @Column({ type: 'jsonb' })
 name: LocalizedString; // { uk: string; en?: string }
 ```
+
 Resolve in service layer by locale query param.
 
 ### Relations
+
 - Explicit inverse sides; avoid eager loading unless every caller needs it.
 - `cascade` only when child cannot exist independently.
 
 ### Stock / derived fields
+
 - `quantity` int; `inStock` derived in service/DTO as `quantity > 0` (not a stored column unless already migrated).
 
 ---
@@ -327,6 +355,7 @@ Resolve in service layer by locale query param.
 ## 10. External API Integration
 
 ### Hand-written client (MVP: Telegram)
+
 Location: `infrastructure/services/Telegram/client/`
 
 ```ts
@@ -343,11 +372,13 @@ export class TelegramClient {
 Register as provider in a small `TelegramModule` or `OrdersModule`; inject into `OrdersService`.
 
 ### OpenAPI-generated third-party clients
+
 - Generated output under `infrastructure/services/<Service>/generated/` — **read-only**.
 - Thin `@Injectable()` wrapper in `client/` exposing typed methods.
 - Distinct from `packages/api-clients` (that package is **our** API client for the web app).
 
 ### Rules
+
 - No business logic in clients — one method per remote operation.
 - Config from env via `config.ts` — never hardcode tokens.
 
@@ -406,7 +437,7 @@ On limit exceeded, Nest returns 429 — map to friendly message in exception fil
 
 Cover: happy path, validation 400, not-found 404, external client failure behavior, throttling where relevant.
 
-Run: `pnpm nx run api:test` or `api:quality-check`.
+Run: `pnpm nx run api:test` or `api:fix`.
 
 ---
 
@@ -423,19 +454,19 @@ Run: `pnpm nx run api:test` or `api:quality-check`.
 
 ## 16. Anti-Patterns
 
-| Anti-pattern | Do instead |
-| --- | --- |
-| Business logic in controller | Move to service |
-| `@InjectRepository` in controller | Service only |
-| Raw `fetch`/`axios` in controller/service without a client class | Infra client in `infrastructure/services/` |
-| Returning raw TypeORM entity with hidden columns | Map to response DTO |
-| DTO field without class-validator | Add validators |
-| Schema change without migration | Generate migration; keep `synchronize: false` |
-| Hardcoded secrets/URLs | `config.ts` + env |
-| Disabling OTEL hooks in bootstrap | Keep instrumentation; gate export with `OTEL_ENABLED` |
-| `console.log` for diagnostics | Nest `Logger` / Winston |
-| God `AppModule` providers | Feature `*.module.ts` per domain |
-| Copy-paste validator | Add to `utils/validators/` and reuse |
+| Anti-pattern                                                     | Do instead                                            |
+| ---------------------------------------------------------------- | ----------------------------------------------------- |
+| Business logic in controller                                     | Move to service                                       |
+| `@InjectRepository` in controller                                | Service only                                          |
+| Raw `fetch`/`axios` in controller/service without a client class | Infra client in `infrastructure/services/`            |
+| Returning raw TypeORM entity with hidden columns                 | Map to response DTO                                   |
+| DTO field without class-validator                                | Add validators                                        |
+| Schema change without migration                                  | Generate migration; keep `synchronize: false`         |
+| Hardcoded secrets/URLs                                           | `config.ts` + env                                     |
+| Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED` |
+| `console.log` for diagnostics                                    | Nest `Logger` / Winston                               |
+| God `AppModule` providers                                        | Feature `*.module.ts` per domain                      |
+| Copy-paste validator                                             | Add to `utils/validators/` and reuse                  |
 
 ---
 
@@ -448,5 +479,5 @@ Before declaring done:
 - [ ] External calls go through injectable clients; errors handled in service
 - [ ] Feature module registered in `AppModule`
 - [ ] DB changes have `up` + `down` migrations
-- [ ] `pnpm nx run api:quality-check` passes
+- [ ] `pnpm nx run api:fix` passes
 - [ ] Swagger/OpenAPI still generates if DTOs/controllers changed

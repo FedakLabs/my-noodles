@@ -25,13 +25,13 @@ Task recipes for `apps/web`. **Always grep the repo first** — if scaffolding i
 
 Do **not** assume primitives from other codebases:
 
-| If you're about to… | Stop and… |
-| --- | --- |
-| Import from `@merchant-portal/ui` or `@merchant-portal/utils` | This repo doesn't use them |
-| Use `formatUseQuery` / `formatUseMutation` | Use standard TanStack Query hooks unless `apps/web/src/api/_lib` defines helpers — grep first |
-| Add `DetailsModal`, `ConfirmationModal`, `DataTable` | Not part of this project — use MUI `Dialog`, local table/grid components |
-| Wire TanStack Router / `routes-config.tsx` | Routing is Next.js `app/[locale]/…` |
-| Read `packages/ui` or `packages/themes` | Design system is **`packages/theme`** |
+| If you're about to…                                           | Stop and…                                                                                     |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Import from `@merchant-portal/ui` or `@merchant-portal/utils` | This repo doesn't use them                                                                    |
+| Use `formatUseQuery` / `formatUseMutation`                    | Use standard TanStack Query hooks unless `apps/web/src/api/_lib` defines helpers — grep first |
+| Add `DetailsModal`, `ConfirmationModal`, `DataTable`          | Not part of this project — use MUI `Dialog`, local table/grid components                      |
+| Wire TanStack Router / `routes-config.tsx`                    | Routing is Next.js `app/[locale]/…`                                                           |
+| Read `packages/ui` or `packages/themes`                       | Design system is **`packages/theme`**                                                         |
 
 ---
 
@@ -112,11 +112,7 @@ export function CheckoutForm() {
     createOrder(mapToCreateOrderDto(data, cartItems));
   });
 
-  return (
-    <form onSubmit={onSubmit}>
-      {/* Controller + TextField fields; labels via t('fields.name') */}
-    </form>
-  );
+  return <form onSubmit={onSubmit}>{/* Controller + TextField fields; labels via t('fields.name') */}</form>;
 }
 ```
 
@@ -137,24 +133,20 @@ import { apiClients } from '../clients';
 export const productsQueryKeys = {
   all: ['products'] as const,
   list: (filters: ProductListFilters) => [...productsQueryKeys.all, 'list', filters] as const,
-  detail: (slug: string, locale: string) =>
-    [...productsQueryKeys.all, 'detail', slug, locale] as const,
-  facets: (filters: ProductFacetFilters) =>
-    [...productsQueryKeys.all, 'facets', filters] as const,
+  detail: (slug: string, locale: string) => [...productsQueryKeys.all, 'detail', slug, locale] as const,
+  facets: (filters: ProductFacetFilters) => [...productsQueryKeys.all, 'facets', filters] as const,
 };
 
 export function useProductsList(filters: ProductListFilters) {
   return useQuery({
     queryKey: productsQueryKeys.list(filters),
-    queryFn: () =>
-      apiClients.productsApi
-        .listProducts(/* map filters */)
-        .then((res) => res.data),
+    queryFn: () => apiClients.productsApi.listProducts(/* map filters */).then((res) => res.data),
   });
 }
 ```
 
 **Rules:**
+
 - Facets and list use **separate keys** (facets = filters only; list = filters + page)
 - Mutations invalidate the smallest relevant key set
 - Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary`
@@ -203,7 +195,13 @@ Single source of truth: **`screens/catalog/search-params/`**
 
 ```ts
 // catalog.search.ts
-import { createSearchParamsCache, parseAsArrayOf, parseAsInteger, parseAsString, parseAsBoolean } from 'nuqs/server';
+import {
+  createSearchParamsCache,
+  parseAsArrayOf,
+  parseAsInteger,
+  parseAsString,
+  parseAsBoolean,
+} from 'nuqs/server';
 
 export const catalogSearchParamsParsers = {
   category: parseAsArrayOf(parseAsString).withDefault([]),
@@ -273,8 +271,12 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       version: CART_VERSION,
       items: [],
-      addItem: (line) => { /* merge by productId */ },
-      removeItem: (id) => { /* … */ },
+      addItem: (line) => {
+        /* merge by productId */
+      },
+      removeItem: (id) => {
+        /* … */
+      },
       clear: () => set({ items: [] }),
     }),
     {
@@ -351,5 +353,5 @@ Keep hooks focused; data fetching belongs in `api/`, not generic hooks.
 
 ```bash
 pnpm nx run web:test
-pnpm nx run web:quality-check
+pnpm nx run web:fix
 ```

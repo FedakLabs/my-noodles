@@ -1,6 +1,6 @@
 ---
 name: find-component
-description: "Locate the React component or page that renders a specific screen by tracing visible UI text through i18n keys and Next.js routes. Use when working from a screenshot, UI text description, or route path and you need to find the source file responsible for that view."
+description: 'Locate the React component or page that renders a specific screen by tracing visible UI text through i18n keys and Next.js routes. Use when working from a screenshot, UI text description, or route path and you need to find the source file responsible for that view.'
 ---
 
 # Find Component
