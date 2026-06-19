@@ -410,7 +410,7 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 3 - i18n
 
-- [ ] `next-intl` (`localePrefix: 'always'`, `/uk` + root redirect, middleware/`hreflang`); per-locale message JSON catalogs.
+- [x] `next-intl` (`localePrefix: 'always'`, `/uk` + root redirect, middleware/`hreflang`); per-locale message JSON catalogs.
 
 ### Phase 4 - Backend foundation
 
