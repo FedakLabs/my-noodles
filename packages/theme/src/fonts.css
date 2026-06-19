@@ -1,0 +1,8 @@
+/**
+ * Font family CSS variables — overridden by next/font in apps/web.
+ * Storybook loads webfonts via preview-head.html.
+ */
+:root {
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+}

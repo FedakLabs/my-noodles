@@ -1,7 +1,19 @@
-import { createTheme } from '@mui/material/styles';
-
-export const theme = createTheme({
-  cssVariables: true,
-});
-
-export { createTheme };
+export { breakpoints } from './breakpoints';
+export { components } from './components';
+export { baseColors, colors, muiPalette } from './palette';
+export { cardShadow, discoveryWash, sheetShadow, skinCardGradient } from './shadows';
+export { borderRadius } from './shape';
+export type { ResolvedSkinSource, SkinDefinition, SkinInput, SkinResult } from './skins';
+export {
+  baseSkinCssVars,
+  brandSkins,
+  categorySkins,
+  colorsToCssVars,
+  countrySkins,
+  resolveSkin,
+  skinVarsToStyle,
+} from './skins';
+export { customSpacing, modalWidths, spacingUnit } from './spacing';
+export { createTheme, createThemeFromMui, theme } from './theme';
+export type { BorderRadiusTokens, Colors, CustomSpacing, ModalWidths } from './types';
+export { fontFamilies, typography } from './typography';

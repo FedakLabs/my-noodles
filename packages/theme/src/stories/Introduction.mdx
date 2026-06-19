@@ -1,0 +1,30 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# my-noodles design system
+
+Storybook is the **living visual reference** for `packages/theme`. It renders the same MUI `theme` object that `apps/web` imports — not a duplicate palette.
+
+**Decisions and rules** live in [`docs/design-system-brief.md`](../../../docs/design-system-brief.md) (why). **Tokens and components** live in `packages/theme/src` (what).
+
+## Source of truth
+
+1. Change tokens in `palette.ts`, `typography.ts`, `components.ts`, etc.
+2. Stories here update automatically via `ThemeProvider` in `.storybook/preview.tsx`.
+3. Ship the same exports to the storefront.
+
+## Story map (Phase 2)
+
+| Section               | Story path                       | Status |
+| --------------------- | -------------------------------- | ------ |
+| Foundations           | `Foundations/*`                  | Done   |
+| Typography            | `Foundations/Typography`         | Done   |
+| Shape & spacing       | `Foundations/Shape & Spacing`    | Done   |
+| Elevation             | `Foundations/Elevation`          | Done   |
+| P0 components         | `Components/P0`                  | Done   |
+| Country skins         | `Skins/Countries`                | Done   |
+| Brand skins           | `Skins/Brands`                   | Done   |
+| Category skins        | `Skins/Categories`               | Done   |
+| Discovery vs checkout | `Surfaces/Discovery vs Checkout` | Done   |
+| Do / Don't            | `Guidelines/Do & Don't`          | Done   |

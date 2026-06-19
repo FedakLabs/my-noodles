@@ -114,6 +114,7 @@ Tooling:
 - Quality: `eslint` 10.5.0, `typescript-eslint` 8.61.1, `prettier` 3.8.4, `eslint-config-prettier` 10.1.8, `eslint-plugin-simple-import-sort` 13.0.0, `eslint-plugin-react-hooks` 7.1.1, `eslint-plugin-react` 7.37.5, `@next/eslint-plugin-next` 16.2.9, `eslint-plugin-jsx-a11y` 6.10.2, `knip` 6.17.1
 - Hooks/commits: `husky` 9.1.7, `@commitlint/cli` 21.0.2 (+ `@commitlint/config-conventional`)
 - Tests: `vitest` 4.1.9 (web + packages), `jest` (apps/api, Nest default), `@playwright/test` 1.61.0
+- Storybook (`packages/theme`): `storybook` 10.4.6, `@storybook/react-vite` 10.4.6, `@storybook/addon-docs` 10.4.6
 - Note: `typescript-eslint` 8.61 may print a "supported TS versions" warning against TS 6 / ESLint 10 (functional; verify peer compatibility at setup).
 
 Notes: this lands us on **Next 16 / MUI v9 / TypeORM 1.0 / zod 4 / Nx 23** from day one (all current majors), avoiding a near-term migration. The example theme package was written against MUI v6/v7 APIs; on v9 we keep the same structure but verify component-override slot names and `createTheme` options during the theme-package step.
@@ -402,9 +403,10 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 2 - Design system + skins
 
-- [ ] `packages/theme`: palette/typography/shape/spacing/breakpoints/components/`theme.d.ts`/`fonts.css`/`theme.ts` (`cssVariables: true`); self-host Unbounded + Manrope via `next/font`.
-- [ ] Tune semantic tokens to playful-premium; MUI module augmentation; base component overrides.
-- [ ] Skin engine: `resolveSkin({brand,country,category,slug})` (brand->country->category->hash) emitting CSS variables; registry with initial country skins (CN/KR/TH/US/CA/TW); graceful fallback for unregistered keys. Vitest for the resolver.
+- [x] `packages/theme`: palette/typography/shape/spacing/breakpoints/components/`theme.d.ts`/`fonts.css`/`theme.ts` (`cssVariables: true`); self-host Unbounded + Manrope via `next/font`.
+- [x] Tune semantic tokens to playful-premium; MUI module augmentation; base component overrides.
+- [x] Skin engine: `resolveSkin({brand,country,category,slug})` (brand->country->category->hash) emitting CSS variables; registry with initial country skins (CN/KR/TH/US/CA/TW); graceful fallback for unregistered keys. Vitest for the resolver.
+- [x] Storybook **10.4.6** in `packages/theme` (`@storybook/react-vite` + `@storybook/addon-docs`); stories consume the MUI theme as source of truth (see `docs/design-system-brief.md` §8). Nx: `storybook` / `build-storybook`.
 
 ### Phase 3 - i18n
 

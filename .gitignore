@@ -33,3 +33,6 @@ blob-report/
 # misc
 *.tsbuildinfo
 .turbo
+
+*storybook.log
+storybook-static
