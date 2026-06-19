@@ -112,7 +112,7 @@ Tooling:
 - `nx` 23.0.0, `pnpm` 11.8.0, `@openapitools/openapi-generator-cli` 2.38.0
 - `typescript` 6.0.3
 - Quality: `eslint` 10.5.0, `typescript-eslint` 8.61.1, `prettier` 3.8.4, `eslint-config-prettier` 10.1.8, `eslint-plugin-simple-import-sort` 13.0.0, `eslint-plugin-react-hooks` 7.1.1, `eslint-plugin-react` 7.37.5, `@next/eslint-plugin-next` 16.2.9, `eslint-plugin-jsx-a11y` 6.10.2, `knip` 6.17.1
-- Hooks/commits: `husky` 9.1.7, `lint-staged` 17.0.7, `@commitlint/cli` 21.0.2 (+ `@commitlint/config-conventional`)
+- Hooks/commits: `husky` 9.1.7, `@commitlint/cli` 21.0.2 (+ `@commitlint/config-conventional`)
 - Tests: `vitest` 4.1.9 (web + packages), `jest` (apps/api, Nest default), `@playwright/test` 1.61.0
 - Note: `typescript-eslint` 8.61 may print a "supported TS versions" warning against TS 6 / ESLint 10 (functional; verify peer compatibility at setup).
 
@@ -266,8 +266,8 @@ OpenTelemetry-first, with Winston as the logger wired into OTel:
 
 **Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. Two composite commands layer on top of the atomic targets (`format` / `format-check` / `lint` / `lint-check` / `type-check` / `test` / `knip`):
 
-- `fix` (inner-loop / **AI self-check**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api). Auto-fixes what it can, then verifies. **Excludes knip and Playwright `e2e`** (heavier, not inner-loop).
-- `validate` (full pre-push/CI gate): `format-check` -> `lint-check` -> `type-check` -> `test` -> `knip` (read-only; fails if anything still needs fixing). Playwright `e2e` stays a separate target.
+- `fix` (inner-loop / **AI self-check** / **pre-commit gate**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api). Auto-fixes what it can, then verifies. **Excludes knip and Playwright `e2e`** (heavier; knip stays in `validate`, e2e in CI).
+- `validate` (CI gate): `format-check` -> `lint-check` -> `type-check` -> `test` -> `knip` (read-only; fails if anything still needs fixing). Playwright `e2e` stays a separate target.
 
 Per-project composition:
 
@@ -286,13 +286,13 @@ ESLint via **composable presets** (shared base, no rule mixing across stacks). A
 - **node preset** (extends base, for api): Node/Nest-appropriate rules, no React/DOM plugins.
 - Curated **moderate** ruleset; `unicorn`/`sonarjs` excluded (too opinionated for co-dev review).
 
-Git hooks (husky, repo root): **pre-commit** = `lint-staged` **only** (`prettier --write` + `eslint --fix` on staged files, then re-stage) — kept deliberately light so commits stay sub-second; **commit-msg** = `commitlint` (conventional commits); **pre-push** = `nx affected -t validate` (the heavier per-project gate: type-check/unit-test/knip) **then `nx affected -t e2e`** (Playwright funnel). CI re-runs `nx affected -t validate` + `e2e` as the authoritative gate. Rationale: format/lint is cheap and belongs on commit; type-check/tests/knip are heavier and belong on push + CI, so no one is tempted to `--no-verify`.
+Git hooks (husky, repo root): **pre-commit** = `nx affected -t fix --uncommitted` then `git add -u` (format, ESLint --fix, type-check, and unit tests on affected projects only; re-stages auto-fixes) — a commit must pass the full fix pipeline before it lands; **commit-msg** = `commitlint` (conventional commits). No pre-push hook. CI runs `nx affected -t validate` + `e2e` as the authoritative read-only gate (includes knip; Playwright stays separate from `fix`).
 
 TypeScript: shared base `tsconfig` with **`strict: true`** + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes` (enabled — favor strictness); each project extends it.
 
 ## Build order
 
-1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/lint-staged/commitlint; per-project `fix` (AI inner-loop) + `validate` (read-only CI gate), husky pre-commit runs `lint-staged` only, pre-push runs `nx affected -t validate` + `e2e`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
+1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/commitlint; per-project `fix` (AI inner-loop + pre-commit gate) + `validate` (read-only CI gate), husky pre-commit runs `nx affected -t fix`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
 2. `packages/theme` design system (tokens, MUI theme, Cyrillic fonts) + skin engine.
 3. next-intl setup + message catalogs.
 4. NestJS API: OTel instrumentation + winston logging, entities (JSONB i18n), migrations, DTOs, endpoints (incl. `?collection=`), Swagger, Throttler, seed, Telegram notify.
@@ -398,7 +398,7 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 - [x] `configs/eslint` flat-config presets: base / web / node (+ Nx module boundaries, `eslint-config-prettier` last).
 - [x] Root Prettier config; per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`).
 - [x] Compose `fix` (format->lint->type-check->test) and `validate` (read-only format-check/lint-check + type-check + test + knip); root `pnpm fix` / `pnpm validate` / `pnpm format`.
-- [x] husky: pre-commit (`lint-staged` only), commit-msg (`commitlint`), pre-push (`nx affected -t validate` + `e2e`).
+- [x] husky: pre-commit (`nx affected -t fix --uncommitted` + `git add -u`), commit-msg (`commitlint`).
 
 ### Phase 2 - Design system + skins
 

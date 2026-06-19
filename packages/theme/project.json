@@ -55,12 +55,29 @@
       }
     },
     "fix": {
-      "dependsOn": ["format", "lint", "type-check", "test"],
-      "executor": "nx:noop"
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format",
+          "nx run {projectName}:lint",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test"
+        ],
+        "parallel": false
+      }
     },
     "validate": {
-      "dependsOn": ["format-check", "lint-check", "type-check", "test", "knip"],
-      "executor": "nx:noop"
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format-check",
+          "nx run {projectName}:lint-check",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test",
+          "nx run {projectName}:knip"
+        ],
+        "parallel": false
+      }
     }
   }
 }

@@ -1,1 +1,2 @@
-pnpm lint-staged
+pnpm nx affected -t fix
+git add -u

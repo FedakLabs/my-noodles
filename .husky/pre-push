@@ -1,1 +1,0 @@
-pnpm nx affected -t validate && pnpm nx affected -t e2e
