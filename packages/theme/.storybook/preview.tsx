@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import type { Preview } from '@storybook/react-vite';
 
 import '../src/fonts.css';
+import '../src/fonts.local.css';
 import { theme } from '../src/index';
 
 const preview: Preview = {

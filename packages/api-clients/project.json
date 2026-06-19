@@ -13,13 +13,13 @@
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
-      "command": "prettier --write .",
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "packages/api-clients"
       }
     },
     "format-check": {
-      "command": "prettier --check .",
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "packages/api-clients"
       }
@@ -43,7 +43,7 @@
       }
     },
     "knip": {
-      "command": "knip --workspace packages/api-clients",
+      "command": "knip --config configs/knip/knip.json --workspace packages/api-clients",
       "options": {
         "cwd": "."
       }

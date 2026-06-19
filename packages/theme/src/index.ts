@@ -1,5 +1,7 @@
 export { breakpoints } from './breakpoints';
 export { components } from './components';
+export type { FontRole } from './fonts';
+export { fontCssVariableReference, fontFamilyFallback, fonts } from './fonts';
 export { baseColors, colors, muiPalette } from './palette';
 export { cardShadow, discoveryWash, sheetShadow, skinCardGradient } from './shadows';
 export { borderRadius } from './shape';

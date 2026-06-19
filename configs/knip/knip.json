@@ -27,6 +27,9 @@
     "apps/api": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts", "jest.config.cjs"],
+      "ignoreIssues": {
+        "src/ormconfig.ts": ["exports"]
+      },
       "ignoreDependencies": [
         "@nestjs/swagger",
         "@nestjs/throttler",

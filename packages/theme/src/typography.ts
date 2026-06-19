@@ -1,10 +1,11 @@
 import type { ThemeOptions } from '@mui/material/styles';
 
+import { fontCssVariableReference } from './fonts';
 import type {} from './types';
 
 export const fontFamilies = {
-  display: 'var(--font-display, "Unbounded", system-ui, sans-serif)',
-  body: 'var(--font-body, "Manrope", system-ui, sans-serif)',
+  display: fontCssVariableReference('display'),
+  body: fontCssVariableReference('body'),
 } as const;
 
 export const typography: NonNullable<ThemeOptions['typography']> = {

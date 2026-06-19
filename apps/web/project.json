@@ -19,13 +19,13 @@
       "outputs": ["{projectRoot}/.next"]
     },
     "format": {
-      "command": "prettier --write .",
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "apps/web"
       }
     },
     "format-check": {
-      "command": "prettier --check .",
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "apps/web"
       }
@@ -55,7 +55,7 @@
       }
     },
     "knip": {
-      "command": "knip --workspace apps/web",
+      "command": "knip --config configs/knip/knip.json --workspace apps/web",
       "options": {
         "cwd": "."
       }

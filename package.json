@@ -2,12 +2,13 @@
   "name": "my-noodles",
   "private": true,
   "packageManager": "pnpm@11.8.0",
+  "prettier": "./configs/prettier/.prettierrc.json",
   "scripts": {
     "prepare": "husky",
     "dev:web": "nx dev web",
     "dev:api": "nx serve api",
     "build": "nx run-many -t build",
-    "format": "prettier --write .",
+    "format": "prettier --write . --ignore-path configs/prettier/.prettierignore",
     "fix": "nx run-many -t fix",
     "validate": "nx run-many -t validate"
   },

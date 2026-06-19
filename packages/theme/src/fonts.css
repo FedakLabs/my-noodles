@@ -1,8 +1,12 @@
 /**
- * Font family CSS variables — overridden by next/font in apps/web.
- * Storybook loads webfonts via preview-head.html.
+ * CSS font-family variables — values must match packages/theme/src/fonts.ts.
+ * @font-face rules are in fonts.local.css (self-hosted, pinned .woff2 files).
  */
 :root {
   --font-display: 'Unbounded', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
 }

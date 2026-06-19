@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../configs/typescript/base.json",
   "compilerOptions": {
     "composite": true,
     "lib": ["ES2022", "DOM"],
@@ -10,5 +10,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "src/stories"]
+  "exclude": ["node_modules", "dist", "src/stories", "src/**/~*.test.ts", "src/**/*.{test,spec}.ts"]
 }

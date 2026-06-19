@@ -10,7 +10,7 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/eslint.config.mjs"
     ],
-    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json"]
+    "sharedGlobals": ["{workspaceRoot}/configs/typescript/base.json"]
   },
   "targetDefaults": {
     "build": {
@@ -19,11 +19,19 @@
       "cache": true
     },
     "format": {
-      "inputs": ["default", "{workspaceRoot}/.prettierrc.json", "{workspaceRoot}/.prettierignore"],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/configs/prettier/.prettierrc.json",
+        "{workspaceRoot}/configs/prettier/.prettierignore"
+      ],
       "cache": false
     },
     "format-check": {
-      "inputs": ["default", "{workspaceRoot}/.prettierrc.json", "{workspaceRoot}/.prettierignore"],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/configs/prettier/.prettierrc.json",
+        "{workspaceRoot}/configs/prettier/.prettierignore"
+      ],
       "cache": true
     },
     "lint": {
@@ -43,7 +51,7 @@
       "cache": true
     },
     "knip": {
-      "inputs": ["default", "{workspaceRoot}/knip.json"],
+      "inputs": ["default", "{workspaceRoot}/configs/knip/knip.json"],
       "cache": true
     }
   },

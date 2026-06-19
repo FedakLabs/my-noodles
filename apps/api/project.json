@@ -6,7 +6,7 @@
   "tags": ["scope:api", "type:app"],
   "targets": {
     "serve": {
-      "command": "tsx watch src/index.ts",
+      "command": "tsx watch --include=src/**/*.ts src/index.ts",
       "options": {
         "cwd": "apps/api"
       }
@@ -19,13 +19,13 @@
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
-      "command": "prettier --write .",
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "apps/api"
       }
     },
     "format-check": {
-      "command": "prettier --check .",
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
       "options": {
         "cwd": "apps/api"
       }
@@ -55,7 +55,7 @@
       }
     },
     "knip": {
-      "command": "knip --workspace apps/api",
+      "command": "knip --config configs/knip/knip.json --workspace apps/api",
       "options": {
         "cwd": "."
       }

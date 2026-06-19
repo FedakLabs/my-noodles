@@ -1,11 +1,12 @@
 import js from '@eslint/js';
 import nx from '@nx/eslint-plugin';
+import { defineConfig } from 'eslint/config';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
 /** Shared base rules — extended by web/node presets; prettier ESLint layer applied in each preset last. */
 export function createBaseConfig(tsconfigRootDir) {
-  return tseslint.config(
+  return defineConfig(
     {
       ignores: ['**/dist/**', '**/node_modules/**', '**/.next/**', '**/coverage/**'],
     },

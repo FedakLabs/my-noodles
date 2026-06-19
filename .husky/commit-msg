@@ -1,4 +1,4 @@
-pnpm commitlint --edit "$1" || {
+pnpm commitlint --config configs/commitlint/commitlint.config.mjs --edit "$1" || {
   msg=$(head -n 1 "$1")
 
   echo ""

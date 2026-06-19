@@ -9,7 +9,13 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./fonts.css": "./src/fonts.css"
+    "./fonts.css": "./src/fonts.css",
+    "./fonts.local.css": "./src/fonts.local.css",
+    "./fonts": {
+      "types": "./src/fonts.ts",
+      "import": "./src/fonts.ts",
+      "default": "./src/fonts.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",

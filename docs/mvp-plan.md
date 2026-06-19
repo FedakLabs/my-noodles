@@ -414,8 +414,8 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 4 - Backend foundation
 
-- [ ] `apps/api` bootstrap: `config.ts`, `ormconfig.ts` (`synchronize: false`), `otel-instrumentation.ts` imported first (OTLP opt-in via `OTEL_ENABLED`).
-- [ ] Winston via `nest-winston` + OTel winston instrumentation/transport (trace-correlated logs, always-on).
+- [x] `apps/api` bootstrap: `config.ts`, `ormconfig.ts` (`synchronize: false`), `otel-instrumentation.ts` imported first (OTLP opt-in via `OTEL_ENABLED`).
+- [x] Winston via `nest-winston` + OTel winston instrumentation/transport (trace-correlated logs, always-on).
 
 ### Phase 5 - Backend domain
 

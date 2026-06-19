@@ -1,0 +1,8 @@
+{
+  "name": "knip-config",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "configs/knip",
+  "projectType": "library",
+  "tags": ["scope:configs", "type:config"],
+  "targets": {}
+}
