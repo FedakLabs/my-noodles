@@ -69,20 +69,28 @@ application/orders/
 export class OrdersModule {}
 ```
 
-Register in `AppModule.imports`.
+`TelegramModule` is imported from `@/infrastructure/services/Telegram` — not `telegram.module`.
+
+Register in `AppModule.imports` — import each feature module from its barrel (`./application/orders`), not `orders.module`.
 
 **Sub-feature:** `application/products/facets/` for `GET /api/products/facets` — separate controller/service or methods on `ProductsService`; match what the repo uses once scaffolded.
+
+**Product filters:** build `FindOptionsWhere<Product>` in `products.filters.ts` (`buildProductWhere`, `buildProductOrder`); use `findAndCount` for list, `find` + in-memory aggregation for facets. See [code-style-guide § Repository queries](./code-style-guide.md#repository-queries).
 
 ---
 
 ## 3. Entity + migration
 
+- Extend `TimestampEntity` (`infrastructure/persistence/timestamp.entity.ts`) — `created_at`, `updated_at`, `deleted_at` on every table.
 - Entities: JSONB `{ uk, en }` on `name`, `description`, `story`, `forWhom` where applicable
 - `priceMinor` + `currency`; `quantity` with derived `inStock`
-- Generate migration into `infrastructure/migrations/`
+- FK relations: `onUpdate: 'CASCADE'`; `onDelete: 'RESTRICT'` on **all** FKs — **never** `onDelete: 'CASCADE'` or `SET NULL`
+- SQL migrations: see [code-style-guide.md § Migrations](./code-style-guide.md#9-migrations) — inline named FKs, partial indexes on `deleted_at IS NULL`
+- Initial schema: one migration per **domain scope** (`CreateCatalog`, then `CreateOrders`); add new timestamped files as changes arise
 
 ```bash
-pnpm nx run api:migration:generate -- src/infrastructure/migrations/AddProducts
+pnpm nx run api:migration:run
+pnpm nx run api:migration:revert   # rolls back one migration
 ```
 
 Both `up` and `down`. Test run → revert → run.

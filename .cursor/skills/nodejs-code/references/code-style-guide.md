@@ -30,8 +30,12 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 
 ### Module system
 
-- Follow the project's `apps/api` tsconfig (Nx monorepo). Use standard ESM/CJS as configured — **do not** add `.ts` extensions to imports unless the repo already does.
+- `apps/api` is **CommonJS** (`"module": "CommonJS"` in tsconfig, no `"type": "module"` in `package.json`).
+- **No file extensions** in import paths — use `@/config`, `./orders.service`, `@/infrastructure/persistence`.
+- Barrel folders resolve via `index.ts` automatically — import the folder, not `/index` (e.g. `@/infrastructure/logging`, not `…/logging/index`).
 - Prefer `import type` for type-only imports.
+- Use `__dirname` for paths relative to the current module (e.g. `config.ts` root for entity/migration globs).
+- **ESM deferred** until NestJS v12+ native support — do not reintroduce `"type": "module"` or `.js` import suffixes without an explicit migration plan.
 
 ### Strictness
 
@@ -44,6 +48,39 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 
 - NestJS, TypeORM, class-validator, and Swagger all use decorators — keep `emitDecoratorMetadata` enabled in tsconfig.
 - Follow decorator order used in neighbouring controllers (route decorators before param decorators).
+
+### Path aliases (`@/*`)
+
+Configured in `apps/api/tsconfig.json`: `@/*` → `src/*` (same idea as `apps/web`).
+
+| Import from | Use |
+| ----------- | --- |
+| Same feature folder (internal) | Relative — `./orders.service`, `./order.entity` |
+| Sibling feature in `application/` (same layer) | Relative — `../products/product.entity` |
+| Another module’s **public API** (cross-layer or cross-feature) | Barrel — `@/infrastructure/logging`, `@/application/orders` |
+| Single-file top-level modules | `@/config`, `@/configs/api`, `@/env` |
+
+**Do not** reach into another module’s internal files when that module exposes a barrel — import the folder so the module boundary stays explicit and refactors stay local.
+
+**NestJS modules:** when importing a `*Module` (or bootstrap helpers such as `createWinstonModuleOptions`, `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
+
+```ts
+// app.module.ts — feature + infra modules via barrels
+import { OrdersModule } from './application/orders';
+import { createWinstonModuleOptions, LoggingModule } from './infrastructure/logging';
+import { prepareDataSource } from './infrastructure/persistence';
+
+// application/orders/orders.module.ts — cross-infra module via barrel
+import { TelegramModule } from '@/infrastructure/services/Telegram';
+
+// application/orders/orders.module.ts — internals stay relative
+import { Product } from '../products/product.entity';
+import { OrdersService } from './orders.service';
+```
+
+**Tooling:** `api:serve` runs `scripts/dev.cjs` (`tsc -w` + `tsc-alias` + `node dist/`). Use `tsx` only for one-off scripts (migrations, seed). Jest: `jest.config.cjs` + `ts-jest`. Production: `tsc` + `tsc-alias` (see `apps/api/project.json`).
+
+**Import order** (simple-import-sort): externals → same-module / sibling relative → `@/` cross-layer.
 
 ---
 
@@ -75,18 +112,37 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 
 ### Barrel `index.ts`
 
-Re-export public symbols for cross-module convenience:
+Every **module folder** (feature in `application/`, subsystem in `infrastructure/`, infra clients like `services/Telegram/`) should have an `index.ts` that re-exports its **public** symbols. Other code imports from the barrel, not from deep files — this scopes imports to the module and hides internal layout.
+
+The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap wiring (`createWinstonModuleOptions`, middleware, filters). Keep helpers used only inside the folder unexported.
 
 ```ts
-export * from './products.service';
-export * from './products.controller';
-export * from './products.dto';
-export * from './products.exceptions';
-export * from './product.entity';
-export * from './products.module';
+// infrastructure/logging/index.ts
+export { LoggingModule } from './logging.module.js';
+export { createWinstonModuleOptions } from './winston.js';
+export { clientBaggageMiddleware, ManifestHttpExceptionFilter } from './…';
+
+// infrastructure/persistence/index.ts
+export { createAppDataSource, prepareDataSource } from './data-source.js';
+export { TimestampEntity } from './timestamp.entity.js';
+
+// application/orders/index.ts
+export * from './orders.module.js';
+export * from './orders.service.js';
+export * from './order.entity.js';
 ```
 
-Prefer importing via Nest module graph for runtime wiring; barrels are for types and tests.
+Consumers:
+
+```ts
+import { LoggingModule, createWinstonModuleOptions } from '@/infrastructure/logging';
+import { OrdersModule } from '@/application/orders';
+import { TimestampEntity } from '@/infrastructure/persistence';
+```
+
+**Inside** the same module folder, keep relative imports to sibling files (`./orders.service.js`). **Outside** the module, use the barrel only — including `AppModule`, `index.ts` bootstrap, tests, seed scripts, and cross-feature services.
+
+Nest runtime wiring still goes through `@Module({ imports: [...] })`; barrels are how other folders reference a module without knowing its file layout.
 
 ---
 
@@ -159,13 +215,15 @@ Register in `AppModule.imports`. Export providers other modules need.
 
 ### Injection
 
-- **Default**: constructor injection — Nest resolves automatically.
+- **Default**: constructor injection — Nest resolves via `emitDecoratorMetadata` when running compiled output (`api:serve` / `node dist/`).
+- **`@Inject(Class)`** on controllers is still used for compatibility with `tsx` one-off scripts and Jest; optional when only running compiled `dist/`.
+- TypeORM: `@InjectRepository(Entity)`, `@InjectDataSource()`.
 - **Circular dependency** (rare): `forwardRef(() => OtherService)` on both sides — prefer redesign over lazy hacks.
 - **Custom tokens**: `@Inject('TELEGRAM_CLIENT')` only when necessary (config providers).
 
 ### Shared / infra modules
 
-- `TypeOrmModule.forRoot(...)` (or async factory) in `AppModule` using `ormconfig.ts`.
+- `TypeOrmModule.forRoot(...)` in `AppModule` via `prepareDataSource(config)` from `infrastructure/persistence/prepare-data-source.ts`.
 - Third-party modules: `ThrottlerModule.forRoot(...)`, `WinstonModule.forRoot(...)`.
 
 ---
@@ -177,6 +235,9 @@ Register in `AppModule.imports`. Export providers other modules need.
 - `app.setGlobalPrefix('api')` — routes are `/api/...`, no versioning.
 - Global `ValidationPipe`: `whitelist: true`, `transform: true`, `forbidNonWhitelisted: true`.
 - Swagger at `/api/docs-json` via `@nestjs/swagger`.
+- **OpenAPI CLI plugin** enabled in `tsconfig.build.json` ([NestJS docs](https://docs.nestjs.com/openapi/cli-plugin)): auto-generates `@ApiProperty` on `*.dto.ts` / `*.entity.ts` and wires `@Query()` / `@Body()` params on `*.controller.ts` at compile time. Do **not** duplicate query params in separate `*.openapi.ts` files.
+- DTOs keep **class-validator** decorators for runtime validation; `@ApiProperty` is optional (plugin fills gaps). Override with explicit `@ApiProperty()` when you need custom examples or descriptions.
+- `api:serve` must compile through `tsc` (not `tsx`) so the plugin transforms apply before Swagger boots.
 
 ### Controller template
 
@@ -291,7 +352,7 @@ export class CreateOrderDto {
 
 ### Swagger
 
-Add `@ApiProperty()` on DTO fields exposed in OpenAPI (follow existing modules).
+Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defaults (examples, descriptions). Prefer `class-validator` decorators on DTO fields — the CLI plugin mirrors them when `classValidatorShim: true`.
 
 ### Shared validators
 
@@ -319,7 +380,32 @@ Add `@ApiProperty()` on DTO fields exposed in OpenAPI (follow existing modules).
 
 ### Timestamps
 
-- `@CreateDateColumn()` on persistent entities; `@UpdateDateColumn()` where rows are updated.
+Every entity extends `TimestampEntity` (`infrastructure/persistence/timestamp.entity.ts`):
+
+```ts
+export abstract class TimestampEntity {
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
+  deletedAt!: Date | null;
+}
+```
+
+```ts
+@Entity({ name: 'products' })
+export class Product extends TimestampEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+  // ...
+}
+```
+
+- `created_at` / `updated_at` — automatic insert/update tracking.
+- `deleted_at` — nullable; TypeORM excludes set rows from normal queries. Use `repository.softRemove()` / `softDelete()` instead of hard `delete()` unless explicitly required.
 
 ### Localized JSONB (mvp-plan)
 
@@ -330,25 +416,140 @@ name: LocalizedString; // { uk: string; en?: string }
 
 Resolve in service layer by locale query param.
 
-### Relations
+### Relations & foreign keys
 
 - Explicit inverse sides; avoid eager loading unless every caller needs it.
-- `cascade` only when child cannot exist independently.
+- **Every FK**: `onUpdate: 'CASCADE'` — keeps referential integrity when a parent PK changes.
+- **Never** `onDelete: 'CASCADE'` — avoids silent cascade wipes; use `onDelete: 'RESTRICT'` on all FKs (including optional ones such as `products.brand_id` — detach or reassign in app code before deleting a brand).
+- TypeORM `cascade: true` on `@OneToMany` / `@OneToOne` is **persist cascade** (save/load), not a DB `ON DELETE CASCADE` — use sparingly and only when children are always saved with the parent in the same transaction.
+- `@JoinTable` join / inverse join columns: set `onUpdate: 'CASCADE'` and `onDelete: 'RESTRICT'` on both sides in the **migration** (TypeORM `@JoinTable` metadata may not expose FK actions — keep DB constraints explicit in SQL).
+
+```ts
+@ManyToOne(() => Country, (country) => country.products, {
+  nullable: false,
+  onUpdate: 'CASCADE',
+  onDelete: 'RESTRICT',
+})
+@JoinColumn({ name: 'country_id' })
+country!: Country;
+```
 
 ### Stock / derived fields
 
 - `quantity` int; `inStock` derived in service/DTO as `quantity > 0` (not a stored column unless already migrated).
 
+### Repository queries
+
+Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
+
+| Use | When |
+| --- | --- |
+| `find`, `findOne`, `findAndCount`, `count` | Listing, detail, filtered counts |
+| `FindOptionsWhere<Entity>` + `In`, `Between`, `MoreThan`, … | Filters on entity + relation properties |
+| `relations`, `order`, `skip`, `take`, `select` | Eager load, sort, pagination, partial rows |
+| In-memory aggregation on a bounded filtered set | Facet counts / min–max when catalog size is MVP-scale |
+| `createQueryBuilder` | Only when the above cannot express the query (e.g. complex SQL, window functions, bulk relation API in seed scripts) |
+
+Centralize reusable filter/sort builders next to the feature (e.g. `buildProductWhere()` in `products.filters.ts`) — **entity property names**, not raw SQL column strings.
+
+```ts
+import { Between, In, MoreThan, type FindOptionsWhere } from 'typeorm';
+
+export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
+  const where: FindOptionsWhere<Product> = {};
+
+  if (filters.category?.length) {
+    where.category = { slug: In(filters.category) };
+  }
+
+  if (filters.inStock === true) {
+    where.quantity = MoreThan(0);
+  }
+
+  return where;
+}
+
+const [items, total] = await this.productsRepository.findAndCount({
+  where: buildProductWhere(filters),
+  relations: { brand: true, country: true, category: true },
+  order: { sortWeight: 'DESC', createdAt: 'DESC' },
+  skip: (page - 1) * limit,
+  take: limit,
+});
+```
+
+**Do not** scatter `'product.price_minor'` / `'category.slug'` strings in services — renames will not be caught by TypeScript.
+
 ---
 
 ## 9. Migrations
 
-- **Never** rely on `synchronize: true` — `ormconfig.ts` sets `synchronize: false` always.
-- Files in `src/infrastructure/migrations/` with timestamp prefix.
-- Generate via TypeORM CLI / Nx target (e.g. `migration:generate` / `migration:create`).
+- **Never** rely on `synchronize: true` — `prepareDataSource()` sets `synchronize: false` always.
+- Migration classes in `src/infrastructure/migrations/*.ts` (CLI helpers live in `migrations/scripts/`).
 - Implement **both** `up` and `down`.
-- Test locally: run → revert → run again.
-- Data migrations: idempotent SQL (`ON CONFLICT DO NOTHING`, guarded updates).
+- Test locally: `pnpm nx run api:migration:run` → `pnpm nx run api:migration:revert` → run again.
+- **Initial schema:** one migration per domain scope, ordered by FK dependencies (e.g. `CreateCatalog` → `CreateOrders`). Later changes get their own timestamped migration files.
+- Data migrations: idempotent SQL (`ON CONFLICT DO NOTHING`, guarded `WHERE` clauses). Skip legacy backfills when the project has no production data yet.
+
+### SQL style
+
+- One `queryRunner.query(\`...\`)` per logical step; use `--` comments inside SQL to label sections.
+- **Unquoted lowercase** identifiers for tables/columns (`products`, `created_at`) — PostgreSQL folds them consistently.
+- Column layout: align types; put `created_at`, `updated_at`, `deleted_at` on every domain table.
+- **String columns:** use `TEXT` in PostgreSQL (same performance as `VARCHAR(n)`; avoid arbitrary length caps in SQL).
+- Name constraints explicitly: `{table}_pkey`, `{table}_{column}_key` (unique), `{child}_{parent}_fk` (foreign keys).
+- **No DB defaults for business/content fields** (`currency`, `flavor`, `status`, `sort_order`, empty arrays, placeholder JSON). Seed scripts and application code must supply intentional values. DB defaults are only for infrastructure: `gen_random_uuid()`, timestamp columns (`now()`).
+- **Foreign keys — default for every relationship:**
+
+```sql
+parent_id UUID NOT NULL
+    CONSTRAINT child_parent_fk
+        REFERENCES parent(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+```
+
+| Situation | `ON DELETE` |
+| --------- | ----------- |
+| All FKs (required or optional) | `RESTRICT` — block parent delete while children reference it |
+| Never | `CASCADE` — silent child deletes risk data loss |
+| Never | `SET NULL` — hides broken references; reassign or soft-delete in app code instead |
+
+**Why `ON UPDATE CASCADE` everywhere:** UUID PKs are effectively immutable, so this rarely fires; when a key *does* change, children stay consistent automatically. Cost is negligible; omitting it can surface surprise FK errors on rare updates.
+
+**Why not `ON DELETE CASCADE`:** deleting a parent must be an explicit application decision (soft-delete via `deleted_at`, or delete children in code). DB-level cascade can orphan audit trails and order history.
+
+- Indexes for FKs and sort columns: **partial** `WHERE deleted_at IS NULL` so soft-deleted rows stay out of hot paths.
+
+```sql
+CREATE INDEX idx_products_country_id ON products(country_id) WHERE deleted_at IS NULL;
+```
+
+### TypeScript migration template
+
+```ts
+export class AddFeature1740000000000 implements MigrationInterface {
+  name = 'AddFeature1740000000000';
+
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      -- Add columns
+      ALTER TABLE products
+      ADD COLUMN featured BOOLEAN NOT NULL DEFAULT false;
+    `);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      ALTER TABLE products
+      DROP COLUMN IF EXISTS featured;
+    `);
+  }
+}
+```
+
+- `down` mirrors `up` in **reverse order**; use `DROP … IF EXISTS` / `DROP COLUMN IF EXISTS`.
+- Match entity FK options in TypeORM **and** in migration SQL (TypeORM `@JoinTable` may not emit FK actions — keep them explicit in SQL).
 
 ---
 
@@ -386,23 +587,40 @@ Register as provider in a small `TelegramModule` or `OrdersModule`; inject into 
 
 ## 11. Configuration
 
-- Root: `src/config.ts` — typed env access, frozen exports.
+- Root: `src/config.ts` — `loadConfig()` maps env → validated `Config` (not raw env DTOs).
+- Env files (via `env.ts` → `loadAppEnv()`, later overrides earlier): `.env` → `.env.{NODE_ENV}` → `.env.local`.
+- `Config.rootDirname` — absolute path to application source root (`src/` at dev time); used by `prepareDataSource()` for entity/migration globs.
 - Feature-specific: `<feature>.config.ts` when a module has many env vars.
 - Never hardcode URLs, tokens, or credentials.
 
 ```ts
-export const telegramConfig = {
-  botToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
-  chatId: process.env.TELEGRAM_CHAT_ID ?? '',
-};
+export const config = loadConfig();
+
+// infrastructure/persistence/prepare-data-source.ts
+export function prepareDataSource(appConfig: Config): DataSourceOptions {
+  return {
+    migrations: [`${appConfig.rootDirname}/infrastructure/migrations/[0-9]*-*.{js,ts}`],
+    entities: [`${appConfig.rootDirname}/application/**/*.entity.{js,ts}`],
+    // ...
+  };
+}
+
+// otel-instrumentation.ts — side-effect preload; started via `node --import=./dist/otel-instrumentation.js`
+if (config.otel.enabled) {
+  const sdk = new NodeSDK({ /* ... */ });
+  sdk.start();
+}
 ```
+
+Telegram and other optional integrations live on `config.telegram`, etc.
 
 ---
 
 ## 12. Logging, Tracing, Observability
 
-- Bootstrap imports `otel-instrumentation.ts` **before** `NestFactory.create`.
-- **OTLP export**: opt-in via `OTEL_ENABLED`; do not block local dev when off.
+- OTEL loads **before** the app via Node preload: `node --import=./dist/otel-instrumentation.js dist/index.js` (see `package.json` `start` and `scripts/dev.cjs`).
+- `otel-instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
+- **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
 - **Logging**: Winston via `nest-winston` as Nest logger; structured fields, no PII (no raw phones in logs).
 - Feature code: inject `Logger` (`new Logger(OrdersService.name)`) or use Winston adapter from Nest.
 
@@ -446,8 +664,9 @@ Run: `pnpm nx run api:test` or `api:fix`.
 - Root Prettier: 2 spaces, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
 - Import order (simple-import-sort via ESLint):
   1. External packages (`@nestjs/*`, `typeorm`, `class-validator`, …)
-  2. Same-module relative imports
-  3. Cross-module / infrastructure / utils
+  2. Same-module / sibling-feature relative imports (`./`, `../products/…`)
+  3. Cross-layer aliases (`@/infrastructure/…`, `@/application/…`, `@/config`, …)
+- Path aliases — see [§ Path aliases](#path-aliases-).
 - ESLint: node/nest preset from `configs/eslint` — no inline disables without justification.
 
 ---
@@ -458,15 +677,21 @@ Run: `pnpm nx run api:test` or `api:fix`.
 | ---------------------------------------------------------------- | ----------------------------------------------------- |
 | Business logic in controller                                     | Move to service                                       |
 | `@InjectRepository` in controller                                | Service only                                          |
+| `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, … |
 | Raw `fetch`/`axios` in controller/service without a client class | Infra client in `infrastructure/services/`            |
 | Returning raw TypeORM entity with hidden columns                 | Map to response DTO                                   |
 | DTO field without class-validator                                | Add validators                                        |
 | Schema change without migration                                  | Generate migration; keep `synchronize: false`         |
+| `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)      |
+| Entity without `created_at` / `updated_at` / `deleted_at`        | Extend `TimestampEntity`                              |
+| Hard `repository.delete()` on catalog rows                       | `softRemove` / `softDelete` unless explicitly required |
 | Hardcoded secrets/URLs                                           | `config.ts` + env                                     |
 | Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED` |
 | `console.log` for diagnostics                                    | Nest `Logger` / Winston                               |
 | God `AppModule` providers                                        | Feature `*.module.ts` per domain                      |
 | Copy-paste validator                                             | Add to `utils/validators/` and reuse                  |
+| Deep `../../infrastructure/…` cross-layer imports              | `@/infrastructure/…` (or `@/config`, `@/application/…`) |
+| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging` |
 
 ---
 
@@ -479,5 +704,6 @@ Before declaring done:
 - [ ] External calls go through injectable clients; errors handled in service
 - [ ] Feature module registered in `AppModule`
 - [ ] DB changes have `up` + `down` migrations
+- [ ] New entities extend `TimestampEntity`; FKs use `onUpdate: 'CASCADE'`, no `onDelete: 'CASCADE'`
 - [ ] `pnpm nx run api:fix` passes
 - [ ] Swagger/OpenAPI still generates if DTOs/controllers changed

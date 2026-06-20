@@ -6,13 +6,13 @@
   "tags": ["scope:api", "type:app"],
   "targets": {
     "serve": {
-      "command": "tsx watch --include=src/**/*.ts src/index.ts",
+      "command": "node scripts/dev.cjs",
       "options": {
         "cwd": "apps/api"
       }
     },
     "build": {
-      "command": "tsc -p tsconfig.build.json",
+      "command": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
       "options": {
         "cwd": "apps/api"
       },
@@ -83,6 +83,24 @@
           "nx run {projectName}:knip"
         ],
         "parallel": false
+      }
+    },
+    "migration:run": {
+      "command": "tsx src/infrastructure/migrations/scripts/run.ts",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "migration:revert": {
+      "command": "tsx src/infrastructure/migrations/scripts/revert.ts",
+      "options": {
+        "cwd": "apps/api"
+      }
+    },
+    "seed": {
+      "command": "tsx src/infrastructure/seed/seed.ts",
+      "options": {
+        "cwd": "apps/api"
       }
     }
   }

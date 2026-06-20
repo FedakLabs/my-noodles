@@ -1,0 +1,118 @@
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, type Repository } from 'typeorm';
+
+import { TelegramClient } from '@/infrastructure/services/Telegram';
+
+import { Product } from '../products/product.entity';
+import { Order } from './order.entity';
+import { OrderDelivery } from './order-delivery.entity';
+import { formatOrderDelivery } from './order-delivery.format';
+import { mapDeliveryDtoToEntity } from './order-delivery.mapper';
+import { OrderItem } from './order-item.entity';
+import { OrderStatus } from './order-status';
+import type { CreateOrderDto, OrderResponseDto } from './orders.dto';
+import { HoneypotTriggeredException, OrderProductNotFoundException } from './orders.exceptions';
+
+@Injectable()
+export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
+  constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    @InjectRepository(Product)
+    private readonly productsRepository: Repository<Product>,
+    @Inject(TelegramClient)
+    private readonly telegramClient: TelegramClient,
+  ) {}
+
+  async create(dto: CreateOrderDto): Promise<OrderResponseDto> {
+    if (dto.company) {
+      throw new HoneypotTriggeredException();
+    }
+
+    const productIds = dto.items.map((item) => item.productId);
+    const products = await this.productsRepository.find({
+      where: { id: In(productIds) },
+    });
+
+    const productById = new Map(products.map((product) => [product.id, product]));
+
+    const lineItems = dto.items.map((item) => {
+      const product = productById.get(item.productId);
+      if (!product) {
+        throw new OrderProductNotFoundException(item.productId);
+      }
+
+      return {
+        product,
+        qty: item.qty,
+        titleSnapshot: product.name.localized ?? '',
+        priceMinorSnapshot: product.priceMinor,
+      };
+    });
+
+    const totalMinor = lineItems.reduce((sum, line) => sum + line.priceMinorSnapshot * line.qty, 0);
+
+    const { order, delivery } = await this.dataSource.transaction(async (manager) => {
+      const orderRepository = manager.getRepository(Order);
+      const orderItemRepository = manager.getRepository(OrderItem);
+      const deliveryRepository = manager.getRepository(OrderDelivery);
+
+      const savedOrder = await orderRepository.save({
+        customerName: dto.customerName,
+        phone: dto.phone,
+        totalMinor,
+        currency: 'UAH',
+        status: OrderStatus.New,
+      });
+
+      const savedDelivery = await deliveryRepository.save(
+        mapDeliveryDtoToEntity(savedOrder.id, dto.delivery),
+      );
+
+      await orderItemRepository.save(
+        lineItems.map((line) => ({
+          orderId: savedOrder.id,
+          productId: line.product.id,
+          titleSnapshot: line.titleSnapshot,
+          priceMinorSnapshot: line.priceMinorSnapshot,
+          qty: line.qty,
+        })),
+      );
+
+      return { order: savedOrder, delivery: savedDelivery };
+    });
+
+    try {
+      await this.telegramClient.sendOrderNotification({
+        orderId: order.id,
+        createdAt: order.createdAt,
+        customerName: order.customerName,
+        phone: order.phone,
+        deliverySummary: formatOrderDelivery(delivery),
+        currency: order.currency,
+        totalMinor: order.totalMinor,
+        lines: lineItems.map((line) => ({
+          title: line.titleSnapshot,
+          qty: line.qty,
+          lineTotalMinor: line.priceMinorSnapshot * line.qty,
+        })),
+      });
+    } catch (error) {
+      this.logger.error('telegram.notify.failed', {
+        orderId: order.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
+    return {
+      id: order.id,
+      status: order.status,
+      totalMinor: order.totalMinor,
+      currency: order.currency,
+      createdAt: order.createdAt.toISOString(),
+    };
+  }
+}

@@ -3,19 +3,17 @@ import type { WinstonModuleOptions } from 'nest-winston';
 import { utilities } from 'nest-winston';
 import winston from 'winston';
 
-import { type Config, config } from '../config';
-
-const LOG_SERVICE_NAME = 'my-noodles-api';
+import { type Config } from '@/config';
 
 export function createWinstonModuleOptions(
-  runtimeConfig: Pick<Config, 'nodeEnv' | 'otel' | 'logging'> = config,
+  config: Pick<Config, 'appName' | 'nodeEnv' | 'otel'>,
 ): WinstonModuleOptions {
-  const logServiceName = runtimeConfig.otel.enabled ? runtimeConfig.otel.serviceName : LOG_SERVICE_NAME;
-  const useConsole = !runtimeConfig.otel.enabled || runtimeConfig.nodeEnv === 'local';
+  const logServiceName = config.otel.enabled ? config.otel.serviceName : config.appName;
+  const useConsole = !config.otel.enabled || config.nodeEnv === 'local';
 
   const transports: winston.transport[] = [];
 
-  if (runtimeConfig.otel.enabled) {
+  if (config.otel.enabled) {
     transports.push(
       new OpenTelemetryTransportV3({
         format: winston.format.printf((info) => {
@@ -44,7 +42,7 @@ export function createWinstonModuleOptions(
           winston.format.timestamp(),
           winston.format.ms(),
           utilities.format.nestLike(logServiceName, {
-            colors: runtimeConfig.nodeEnv !== 'prod',
+            colors: config.nodeEnv !== 'prod',
             prettyPrint: true,
           }),
         ),

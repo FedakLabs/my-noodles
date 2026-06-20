@@ -4,7 +4,9 @@ import type { Request, Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { of } from 'rxjs';
 
-import { HttpAccessLogInterceptor } from '../../infrastructure/logging/http-access-log.interceptor';
+import { HttpAccessLogInterceptor } from '@/infrastructure/logging';
+
+import { jest } from '../jest-globals';
 
 describe('HttpAccessLogInterceptor', () => {
   it('emits manifest access log after the request completes', async () => {

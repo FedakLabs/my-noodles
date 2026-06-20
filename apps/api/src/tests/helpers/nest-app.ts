@@ -2,6 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DataSource } from 'typeorm';
 
+import { jest } from '../jest-globals';
+
 export type MockNestAppOptions = {
   close?: jest.Mock;
   dataSource?: { isInitialized: boolean; destroy: jest.Mock };

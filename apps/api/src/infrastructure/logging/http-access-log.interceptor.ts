@@ -10,7 +10,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { type Observable, tap } from 'rxjs';
 import type { Logger } from 'winston';
 
-import { config } from '../../config';
+import { config } from '@/config';
+
 import { buildHttpAccessLog, emitManifestLog } from './manifest-log';
 
 @Injectable()
@@ -31,7 +32,8 @@ export class HttpAccessLogInterceptor implements NestInterceptor {
           request,
           statusCode: response.statusCode,
           execTimeMs: performance.now() - started,
-          logging: config.logging,
+          appName: config.appName,
+          appVersion: config.appVersion,
         });
 
         emitManifestLog(this.logger, record);

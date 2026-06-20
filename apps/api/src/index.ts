@@ -1,23 +1,23 @@
 import 'reflect-metadata';
 
-import { config } from './config';
-import { initOtelInstrumentation } from './otel-instrumentation';
-
-initOtelInstrumentation();
-
+import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AppModule } from './app.module';
-import { createWinstonModuleOptions } from './configs/winston.config';
-import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './constants';
-import { clientBaggageMiddleware } from './infrastructure/logging/client-baggage.middleware';
-import { ManifestHttpExceptionFilter } from './infrastructure/logging/manifest-http-exception.filter';
-import { registerGracefulShutdown } from './shutdown/graceful-shutdown';
+import { config } from './config';
+import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs/api';
+import { localeMiddleware } from './infrastructure/i18n';
+import {
+  clientBaggageMiddleware,
+  createWinstonModuleOptions,
+  ManifestHttpExceptionFilter,
+} from './infrastructure/logging';
+import { registerGracefulShutdown } from './shutdown';
 
 async function bootstrap() {
-  const logger = WinstonModule.createLogger(createWinstonModuleOptions());
+  const logger = WinstonModule.createLogger(createWinstonModuleOptions(config));
 
   const app = await NestFactory.create(AppModule, { logger });
 
@@ -26,11 +26,19 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
   app.use(clientBaggageMiddleware);
+  app.use(localeMiddleware);
 
   const swaggerDocument = SwaggerModule.createDocument(
     app,
-    new DocumentBuilder().setTitle(config.logging.appName).setVersion(config.logging.appVersion).build(),
+    new DocumentBuilder().setTitle(config.appName).setVersion(config.appVersion).build(),
   );
   SwaggerModule.setup(SWAGGER_UI_PATH, app, swaggerDocument, { jsonDocumentUrl: SWAGGER_JSON_PATH });
 

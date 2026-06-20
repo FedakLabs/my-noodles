@@ -414,17 +414,17 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 4 - Backend foundation
 
-- [x] `apps/api` bootstrap: `config.ts`, `ormconfig.ts` (`synchronize: false`), `otel-instrumentation.ts` imported first (OTLP opt-in via `OTEL_ENABLED`).
+- [x] `apps/api` bootstrap: `config.ts`, `data-source.ts` (`synchronize: false`), `otel-instrumentation.ts` via Node `--import` preload (OTLP opt-in via `OTEL_ENABLED`).
 - [x] Winston via `nest-winston` + OTel winston instrumentation/transport (trace-correlated logs, always-on).
 
 ### Phase 5 - Backend domain
 
-- [ ] Entities (JSONB i18n: name/description/story/forWhom): Product (`quantity`, `sortWeight`, relations to Brand/Country/Category, self-ref alternatives), Brand, Category, Country, Collection (M2M), Order/OrderItem (snapshots) + migrations.
-- [ ] DTOs (`class-validator`) + `Throttler` (60/min; orders 5/min) + honeypot (`company`).
-- [ ] Endpoints: `GET /products` (filters + page-number pagination, `limit` required<=100), `GET /products/facets` (v1 plain counts, same contract), `GET /products/:slug`, `GET /collections(/:slug)`, `GET /countries`, `POST /orders`.
-- [ ] `POST /orders`: persist + Telegram notify (failure-tolerant; format per plan; `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`).
-- [ ] `@nestjs/swagger` -> `/api/docs-json`.
-- [ ] Seed: import owner CSV (name/category/brand/country), enrich remaining fields, derive brands/countries/collections.
+- [x] Entities (JSONB i18n: name/description/story/forWhom): Product (`quantity`, `sortWeight`, relations to Brand/Country/Category, self-ref alternatives), Brand, Category, Country, Collection (M2M), Order/OrderItem (snapshots) + migrations (`CreateCatalog`, `CreateOrders`; `OrderDelivery` for structured delivery).
+- [x] DTOs (`class-validator`) + `Throttler` (60/min; orders 5/min) + honeypot (`company`).
+- [x] Endpoints: `GET /products` (filters + page-number pagination, `limit` required<=100), `GET /products/facets` (v1 plain counts, same contract), `GET /products/:slug`, `GET /collections(/:slug)`, `GET /countries`, `POST /orders`.
+- [x] `POST /orders`: persist + Telegram notify (failure-tolerant; format per plan; `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`).
+- [x] `@nestjs/swagger` -> `/api/docs-json` (Swagger CLI plugin on DTOs; UI at `/api/docs`).
+- [ ] Seed: import owner CSV (`seed/products.csv` exists; seed still reads hardcoded `PRODUCT_SEEDS`). Enrichment + derive brands/countries/collections (per-category) is done.
 
 ### Phase 6 - API client + web data layer
 

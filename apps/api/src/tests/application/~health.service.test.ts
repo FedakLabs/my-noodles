@@ -1,7 +1,9 @@
 import { ServiceUnavailableException } from '@nestjs/common';
 import { type DataSource } from 'typeorm';
 
-import { HealthService } from '../../application/health/health.service';
+import { HealthService } from '@/application/health';
+
+import { jest } from '../jest-globals';
 
 describe('HealthService', () => {
   it('passes when Postgres responds to SELECT 1', async () => {

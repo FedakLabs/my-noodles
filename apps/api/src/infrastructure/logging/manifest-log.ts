@@ -3,8 +3,9 @@ import { context, propagation, trace } from '@opentelemetry/api';
 import type { Request } from 'express';
 import type { Logger } from 'winston';
 
-import type { LoggingConfig } from '../../config';
-import { API_GLOBAL_PREFIX } from '../../constants';
+import type { Config } from '@/config';
+import { API_GLOBAL_PREFIX } from '@/configs/api';
+
 import { CLIENT_ID_BAGGAGE_KEY, CLIENT_ID_HEADER } from './client-baggage.middleware';
 
 /** OpenTelemetry severity numbers for manifest `severity.number`. */
@@ -18,9 +19,9 @@ export type ManifestHttpAccessInput = Readonly<{
   request: Request;
   statusCode: number;
   execTimeMs: number;
-  logging: LoggingConfig;
   error?: unknown;
-}>;
+}> &
+  Pick<Config, 'appName' | 'appVersion'>;
 
 export type ManifestLogRecord = Readonly<{
   '@timestamp': string;
@@ -157,7 +158,7 @@ export function resolveHttpRoute(request: Request): string {
 }
 
 export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogRecord {
-  const { request, statusCode, execTimeMs, logging, error } = input;
+  const { request, statusCode, execTimeMs, appName, appVersion, error } = input;
   const method = request.method.toUpperCase();
   const url = resolveHttpUrl(request);
   const route = resolveHttpRoute(request);
@@ -200,8 +201,8 @@ export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogR
     '@timestamp': new Date().toISOString(),
     'severity.text': severity.text,
     'severity.number': severity.number,
-    'resource.appName': logging.appName,
-    'resource.appVersion': logging.appVersion,
+    'resource.appName': appName,
+    'resource.appVersion': appVersion,
     body,
     ...resolveTraceContext(),
     attributes,

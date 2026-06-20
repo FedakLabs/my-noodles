@@ -4,7 +4,8 @@ import type { Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import type { Logger } from 'winston';
 
-import { config } from '../../config';
+import { config } from '@/config';
+
 import { buildHttpAccessLog, emitManifestLog } from './manifest-log';
 
 @Injectable()
@@ -33,7 +34,8 @@ export class ManifestHttpExceptionFilter extends BaseExceptionFilter {
       request,
       statusCode: this.resolveStatusCode(exception),
       execTimeMs: performance.now() - startTimeMs,
-      logging: config.logging,
+      appName: config.appName,
+      appVersion: config.appVersion,
       error: exception,
     });
 

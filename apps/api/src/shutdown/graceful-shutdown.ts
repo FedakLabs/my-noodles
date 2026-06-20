@@ -2,8 +2,7 @@ import type { INestApplication, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DataSource } from 'typeorm';
 
-import { config } from '../config';
-import { shutdownOtel } from '../otel-instrumentation';
+import { config } from '@/config';
 
 let isShuttingDown = false;
 
@@ -23,7 +22,6 @@ async function shutdownResources(
   const logger = app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER);
 
   await closeDatabase(dataSource);
-  await shutdownOtel();
 
   logger.log?.({ msg: 'shutdown.resources.complete', signal });
 }

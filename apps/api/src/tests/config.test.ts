@@ -1,73 +1,69 @@
-import { Config, validateEnvironment } from '../config';
+import { loadConfig } from '@/config';
+
 import { validEnv, validOtelEnv } from './fixtures/env';
 
-describe('validateEnvironment', () => {
-  it('accepts a valid env payload and applies optional defaults', () => {
-    const env = validateEnvironment(validEnv);
-
-    expect(env.PORT).toBe(3001);
-    expect(env.NODE_ENV).toBe('local');
-    expect(env.POSTGRES_HOST).toBe('localhost');
-    expect(env.OTEL_ENABLED).toBe(false);
-    expect(env.SHUTDOWN_TIMEOUT_MS).toBe(30_000);
-  });
-
-  it('rejects missing postgres credentials', () => {
-    const { POSTGRES_PASSWORD: _password, ...envWithoutPassword } = validEnv;
-
-    expect(() => validateEnvironment(envWithoutPassword)).toThrow(/Invalid environment configuration/);
-  });
-
-  it('coerces common truthy OTEL_ENABLED values when otel settings are provided', () => {
-    expect(validateEnvironment({ ...validOtelEnv, OTEL_ENABLED: 'true' }).OTEL_ENABLED).toBe(true);
-    expect(validateEnvironment({ ...validOtelEnv, OTEL_ENABLED: '1' }).OTEL_ENABLED).toBe(true);
-  });
-
-  it('requires otel settings when OTEL_ENABLED is true', () => {
-    expect(() => validateEnvironment({ ...validEnv, OTEL_ENABLED: 'true' })).toThrow(
-      /Invalid environment configuration/,
-    );
-  });
-
-  it('allows missing otel settings when OTEL_ENABLED is false', () => {
-    const env = validateEnvironment(validEnv);
-
-    expect(env.OTEL_ENABLED).toBe(false);
-    expect(env.OTEL_EXPORTER_OTLP_ENDPOINT).toBeUndefined();
-    expect(env.OTEL_SERVICE_NAME).toBeUndefined();
-  });
-
-  it('rejects invalid ports', () => {
-    expect(() => validateEnvironment({ ...validEnv, PORT: '0' })).toThrow(
-      /Invalid environment configuration/,
-    );
-  });
-
-  it('rejects empty postgres host', () => {
-    expect(() => validateEnvironment({ ...validEnv, POSTGRES_HOST: '' })).toThrow(
-      /Invalid environment configuration/,
-    );
-  });
-
-  it('rejects shutdown timeouts outside the allowed range', () => {
-    expect(() => validateEnvironment({ ...validEnv, SHUTDOWN_TIMEOUT_MS: '500' })).toThrow(
-      /Invalid environment configuration/,
-    );
-  });
-});
-
-describe('Config.fromEnvironment', () => {
-  it('maps environment variables into the app config shape', () => {
-    const appConfig = Config.fromEnvironment(validateEnvironment(validEnv));
+describe('loadConfig', () => {
+  it('loads a valid config and applies defaults', () => {
+    const appConfig = loadConfig(validEnv);
 
     expect(appConfig.port).toBe(3001);
+    expect(appConfig.nodeEnv).toBe('local');
+    expect(appConfig.rootDirname).toContain('src');
     expect(appConfig.database).toEqual({
       host: 'localhost',
       port: 5432,
       username: 'my_noodles',
       password: 'my_noodles',
       database: 'my_noodles',
+      logging: false,
     });
     expect(appConfig.otel.enabled).toBe(false);
+    expect(appConfig.shutdownTimeoutMs).toBe(30_000);
+    expect(appConfig.appName).toBe('my-noodles-api');
+    expect(appConfig.appVersion).toBe('dev');
+    expect(appConfig.telegram).toEqual({ botToken: '', chatId: '' });
+  });
+
+  it('rejects missing postgres credentials', () => {
+    const { POSTGRES_PASSWORD: _password, ...envWithoutPassword } = validEnv;
+
+    expect(() => loadConfig(envWithoutPassword)).toThrow(/Invalid application configuration/);
+  });
+
+  it('coerces common truthy OTEL_ENABLED values when otel settings are provided', () => {
+    expect(loadConfig({ ...validOtelEnv, OTEL_ENABLED: 'true' }).otel.enabled).toBe(true);
+    expect(loadConfig({ ...validOtelEnv, OTEL_ENABLED: '1' }).otel.enabled).toBe(true);
+  });
+
+  it('requires otel settings when OTEL_ENABLED is true', () => {
+    expect(() => loadConfig({ ...validEnv, OTEL_ENABLED: 'true' })).toThrow(
+      /Invalid application configuration/,
+    );
+  });
+
+  it('allows missing otel settings when OTEL_ENABLED is false', () => {
+    const appConfig = loadConfig(validEnv);
+
+    expect(appConfig.otel.enabled).toBe(false);
+  });
+
+  it('coerces DATABASE_LOGGING when set', () => {
+    expect(loadConfig({ ...validEnv, DATABASE_LOGGING: 'true' }).database.logging).toBe(true);
+    expect(loadConfig({ ...validEnv, DATABASE_LOGGING: '1' }).database.logging).toBe(true);
+    expect(loadConfig(validEnv).database.logging).toBe(false);
+  });
+
+  it('rejects invalid ports', () => {
+    expect(() => loadConfig({ ...validEnv, PORT: '0' })).toThrow(/Invalid application configuration/);
+  });
+
+  it('rejects empty postgres host', () => {
+    expect(() => loadConfig({ ...validEnv, POSTGRES_HOST: '' })).toThrow(/Invalid application configuration/);
+  });
+
+  it('rejects shutdown timeouts outside the allowed range', () => {
+    expect(() => loadConfig({ ...validEnv, SHUTDOWN_TIMEOUT_MS: '500' })).toThrow(
+      /Invalid application configuration/,
+    );
   });
 });

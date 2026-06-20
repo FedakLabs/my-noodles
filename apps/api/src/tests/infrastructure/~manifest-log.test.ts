@@ -5,7 +5,7 @@ import {
   resolveClientId,
   resolveHttpRoute,
   resolveXRealIp,
-} from '../../infrastructure/logging/manifest-log';
+} from '@/infrastructure/logging';
 
 function createRequest(overrides: Partial<Request> = {}): Request {
   return {
@@ -21,14 +21,14 @@ function createRequest(overrides: Partial<Request> = {}): Request {
 }
 
 describe('buildHttpAccessLog', () => {
-  const logging = { appName: 'my-noodles-api', appVersion: 'dev' };
+  const app = { appName: 'my-noodles-api', appVersion: 'dev' };
 
   it('builds INFO access log without request/response payloads', () => {
     const record = buildHttpAccessLog({
       request: createRequest(),
       statusCode: 200,
       execTimeMs: 12.4,
-      logging,
+      ...app,
     });
 
     expect(record['severity.text']).toBe('INFO');
@@ -60,7 +60,7 @@ describe('buildHttpAccessLog', () => {
       }),
       statusCode: 404,
       execTimeMs: 3,
-      logging,
+      ...app,
     });
 
     expect(record.attributes['attributes.http.url']).toBe('/api/products?limit=25&offset=0');
@@ -94,7 +94,7 @@ describe('buildHttpAccessLog', () => {
       request: createRequest(),
       statusCode: 404,
       execTimeMs: 2,
-      logging,
+      ...app,
     });
 
     expect(record['severity.text']).toBe('INFO');
@@ -106,7 +106,7 @@ describe('buildHttpAccessLog', () => {
       request: createRequest(),
       statusCode: 500,
       execTimeMs: 2,
-      logging,
+      ...app,
       error: new Error('test'),
     });
 
@@ -133,7 +133,7 @@ describe('buildHttpAccessLog', () => {
       request,
       statusCode: 200,
       execTimeMs: 1,
-      logging,
+      ...app,
     });
 
     expect(record.attributes['attributes.clientId']).toBe('1200997640');

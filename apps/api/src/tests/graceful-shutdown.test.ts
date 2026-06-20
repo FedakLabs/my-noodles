@@ -1,11 +1,6 @@
-import { shutdownOtel } from '../otel-instrumentation';
-import { gracefulShutdown, resetGracefulShutdownState } from '../shutdown/graceful-shutdown';
+import { gracefulShutdown, resetGracefulShutdownState } from '../shutdown';
 import { createMockNestApp } from './helpers/nest-app';
 import { mockProcessExit } from './helpers/process';
-
-jest.mock('../otel-instrumentation', () => ({
-  shutdownOtel: jest.fn().mockResolvedValue(undefined),
-}));
 
 describe('gracefulShutdown', () => {
   const exitSpy = mockProcessExit();
@@ -13,7 +8,6 @@ describe('gracefulShutdown', () => {
   beforeEach(() => {
     resetGracefulShutdownState();
     exitSpy.mockClear();
-    jest.mocked(shutdownOtel).mockClear();
     jest.useFakeTimers();
   });
 
@@ -25,7 +19,7 @@ describe('gracefulShutdown', () => {
     exitSpy.mockRestore();
   });
 
-  it('closes the app, database, and OTEL, then exits cleanly', async () => {
+  it('closes the app and database, then exits cleanly', async () => {
     const destroy = jest.fn().mockResolvedValue(undefined);
     const close = jest.fn().mockResolvedValue(undefined);
     const app = createMockNestApp({
@@ -37,7 +31,6 @@ describe('gracefulShutdown', () => {
 
     expect(close).toHaveBeenCalledTimes(1);
     expect(destroy).toHaveBeenCalledTimes(1);
-    expect(jest.mocked(shutdownOtel)).toHaveBeenCalledTimes(1);
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
@@ -67,7 +60,6 @@ describe('gracefulShutdown', () => {
     await gracefulShutdown(app, 'SIGTERM');
 
     expect(destroy).not.toHaveBeenCalled();
-    expect(jest.mocked(shutdownOtel)).toHaveBeenCalledTimes(1);
   });
 
   it('force-exits when shutdown exceeds the configured timeout', () => {

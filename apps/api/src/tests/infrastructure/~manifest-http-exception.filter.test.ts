@@ -4,7 +4,9 @@ import { type HttpAdapterHost } from '@nestjs/core';
 import type { Request } from 'express';
 import type { Logger } from 'winston';
 
-import { ManifestHttpExceptionFilter } from '../../infrastructure/logging/manifest-http-exception.filter';
+import { ManifestHttpExceptionFilter } from '@/infrastructure/logging';
+
+import { jest } from '../jest-globals';
 
 function createHost(request: Request, response: object = {}): ArgumentsHost {
   return {

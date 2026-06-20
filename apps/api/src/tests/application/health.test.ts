@@ -5,10 +5,11 @@ import { Test } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
 import request from 'supertest';
 
-import { HealthController } from '../../application/health/health.controller';
-import { HealthService } from '../../application/health/health.service';
-import { createWinstonModuleOptions } from '../../configs/winston.config';
-import { LoggingModule } from '../../infrastructure/logging/logging.module';
+import { HealthController, HealthService } from '@/application/health';
+import { config } from '@/config';
+import { createWinstonModuleOptions, LoggingModule } from '@/infrastructure/logging';
+
+import { jest } from '../jest-globals';
 
 describe('health (e2e)', () => {
   let app: INestApplication;
@@ -18,7 +19,7 @@ describe('health (e2e)', () => {
     assertDependenciesReady = jest.fn().mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
-      imports: [WinstonModule.forRoot(createWinstonModuleOptions()), LoggingModule],
+      imports: [WinstonModule.forRoot(createWinstonModuleOptions(config)), LoggingModule],
       controllers: [HealthController],
       providers: [{ provide: HealthService, useValue: { assertDependenciesReady } }],
     }).compile();
