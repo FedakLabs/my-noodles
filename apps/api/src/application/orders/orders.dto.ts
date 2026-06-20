@@ -17,12 +17,7 @@ import {
 
 import { parseIntQuery } from '@/utils/transformers';
 
-import {
-  DELIVERY_METHODS,
-  DELIVERY_PROVIDERS,
-  DeliveryMethod,
-  DeliveryProvider,
-} from './order-delivery.types';
+import { DELIVERY_METHODS, DELIVERY_PROVIDERS, DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
 
 export class CreateOrderItemDto {
   @ApiProperty({ format: 'uuid' })

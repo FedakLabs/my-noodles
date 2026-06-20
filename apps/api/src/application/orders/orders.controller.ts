@@ -9,6 +9,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 
 import { CreateOrderDto, OrderResponseDto } from './orders.dto';
+import { HoneypotTriggeredException } from './orders.exceptions';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -23,6 +24,10 @@ export class OrdersController {
   @ApiBadRequestResponse({ description: 'Validation error or honeypot triggered' })
   @ApiNotFoundResponse({ description: 'One or more products not found' })
   create(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
+    if (dto.company) {
+      throw new HoneypotTriggeredException();
+    }
+
     return this.ordersService.create(dto);
   }
 }

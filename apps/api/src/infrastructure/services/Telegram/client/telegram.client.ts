@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-import type { OrderTelegramPayload, TelegramSettings } from './telegram.types';
+import { ExternalApi } from '@/infrastructure/external-api';
+
+import { isTelegramConfigured, resolveTelegramBaseUrl, type TelegramConfig } from '../telegram.config';
+import type { OrderTelegramPayload } from '../telegram.dto';
 
 function formatMinor(amountMinor: number, currency: string): string {
   const major = (amountMinor / 100).toFixed(2);
@@ -12,11 +15,17 @@ function escapeHtml(value: string): string {
 }
 
 @Injectable()
-export class TelegramClient {
-  constructor(private readonly settings: TelegramSettings) {}
+export class TelegramService extends ExternalApi {
+  constructor(private readonly settings: TelegramConfig) {
+    super(TelegramService.name);
+  }
+
+  protected getBaseUrl(): string {
+    return resolveTelegramBaseUrl(this.settings);
+  }
 
   isConfigured(): boolean {
-    return Boolean(this.settings.botToken && this.settings.chatId);
+    return isTelegramConfigured(this.settings);
   }
 
   async sendOrderNotification(payload: OrderTelegramPayload): Promise<void> {
@@ -45,20 +54,15 @@ export class TelegramClient {
       `<b>Разом:</b> ${formatMinor(payload.totalMinor, payload.currency)}`,
     ].join('\n');
 
-    const response = await fetch(`https://api.telegram.org/bot${this.settings.botToken}/sendMessage`, {
-      method: 'POST',
+    await this.post<void>({
+      url: '/sendMessage',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      data: {
         chat_id: this.settings.chatId,
         text,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
-      }),
+      },
     });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Telegram API error ${response.status}: ${body}`);
-    }
   }
 }

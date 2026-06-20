@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
 
-import { config } from '@/config';
-
-import { TelegramClient } from './client/telegram.client';
+import { TelegramService } from './client';
+import { telegramConfig } from './telegram.config';
 
 @Module({
   providers: [
     {
-      provide: TelegramClient,
-      useFactory: () => new TelegramClient(config.telegram),
+      provide: TelegramService,
+      useFactory: () => new TelegramService(telegramConfig),
     },
   ],
-  exports: [TelegramClient],
+  exports: [TelegramService],
 })
 export class TelegramModule {}

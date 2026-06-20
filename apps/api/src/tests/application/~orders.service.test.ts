@@ -1,10 +1,6 @@
 import {
   DeliveryMethod,
   DeliveryProvider,
-  HoneypotTriggeredException,
-  Order,
-  OrderDelivery,
-  OrderItem,
   OrderProductNotFoundException,
   OrdersService,
 } from '@/application/orders';
@@ -14,6 +10,9 @@ import { jest } from '../jest-globals';
 describe('OrdersService', () => {
   let transaction: jest.Mock;
   let productsFind: jest.Mock;
+  let orderSave: jest.Mock;
+  let deliverySave: jest.Mock;
+  let itemSave: jest.Mock;
   let telegramSend: jest.Mock;
   let service: OrdersService;
 
@@ -26,7 +25,7 @@ describe('OrdersService', () => {
   };
 
   beforeEach(() => {
-    const orderSave = jest.fn().mockResolvedValue({
+    orderSave = jest.fn().mockResolvedValue({
       id: 'order-1',
       createdAt: new Date('2025-06-20T10:00:00.000Z'),
       customerName: 'Andrii',
@@ -36,11 +35,11 @@ describe('OrdersService', () => {
       status: 'new',
     });
 
-    const deliverySave = jest.fn().mockResolvedValue({
+    deliverySave = jest.fn().mockResolvedValue({
       orderId: 'order-1',
       provider: DeliveryProvider.NovaPoshta,
       method: DeliveryMethod.Warehouse,
-      city: 'Київ',
+      city: 'Кiїв',
       warehouseNumber: '1',
       warehouseName: 'Відділення №1',
       warehouseRef: null,
@@ -50,30 +49,9 @@ describe('OrdersService', () => {
       notes: null,
     });
 
-    const itemSave = jest.fn().mockResolvedValue([]);
+    itemSave = jest.fn().mockResolvedValue([]);
 
-    transaction = jest.fn(
-      async (
-        callback: (manager: { getRepository: (entity: unknown) => { save: jest.Mock } }) => Promise<unknown>,
-      ) =>
-        callback({
-          getRepository: (entity: unknown) => {
-            if (entity === Order) {
-              return { save: orderSave };
-            }
-
-            if (entity === OrderDelivery) {
-              return { save: deliverySave };
-            }
-
-            if (entity === OrderItem) {
-              return { save: itemSave };
-            }
-
-            throw new Error('Unexpected repository');
-          },
-        }),
-    );
+    transaction = jest.fn(async (callback: () => Promise<unknown>) => callback());
 
     productsFind = jest.fn().mockResolvedValue([
       {
@@ -86,12 +64,15 @@ describe('OrdersService', () => {
     telegramSend = jest.fn().mockResolvedValue(undefined);
 
     service = new OrdersService(
-      { transaction } as never,
       { find: productsFind } as never,
+      { save: orderSave } as never,
+      { save: deliverySave } as never,
+      { save: itemSave } as never,
       {
         sendOrderNotification: telegramSend,
       } as never,
     );
+    Object.assign(service, { dataSource: { transaction } });
   });
 
   it('creates an order and notifies Telegram', async () => {
@@ -104,6 +85,10 @@ describe('OrdersService', () => {
 
     expect(result.id).toBe('order-1');
     expect(result.totalMinor).toBe(19_800);
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(orderSave).toHaveBeenCalledTimes(1);
+    expect(deliverySave).toHaveBeenCalledTimes(1);
+    expect(itemSave).toHaveBeenCalledTimes(1);
     expect(telegramSend).toHaveBeenCalledTimes(1);
     const calls = telegramSend.mock.calls as Array<[{ deliverySummary: string }]>;
     expect(calls[0]?.[0].deliverySummary).toContain('Нова Пошта');
@@ -120,18 +105,6 @@ describe('OrdersService', () => {
     });
 
     expect(result.id).toBe('order-1');
-  });
-
-  it('rejects honeypot submissions', async () => {
-    await expect(
-      service.create({
-        customerName: 'Bot',
-        phone: '+380000000000',
-        delivery,
-        company: 'Acme Inc',
-        items: [{ productId: 'product-1', qty: 1 }],
-      }),
-    ).rejects.toBeInstanceOf(HoneypotTriggeredException);
   });
 
   it('rejects unknown products', async () => {

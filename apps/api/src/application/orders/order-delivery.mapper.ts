@@ -1,5 +1,5 @@
+import { DeliveryMethod } from './order-delivery.dto';
 import type { OrderDelivery } from './order-delivery.entity';
-import { DeliveryMethod } from './order-delivery.types';
 import type { CreateOrderDeliveryDto } from './orders.dto';
 
 export function mapDeliveryDtoToEntity(

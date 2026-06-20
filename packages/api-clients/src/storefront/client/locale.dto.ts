@@ -1,4 +1,4 @@
-import { CountriesControllerListLocaleEnum } from '../../generated/storefront/api/countries-api';
+import { CountriesControllerListLocaleEnum } from '../generated/api/countries-api';
 
 export { CountriesControllerListLocaleEnum };
 

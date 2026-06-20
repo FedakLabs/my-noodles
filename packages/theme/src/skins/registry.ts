@@ -15,7 +15,7 @@ function skin(
     accentHover,
     gradientStart,
     gradientEnd,
-    ...(secondary ? { secondary } : {}),
+    secondary,
   };
 }
 

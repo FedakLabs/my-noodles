@@ -69,14 +69,6 @@ export class DatabaseConfig {
   logging = false;
 }
 
-export class TelegramConfig {
-  @IsString()
-  botToken = '';
-
-  @IsString()
-  chatId = '';
-}
-
 export class Config {
   @IsDefined()
   @IsString()
@@ -128,10 +120,6 @@ export class Config {
   @Max(120_000)
   shutdownTimeoutMs = 30_000;
 
-  @ValidateNested()
-  @Type(() => TelegramConfig)
-  telegram!: TelegramConfig;
-
   get otel(): OtelConfig {
     if (this.otelEnabled) {
       return {
@@ -166,10 +154,6 @@ function configFromEnvironment(source: ConfigEnvironment): Config {
       otelEndpoint: source.OTEL_EXPORTER_OTLP_ENDPOINT,
       otelServiceName: source.OTEL_SERVICE_NAME,
       shutdownTimeoutMs: source.SHUTDOWN_TIMEOUT_MS,
-      telegram: {
-        botToken: source.TELEGRAM_BOT_TOKEN ?? '',
-        chatId: source.TELEGRAM_CHAT_ID ?? '',
-      },
     },
     { enableImplicitConversion: true },
   );

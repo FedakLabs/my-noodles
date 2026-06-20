@@ -1,8 +1,3 @@
-export type TelegramSettings = {
-  readonly botToken: string;
-  readonly chatId: string;
-};
-
 export type OrderTelegramLine = {
   title: string;
   qty: number;

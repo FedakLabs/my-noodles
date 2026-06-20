@@ -21,6 +21,7 @@
     "@opentelemetry/instrumentation-winston": "0.63.0",
     "@opentelemetry/sdk-node": "0.219.0",
     "@opentelemetry/winston-transport": "0.29.0",
+    "axios": "1.9.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "dotenv": "16.4.7",

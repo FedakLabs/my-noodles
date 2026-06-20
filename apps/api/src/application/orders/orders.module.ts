@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { TransactionalTypeOrmModule } from '@/infrastructure/persistence';
 import { TelegramModule } from '@/infrastructure/services/Telegram';
 
 import { Product } from '../products/product.entity';
@@ -11,7 +11,10 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem, OrderDelivery, Product]), TelegramModule],
+  imports: [
+    TransactionalTypeOrmModule.forFeature([Order, OrderItem, OrderDelivery, Product]),
+    TelegramModule,
+  ],
   controllers: [OrdersController],
   providers: [OrdersService],
 })

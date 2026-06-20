@@ -1,17 +1,17 @@
 export type ResolvedSkinSource = 'brand' | 'country' | 'category' | 'hash' | 'base';
 
 export type SkinInput = {
-  brand?: string | null | undefined;
-  country?: string | null | undefined;
-  category?: string | null | undefined;
-  slug?: string | null | undefined;
+  brand?: string | null;
+  country?: string | null;
+  category?: string | null;
+  slug?: string | null;
 };
 
 export type SkinDefinition = {
   bgHueBrand: number;
   accent: string;
   accentHover: string;
-  secondary?: string | undefined;
+  secondary?: string;
   gradientStart: string;
   gradientEnd: string;
 };

@@ -53,7 +53,7 @@ export function TokenTableSection<T>({
   getRowKey,
 }: {
   title: string;
-  description?: string | undefined;
+  description?: string;
   columns: TokenTableColumn<T>[];
   rows: T[];
   getRowKey: (row: T) => string;

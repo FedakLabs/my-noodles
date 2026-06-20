@@ -1,5 +1,5 @@
+import { DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
 import type { OrderDelivery } from './order-delivery.entity';
-import { DeliveryMethod, DeliveryProvider } from './order-delivery.types';
 
 const PROVIDER_LABELS: Record<DeliveryProvider, string> = {
   [DeliveryProvider.NovaPoshta]: 'Нова Пошта',

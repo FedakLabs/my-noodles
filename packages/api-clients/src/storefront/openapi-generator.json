@@ -5,7 +5,7 @@
   },
   "inputSpec": "http://localhost:3001/api/docs-json",
   "generatorName": "typescript-axios",
-  "output": "./generated/storefront",
+  "output": "./src/storefront/generated",
   "additionalProperties": {
     "withSeparateModelsAndApi": true,
     "stringEnums": true,

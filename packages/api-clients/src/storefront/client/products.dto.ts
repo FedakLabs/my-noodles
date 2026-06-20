@@ -1,7 +1,7 @@
 import {
   ProductsControllerGetFacetsSortEnum,
   ProductsControllerListSortEnum,
-} from '../../generated/storefront/api/products-api';
+} from '../generated/api/products-api';
 
 export { ProductsControllerGetFacetsSortEnum, ProductsControllerListSortEnum };
 

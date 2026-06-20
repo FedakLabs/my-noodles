@@ -1,11 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
 
-import { CollectionsApi } from '../../generated/storefront/api/collections-api';
-import { CountriesApi } from '../../generated/storefront/api/countries-api';
-import { HealthApi } from '../../generated/storefront/api/health-api';
-import { OrdersApi } from '../../generated/storefront/api/orders-api';
-import { ProductsApi } from '../../generated/storefront/api/products-api';
-import { Configuration } from '../../generated/storefront/configuration';
+import { CollectionsApi } from '../generated/api/collections-api';
+import { CountriesApi } from '../generated/api/countries-api';
+import { HealthApi } from '../generated/api/health-api';
+import { OrdersApi } from '../generated/api/orders-api';
+import { ProductsApi } from '../generated/api/products-api';
+import { Configuration } from '../generated/configuration';
 
 export type StorefrontApiClients = {
   instance: AxiosInstance;

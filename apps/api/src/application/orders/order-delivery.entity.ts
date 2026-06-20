@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'ty
 import { TimestampEntity } from '@/infrastructure/persistence';
 
 import type { Order } from './order.entity';
-import { DeliveryMethod, DeliveryProvider } from './order-delivery.types';
+import { DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
 
 @Entity({ name: 'order_deliveries' })
 export class OrderDelivery extends TimestampEntity {

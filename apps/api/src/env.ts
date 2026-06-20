@@ -28,22 +28,22 @@ export function loadAppEnv(cwd = process.cwd()): void {
 
 /** Shallow env shape consumed by `loadConfig()` — values are strings from `process.env` (or test fixtures). */
 export type ConfigEnvironment = {
-  PORT?: string | undefined;
-  NODE_ENV?: string | undefined;
-  POSTGRES_HOST?: string | undefined;
-  POSTGRES_PORT?: string | undefined;
-  POSTGRES_USER?: string | undefined;
-  POSTGRES_PASSWORD?: string | undefined;
-  POSTGRES_DB?: string | undefined;
-  DATABASE_LOGGING?: string | undefined;
-  OTEL_ENABLED?: string | undefined;
-  OTEL_EXPORTER_OTLP_ENDPOINT?: string | undefined;
-  OTEL_SERVICE_NAME?: string | undefined;
-  SHUTDOWN_TIMEOUT_MS?: string | undefined;
-  APP_NAME?: string | undefined;
-  APP_VERSION?: string | undefined;
-  TELEGRAM_BOT_TOKEN?: string | undefined;
-  TELEGRAM_CHAT_ID?: string | undefined;
+  PORT?: string;
+  NODE_ENV?: string;
+  POSTGRES_HOST?: string;
+  POSTGRES_PORT?: string;
+  POSTGRES_USER?: string;
+  POSTGRES_PASSWORD?: string;
+  POSTGRES_DB?: string;
+  DATABASE_LOGGING?: string;
+  OTEL_ENABLED?: string;
+  OTEL_EXPORTER_OTLP_ENDPOINT?: string;
+  OTEL_SERVICE_NAME?: string;
+  SHUTDOWN_TIMEOUT_MS?: string;
+  APP_NAME?: string;
+  APP_VERSION?: string;
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
 };
 
 export function readConfigEnvironment(env: NodeJS.ProcessEnv): ConfigEnvironment {

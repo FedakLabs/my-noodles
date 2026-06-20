@@ -73,7 +73,7 @@
     "packages/api-clients": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
-      "ignore": ["generated/**"],
+      "ignore": ["src/**/generated/**"],
       "ignoreDependencies": ["axios"]
     }
   }

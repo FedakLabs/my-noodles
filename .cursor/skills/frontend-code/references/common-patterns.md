@@ -1,41 +1,24 @@
 # Common Patterns — Frontend (my-noodles)
 
-Task recipes for `apps/web`. **Always grep the repo first** — if scaffolding is missing, follow `docs/mvp-plan.md` and keep the diff minimal. Names below (catalog, checkout, products) match this storefront.
-
-> Read [code-style-guide.md](./code-style-guide.md) first.
+Task recipes for `apps/web`. **Grep the repo first** and copy the nearest feature. Read [code-style-guide.md](./code-style-guide.md) first.
 
 ---
 
 ## Table of Contents
 
-1. [Verify before you import](#1-verify-before-you-import)
-2. [Theme & layout](#2-theme--layout)
-3. [Forms (react-hook-form + Zod)](#3-forms-react-hook-form--zod)
-4. [React Query hooks](#4-react-query-hooks)
-5. [Route + screen (Next.js App Router)](#5-route--screen-nextjs-app-router)
-6. [Catalog filters (nuqs)](#6-catalog-filters-nuqs)
-7. [i18n (next-intl)](#7-i18n-next-intl)
-8. [Cart (Zustand)](#8-cart-zustand)
-9. [New presentational component](#9-new-presentational-component)
-10. [Custom hook](#10-custom-hook)
+1. [Theme & layout](#1-theme--layout)
+2. [Forms (react-hook-form + Zod)](#2-forms-react-hook-form--zod)
+3. [React Query hooks](#3-react-query-hooks)
+4. [Route + screen (Next.js App Router)](#4-route--screen-nextjs-app-router)
+5. [URL filters (nuqs)](#5-url-filters-nuqs)
+6. [i18n (next-intl)](#6-i18n-next-intl)
+7. [Client state (Zustand)](#7-client-state-zustand)
+8. [New presentational component](#8-new-presentational-component)
+9. [Custom hook](#9-custom-hook)
 
 ---
 
-## 1. Verify before you import
-
-Do **not** assume primitives from other codebases:
-
-| If you're about to…                                           | Stop and…                                                                                     |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Import from `@merchant-portal/ui` or `@merchant-portal/utils` | This repo doesn't use them                                                                    |
-| Use `formatUseQuery` / `formatUseMutation`                    | Defined in `apps/web/src/api/_lib/queries.ts` — use them in all API hooks |
-| Add `DetailsModal`, `ConfirmationModal`, `DataTable`          | Not part of this project — use MUI `Dialog`, local table/grid components                      |
-| Wire TanStack Router / `routes-config.tsx`                    | Routing is Next.js `app/[locale]/…`                                                           |
-| Read `packages/ui` or `packages/themes`                       | Design system is **`packages/theme`**                                                         |
-
----
-
-## 2. Theme & layout
+## 1. Theme & layout
 
 ```tsx
 'use client';
@@ -60,15 +43,15 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 
 ---
 
-## 3. Forms (react-hook-form + Zod)
+## 2. Forms (react-hook-form + Zod)
 
-**Checkout** is the primary form flow (name, phone, city, branch + honeypot `company`).
+Define a **Zod schema that matches the mutation input** — no separate mapper layer unless merging unrelated sources (e.g. cart lines + form fields into one DTO).
 
 ### File layout
 
 ```text
 components/checkout/
-├── validation.ts          # zod schema + types + mapToCreateOrderDto
+├── validation.ts          # zod schema + inferred types
 ├── checkout-form.tsx
 └── checkout-form.test.tsx
 ```
@@ -105,11 +88,10 @@ export function CheckoutForm() {
     defaultValues: { customerName: '', phone: '', city: '', branch: '', company: '' },
   });
 
-  const { createOrder, isPending } = useCreateOrder();
+  const { createOrder, createOrderIsPending } = useCreateOrder();
 
   const onSubmit = form.handleSubmit((data) => {
-    if (data.company) return; // honeypot
-    createOrder(mapToCreateOrderDto(data, cartItems));
+    createOrder(data);
   });
 
   return <form onSubmit={onSubmit}>{/* Controller + TextField fields; labels via t('fields.name') */}</form>;
@@ -120,14 +102,14 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 ---
 
-## 4. React Query hooks
+## 3. React Query hooks
 
 **Location:** `apps/web/src/api/[feature]/`
 
 - **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
 - **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
 
-Uses **`packages/api-clients`** via singleton from `api/clients.ts` (`API_URL` from `shared/env.ts`).
+Uses **`packages/api-clients`** via singleton from `api/clients.ts` (`API_URL` from `shared/env.ts`, validated with Zod).
 
 ### Types: generated DTOs first
 
@@ -219,42 +201,35 @@ export function useCreateOrder() {
 - Mutations invalidate the smallest relevant key set
 - Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary`
 - `utils.ts` = request builders (filters → generated `*Request` types), not response mappers
-- Do **not** inject locale via a global axios interceptor — explicit `locale` on fetchers keeps query keys and SSR predictable; `forbidNonWhitelisted` on the API rejects stray `?locale=` on strict query DTOs
-
-### Env (`shared/env.ts`)
-
-```ts
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-if (!apiUrl) throw new Error('NEXT_PUBLIC_API_URL is not set');
-export const API_URL = apiUrl;
-```
-
-Copy `apps/web/.env.example` → `.env.local` for local dev. No fallback URLs in source.
+- Do **not** inject locale via a global axios interceptor — explicit `locale` on fetchers keeps query keys and SSR predictable
 
 ---
 
-## 5. Route + screen (Next.js App Router)
+## 4. Route + screen (Next.js App Router)
 
-Routing lives under **`app/[locale]/`**. Pages are thin wrappers.
+**Split:** `app/[locale]/` owns routing, locale guards, metadata, prefetch, and search-param parsing. `screens/[feature]/` owns layout and composition.
 
 ```tsx
 // app/[locale]/catalog/page.tsx
 import { createSearchParamsCache } from 'nuqs/server';
 import { CatalogScreen } from '@/screens/catalog';
-import { catalogSearchParamsCache } from '@/screens/catalog/search-params';
+import { catalogSearchParamsParsers } from '@/screens/catalog/search-params';
 
-const searchParamsCache = createSearchParamsCache(catalogSearchParamsCache);
+const searchParamsCache = createSearchParamsCache(catalogSearchParamsParsers);
 
-export default async function CatalogPage({ searchParams }: PageProps) {
+export default async function CatalogPage({ params, searchParams }: PageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const filters = await searchParamsCache.parse(searchParams);
-  // prefetch products + facets with filters, wrap in HydrationBoundary
-  return <CatalogScreen initialFilters={filters} />;
+  // prefetch with productsQueryKeys + dehydrate → HydrationBoundary
+  return <CatalogScreen />;
 }
 ```
 
 ```tsx
 // screens/catalog/index.tsx
-export function CatalogScreen({ initialFilters }: Props) {
+export function CatalogScreen() {
   return (
     <>
       <CatalogHeader />
@@ -265,16 +240,15 @@ export function CatalogScreen({ initialFilters }: Props) {
 }
 ```
 
-**Routes (mvp-plan):** home, catalog, collections/[slug], product/[slug], cart, checkout, checkout/success, contacts.
+Every `page.tsx`: validate locale → `setRequestLocale` → optional prefetch → render one screen component.
 
 ---
 
-## 6. Catalog filters (nuqs)
+## 5. URL filters (nuqs)
 
-Single source of truth: **`screens/catalog/search-params/`**
+Single source of truth per feature: **`screens/[feature]/search-params/`**
 
 ```ts
-// catalog.search.ts
 import {
   createSearchParamsCache,
   parseAsArrayOf,
@@ -307,16 +281,24 @@ import { useQueryStates } from 'nuqs';
 const [filters, setFilters] = useQueryStates(catalogSearchParamsParsers, { shallow: false });
 ```
 
-Drive both `useProductsList(filters)` and `useProductFacets(filtersWithoutPage)`.
+The same parsed values drive TanStack Query keys — e.g. list hook with full filters, facets hook omitting `page` / `limit`.
 
 ---
 
-## 7. i18n (next-intl)
+## 6. i18n (next-intl)
 
-- **`useTranslations('namespace')`** for labels, buttons, errors
-- Messages in per-locale JSON (verify path in repo — typically under `messages/` or `src/i18n/`)
-- Ukrainian (`uk`) shipped first; structure ready for `en`
-- **`Trans`** only when a sentence embeds a React node (link, styled span) — otherwise `t('key', { var })`
+**One namespace per screen or domain** — `home`, `catalog`, `checkout`, `products`, `orders`, … Keys stay short inside the namespace (`title`, `fields.phone`).
+
+Shared copy (buttons, errors, metadata) lives in **`common`** or **`metadata`** namespaces in `apps/web/messages/{locale}.json`:
+
+```json
+{
+  "common": { "loading": "…", "retry": "…" },
+  "metadata": { "title": "…", "description": "…" },
+  "home": { "title": "…" },
+  "catalog": { "title": "…", "filters": { "reset": "…" } }
+}
+```
 
 ```tsx
 const t = useTranslations('catalog');
@@ -324,46 +306,55 @@ const t = useTranslations('catalog');
 <Button>{t('showResults', { count: total })}</Button>
 ```
 
-Nested keys, camelCase segments: `catalog.filters.reset`, `checkout.fields.phone`.
+- **`useTranslations('namespace')`** in client components; **`getTranslations`** in Server Components / metadata
+- **`Trans`** only when a sentence embeds a React node (link, styled span) — otherwise `t('key', { var })`
+- Nested keys use camelCase segments: `filters.reset`, `fields.phone`
 
 ---
 
-## 8. Cart (Zustand)
+## 7. Client state (Zustand)
 
-Client-only until checkout. Store in `hooks/` (or `hooks/cart/`).
+Use Zustand when state is **client-only**, **not in the URL**, and **not server data**.
+
+| Need | Use |
+| --- | --- |
+| API responses, cache, refetch | TanStack Query |
+| Filters, sort, pagination the user may share or bookmark | nuqs |
+| Local to one component subtree | `useState` |
+| Cross-route client state (cart, drawer, session UI prefs) | Zustand |
+
+**Conventions:**
+
+- Store in `hooks/` or `hooks/[feature]/`; screens import `use*Store`, not the raw store
+- Do not duplicate server entities — store IDs, quantities, and UI fields; RQ owns product details
+- **`persist`** only when continuity across sessions matters; always set `version` + `migrate` so a bump clears stale localStorage
 
 ```ts
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
-const CART_VERSION = 1;
+const STORE_VERSION = 1;
 
 type CartState = {
-  version: number;
   items: CartLine[];
   addItem: (line: CartLine) => void;
-  removeItem: (productId: string) => void;
   clear: () => void;
 };
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set, get) => ({
-      version: CART_VERSION,
+    (set) => ({
       items: [],
       addItem: (line) => {
         /* merge by productId */
-      },
-      removeItem: (id) => {
-        /* … */
       },
       clear: () => set({ items: [] }),
     }),
     {
       name: 'cart',
       storage: createJSONStorage(() => localStorage),
-      version: CART_VERSION,
-      migrate: () => ({ items: [], version: CART_VERSION }), // drop on version bump
+      version: STORE_VERSION,
+      migrate: () => ({ items: [] }),
     },
   ),
 );
@@ -371,7 +362,7 @@ export const useCartStore = create<CartState>()(
 
 ---
 
-## 9. New presentational component
+## 8. New presentational component
 
 ```text
 components/catalog/product-card/
@@ -395,17 +386,17 @@ export function ProductCard({ product, onAddToCart, ...stackProps }: ProductCard
 
   return (
     <Stack {...stackProps} style={skinVars}>
-      {/* image, title, price via formatCurrency, CTA */}
+      {/* image, title, price, CTA */}
     </Stack>
   );
 }
 ```
 
-Test: renders, add-to-cart callback, missing image fallback.
+Test: renders, callback wiring, missing image fallback.
 
 ---
 
-## 10. Custom hook
+## 9. Custom hook
 
 **Location:** `hooks/use-*.ts` (+ test)
 

@@ -1,6 +1,6 @@
 # Backend Code Style Guide (NestJS + TypeORM)
 
-Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogous module and match its shape. Architecture reference: `docs/mvp-plan.md`.
+Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogous module and match its shape.
 
 ---
 
@@ -39,7 +39,7 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 
 ### Strictness
 
-- Monorepo base enables `strict: true`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, etc. No `any` without a comment justifying it.
+- Monorepo base enables `strict: true`, `noUncheckedIndexedAccess`, etc. No `any` without a comment justifying it.
 - Prefer `unknown` + narrowing over `any`.
 - Avoid `!` non-null assertions unless the value was just validated or loaded from a required DB column.
 - Use `readonly` on constructor-injected dependencies.
@@ -70,7 +70,7 @@ import { OrdersModule } from './application/orders';
 import { createWinstonModuleOptions, LoggingModule } from './infrastructure/logging';
 import { prepareDataSource } from './infrastructure/persistence';
 
-// application/orders/orders.module.ts — cross-infra module via barrel
+// application/orders/orders.module.ts — optional integration module via barrel
 import { TelegramModule } from '@/infrastructure/services/Telegram';
 
 // application/orders/orders.module.ts — internals stay relative
@@ -108,28 +108,28 @@ import { OrdersService } from './orders.service';
   - `Product` (entity)
   - `CreateOrderDto`, `ListProductsQueryDto`
   - `ProductNotFoundException`
-- MVP storefront is public — no separate authenticated controller variants unless auth is added later.
+- No separate authenticated controller variants unless the product adds auth.
 
 ### Barrel `index.ts`
 
-Every **module folder** (feature in `application/`, subsystem in `infrastructure/`, infra clients like `services/Telegram/`) should have an `index.ts` that re-exports its **public** symbols. Other code imports from the barrel, not from deep files — this scopes imports to the module and hides internal layout.
+Every **module folder** (feature in `application/`, subsystem in `infrastructure/`) should have an `index.ts` that re-exports its **public** symbols. Other code imports from the barrel, not from deep files — this scopes imports to the module and hides internal layout.
 
 The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap wiring (`createWinstonModuleOptions`, middleware, filters). Keep helpers used only inside the folder unexported.
 
 ```ts
 // infrastructure/logging/index.ts
-export { LoggingModule } from './logging.module.js';
-export { createWinstonModuleOptions } from './winston.js';
+export { LoggingModule } from './logging.module';
+export { createWinstonModuleOptions } from './winston';
 export { clientBaggageMiddleware, ManifestHttpExceptionFilter } from './…';
 
 // infrastructure/persistence/index.ts
-export { createAppDataSource, prepareDataSource } from './data-source.js';
-export { TimestampEntity } from './timestamp.entity.js';
+export { createAppDataSource, prepareDataSource } from './data-source';
+export { TimestampEntity } from './timestamp.entity';
 
 // application/orders/index.ts
-export * from './orders.module.js';
-export * from './orders.service.js';
-export * from './order.entity.js';
+export * from './orders.module';
+export * from './orders.service';
+export * from './order.entity';
 ```
 
 Consumers:
@@ -172,7 +172,7 @@ Controllers must **not**:
 ```ts
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}
 
   @Post()
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -185,8 +185,7 @@ export class OrdersController {
 ### Services
 
 - `@Injectable()` business logic and orchestration.
-- Inject repositories via `@InjectRepository(Entity)`.
-- Inject other services and infra clients via constructor.
+- Inject repositories via `@InjectRepository(Entity)`; inject peer services and infra clients via `@Inject(Class)`.
 - Wrap external failures in domain exceptions.
 - Own transactions (`DataSource.transaction` or `EntityManager`).
 
@@ -215,9 +214,9 @@ Register in `AppModule.imports`. Export providers other modules need.
 
 ### Injection
 
-- **Default**: constructor injection — Nest resolves via `emitDecoratorMetadata` when running compiled output (`api:serve` / `node dist/`).
-- **`@Inject(Class)`** on controllers is still used for compatibility with `tsx` one-off scripts and Jest; optional when only running compiled `dist/`.
-- TypeORM: `@InjectRepository(Entity)`, `@InjectDataSource()`.
+- **Controllers**: `@Inject(ServiceClass)` on every constructor param — do not rely on implicit class-token resolution.
+- **Services injecting other providers** (clients, peer services): `@Inject(Class)` as well.
+- **TypeORM**: `@InjectRepository(Entity)`, `@InjectDataSource()`.
 - **Circular dependency** (rare): `forwardRef(() => OtherService)` on both sides — prefer redesign over lazy hacks.
 - **Custom tokens**: `@Inject('TELEGRAM_CLIENT')` only when necessary (config providers).
 
@@ -242,10 +241,13 @@ Register in `AppModule.imports`. Export providers other modules need.
 ### Controller template
 
 ```ts
+import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(@Inject(ProductsService) private readonly productsService: ProductsService) {}
 
   @Get()
   @ApiOperation({ summary: 'List products' })
@@ -265,11 +267,6 @@ export class ProductsController {
 - **Query DTOs** for filters, pagination (`page`, `limit` required when paginating, max 100), `locale`.
 - **Body DTOs** for POST/PATCH with class-validator decorators.
 - **Path params**: simple `@Param('slug')` or a small param DTO if multiple params need validation.
-
-### Public storefront (MVP)
-
-- No JWT guards on catalog/order endpoints.
-- Honeypot on order POST: reject if hidden `company` field is filled (validated in DTO/service).
 
 ---
 
@@ -297,10 +294,10 @@ Services translate infra/client errors — never leak raw axios errors to the cl
 
 ```ts
 try {
-  await this.telegramClient.sendOrderNotification(payload);
+  await this.notificationService.send(payload);
 } catch (err) {
-  this.logger.error('telegram.notify.failed', { orderId, err });
-  // Order still succeeds — failure-tolerant per mvp-plan
+  this.logger.error('notification.failed', { orderId, err });
+  // Best-effort side effect — document when the request still succeeds
 }
 ```
 
@@ -335,13 +332,8 @@ Every input field gets validators:
 export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
-  customerName: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(0)
-  company?: string; // honeypot — reject in service if non-empty
+  @MaxLength(30)
+  phone: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -361,10 +353,20 @@ Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defa
 - Reusable field decorators or small validator classes in `src/utils/validators/`.
 - Pagination: extend `PaginationQueryDto` / `PaginatedMetaDto` from `src/utils/pagination.ts` — see [common-patterns §7](./common-patterns.md#7-validators--pipes).
 
-### DTO ↔ entity
+### Response shapes (entity vs DTO)
 
-- Response DTOs / mappers in the service — do not return raw entities with relations unless intentional.
-- Localized JSONB fields: resolve by `?locale` in the service, expose plain strings in responses.
+**Default:** return the entity (or a typed pick of its columns) when the handler is a straight load-and-respond — no extra response DTO that mirrors the entity field-for-field.
+
+**Add a response DTO or mapper only when there is a concrete reason**, for example:
+
+- Aggregating data from multiple sources (join + computed fields not on one entity)
+- Hiding internal columns (cost, internal flags, soft-delete metadata)
+- Resolving localized JSONB to a plain string for the requested `?locale`
+- Shaping a write model differently from persistence (checkout payload ≠ order row)
+
+If a response DTO would duplicate the entity one-to-one, skip it — two shapes to maintain with no benefit.
+
+Input/query DTOs (`CreateOrderDto`, `ListProductsQueryDto`) stay mandatory for validation at the boundary.
 
 ---
 
@@ -378,7 +380,25 @@ Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defa
 
 ### Primary keys
 
-- UUID: `@PrimaryGeneratedColumn('uuid')` (matches mvp-plan ER diagram).
+Choose per table — do not default every entity to UUID.
+
+| Prefer UUID (`uuid`) | Prefer incremental (`increment` / `bigint`) |
+| --- | --- |
+| IDs exposed in public APIs, URLs, or client-visible references (orders, products) | Internal-only rows (audit logs, job queues, join tables never surfaced) |
+| Merge/replicate across environments without collision | High-volume append-only tables where sequential scan locality matters |
+| Opaque, non-guessable identifiers for security-sensitive resources | Admin-only tables where numeric IDs are acceptable |
+
+```ts
+// Public-facing resource
+@PrimaryGeneratedColumn('uuid')
+id!: string;
+
+// Internal lookup / high-volume log
+@PrimaryGeneratedColumn()
+id!: number;
+```
+
+Use UUID when the ID leaves the service boundary; use incremental when the row stays internal and sequential IDs are simpler.
 
 ### Timestamps
 
@@ -409,7 +429,7 @@ export class Product extends TimestampEntity {
 - `created_at` / `updated_at` — automatic insert/update tracking.
 - `deleted_at` — nullable; TypeORM excludes set rows from normal queries. Use `repository.softRemove()` / `softDelete()` instead of hard `delete()` unless explicitly required.
 
-### Localized JSONB (mvp-plan)
+### Localized JSONB
 
 ```ts
 @Column({ type: 'jsonb' })
@@ -436,10 +456,6 @@ Resolve in service layer by locale query param.
 country!: Country;
 ```
 
-### Stock / derived fields
-
-- `quantity` int; `inStock` derived in service/DTO as `quantity > 0` (not a stored column unless already migrated).
-
 ### Repository queries
 
 Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
@@ -449,7 +465,7 @@ Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 | `find`, `findOne`, `findAndCount`, `count` | Listing, detail, filtered counts |
 | `FindOptionsWhere<Entity>` + `In`, `Between`, `MoreThan`, … | Filters on entity + relation properties |
 | `relations`, `order`, `skip`, `take`, `select` | Eager load, sort, pagination, partial rows |
-| In-memory aggregation on a bounded filtered set | Facet counts / min–max when catalog size is MVP-scale |
+| In-memory aggregation on a bounded filtered set | Facet counts / min–max when result sets stay small enough to load in one query |
 | `createQueryBuilder` | Only when the above cannot express the query (e.g. complex SQL, window functions, bulk relation API in seed scripts) |
 
 Centralize reusable filter/sort builders next to the feature (e.g. `buildProductWhere()` in `products.filters.ts`) — **entity property names**, not raw SQL column strings.
@@ -531,8 +547,6 @@ CREATE INDEX idx_products_country_id ON products(country_id) WHERE deleted_at IS
 
 ```ts
 export class AddFeature1740000000000 implements MigrationInterface {
-  name = 'AddFeature1740000000000';
-
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       -- Add columns
@@ -557,34 +571,88 @@ export class AddFeature1740000000000 implements MigrationInterface {
 
 ## 10. External API Integration
 
-### Hand-written client (MVP: Telegram)
+### Base class (`infrastructure/external-api/`)
 
-Location: `infrastructure/services/Telegram/client/`
+Hand-written outbound clients extend **`ExternalApi`**: axios + OTEL spans + structured outgoing HTTP logs. Subclasses implement `getBaseUrl()`; call `this.get<T>()` / `this.post<T>()` for requests.
+
+```ts
+export abstract class ExternalApi {
+  protected constructor(protected readonly serviceName: string) {}
+
+  protected abstract getBaseUrl(): string;
+
+  protected get<T>(params: AxiosRequestConfig): Promise<T> { /* … */ }
+  protected post<T>(params: AxiosRequestConfig): Promise<T> { /* … */ }
+}
+```
+
+### Application integration service
+
+Hand-written outbound integrations live in **`application/<integration>/`**: `<integration>.config.ts` (local env const), request/response types in `<integration>.dto.ts`, `@Injectable()` service extending `ExternalApi`.
 
 ```ts
 @Injectable()
-export class TelegramClient {
-  constructor(private readonly config: ConfigService) {}
+export class AcmeWebhookService extends ExternalApi {
+  constructor(private readonly settings: AcmeWebhookConfig) {
+    super(AcmeWebhookService.name);
+  }
 
-  async sendOrderNotification(payload: OrderTelegramPayload): Promise<void> {
-    // axios/fetch to Bot API — env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+  protected getBaseUrl(): string {
+    return acmeWebhookConfig.baseUrl;
+  }
+
+  async notifyOrderCreated(payload: AcmeOrderCreatedPayload): Promise<void> {
+    await this.post<void>({ url: '/hooks/order-created', data: payload });
   }
 }
 ```
 
-Register as provider in a small `TelegramModule` or `OrdersModule`; inject into `OrdersService`.
+Register via a small `*Module`; inject the service from feature services that orchestrate the flow.
 
 ### OpenAPI-generated third-party clients
 
-- Generated output under `infrastructure/services/<Service>/generated/` — **read-only**.
-- Thin `@Injectable()` wrapper in `client/` exposing typed methods.
-- Distinct from `packages/api-clients` (that package is **our** API client for the web app).
-- **Storefront client regen:** `pnpm nx run api-clients:api:generate` fetches `/api/docs-json` from a running local API; hand-written `src/storefront/*.ts` use extensionless imports (same as generated output).
+When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/services/<ServiceName>/`**:
+
+```text
+infrastructure/services/merchant-email/
+├── generated/              # OpenAPI Generator output — read-only, regen from upstream spec
+│   ├── api/                # *Api classes (EmailApi, …)
+│   ├── models/             # request/response DTOs
+│   ├── configuration.ts
+│   └── index.ts
+├── client/
+│   ├── <service>.config.ts # basePath / auth from env
+│   ├── <service>.client.ts # extends ExternalApi; wires generated *Api to this.axiosInstance
+│   └── index.ts
+└── index.ts                # public barrel — export client + typed models consumers need
+```
+
+```ts
+// client/acme.client.ts — pattern: generated API + shared axios from ExternalApi
+@Injectable()
+export class AcmeApiClient extends ExternalApi {
+  readonly ordersApi: OrdersApi;
+
+  constructor() {
+    super(AcmeApiClient.name);
+    this.ordersApi = new OrdersApi(new Configuration(), undefined, this.axiosInstance);
+  }
+
+  protected getBaseUrl(): string {
+    return acmeServiceConfig.basePath;
+  }
+}
+```
+
+- **`generated/`** — never hand-edit; regenerate when the upstream OpenAPI spec changes.
+- **`client/`** — thin Nest provider: config, `ExternalApi` subclass, domain-friendly methods if needed.
+- Distinct from **`packages/api-clients`** — that package is **our** storefront client for the web app, not inbound third-party integrations.
 
 ### Rules
 
-- No business logic in clients — one method per remote operation.
-- Config from env via `config.ts` — never hardcode tokens.
+- No business logic beyond request shaping and domain exception mapping.
+- Secrets (API tokens, passwords, private keys) in env via `<feature>.config.ts` — not in source. Non-sensitive constants (public API base URLs, notification template IDs, example recipient emails safe to commit) may be hardcoded.
+- Map `ExternalApiException.httpStatus` to domain exceptions at the service boundary when needed.
 
 ---
 
@@ -594,7 +662,7 @@ Register as provider in a small `TelegramModule` or `OrdersModule`; inject into 
 - Env files (via `env.ts` → `loadAppEnv()`, later overrides earlier): `.env` → `.env.{NODE_ENV}` → `.env.local`.
 - `Config.rootDirname` — absolute path to application source root (`src/` at dev time); used by `prepareDataSource()` for entity/migration globs.
 - Feature-specific: `<feature>.config.ts` when a module has many env vars.
-- Never hardcode URLs, tokens, or credentials.
+- Secrets and credentials from env — never commit them in source. URLs and other non-sensitive defaults may live in code when stable and public.
 
 ```ts
 export const config = loadConfig();
@@ -615,7 +683,7 @@ if (config.otel.enabled) {
 }
 ```
 
-Telegram and other optional integrations live on `config.telegram`, etc.
+- Optional integration config lives in `application/<feature>/<feature>.config.ts` — not on root `Config`.
 
 ---
 
@@ -681,8 +749,8 @@ Run: `pnpm nx run api:test` or `api:fix`.
 | Business logic in controller                                     | Move to service                                       |
 | `@InjectRepository` in controller                                | Service only                                          |
 | `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, … |
-| Raw `fetch`/`axios` in controller/service without a client class | Infra client in `infrastructure/services/`            |
-| Returning raw TypeORM entity with hidden columns                 | Map to response DTO                                   |
+| Raw `fetch`/`axios` in controller/service without a client class | `ExternalApi` subclass in `application/<integration>/` or `infrastructure/services/<service>/client/` |
+| Response DTO that mirrors the entity one-to-one                   | Return entity (or pick columns); DTO only when shape genuinely differs |
 | DTO field without class-validator                                | Add validators                                        |
 | Schema change without migration                                  | Generate migration; keep `synchronize: false`         |
 | `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)      |

@@ -1,25 +1,13 @@
+export { ApiError } from '../common';
 export type {
-  CollectionsApiCollectionsControllerGetBySlugRequest,
-  CollectionsApiCollectionsControllerListRequest,
-} from '../../generated/storefront/api/collections-api';
-export type { CountriesApiCountriesControllerListRequest } from '../../generated/storefront/api/countries-api';
-export type {
-  ProductsApiProductsControllerGetBySlugRequest,
-  ProductsApiProductsControllerGetFacetsRequest,
-  ProductsApiProductsControllerListRequest,
-} from '../../generated/storefront/api/products-api';
-export {
-  CollectionsApi,
-  CountriesApi,
-  HealthApi,
-  OrdersApi,
-  ProductsApi,
-} from '../../generated/storefront/index';
-export type {
+  ApiLocale,
   BrandRefDto,
   CategoryRefDto,
   CollectionDetailDto,
+  CollectionsApiCollectionsControllerGetBySlugRequest,
+  CollectionsApiCollectionsControllerListRequest,
   CollectionSummaryDto,
+  CountriesApiCountriesControllerListRequest,
   CountryDto,
   CountryRefDto,
   CreateOrderDeliveryDto,
@@ -34,16 +22,23 @@ export type {
   ProductFacetsDto,
   ProductFacetsResponseDto,
   ProductFlavorDto,
+  ProductsApiProductsControllerGetBySlugRequest,
+  ProductsApiProductsControllerGetFacetsRequest,
+  ProductsApiProductsControllerListRequest,
+  ProductSort,
   ProductSummaryDto,
-} from '../../generated/storefront/models/index';
-export { ApiError } from '../common';
-export { setupApiClients, type StorefrontApiClients } from './clients';
-export type { ApiLocale } from './locale.dto';
-export { CountriesControllerListLocaleEnum } from './locale.dto';
+  StorefrontApiClients,
+} from './client';
 export {
+  CollectionsApi,
+  CountriesApi,
+  CountriesControllerListLocaleEnum,
   DEFAULT_PRODUCT_SORT,
+  HealthApi,
+  OrdersApi,
   PRODUCT_SORT_OPTIONS,
+  ProductsApi,
   ProductsControllerGetFacetsSortEnum,
   ProductsControllerListSortEnum,
-  type ProductSort,
-} from './products.dto';
+  setupApiClients,
+} from './client';

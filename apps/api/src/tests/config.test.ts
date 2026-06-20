@@ -21,7 +21,6 @@ describe('loadConfig', () => {
     expect(appConfig.shutdownTimeoutMs).toBe(30_000);
     expect(appConfig.appName).toBe('my-noodles-api');
     expect(appConfig.appVersion).toBe('dev');
-    expect(appConfig.telegram).toEqual({ botToken: '', chatId: '' });
   });
 
   it('rejects missing postgres credentials', () => {

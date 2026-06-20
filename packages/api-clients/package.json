@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json -o ./generated/storefront"
+    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json -o ./src/storefront/generated"
   },
   "dependencies": {
     "axios": "1.9.0"

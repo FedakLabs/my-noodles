@@ -11,11 +11,10 @@ Recipes for `apps/api`. **Grep the repo first** — use domain names from this p
 1. [Adding an endpoint](#1-adding-an-endpoint)
 2. [New feature module](#2-new-feature-module)
 3. [Entity + migration](#3-entity--migration)
-4. [Telegram client (external API)](#4-telegram-client-external-api)
-5. [Transactions (Order + OrderItem)](#5-transactions-order--orderitem)
-6. [Throttling + honeypot](#6-throttling--honeypot)
-7. [Validators & pipes](#7-validators--pipes)
-8. [Tests](#8-tests)
+4. [External API integration](#4-external-api-integration)
+5. [Transactions (multi-entity writes)](#5-transactions-multi-entity-writes)
+6. [Validators & pipes](#6-validators--pipes)
+7. [Tests](#7-tests)
 
 ---
 
@@ -62,31 +61,32 @@ application/orders/
 
 ```ts
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem]), TelegramModule],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem]), AcmeNotificationModule],
   controllers: [OrdersController],
   providers: [OrdersService],
 })
 export class OrdersModule {}
 ```
 
-`TelegramModule` is imported from `@/infrastructure/services/Telegram` — not `telegram.module`.
+Import integration modules from their **barrel** (`@/application/acme-notification` or `@/infrastructure/services/Acme`) — not deep paths like `acme.module`.
 
-Register in `AppModule.imports` — import each feature module from its barrel (`./application/orders`), not `orders.module`.
+Register feature modules in `AppModule.imports` from each domain barrel (`./application/orders`), not `orders.module`.
 
-**Sub-feature:** `application/products/facets/` for `GET /api/products/facets` — separate controller/service or methods on `ProductsService`; match what the repo uses once scaffolded.
+**Sub-features:** nest under the parent domain when scope is small (`application/products/facets/`); split into its own module only when it has distinct lifecycle or many files. Match what the repo already does — grep before inventing a new layout.
 
-**Product filters:** build `FindOptionsWhere<Product>` in `products.filters.ts` (`buildProductWhere`, `buildProductOrder`); use `findAndCount` for list, `find` + in-memory aggregation for facets. See [code-style-guide § Repository queries](./code-style-guide.md#repository-queries).
+**List/filter endpoints:** keep query-building out of the service body — e.g. `*.filters.ts` with `buildWhere` / `buildOrder` helpers; use `findAndCount` for paginated lists. See [code-style-guide § Repository queries](./code-style-guide.md#repository-queries).
 
 ---
 
 ## 3. Entity + migration
 
 - Extend `TimestampEntity` (`infrastructure/persistence/timestamp.entity.ts`) — `created_at`, `updated_at`, `deleted_at` on every table.
-- Entities: JSONB `{ uk, en }` on `name`, `description`, `story`, `forWhom` where applicable
-- `priceMinor` + `currency`; `quantity` with derived `inStock`
-- FK relations: `onUpdate: 'CASCADE'`; `onDelete: 'RESTRICT'` on **all** FKs — **never** `onDelete: 'CASCADE'` or `SET NULL`
-- SQL migrations: see [code-style-guide.md § Migrations](./code-style-guide.md#9-migrations) — inline named FKs, partial indexes on `deleted_at IS NULL`
-- Initial schema: one migration per **domain scope** (`CreateCatalog`, then `CreateOrders`); add new timestamped files as changes arise
+- Use explicit column types and naming that match the domain (`status`, `slug`, monetary amounts in minor units + `currency`, etc.).
+- FK relations: `onUpdate: 'CASCADE'`; `onDelete: 'RESTRICT'` on **all** FKs — **never** `onDelete: 'CASCADE'` or `SET NULL`.
+- SQL migrations: see [code-style-guide.md § Migrations](./code-style-guide.md#9-migrations) — inline named FKs, partial indexes on `deleted_at IS NULL`.
+- Initial schema: one migration per **domain scope** (`CreateCatalog`, then `CreateOrders`); add new timestamped files as changes arise.
+
+> **Side note — localized strings:** user-facing copy stored in the DB uses JSONB `{ uk, en }` (e.g. `name`, `description`). Resolve to a single locale in the service/DTO layer — do not expose raw JSONB on public responses.
 
 ```bash
 pnpm nx run api:migration:run
@@ -97,53 +97,79 @@ Both `up` and `down`. Test run → revert → run.
 
 ---
 
-## 4. Telegram client (external API)
+## 4. External API integration
 
-Hand-written client — **not** `packages/api-clients` (that package is for the web app calling **our** API).
+Outbound HTTP from this API — **not** `packages/api-clients` (that package is the web app calling **our** API).
+
+Two shapes; pick based on whether the upstream publishes OpenAPI:
+
+**Hand-written** — simple REST, webhooks, bot APIs:
 
 ```text
-infrastructure/services/Telegram/client/telegram.client.ts
-infrastructure/services/Telegram/telegram.module.ts
+application/<integration>/
+├── <integration>.config.ts   # env → typed config
+├── <integration>.service.ts  # extends ExternalApi
+├── <integration>.module.ts
+└── index.ts                  # public barrel
 ```
 
-`OrdersService.create`: persist order, then notify Telegram; **catch and log** — order still succeeds if Telegram is down (mvp-plan).
+**OpenAPI-generated** — third-party HTTP API with a spec:
 
-Env: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
-
----
-
-## 5. Transactions (Order + OrderItem)
-
-```ts
-return this.dataSource.transaction(async (manager) => {
-  const order = await manager.getRepository(Order).save(/* … */);
-  await manager.getRepository(OrderItem).save(/* line snapshots */);
-  return order;
-});
+```text
+infrastructure/services/<ServiceName>/
+├── generated/                # read-only; regen from upstream spec
+├── client/
+│   ├── <service>.config.ts
+│   ├── <service>.client.ts   # extends ExternalApi; wires generated *Api
+│   └── index.ts
+└── index.ts
 ```
 
-Run Telegram **after** commit if possible. Snapshots: `titleSnapshot`, `priceMinorSnapshot` on `OrderItem`.
+Setup checklist:
 
----
-
-## 6. Throttling + honeypot
-
-Global Throttler ~60/min per IP. Orders:
+1. **Config** — secrets and base URL from env in `<integration>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
+2. **Client/service** — extend `ExternalApi`; implement `getBaseUrl()`; expose domain-friendly methods (no business orchestration in the client).
+3. **Module** — small `*Module` exporting the client; import it in the feature module that orchestrates the flow.
+4. **Feature service** — call the client after the primary persistence path; **catch and log** outbound failures when the user-facing operation must still succeed (e.g. notification after order save).
 
 ```ts
-@Post()
-@Throttle({ default: { limit: 5, ttl: 60_000 } })
-create(@Body() dto: CreateOrderDto) {
-  if (dto.company) throw new BadRequestException('Invalid submission');
-  return this.ordersService.create(dto);
+@Injectable()
+export class OrdersService {
+  constructor(private readonly notifications: AcmeNotificationService) {}
+
+  async create(dto: CreateOrderDto): Promise<OrderResponseDto> {
+    const order = await this.persistOrder(dto);
+    try {
+      await this.notifications.notifyOrderCreated(order);
+    } catch (err) {
+      this.logger.error({ msg: 'notification.failed', orderId: order.id, err });
+    }
+    return toOrderResponse(order);
+  }
 }
 ```
 
-Hidden `company` field in DTO — reject when filled.
+---
+
+## 5. Transactions (multi-entity writes)
+
+When a single user action touches multiple tables, wrap writes in one transaction:
+
+```ts
+return this.dataSource.transaction(async (manager) => {
+  const parent = await manager.getRepository(Parent).save(/* … */);
+  await manager.getRepository(Child).save(/* rows linked to parent */);
+  return parent;
+});
+```
+
+Run **side effects** (notifications, webhooks, cache invalidation) **after** commit when possible — not inside the transaction callback.
+
+When child rows must reflect parent state at write time, snapshot immutable fields on the child (e.g. `titleSnapshot`, `unitPriceSnapshot`) so later catalog changes do not rewrite history.
 
 ---
 
-## 7. Validators & pipes
+## 6. Validators & pipes
 
 ### Pagination (`src/utils/pagination.ts`)
 
@@ -240,16 +266,16 @@ Shared validators live in `src/utils/validators/` — grep before duplicating.
 
 ---
 
-## 8. Tests
+## 7. Tests
 
-**Unit** — mock repository/client:
+**Unit** — mock repository and outbound clients:
 
 ```ts
 const module = await Test.createTestingModule({
   providers: [
     OrdersService,
     { provide: getRepositoryToken(Order), useValue: orderRepo },
-    { provide: TelegramClient, useValue: { sendOrderNotification: jest.fn() } },
+    { provide: AcmeNotificationService, useValue: { notifyOrderCreated: jest.fn() } },
   ],
 }).compile();
 ```
@@ -260,7 +286,7 @@ const module = await Test.createTestingModule({
 await request(app.getHttpServer()).post('/api/orders').send(payload).expect(201);
 ```
 
-Cover: validation 400, not-found 404, honeypot, Telegram failure tolerance.
+Cover: validation 400, not-found 404, outbound integration failure tolerance where applicable.
 
 ```bash
 pnpm nx run api:test

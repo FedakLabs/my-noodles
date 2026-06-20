@@ -31,7 +31,7 @@ pnpm nx run web:fix
 ## Stack & Tools
 
 - **Next.js 16** App Router (`app/[locale]/…`), ISR + Server Components where planned
-- **React 19**, **TypeScript** strict (`exactOptionalPropertyTypes`)
+- **React 19**, **TypeScript** strict
 - **TanStack Query v5** — client data; prefetch + `HydrationBoundary` for SSR/ISR
 - **MUI v9** + **`packages/theme`** (design system, skin engine)
 - **next-intl** — UI strings; `localePrefix: 'always'` (`/uk/…`)

@@ -1,8 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, type Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, type Repository } from 'typeorm';
 
-import { TelegramClient } from '@/infrastructure/services/Telegram';
+import { TransactionalRepository } from '@/infrastructure/persistence';
+import { TelegramService } from '@/infrastructure/services/Telegram';
 
 import { Product } from '../products/product.entity';
 import { Order } from './order.entity';
@@ -12,26 +13,28 @@ import { mapDeliveryDtoToEntity } from './order-delivery.mapper';
 import { OrderItem } from './order-item.entity';
 import { OrderStatus } from './order-status';
 import type { CreateOrderDto, OrderResponseDto } from './orders.dto';
-import { HoneypotTriggeredException, OrderProductNotFoundException } from './orders.exceptions';
+import { OrderProductNotFoundException } from './orders.exceptions';
 
 @Injectable()
-export class OrdersService {
+export class OrdersService extends TransactionalRepository {
   private readonly logger = new Logger(OrdersService.name);
 
   constructor(
-    @InjectDataSource()
-    private readonly dataSource: DataSource,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
-    @Inject(TelegramClient)
-    private readonly telegramClient: TelegramClient,
-  ) {}
+    @InjectRepository(Order)
+    private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(OrderDelivery)
+    private readonly orderDeliveriesRepository: Repository<OrderDelivery>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemsRepository: Repository<OrderItem>,
+    @Inject(TelegramService)
+    private readonly telegramService: TelegramService,
+  ) {
+    super();
+  }
 
   async create(dto: CreateOrderDto): Promise<OrderResponseDto> {
-    if (dto.company) {
-      throw new HoneypotTriggeredException();
-    }
-
     const productIds = dto.items.map((item) => item.productId);
     const products = await this.productsRepository.find({
       where: { id: In(productIds) },
@@ -55,12 +58,8 @@ export class OrdersService {
 
     const totalMinor = lineItems.reduce((sum, line) => sum + line.priceMinorSnapshot * line.qty, 0);
 
-    const { order, delivery } = await this.dataSource.transaction(async (manager) => {
-      const orderRepository = manager.getRepository(Order);
-      const orderItemRepository = manager.getRepository(OrderItem);
-      const deliveryRepository = manager.getRepository(OrderDelivery);
-
-      const savedOrder = await orderRepository.save({
+    const { order, delivery } = await this.withTransaction(async () => {
+      const savedOrder = await this.ordersRepository.save({
         customerName: dto.customerName,
         phone: dto.phone,
         totalMinor,
@@ -68,11 +67,11 @@ export class OrdersService {
         status: OrderStatus.New,
       });
 
-      const savedDelivery = await deliveryRepository.save(
+      const savedDelivery = await this.orderDeliveriesRepository.save(
         mapDeliveryDtoToEntity(savedOrder.id, dto.delivery),
       );
 
-      await orderItemRepository.save(
+      await this.orderItemsRepository.save(
         lineItems.map((line) => ({
           orderId: savedOrder.id,
           productId: line.product.id,
@@ -86,7 +85,7 @@ export class OrdersService {
     });
 
     try {
-      await this.telegramClient.sendOrderNotification({
+      await this.telegramService.sendOrderNotification({
         orderId: order.id,
         createdAt: order.createdAt,
         customerName: order.customerName,
