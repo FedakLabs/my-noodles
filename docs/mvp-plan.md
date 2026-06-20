@@ -424,12 +424,11 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 - [x] Endpoints: `GET /products` (filters + page-number pagination, `limit` required<=100), `GET /products/facets` (v1 plain counts, same contract), `GET /products/:slug`, `GET /collections(/:slug)`, `GET /countries`, `POST /orders`.
 - [x] `POST /orders`: persist + Telegram notify (failure-tolerant; format per plan; `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`).
 - [x] `@nestjs/swagger` -> `/api/docs-json` (Swagger CLI plugin on DTOs; UI at `/api/docs`).
-- [ ] Seed: import owner CSV (`seed/products.csv` exists; seed still reads hardcoded `PRODUCT_SEEDS`). Enrichment + derive brands/countries/collections (per-category) is done.
 
 ### Phase 6 - API client + web data layer
 
-- [ ] `packages/api-clients`: `openapi-generator.json`, `api:generate` (typescript-axios) -> `generated/<service>`, `setupApiClients(baseURL)`, `common.ts` (`ApiError`).
-- [ ] `apps/web/src/api`: `clients.ts` singleton + interceptors; per-domain hooks + query-key factories + view-model mappers; shared RQ helpers.
+- [x] `packages/api-clients`: `openapi-generator.json` (live `/api/docs-json` inputSpec), `api:generate` → `generated/storefront`, `setupApiClients(baseURL)`, `common.ts` (`ApiError`), `locale.dto.ts` / `products.dto.ts` re-exports.
+- [x] `apps/web/src/api`: `clients.ts` singleton + interceptors; per-domain `*.ts` fetchers + `*.hooks.ts` with `formatUseQuery`/`formatUseMutation`; `useAppLocale` in `hooks/locale.ts`; generated DTOs directly (no view-model mappers); `shared/env.ts` + `shared/query-client.ts`.
 
 ### Phase 7 - Frontend
 

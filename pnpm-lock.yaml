@@ -201,6 +201,9 @@ importers:
       '@mui/material-nextjs':
         specifier: 9.1.1
         version: 9.1.1(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.101.0))(react@19.2.7)
+      '@my-noodles/api-clients':
+        specifier: workspace:*
+        version: link:../../packages/api-clients
       '@my-noodles/theme':
         specifier: workspace:*
         version: link:../../packages/theme
@@ -210,6 +213,9 @@ importers:
       '@tanstack/react-query':
         specifier: 5.101.0
         version: 5.101.0(react@19.2.7)
+      axios:
+        specifier: 1.9.0
+        version: 1.9.0
       motion:
         specifier: 12.40.0
         version: 12.40.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -302,7 +308,7 @@ importers:
     dependencies:
       axios:
         specifier: 1.9.0
-        version: 1.9.0(debug@4.4.3)
+        version: 1.9.0
     devDependencies:
       '@my-noodles/eslint-config':
         specifier: workspace:*
@@ -14513,7 +14519,7 @@ snapshots:
   axios@1.16.0(debug@4.4.3):
     dependencies:
       follow-redirects: 1.16.0(debug@4.4.3)
-      form-data: 4.0.5
+      form-data: 4.0.6
       proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
@@ -14528,7 +14534,7 @@ snapshots:
       - debug
       - supports-color
 
-  axios@1.9.0(debug@4.4.3):
+  axios@1.9.0:
     dependencies:
       follow-redirects: 1.16.0(debug@4.4.3)
       form-data: 4.0.6

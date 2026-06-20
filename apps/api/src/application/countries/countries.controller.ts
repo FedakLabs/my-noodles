@@ -1,5 +1,7 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+
+import { LocaleQueryDto } from '@/utils/locale-query';
 
 import { CountryDto } from './countries.dto';
 import { CountriesService } from './countries.service';
@@ -12,7 +14,7 @@ export class CountriesController {
   @Get()
   @ApiOperation({ summary: 'List countries' })
   @ApiOkResponse({ type: CountryDto, isArray: true })
-  list(): Promise<CountryDto[]> {
+  list(@Query() _query: LocaleQueryDto): Promise<CountryDto[]> {
     return this.countriesService.list();
   }
 }

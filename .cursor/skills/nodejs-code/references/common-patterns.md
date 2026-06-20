@@ -196,6 +196,46 @@ For joins or custom QB tweaks, use `new PaginationHelper(repo, pagination).execu
 
 `buildPaginationMeta` / `paginationSkip` remain available for non-standard flows.
 
+### Locale query (`src/utils/locale-query.ts`)
+
+Locale is resolved per request by `localeMiddleware` (`?locale` → `Accept-Language` → default). Supported values come from `SUPPORTED_LOCALES` in `locale.config.ts`.
+
+**Query DTOs** — compose with `LocaleQueryDto` (validation + Swagger on endpoints that already use `@Query()`):
+
+```ts
+import { IntersectionType } from '@nestjs/swagger';
+import { LocaleQueryDto } from '@/utils/locale-query';
+import { PaginationQueryDto } from '@/utils/pagination';
+
+export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, LocaleQueryDto) {
+  // filters only
+}
+
+export class ProductFacetsQueryDto extends LocaleQueryDto {
+  // filters only
+}
+```
+
+Services do not read `locale` from the DTO — `LocaleContext` is already bound. The field exists so `ValidationPipe` whitelists it and OpenAPI documents it.
+
+**Endpoints without other query params** — add `@Query() _query: LocaleQueryDto` on the handler (locale is resolved by middleware, not the service):
+
+```ts
+@Get()
+list(@Query() _query: LocaleQueryDto): Promise<CountryDto[]> {
+  return this.countriesService.list();
+}
+```
+
+Regenerate storefront clients after changing locale metadata (API must be running on port 3001):
+
+```bash
+pnpm nx run api-clients:api:generate
+pnpm nx run api-clients:build
+```
+
+`openapi-generator.json` uses live `inputSpec`: `http://localhost:3001/api/docs-json` (no committed `openapi.json` snapshot).
+
 Shared validators live in `src/utils/validators/` — grep before duplicating.
 
 ---

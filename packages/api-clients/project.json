@@ -5,8 +5,14 @@
   "projectType": "library",
   "tags": ["scope:packages", "type:lib"],
   "targets": {
+    "api:generate": {
+      "command": "pnpm api:generate",
+      "options": {
+        "cwd": "packages/api-clients"
+      }
+    },
     "build": {
-      "command": "tsc -p tsconfig.json",
+      "command": "tsc -p tsconfig.build.json",
       "options": {
         "cwd": "packages/api-clients"
       },

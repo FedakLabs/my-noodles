@@ -28,7 +28,7 @@ Do **not** assume primitives from other codebases:
 | If you're about to…                                           | Stop and…                                                                                     |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | Import from `@merchant-portal/ui` or `@merchant-portal/utils` | This repo doesn't use them                                                                    |
-| Use `formatUseQuery` / `formatUseMutation`                    | Use standard TanStack Query hooks unless `apps/web/src/api/_lib` defines helpers — grep first |
+| Use `formatUseQuery` / `formatUseMutation`                    | Defined in `apps/web/src/api/_lib/queries.ts` — use them in all API hooks |
 | Add `DetailsModal`, `ConfirmationModal`, `DataTable`          | Not part of this project — use MUI `Dialog`, local table/grid components                      |
 | Wire TanStack Router / `routes-config.tsx`                    | Routing is Next.js `app/[locale]/…`                                                           |
 | Read `packages/ui` or `packages/themes`                       | Design system is **`packages/theme`**                                                         |
@@ -122,34 +122,114 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 ## 4. React Query hooks
 
-**Location:** `apps/web/src/api/[feature]/[feature].ts`
+**Location:** `apps/web/src/api/[feature]/`
 
-Uses **`packages/api-clients`** via singleton from `api/clients.ts`.
+- **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
+- **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
+
+Uses **`packages/api-clients`** via singleton from `api/clients.ts` (`API_URL` from `shared/env.ts`).
+
+### Types: generated DTOs first
+
+We own the storefront API — **`apps/web/src/api` should not mirror response shapes**. Use generated models from `@my-noodles/api-clients/storefront` (`ProductSummaryDto`, `CountryDto`, …) in hooks, screens, and components.
+
+**`types.ts` in each feature folder is for:**
+
+- Re-exporting generated DTOs (barrel for consumers)
+- **Query inputs only** — e.g. `ProductListFilters` (locale + URL filters for server prefetch), `ProductListQueryFilters` (URL filters only for client hooks)
+
+**Custom types / mappers (`utils.ts`) only when there is a critical architectural reason**, e.g.:
+
+- Merging multiple API responses into one UI-specific shape
+- Normalizing a third-party API we do not control
+- Deliberately hiding fields the UI must never see
+
+Do **not** add `*ViewModel` duplicates of our own DTOs — that creates drift with no benefit.
 
 ```ts
-import { useQuery } from '@tanstack/react-query';
-import { apiClients } from '../clients';
+// products.ts — server-safe fetchers + query keys (no React hooks)
+import type { PaginatedProductsDto } from '@my-noodles/api-clients/storefront';
+
+import { getApiClients } from '../clients';
+import type { ProductListFilters } from './types';
+import { buildProductListRequest } from './utils';
 
 export const productsQueryKeys = {
   all: ['products'] as const,
   list: (filters: ProductListFilters) => [...productsQueryKeys.all, 'list', filters] as const,
-  detail: (slug: string, locale: string) => [...productsQueryKeys.all, 'detail', slug, locale] as const,
-  facets: (filters: ProductFacetFilters) => [...productsQueryKeys.all, 'facets', filters] as const,
 };
 
-export function useProductsList(filters: ProductListFilters) {
-  return useQuery({
-    queryKey: productsQueryKeys.list(filters),
-    queryFn: () => apiClients.productsApi.listProducts(/* map filters */).then((res) => res.data),
-  });
+export async function fetchProductsList(filters: ProductListFilters): Promise<PaginatedProductsDto> {
+  const { data } = await getApiClients().productsApi.productsControllerList(
+    buildProductListRequest(filters),
+  );
+  return data;
 }
 ```
 
+```ts
+// products.hooks.ts — client hooks resolve locale internally
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+
+import { formatUseQuery } from '../_lib/queries';
+import { useAppLocale } from '@/hooks/locale';
+import { fetchProductsList, productsQueryKeys } from './products';
+import type { ProductListQueryFilters } from './types';
+
+export function useProductsList(filters: ProductListQueryFilters) {
+  const locale = useAppLocale();
+  const resolvedFilters = { ...filters, locale };
+
+  return formatUseQuery(
+    useQuery({
+      queryKey: productsQueryKeys.list(resolvedFilters),
+      queryFn: () => fetchProductsList(resolvedFilters),
+    }),
+    'products',
+  );
+}
+```
+
+```ts
+// orders.hooks.ts
+'use client';
+
+import { useMutation } from '@tanstack/react-query';
+
+import { formatUseMutation } from '../_lib/queries';
+import { createOrder } from './orders';
+
+export function useCreateOrder() {
+  return formatUseMutation(useMutation({ mutationFn: createOrder }), 'createOrder');
+}
+```
+
+**Hook result naming** — use `formatUseQuery` / `formatUseMutation` from `api/_lib/queries.ts` so destructuring is prefixed (`products`, `productsIsPending`, `createOrder`, `createOrderIsPending`, …). For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfiniteQuery` with our `{ items, meta: { page, limit, total } }` shape.
+
 **Rules:**
 
+- Return `response.data` as-is for our API — no `mapXxx()` unless justified above
+- **Client hooks** call `useAppLocale()` (next-intl app locale, same codes as `ApiLocale`) — do not pass `locale` from screens/components
+- **Server prefetch / fetchers** take explicit `locale` (from route `params` or `setRequestLocale`) — keep in `*.ts`, not `*.hooks.ts`
+- Pass optional `locale` via generated `*Request` types (`{ locale: ApiLocale, … }`), not a separate axios helper
+- Use generated sort enums (`ProductsControllerListSortEnum`, `ProductSort`) — do not hand-roll sort constants in `api-clients`
 - Facets and list use **separate keys** (facets = filters only; list = filters + page)
 - Mutations invalidate the smallest relevant key set
 - Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary`
+- `utils.ts` = request builders (filters → generated `*Request` types), not response mappers
+- Do **not** inject locale via a global axios interceptor — explicit `locale` on fetchers keeps query keys and SSR predictable; `forbidNonWhitelisted` on the API rejects stray `?locale=` on strict query DTOs
+
+### Env (`shared/env.ts`)
+
+```ts
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+if (!apiUrl) throw new Error('NEXT_PUBLIC_API_URL is not set');
+export const API_URL = apiUrl;
+```
+
+Copy `apps/web/.env.example` → `.env.local` for local dev. No fallback URLs in source.
 
 ---
 
@@ -302,12 +382,16 @@ components/catalog/product-card/
 
 ```tsx
 export type ProductCardProps = {
-  product: ProductViewModel;
+  product: ProductSummaryDto;
   onAddToCart?: () => void;
 } & StackProps;
 
 export function ProductCard({ product, onAddToCart, ...stackProps }: ProductCardProps) {
-  const skinVars = resolveSkin({ brand: product.brand, country: product.country, slug: product.slug });
+  const skinVars = resolveSkin({
+    brand: product.brand?.slug,
+    country: product.country.code,
+    slug: product.slug,
+  });
 
   return (
     <Stack {...stackProps} style={skinVars}>
@@ -329,14 +413,14 @@ Test: renders, add-to-cart callback, missing image fallback.
 /**
  * Resolves active skin CSS variables for the current product context.
  */
-export function useProductSkin(product: ProductViewModel | undefined) {
+export function useProductSkin(product: ProductSummaryDto | undefined) {
   return useMemo(
     () =>
       product
         ? resolveSkin({
-            brand: product.brandKey,
-            country: product.countryCode,
-            category: product.categoryKey,
+            brand: product.brand?.slug,
+            country: product.country.code,
+            category: product.category.slug,
             slug: product.slug,
           })
         : undefined,

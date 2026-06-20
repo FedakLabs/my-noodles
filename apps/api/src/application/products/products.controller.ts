@@ -1,6 +1,8 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
+import { LocaleQueryDto } from '@/utils/locale-query';
+
 import {
   ListProductsQueryDto,
   PaginatedProductsDto,
@@ -34,7 +36,7 @@ export class ProductsController {
   @ApiParam({ name: 'slug', example: 'pocky-matcha' })
   @ApiOkResponse({ type: ProductDetailDto })
   @ApiNotFoundResponse({ description: 'Product not found' })
-  getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
+  getBySlug(@Param('slug') slug: string, @Query() _query: LocaleQueryDto): Promise<ProductDetailDto> {
     return this.productsService.getBySlug(slug);
   }
 }

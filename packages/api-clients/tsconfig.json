@@ -3,9 +3,12 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": ".",
+    "noEmit": true,
+    "exactOptionalPropertyTypes": false
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "generated"]
+  "include": ["src/**/*.ts", "generated/**/*.ts"],
+  "exclude": ["node_modules", "dist", "generated/**/docs/**"]
 }

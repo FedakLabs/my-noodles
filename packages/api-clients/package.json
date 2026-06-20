@@ -5,17 +5,19 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./storefront": {
-      "types": "./dist/storefront/index.d.ts",
-      "import": "./dist/storefront/index.js"
+      "types": "./dist/src/storefront/index.d.ts",
+      "import": "./src/storefront/index.ts",
+      "default": "./src/storefront/index.ts"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json"
+    "build": "tsc -p tsconfig.build.json",
+    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json -o ./generated/storefront"
   },
   "dependencies": {
     "axios": "1.9.0"

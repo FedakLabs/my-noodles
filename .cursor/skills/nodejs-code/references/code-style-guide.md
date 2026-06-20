@@ -354,6 +354,8 @@ export class CreateOrderDto {
 
 Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defaults (examples, descriptions). Prefer `class-validator` decorators on DTO fields — the CLI plugin mirrors them when `classValidatorShim: true`.
 
+**Response strings (`string | null`)** — set `{ type: String, nullable: true }` on `@ApiProperty()` / `@ApiPropertyOptional()`. Union types collapse to `Object` under `emitDecoratorMetadata`, so Swagger would otherwise emit `type: object` for locale-resolved copy.
+
 ### Shared validators
 
 - Reusable field decorators or small validator classes in `src/utils/validators/`.
@@ -577,6 +579,7 @@ Register as provider in a small `TelegramModule` or `OrdersModule`; inject into 
 - Generated output under `infrastructure/services/<Service>/generated/` — **read-only**.
 - Thin `@Injectable()` wrapper in `client/` exposing typed methods.
 - Distinct from `packages/api-clients` (that package is **our** API client for the web app).
+- **Storefront client regen:** `pnpm nx run api-clients:api:generate` fetches `/api/docs-json` from a running local API; hand-written `src/storefront/*.ts` use extensionless imports (same as generated output).
 
 ### Rules
 

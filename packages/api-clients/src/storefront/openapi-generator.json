@@ -5,11 +5,14 @@
   },
   "inputSpec": "http://localhost:3001/api/docs-json",
   "generatorName": "typescript-axios",
-  "output": "../../generated/storefront",
+  "output": "./generated/storefront",
   "additionalProperties": {
     "withSeparateModelsAndApi": true,
     "stringEnums": true,
     "supportsES6": true,
-    "withInterfaces": true
+    "withInterfaces": true,
+    "apiPackage": "api",
+    "modelPackage": "models",
+    "useSingleRequestParameter": true
   }
 }

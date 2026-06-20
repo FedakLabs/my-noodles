@@ -112,12 +112,14 @@ apps/web/src/
 │   └── search-params/
 ├── components/[feature]/
 ├── api/[feature]/
-│   ├── [feature].ts        # hooks + query keys
-│   ├── types.ts
+│   ├── [feature].ts        # fetchers + query keys (server-safe, no React)
+│   ├── [feature].hooks.ts  # `'use client'` — RQ hooks + formatUseQuery/Mutation
+│   ├── types.ts            # re-export generated DTOs + query-input types only
+│   ├── utils.ts            # optional: request builders (not response mappers)
 │   └── index.ts
-├── hooks/                  # cart, useSkin, useAnalytics, …
+├── hooks/                  # useAppLocale, cart, useSkin, …
 ├── utils/
-└── shared/
+└── shared/                 # env.ts (API_URL), query-client.ts
 ```
 
 **Rules:**
@@ -126,6 +128,8 @@ apps/web/src/
 - Co-locate `*.test.tsx` with source
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
 - **`packages/api-clients`** = axios client only; **`apps/web/src/api`** = React Query layer
+- **`shared/env.ts`** — export parsed env (`API_URL` from `NEXT_PUBLIC_API_URL`); no inline defaults — use `apps/web/.env.example` → `.env.local`
+- **`hooks/locale.ts`** — `useAppLocale()` (next-intl); client API hooks merge locale internally, server fetchers take explicit `locale`
 
 ---
 
@@ -137,10 +141,12 @@ apps/web/src/
 | TanStack Router / `pages/` SPA routing                     | Next App Router + `screens/`                 |
 | `public/locales/…` without checking repo                   | Follow next-intl message file layout in repo |
 | Raw axios in components                                    | `apps/web/src/api` hooks                     |
+| Duplicate `*ViewModel` types mirroring our OpenAPI DTOs    | Use `@my-noodles/api-clients/storefront` types |
 | Magic strings in JSX                                       | `useTranslations`                            |
 | Skip empty/error/loading                                   | Handle all four states                       |
 | Deep `sx` overrides on every element                       | Theme tokens + MUI variants                  |
-| Cart persisted to server before checkout                   | Zustand until `POST /orders`                 |
+| Pass `locale` from every screen into API hooks               | `useAppLocale()` inside `*.hooks.ts`; explicit `locale` only in server prefetch fetchers |
+| Default API URL in `shared/env.ts`                           | `NEXT_PUBLIC_API_URL` in `.env.local` (see `.env.example`) |
 
 ---
 

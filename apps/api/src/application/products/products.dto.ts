@@ -1,13 +1,14 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
+import { LocaleQueryDto } from '@/utils/locale-query';
 import { PaginatedMetaDto, PaginationQueryDto } from '@/utils/pagination';
 import { parseOptionalBoolean, parseOptionalIntQuery, parseStringArray } from '@/utils/transformers';
 
 import { PRODUCT_SORT_OPTIONS, type ProductSort } from './products.filters';
 
-export class ListProductsQueryDto extends PaginationQueryDto {
+export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, LocaleQueryDto) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -64,7 +65,7 @@ export class ListProductsQueryDto extends PaginationQueryDto {
   sort?: ProductSort;
 }
 
-export class ProductFacetsQueryDto {
+export class ProductFacetsQueryDto extends LocaleQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -136,7 +137,7 @@ export class CountryRefDto {
   @ApiProperty()
   code!: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   name!: string | null;
 }
 
@@ -144,7 +145,7 @@ export class CategoryRefDto {
   @ApiProperty()
   slug!: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   name!: string | null;
 }
 
@@ -152,7 +153,7 @@ export class ProductSummaryDto {
   @ApiProperty()
   slug!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   name!: string | null;
 
   @ApiProperty()
@@ -200,16 +201,16 @@ export class ProductFlavorDto {
 }
 
 export class ProductDetailDto extends ProductSummaryDto {
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   weight!: string | null;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   description!: string | null;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   story!: string | null;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   forWhom!: string | null;
 
   @ApiProperty({ type: ProductFlavorDto })
@@ -226,7 +227,7 @@ export class FacetOptionDto {
   @ApiProperty()
   value!: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   label!: string | null;
 
   @ApiProperty()

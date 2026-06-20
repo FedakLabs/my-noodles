@@ -1,1 +1,1 @@
-export { ApiError } from './common.js';
+export { ApiError } from './common';

@@ -1,5 +1,7 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+
+import { LocaleQueryDto } from '@/utils/locale-query';
 
 import { CollectionDetailDto, CollectionSummaryDto } from './collections.dto';
 import { CollectionsService } from './collections.service';
@@ -12,7 +14,7 @@ export class CollectionsController {
   @Get()
   @ApiOperation({ summary: 'List active collections' })
   @ApiOkResponse({ type: CollectionSummaryDto, isArray: true })
-  list(): Promise<CollectionSummaryDto[]> {
+  list(@Query() _query: LocaleQueryDto): Promise<CollectionSummaryDto[]> {
     return this.collectionsService.list();
   }
 
@@ -21,7 +23,7 @@ export class CollectionsController {
   @ApiParam({ name: 'slug', example: 'spicy-snacks' })
   @ApiOkResponse({ type: CollectionDetailDto })
   @ApiNotFoundResponse({ description: 'Collection not found' })
-  getBySlug(@Param('slug') slug: string): Promise<CollectionDetailDto> {
+  getBySlug(@Param('slug') slug: string, @Query() _query: LocaleQueryDto): Promise<CollectionDetailDto> {
     return this.collectionsService.getBySlug(slug);
   }
 }
