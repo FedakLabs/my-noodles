@@ -1,9 +1,22 @@
 import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 import { Between, In, LessThanOrEqual, MoreThan, MoreThanOrEqual } from 'typeorm';
 
+import type { PaginationQuery } from '@/utils/pagination';
+
 import type { Product } from './product.entity';
 
-export type ProductSort = 'popular' | 'new' | 'price-asc' | 'price-desc';
+export const PRODUCT_SORT_OPTIONS = ['popular', 'new', 'price-asc', 'price-desc'] as const;
+
+export type ProductSort = (typeof PRODUCT_SORT_OPTIONS)[number];
+
+export const DEFAULT_PRODUCT_SORT = PRODUCT_SORT_OPTIONS[0];
+
+const PRODUCT_SORT_ORDER: Record<ProductSort, FindOptionsOrder<Product>> = {
+  popular: { sortWeight: 'DESC', createdAt: 'DESC' },
+  new: { createdAt: 'DESC' },
+  'price-asc': { priceMinor: 'ASC' },
+  'price-desc': { priceMinor: 'DESC' },
+};
 
 export type ProductFilters = {
   collection?: string;
@@ -17,10 +30,7 @@ export type ProductFilters = {
   sort?: ProductSort;
 };
 
-export type ProductListPagination = {
-  page: number;
-  limit: number;
-};
+export type ProductListPagination = PaginationQuery;
 
 /** Type-safe `find` / `count` filter — prefer over query-builder string columns. */
 export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
@@ -61,18 +71,8 @@ export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Pro
   return where;
 }
 
-export function buildProductOrder(sort: ProductSort = 'popular'): FindOptionsOrder<Product> {
-  switch (sort) {
-    case 'new':
-      return { createdAt: 'DESC' };
-    case 'price-asc':
-      return { priceMinor: 'ASC' };
-    case 'price-desc':
-      return { priceMinor: 'DESC' };
-    case 'popular':
-    default:
-      return { sortWeight: 'DESC', createdAt: 'DESC' };
-  }
+export function buildProductOrder(sort: ProductSort = DEFAULT_PRODUCT_SORT): FindOptionsOrder<Product> {
+  return PRODUCT_SORT_ORDER[sort];
 }
 
 export const productListRelations = {

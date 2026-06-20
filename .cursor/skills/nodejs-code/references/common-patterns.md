@@ -145,26 +145,56 @@ Hidden `company` field in DTO — reject when filled.
 
 ## 7. Validators & pipes
 
-Pagination (mvp-plan): `page` + **`limit` required when paginating**, max 100.
+### Pagination (`src/utils/pagination.ts`)
+
+Shared query + response shape for all paginated list endpoints (mvp-plan: `page` + **`limit` required**, max 100).
+
+**Query** — extend `PaginationQueryDto` on list query DTOs:
 
 ```ts
-export class ListProductsQueryDto {
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page: number;
+import { PaginationQueryDto } from '@/utils/pagination';
 
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit: number;
-
-  @IsOptional()
-  @IsIn(['uk', 'en'])
-  locale?: string;
+export class ListProductsQueryDto extends PaginationQueryDto {
+  // filters only — page/limit inherited
 }
 ```
+
+**Response** — extend `PaginatedMetaDto` and add `items`:
+
+```ts
+import { PaginatedMetaDto } from '@/utils/pagination';
+
+export class PaginatedProductsDto extends PaginatedMetaDto {
+  items!: ProductSummaryDto[];
+}
+```
+
+JSON shape:
+
+```json
+{
+  "items": [/* ... */],
+  "meta": { "total": 42, "currentTotal": 20, "page": 1, "limit": 20 }
+}
+```
+
+**Service** — use `PaginationHelper` (query builder + skip/take + meta):
+
+```ts
+import { PaginationHelper } from '@/utils/pagination';
+
+const { items: rows, meta } = await PaginationHelper.paginate(repo, filters, {
+  where: buildWhere(filters),
+  relations: listRelations,
+  order: buildOrder(filters.sort),
+});
+
+return { items: rows.map(toDto), meta };
+```
+
+For joins or custom QB tweaks, use `new PaginationHelper(repo, pagination).execute(options, { addToQueryBuilder })`.
+
+`buildPaginationMeta` / `paginationSkip` remain available for non-standard flows.
 
 Shared validators live in `src/utils/validators/` — grep before duplicating.
 

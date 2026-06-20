@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { PaginationHelper } from '@/utils/pagination';
+
 import { Product } from './product.entity';
 import type {
   PaginatedProductsDto,
@@ -26,17 +28,15 @@ export class ProductsService {
   ) {}
 
   async list(filters: ProductFilters & ProductListPagination): Promise<PaginatedProductsDto> {
-    const [items, total] = await this.productsRepository.findAndCount({
+    const { items: rows, meta } = await PaginationHelper.paginate(this.productsRepository, filters, {
       where: buildProductWhere(filters),
       relations: productListRelations,
       order: buildProductOrder(filters.sort),
-      skip: (filters.page - 1) * filters.limit,
-      take: filters.limit,
     });
 
     return {
-      items: items.map((product) => this.toSummary(product)),
-      total,
+      items: rows.map((product) => this.toSummary(product)),
+      meta,
     };
   }
 

@@ -1,17 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
-import {
-  parseIntQuery,
-  parseOptionalBoolean,
-  parseOptionalIntQuery,
-  parseStringArray,
-} from '@/utils/transformers';
+import { PaginatedMetaDto, PaginationQueryDto } from '@/utils/pagination';
+import { parseOptionalBoolean, parseOptionalIntQuery, parseStringArray } from '@/utils/transformers';
 
-import type { ProductSort } from './products.filters';
+import { PRODUCT_SORT_OPTIONS, type ProductSort } from './products.filters';
 
-export class ListProductsQueryDto {
+export class ListProductsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -62,23 +58,10 @@ export class ListProductsQueryDto {
   @IsBoolean()
   inStock?: boolean;
 
-  @ApiPropertyOptional({ enum: ['popular', 'new', 'price-asc', 'price-desc'] })
+  @ApiPropertyOptional({ enum: PRODUCT_SORT_OPTIONS })
   @IsOptional()
-  @IsIn(['popular', 'new', 'price-asc', 'price-desc'])
+  @IsIn(PRODUCT_SORT_OPTIONS)
   sort?: ProductSort;
-
-  @ApiProperty({ minimum: 1 })
-  @Transform(({ value }) => parseIntQuery(value))
-  @IsInt()
-  @Min(1)
-  page!: number;
-
-  @ApiProperty({ minimum: 1, maximum: 100 })
-  @Transform(({ value }) => parseIntQuery(value))
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit!: number;
 }
 
 export class ProductFacetsQueryDto {
@@ -132,10 +115,37 @@ export class ProductFacetsQueryDto {
   @IsBoolean()
   inStock?: boolean;
 
-  @ApiPropertyOptional({ enum: ['popular', 'new', 'price-asc', 'price-desc'] })
+  @ApiPropertyOptional({ enum: PRODUCT_SORT_OPTIONS })
   @IsOptional()
-  @IsIn(['popular', 'new', 'price-asc', 'price-desc'])
+  @IsIn(PRODUCT_SORT_OPTIONS)
   sort?: ProductSort;
+}
+
+export class BrandRefDto {
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  name!: string;
+}
+
+export class CountryRefDto {
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  code!: string;
+
+  @ApiProperty({ nullable: true })
+  name!: string | null;
+}
+
+export class CategoryRefDto {
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty({ nullable: true })
+  name!: string | null;
 }
 
 export class ProductSummaryDto {
@@ -163,22 +173,19 @@ export class ProductSummaryDto {
   @ApiProperty()
   sortWeight!: number;
 
-  @ApiPropertyOptional({ nullable: true })
-  brand!: { slug: string; name: string } | null;
+  @ApiPropertyOptional({ type: BrandRefDto, nullable: true })
+  brand!: BrandRefDto | null;
 
-  @ApiProperty()
-  country!: { slug: string; code: string; name: string | null };
+  @ApiProperty({ type: CountryRefDto })
+  country!: CountryRefDto;
 
-  @ApiProperty()
-  category!: { slug: string; name: string | null };
+  @ApiProperty({ type: CategoryRefDto })
+  category!: CategoryRefDto;
 }
 
-export class PaginatedProductsDto {
+export class PaginatedProductsDto extends PaginatedMetaDto {
   @ApiProperty({ type: [ProductSummaryDto] })
   items!: ProductSummaryDto[];
-
-  @ApiProperty()
-  total!: number;
 }
 
 export class ProductFlavorDto {

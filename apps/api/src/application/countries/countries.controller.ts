@@ -1,7 +1,7 @@
 import { Controller, Get, Inject } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import type { CountryDto } from './countries.dto';
+import { CountryDto } from './countries.dto';
 import { CountriesService } from './countries.service';
 
 @ApiTags('Countries')
@@ -11,6 +11,7 @@ export class CountriesController {
 
   @Get()
   @ApiOperation({ summary: 'List countries' })
+  @ApiOkResponse({ type: CountryDto, isArray: true })
   list(): Promise<CountryDto[]> {
     return this.countriesService.list();
   }

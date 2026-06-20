@@ -357,7 +357,7 @@ Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defa
 ### Shared validators
 
 - Reusable field decorators or small validator classes in `src/utils/validators/`.
-- Pagination: validate `page`, `limit` (required when paginating, `limit` ≤ 100).
+- Pagination: extend `PaginationQueryDto` / `PaginatedMetaDto` from `src/utils/pagination.ts` — see [common-patterns §7](./common-patterns.md#7-validators--pipes).
 
 ### DTO ↔ entity
 
@@ -469,13 +469,13 @@ export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Pro
   return where;
 }
 
-const [items, total] = await this.productsRepository.findAndCount({
+const { items: rows, meta } = await PaginationHelper.paginate(this.productsRepository, filters, {
   where: buildProductWhere(filters),
   relations: { brand: true, country: true, category: true },
   order: { sortWeight: 'DESC', createdAt: 'DESC' },
-  skip: (page - 1) * limit,
-  take: limit,
 });
+
+return { items: rows.map(toSummary), meta };
 ```
 
 **Do not** scatter `'product.price_minor'` / `'category.slug'` strings in services — renames will not be caught by TypeScript.
