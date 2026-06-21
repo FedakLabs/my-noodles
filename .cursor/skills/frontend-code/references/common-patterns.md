@@ -8,7 +8,7 @@ Task recipes for `apps/web`. **Grep the repo first** and copy the nearest featur
 
 1. [Theme & layout](#1-theme--layout)
 2. [Forms (react-hook-form + Zod)](#2-forms-react-hook-form--zod)
-3. [React Query hooks](#3-react-query-hooks)
+3. [React Query hooks](#3-react-query-hooks) — includes [Remote data lifecycle](#remote-data-lifecycle-loading--error--empty), [Initial load vs refetch](#initial-load-vs-refetch)
 4. [Route + screen (Next.js App Router)](#4-route--screen-nextjs-app-router)
 5. [URL filters (nuqs)](#5-url-filters-nuqs)
 6. [i18n (next-intl)](#6-i18n-next-intl)
@@ -39,7 +39,7 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 ```
 
 - Wrap pages with existing layout from `screens/` or `app/[locale]/layout.tsx`
-- Product/collection cards: apply skin CSS variables from `resolveSkin()` at the card root
+- Product/collection cards: apply skin CSS variables from `resolveSkin()` (`@my-noodles/ui`) at the card root
 
 ---
 
@@ -104,12 +104,12 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 ## 3. React Query hooks
 
-**Location:** `apps/web/src/api/[feature]/`
+**Location:** `apps/web/src/api/[feature]/` — import from **`@/api/[feature]`** (the module `index.ts`), not from `*.hooks.ts` / `*.ts` directly.
 
 - **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
 - **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
 
-Uses **`packages/api-clients`** via singleton from `api/clients.ts` (`API_URL` from `shared/env.ts`, validated with Zod).
+Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout).
 
 ### Types: generated DTOs first
 
@@ -118,7 +118,8 @@ We own the storefront API — **`apps/web/src/api` should not mirror response sh
 **`types.ts` in each feature folder is for:**
 
 - Re-exporting generated DTOs (barrel for consumers)
-- **Query inputs only** — e.g. `ProductListFilters` (locale + URL filters for server prefetch), `ProductListQueryFilters` (URL filters only for client hooks)
+
+**Query inputs use domain search-param types** — import `CatalogSearchParams` / `CatalogFilterParams` from `@/screens/catalog/search-params`. Do not duplicate filter shapes in `api/`.
 
 **Custom types / mappers (`utils.ts`) only when there is a critical architectural reason**, e.g.:
 
@@ -130,22 +131,21 @@ Do **not** add `*ViewModel` duplicates of our own DTOs — that creates drift wi
 
 ```ts
 // products.ts — server-safe fetchers + query keys (no React hooks)
-import type { PaginatedProductsDto } from '@my-noodles/api-clients/storefront';
+import { productsControllerList, type PaginatedProductsDto } from '@my-noodles/api-clients/storefront';
 
-import { getApiClients } from '../clients';
-import type { ProductListFilters } from './types';
-import { buildProductListRequest } from './utils';
+import type { CatalogSearchParams } from '@/screens/catalog/search-params';
+
+import { requestData } from '@my-noodles/web-lib/react-query';
+import { searchParamsToListQuery } from './utils';
 
 export const productsQueryKeys = {
   all: ['products'] as const,
-  list: (filters: ProductListFilters) => [...productsQueryKeys.all, 'list', filters] as const,
+  list: (params: CatalogSearchParams, locale: Locale) =>
+    [...productsQueryKeys.all, 'list', locale, params] as const,
 };
 
-export async function fetchProductsList(filters: ProductListFilters): Promise<PaginatedProductsDto> {
-  const { data } = await getApiClients().productsApi.productsControllerList(
-    buildProductListRequest(filters),
-  );
-  return data;
+export async function fetchProductsList(params: CatalogSearchParams, locale: Locale): Promise<PaginatedProductsDto> {
+  return requestData(productsControllerList({ query: searchParamsToListQuery(params, locale) }));
 }
 ```
 
@@ -153,23 +153,36 @@ export async function fetchProductsList(filters: ProductListFilters): Promise<Pa
 // products.hooks.ts — client hooks resolve locale internally
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
-import { formatUseQuery } from '../_lib/queries';
+import type { CatalogFilterParams, CatalogSearchParams } from '@/screens/catalog/search-params';
 import { useAppLocale } from '@/hooks/locale';
-import { fetchProductsList, productsQueryKeys } from './products';
-import type { ProductListQueryFilters } from './types';
 
-export function useProductsList(filters: ProductListQueryFilters) {
+import { formatUseQuery } from '@my-noodles/web-lib/react-query';
+import { fetchProductFacets, fetchProductsList, productsQueryKeys } from './products';
+
+export function useProductsList(params: CatalogSearchParams) {
   const locale = useAppLocale();
-  const resolvedFilters = { ...filters, locale };
 
   return formatUseQuery(
     useQuery({
-      queryKey: productsQueryKeys.list(resolvedFilters),
-      queryFn: () => fetchProductsList(resolvedFilters),
+      queryKey: productsQueryKeys.list(params, locale),
+      queryFn: () => fetchProductsList(params, locale),
     }),
     'products',
+  );
+}
+
+export function useProductFacets(params: CatalogFilterParams) {
+  const locale = useAppLocale();
+
+  return formatUseQuery(
+    useQuery({
+      queryKey: productsQueryKeys.facets(params, locale),
+      queryFn: () => fetchProductFacets(params, locale),
+      placeholderData: keepPreviousData,
+    }),
+    'productFacets',
   );
 }
 ```
@@ -180,7 +193,7 @@ export function useProductsList(filters: ProductListQueryFilters) {
 
 import { useMutation } from '@tanstack/react-query';
 
-import { formatUseMutation } from '../_lib/queries';
+import { formatUseMutation } from '@my-noodles/web-lib/react-query';
 import { createOrder } from './orders';
 
 export function useCreateOrder() {
@@ -188,20 +201,103 @@ export function useCreateOrder() {
 }
 ```
 
-**Hook result naming** — use `formatUseQuery` / `formatUseMutation` from `api/_lib/queries.ts` so destructuring is prefixed (`products`, `productsIsPending`, `createOrder`, `createOrderIsPending`, …). For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfiniteQuery` with our `{ items, meta: { page, limit, total } }` shape.
+**Hook result naming** — use `formatUseQuery` / `formatUseMutation` from `@my-noodles/web-lib/react-query` so destructuring is prefixed (`products`, `productsIsPending`, `productsIsInitialLoad`, `createOrder`, `createOrderIsPending`, …).
+
+For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfiniteQuery` with our `{ items, meta: { page, limit, total } }` shape.
 
 **Rules:**
 
-- Return `response.data` as-is for our API — no `mapXxx()` unless justified above
-- **Client hooks** call `useAppLocale()` (next-intl app locale, same codes as `ApiLocale`) — do not pass `locale` from screens/components
+- Return SDK data as-is for our API — use `requestData()` from `@my-noodles/web-lib/react-query` in fetchers; global `throwOnError: true` in `packages/api-clients/.../runtime.config.ts`
+- **Client hooks** call `useAppLocale()` (next-intl app locale, same codes as `Locale`) — do not pass `locale` from screens/components
 - **Server prefetch / fetchers** take explicit `locale` (from route `params` or `setRequestLocale`) — keep in `*.ts`, not `*.hooks.ts`
-- Pass optional `locale` via generated `*Request` types (`{ locale: ApiLocale, … }`), not a separate axios helper
-- Use generated sort enums (`ProductsControllerListSortEnum`, `ProductSort`) — do not hand-roll sort constants in `api-clients`
-- Facets and list use **separate keys** (facets = filters only; list = filters + page)
+- Pass optional `locale` via generated query types on SDK calls (`{ query: { locale, … } }`)
+- Use generated enums (`ProductSort`, `DeliveryProvider`, …) — do not hand-roll constants in `api-clients`
+- Catalog **facets preview** and product **list** use **separate keys** (facets = `CatalogFilterParams`, no page/limit; list = full `CatalogSearchParams`)
 - Mutations invalidate the smallest relevant key set
-- Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary`
-- `utils.ts` = request builders (filters → generated `*Request` types), not response mappers
-- Do **not** inject locale via a global axios interceptor — explicit `locale` on fetchers keeps query keys and SSR predictable
+- Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary` (initial load / hard refresh only — not on every client filter change)
+- `utils.ts` = map search params → generated `*Data['query']` inside fetchers; not exported unless needed
+- Do **not** call generated SDK functions from screens/components — go through `apps/web/src/api`
+
+### Remote data lifecycle (loading / error / empty)
+
+Most screens and several **remote-backed components** (product detail, collection header, filter preview, product grid) do **not** have their data on first render. Data comes from the API — prefetched on the server when possible, then owned by TanStack Query on the client. That fetch can **take time**, **fail**, or **return nothing**. Plan UI for all three outcomes up front; do not branch on raw `isPending` / `isError` / `!data` in every screen.
+
+**Source of truth:** `deriveQueryViewState` in `@my-noodles/web-lib/react-query`, exposed on every `formatUseQuery` result:
+
+| Flag | When true | UX role |
+| --- | --- | --- |
+| `*IsInitialLoad` | First fetch, no cached data yet | **Loading** — skeleton or short inline copy |
+| `*IsLoadFailed` | Query errored with no cached data | **Error** — failure message; retry when actionable |
+| `*IsEmpty` | Settled successfully but entity is missing (`!data`, not pending, not error) | **Empty / not found** — friendly “nothing here” (not the same as error) |
+| `*IsRefetching` | TanStack Query native — background refetch while data is visible |
+| `*IsBusy` | `isPending \|\| isFetching` | Disable actions, “searching…” labels |
+
+These flags are **mutually exclusive for the three main UX states** on a cold load: loading → then exactly one of success (render data), error, or empty.
+
+**Screen recipe** — one branch per outcome, separate i18n keys (`loading`, `error`, `empty`):
+
+```tsx
+'use client';
+
+const { product, productIsInitialLoad, productIsLoadFailed, productIsEmpty } = useProductDetail(slug);
+
+if (productIsInitialLoad) {
+  return <PageContainer><Typography color="text.secondary">{t('loading')}</Typography></PageContainer>;
+}
+
+if (productIsLoadFailed) {
+  return <PageContainer><Typography color="error">{t('error')}</Typography></PageContainer>;
+}
+
+if (productIsEmpty || !product) {
+  return <PageContainer><Typography color="text.secondary">{t('empty')}</Typography></PageContainer>;
+}
+
+// product is defined — render the happy path
+```
+
+Same pattern on **collections**, **filter-sheet** (skeleton / error panel / empty facets message), and **catalog grid** (`productsIsLoadFailed` for list failure; grid empty state for zero items after success).
+
+**Do not** conflate error and empty:
+
+- **`error`** — “Couldn’t load …” (network, 5xx, or thrown client). User may retry.
+- **`empty`** — “Not found” or legitimately no rows. No retry unless filters can change.
+
+**404 vs empty today:** if the fetcher throws on 404 (`requestData`), TanStack Query sets `isError` → `*IsLoadFailed`, not `*IsEmpty`. Map 404 to empty at the fetch layer only if product wants not-found copy instead of error copy.
+
+**Lists vs single entity:**
+
+- **Entity screen** (product, collection): use `*IsEmpty` when the query succeeds but the DTO is absent.
+- **List/grid** (catalog): after load, **zero items** is usually domain empty (`products.items.length === 0`) with copy like `catalog.emptyState` — not `*IsEmpty` on the query (the query succeeded with an empty page).
+
+**Prefetch + hydration:** server `page.tsx` may dehydrate data so the client often **skips** `*IsInitialLoad` on first paint. Flags still matter for client navigations, hard refresh without cache, and refetch.
+
+### Initial load vs refetch
+
+Distinguish **first fetch** from **background refetch** — different UX, same query hook. Prefer `*IsInitialLoad` / `*IsRefetching` from `formatUseQuery` over hand-rolling `isPending && !data`.
+
+| Phase | Signal | UX |
+| --- | --- | --- |
+| **First visit** | `*IsInitialLoad` | Full skeleton (e.g. `ProductGridSkeleton`, `FilterSheetSkeleton`) |
+| **Filter/sort/page change** | `*IsRefetching` | Keep stale content visible; soft overlay nearby |
+
+**Catalog refetch recipe** (`ProductGrid` + `FilterSheet`):
+
+- Toolbar: status text → `catalog.filters.searching` + `StableLinearProgress` from `@my-noodles/ui`
+- Grid: dim + frosted veil — not per-card shimmer
+- Lifecycle: `useSmoothBusyState` — debounced enter, eased exit; fast refetches stay invisible
+- Filter panel preview: opacity dim + `pointer-events: none` while `productFacetsIsRefetching`
+
+**Inline progress:** always render `StableLinearProgress`; toggle `active` — never mount/unmount (avoids layout shift).
+
+**Feedback placement:** near the content being updated — not a global floating pill.
+
+```tsx
+const { products, productsIsInitialLoad, productsIsRefetching } = useProductsList(params);
+
+if (productsIsInitialLoad) return <ProductGridSkeleton />;
+// … render stale products; pass productsIsRefetching to grid veil / toolbar
+```
 
 ---
 
@@ -211,58 +307,80 @@ export function useCreateOrder() {
 
 ```tsx
 // app/[locale]/catalog/page.tsx
-import { createSearchParamsCache } from 'nuqs/server';
+import { fetchProductFacets, fetchProductsList, productsQueryKeys } from '@/api/products';
 import { CatalogScreen } from '@/screens/catalog';
-import { catalogSearchParamsParsers } from '@/screens/catalog/search-params';
-
-const searchParamsCache = createSearchParamsCache(catalogSearchParamsParsers);
+import { catalogSearchParamsCache } from '@/screens/catalog/search-params';
 
 export default async function CatalogPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const filters = await searchParamsCache.parse(searchParams);
-  // prefetch with productsQueryKeys + dehydrate → HydrationBoundary
+  const searchParamsParsed = await catalogSearchParamsCache.parse(searchParams);
+  const { page: _page, limit: _limit, ...filterParams } = searchParamsParsed;
+
+  // Prefetch once for hydration; client filter changes refetch via TanStack Query (shallow URL updates)
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: productsQueryKeys.list(searchParamsParsed, locale),
+      queryFn: () => fetchProductsList(searchParamsParsed, locale),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: productsQueryKeys.facets(filterParams, locale),
+      queryFn: () => fetchProductFacets(filterParams, locale),
+    }),
+  ]);
+
   return <CatalogScreen />;
 }
 ```
 
 ```tsx
 // screens/catalog/index.tsx
+'use client';
+
+import { useProductsList } from '@/api/products';
+import { useCatalogSearchParams } from '@/screens/catalog/search-params';
+
 export function CatalogScreen() {
-  return (
-    <>
-      <CatalogHeader />
-      <FilterSheet />
-      <ProductGrid />
-    </>
-  );
+  const { params, setParams } = useCatalogSearchParams();
+  const { products, productsIsInitialLoad, productsIsLoadFailed } = useProductsList(params);
+  // … branch on productsIsInitialLoad / productsIsLoadFailed per [Remote data lifecycle](#remote-data-lifecycle-loading--error--empty)
 }
 ```
 
 Every `page.tsx`: validate locale → `setRequestLocale` → optional prefetch → render one screen component.
 
+**SSR + React Query:** use the shared per-request `getQueryClient()` (see `shared/query-client/`) so prefetched data is available when client screens SSR. Use `formatUseQuery` view-state flags in screens — not raw `isPending && !data`.
+
+**SEO (indexable routes):** await prefetch in the async `page.tsx` — no `loading.tsx`, no `<Suspense fallback>` around prefetch. Loading states live in client screens (`isPending` / `isFetching`, inline skeletons). `loading.tsx` / Suspense fallbacks are for **non-indexed** routes only (cart, checkout, …). See [code-style-guide.md — Loading UI vs SEO](./code-style-guide.md#loading-ui-vs-seo-indexable-routes).
+
 ---
 
-## 5. URL filters (nuqs)
+## 5. URL search params (nuqs)
 
-Single source of truth per feature: **`screens/[feature]/search-params/`**
+**Purpose:** domain search params are the **single source of truth** for shareable catalog state (filters, sort, pagination). They sync to the URL, drive TanStack Query keys, and survive refresh/bookmark — without duplicating parallel filter types in `api/`.
+
+**Location:** `screens/[feature]/search-params/`
+
+```text
+search-params/
+  parsers.ts   # catalogSearchParamsParsers, catalogSearchParamsCache, CatalogSearchParams
+  types.ts     # CatalogFilterParams, DEFAULT_CATALOG_FILTER_PARAMS, catalogSearchParamsKey()
+  hooks.ts     # useCatalogSearchParams() — resetFilters, applyFilters, appliedKey
+  index.ts     # barrel — import from @/screens/catalog/search-params
+```
+
+### parsers.ts (server-safe)
 
 ```ts
-import {
-  createSearchParamsCache,
-  parseAsArrayOf,
-  parseAsInteger,
-  parseAsString,
-  parseAsBoolean,
-} from 'nuqs/server';
+import { createSearchParamsCache, parseAsArrayOf, parseAsInteger, parseAsString, parseAsBoolean } from 'nuqs/server';
 
 export const catalogSearchParamsParsers = {
   category: parseAsArrayOf(parseAsString).withDefault([]),
   country: parseAsArrayOf(parseAsString).withDefault([]),
   priceMin: parseAsInteger,
   priceMax: parseAsInteger,
-  sort: parseAsString.withDefault('popular'),
+  sort: sortParser,
   isTriedByUs: parseAsBoolean,
   inStock: parseAsBoolean,
   page: parseAsInteger.withDefault(1),
@@ -270,18 +388,32 @@ export const catalogSearchParamsParsers = {
 };
 
 export const catalogSearchParamsCache = createSearchParamsCache(catalogSearchParamsParsers);
+export type CatalogSearchParams = Awaited<ReturnType<typeof catalogSearchParamsCache.parse>>;
 ```
 
-Client controls:
+### hooks.ts (client)
 
-```tsx
+```ts
 'use client';
+
 import { useQueryStates } from 'nuqs';
 
-const [filters, setFilters] = useQueryStates(catalogSearchParamsParsers, { shallow: false });
+export function useCatalogSearchParams() {
+  // Default shallow: true — client-only URL updates; TanStack Query refetches data.
+  // Do NOT use shallow: false unless Server Components must re-run on every param change.
+  const [params, setParams] = useQueryStates(catalogSearchParamsParsers);
+  // resetFilters, applyFilters, appliedKey …
+  return { params, setParams, resetFilters, applyFilters, appliedKey };
+}
 ```
 
-The same parsed values drive TanStack Query keys — e.g. list hook with full filters, facets hook omitting `page` / `limit`.
+### Data flow
+
+1. **Initial visit / hard refresh:** `page.tsx` parses URL → prefetches RQ → hydrates client
+2. **Filter apply / pagination:** `useCatalogSearchParams` updates URL (shallow) → `params` change → `useProductsList(params)` / `useProductFacets(draft)` refetch with loading states
+3. **API mapping:** only in `api/products/utils.ts` (`searchParamsToListQuery`, `searchParamsToFacetsQuery`) — fetchers accept `CatalogSearchParams` / `CatalogFilterParams` + `locale`
+
+Global `placeholderData: keepPreviousData` in `shared/query-client/` keeps list/facet grids stable while refetching; opt out on slug-based detail queries (product, collection) where stale data would show the wrong entity.
 
 ---
 
@@ -325,39 +457,22 @@ Use Zustand when state is **client-only**, **not in the URL**, and **not server 
 
 **Conventions:**
 
-- Store in `hooks/` or `hooks/[feature]/`; screens import `use*Store`, not the raw store
-- Do not duplicate server entities — store IDs, quantities, and UI fields; RQ owns product details
-- **`persist`** only when continuity across sessions matters; always set `version` + `migrate` so a bump clears stale localStorage
+- Store in `hooks/[feature]/` — **`*-store.ts`** (internal) + **`use-*.ts`** (public hooks) + **`index.ts`** barrel
+- **`persist` + `partialize`:** only customer-facing continuity (cart lines). Ephemeral UI (`panelOpen`, suppression flags) stays in memory
+- **`version` + `migrate`:** bump on shape changes; migrate returns clean state
+- **Actions on the store;** screens use thin hooks (`useCartActions`) — not raw `useCartStore`
+- Do not duplicate server entities — store IDs, quantities, UI fields; RQ owns product details
+
+Reference: `hooks/cart/` (persisted items + ephemeral panel state).
 
 ```ts
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+// hooks/cart/index.ts — public barrel
+export type { CartLine } from './cart-store';
+export { useCartActions, useCartItemCount, useCartItems, useCartTotalMinor } from './use-cart';
+```
 
-const STORE_VERSION = 1;
-
-type CartState = {
-  items: CartLine[];
-  addItem: (line: CartLine) => void;
-  clear: () => void;
-};
-
-export const useCartStore = create<CartState>()(
-  persist(
-    (set) => ({
-      items: [],
-      addItem: (line) => {
-        /* merge by productId */
-      },
-      clear: () => set({ items: [] }),
-    }),
-    {
-      name: 'cart',
-      storage: createJSONStorage(() => localStorage),
-      version: STORE_VERSION,
-      migrate: () => ({ items: [] }),
-    },
-  ),
-);
+```tsx
+import { useCartActions } from '@/hooks/cart';
 ```
 
 ---

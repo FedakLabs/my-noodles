@@ -18,7 +18,7 @@ export class ProductsController {
   constructor(@Inject(ProductsService) private readonly productsService: ProductsService) {}
 
   @Get('facets')
-  @ApiOperation({ summary: 'Product facet counts for catalog filters' })
+  @ApiOperation({ summary: 'Catalog facet options and result counts for the current filter state' })
   @ApiOkResponse({ type: ProductFacetsResponseDto })
   getFacets(@Query() query: ProductFacetsQueryDto): Promise<ProductFacetsResponseDto> {
     return this.productsService.getFacets(query);

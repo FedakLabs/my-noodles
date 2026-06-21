@@ -6,11 +6,14 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { AppShell } from '@/components/layout/app-shell';
 import { routing } from '@/i18n/routing';
+import type { LocalePageProps } from '@/shared/page-props';
 
-type LocaleLayoutProps = {
+import { Providers } from '../providers';
+
+type LocaleLayoutProps = LocalePageProps & {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 };
 
 export function generateStaticParams() {
@@ -49,7 +52,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

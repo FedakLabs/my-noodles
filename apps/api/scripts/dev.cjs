@@ -13,7 +13,7 @@ function startApp() {
     startApp.child.kill();
   }
 
-  startApp.child = spawn('node', ['--import=./dist/otel-instrumentation.js', 'dist/index.js'], {
+  startApp.child = spawn('node', ['--import=./dist/instrumentation.js', 'dist/index.js'], {
     cwd,
     stdio: 'inherit',
   });
@@ -30,11 +30,18 @@ const tsc = spawn(process.execPath, [tscBin, '-w', '-p', 'tsconfig.build.json', 
 });
 
 let rebuildTimer;
+let skipNextWatchReady = true;
 
 tsc.stdout.on('data', (chunk) => {
   process.stdout.write(chunk);
 
   if (!chunk.toString().includes('Found 0 errors')) {
+    return;
+  }
+
+  // tsc -w emits "Found 0 errors" on its first pass too — app already started above.
+  if (skipNextWatchReady) {
+    skipNextWatchReady = false;
     return;
   }
 

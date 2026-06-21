@@ -1,0 +1,67 @@
+{
+  "name": "api-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api/src",
+  "projectType": "library",
+  "tags": ["scope:libs", "type:lib", "platform:node"],
+  "targets": {
+    "build": {
+      "command": "tsc -p tsconfig.build.json",
+      "options": { "cwd": "libs/api" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "libs/api" }
+    },
+    "format-check": {
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "libs/api" }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": { "cwd": "libs/api" }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": { "cwd": "libs/api" }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": { "cwd": "libs/api" }
+    },
+    "test": {
+      "command": "jest",
+      "options": { "cwd": "libs/api" }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace libs/api",
+      "options": { "cwd": "." }
+    },
+    "fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format",
+          "nx run {projectName}:lint",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test"
+        ],
+        "parallel": false
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format-check",
+          "nx run {projectName}:lint-check",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test",
+          "nx run {projectName}:knip"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

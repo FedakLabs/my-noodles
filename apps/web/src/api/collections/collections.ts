@@ -1,32 +1,27 @@
-import type {
-  ApiLocale,
-  CollectionDetailDto,
-  CollectionsApiCollectionsControllerGetBySlugRequest,
-  CollectionsApiCollectionsControllerListRequest,
-  CollectionSummaryDto,
+import {
+  type CollectionDetailDto,
+  collectionsControllerGetBySlug,
+  collectionsControllerList,
+  type CollectionSummaryDto,
+  type Locale,
 } from '@my-noodles/api-clients/storefront';
-
-import { getApiClients } from '../clients';
+import { requestData } from '@my-noodles/web-lib/react-query';
 
 export const collectionsQueryKeys = {
   all: ['collections'] as const,
-  list: (locale: ApiLocale) => [...collectionsQueryKeys.all, 'list', locale] as const,
-  detail: (slug: string, locale: ApiLocale) => [...collectionsQueryKeys.all, 'detail', slug, locale] as const,
+  list: (locale: Locale) => [...collectionsQueryKeys.all, 'list', locale] as const,
+  detail: (slug: string, locale: Locale) => [...collectionsQueryKeys.all, 'detail', slug, locale] as const,
 };
 
-export async function fetchCollections(locale: ApiLocale): Promise<CollectionSummaryDto[]> {
-  const { data } = await getApiClients().collectionsApi.collectionsControllerList({
-    locale,
-  } as CollectionsApiCollectionsControllerListRequest);
-
-  return data;
+export async function fetchCollections(locale: Locale): Promise<CollectionSummaryDto[]> {
+  return requestData(collectionsControllerList({ query: { locale } }));
 }
 
-export async function fetchCollectionDetail(slug: string, locale: ApiLocale): Promise<CollectionDetailDto> {
-  const { data } = await getApiClients().collectionsApi.collectionsControllerGetBySlug({
-    slug,
-    locale,
-  } as CollectionsApiCollectionsControllerGetBySlugRequest);
-
-  return data;
+export async function fetchCollectionDetail(slug: string, locale: Locale): Promise<CollectionDetailDto> {
+  return requestData(
+    collectionsControllerGetBySlug({
+      path: { slug },
+      query: { locale },
+    }),
+  );
 }

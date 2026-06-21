@@ -99,7 +99,7 @@ import { OrdersService } from './orders.service';
   - `<feature>.exceptions.ts`
   - `index.ts` (barrel)
 - Tests: co-located, tilde prefix: `~orders.test.ts`.
-- Sub-features: nested folder (e.g. `application/products/facets/facets.controller.ts`).
+- Sub-features: nested folder (e.g. `application/products/products.controller.ts` with `GET /products/filters`).
 
 ### Classes
 
@@ -611,42 +611,35 @@ Register via a small `*Module`; inject the service from feature services that or
 
 ### OpenAPI-generated third-party clients
 
-When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/services/<ServiceName>/`**:
+When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/services/<ServiceName>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** (same toolchain as `packages/api-clients`):
 
 ```text
 infrastructure/services/merchant-email/
-├── generated/              # OpenAPI Generator output — read-only, regen from upstream spec
-│   ├── api/                # *Api classes (EmailApi, …)
-│   ├── models/             # request/response DTOs
-│   ├── configuration.ts
-│   └── index.ts
+├── generated/              # @hey-api/openapi-ts output — read-only, regen from upstream spec
 ├── client/
 │   ├── <service>.config.ts # basePath / auth from env
-│   ├── <service>.client.ts # extends ExternalApi; wires generated *Api to this.axiosInstance
+│   ├── <service>.client.ts # extends ExternalApi; wraps generated SDK on shared axios
 │   └── index.ts
 └── index.ts                # public barrel — export client + typed models consumers need
 ```
 
 ```ts
-// client/acme.client.ts — pattern: generated API + shared axios from ExternalApi
+// client/acme.client.ts — domain methods call generated @hey-api SDK functions; extend ExternalApi for OTEL + logging
 @Injectable()
 export class AcmeApiClient extends ExternalApi {
-  readonly ordersApi: OrdersApi;
-
-  constructor() {
-    super(AcmeApiClient.name);
-    this.ordersApi = new OrdersApi(new Configuration(), undefined, this.axiosInstance);
-  }
-
   protected getBaseUrl(): string {
     return acmeServiceConfig.basePath;
+  }
+
+  async notifyOrderCreated(payload: NotifyPayload): Promise<void> {
+    await acmeControllerNotifyCreated({ body: payload, baseUrl: this.getBaseUrl() });
   }
 }
 ```
 
-- **`generated/`** — never hand-edit; regenerate when the upstream OpenAPI spec changes.
+- **`generated/`** — never hand-edit; regenerate with `@hey-api/openapi-ts` when the upstream OpenAPI spec changes.
 - **`client/`** — thin Nest provider: config, `ExternalApi` subclass, domain-friendly methods if needed.
-- Distinct from **`packages/api-clients`** — that package is **our** storefront client for the web app, not inbound third-party integrations.
+- Distinct from **`packages/api-clients`** — that package is **our** storefront fetch client for the web app (`@hey-api/client-fetch`), not inbound third-party integrations.
 
 ### Rules
 
@@ -676,7 +669,7 @@ export function prepareDataSource(appConfig: Config): DataSourceOptions {
   };
 }
 
-// otel-instrumentation.ts — side-effect preload; started via `node --import=./dist/otel-instrumentation.js`
+// instrumentation.ts — side-effect preload; started via `node --import=./dist/instrumentation.js`
 if (config.otel.enabled) {
   const sdk = new NodeSDK({ /* ... */ });
   sdk.start();
@@ -689,8 +682,8 @@ if (config.otel.enabled) {
 
 ## 12. Logging, Tracing, Observability
 
-- OTEL loads **before** the app via Node preload: `node --import=./dist/otel-instrumentation.js dist/index.js` (see `package.json` `start` and `scripts/dev.cjs`).
-- `otel-instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
+- OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js` (see `package.json` `start` and `scripts/dev.cjs`).
+- `instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
 - **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
 - **Logging**: Winston via `nest-winston` as Nest logger; structured fields, no PII (no raw phones in logs).
 - Feature code: inject `Logger` (`new Logger(OrdersService.name)`) or use Winston adapter from Nest.

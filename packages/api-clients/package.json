@@ -17,14 +17,11 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "api:generate": "openapi-generator-cli generate -c ./src/storefront/openapi-generator.json -o ./src/storefront/generated"
-  },
-  "dependencies": {
-    "axios": "1.9.0"
+    "api:generate": "openapi-ts -f ./openapi-ts.config.ts"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.98.2",
     "@my-noodles/eslint-config": "workspace:*",
-    "@openapitools/openapi-generator-cli": "2.38.0",
     "eslint": "10.5.0",
     "eslint-config-prettier": "10.1.8"
   }

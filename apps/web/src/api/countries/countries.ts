@@ -1,20 +1,11 @@
-import type {
-  ApiLocale,
-  CountriesApiCountriesControllerListRequest,
-  CountryDto,
-} from '@my-noodles/api-clients/storefront';
-
-import { getApiClients } from '../clients';
+import { countriesControllerList, type CountryDto, type Locale } from '@my-noodles/api-clients/storefront';
+import { requestData } from '@my-noodles/web-lib/react-query';
 
 export const countriesQueryKeys = {
   all: ['countries'] as const,
-  list: (locale: ApiLocale) => [...countriesQueryKeys.all, 'list', locale] as const,
+  list: (locale: Locale) => [...countriesQueryKeys.all, 'list', locale] as const,
 };
 
-export async function fetchCountries(locale: ApiLocale): Promise<CountryDto[]> {
-  const { data } = await getApiClients().countriesApi.countriesControllerList({
-    locale,
-  } as CountriesApiCountriesControllerListRequest);
-
-  return data;
+export async function fetchCountries(locale: Locale): Promise<CountryDto[]> {
+  return requestData(countriesControllerList({ query: { locale } }));
 }

@@ -7,6 +7,7 @@
     "prepare": "husky",
     "dev:web": "nx dev web",
     "dev:api": "nx serve api",
+    "dev:ui": "nx run ui:storybook",
     "build": "nx run-many -t build",
     "format": "prettier --write . --ignore-path configs/prettier/.prettierignore",
     "fix": "nx run-many -t fix",

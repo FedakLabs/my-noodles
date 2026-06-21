@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { ExternalApi } from '@my-noodles/api-lib/external-api';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import type { Logger } from 'winston';
 
-import { ExternalApi } from '@/infrastructure/external-api';
-
-import { isTelegramConfigured, resolveTelegramBaseUrl, type TelegramConfig } from '../telegram.config';
+import {
+  isTelegramConfigured,
+  resolveTelegramBaseUrl,
+  type TelegramConfig,
+  telegramConfig,
+} from '../telegram.config';
 import type { OrderTelegramPayload } from '../telegram.dto';
 
 function formatMinor(amountMinor: number, currency: string): string {
@@ -16,8 +22,10 @@ function escapeHtml(value: string): string {
 
 @Injectable()
 export class TelegramService extends ExternalApi {
-  constructor(private readonly settings: TelegramConfig) {
-    super(TelegramService.name);
+  private readonly settings: TelegramConfig = telegramConfig;
+
+  constructor(@Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    super(logger);
   }
 
   protected getBaseUrl(): string {

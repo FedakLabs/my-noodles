@@ -1,7 +1,6 @@
+import type { Config } from '@my-noodles/api-lib/config';
 import type { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
-
-import type { Config } from '@/config';
 
 export function prepareDataSource(appConfig: Config): DataSourceOptions {
   return {

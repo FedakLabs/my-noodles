@@ -1,0 +1,61 @@
+{
+  "name": "web-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/web/src",
+  "projectType": "library",
+  "tags": ["scope:libs", "type:lib", "platform:web"],
+  "targets": {
+    "build": {
+      "command": "tsc -p tsconfig.build.json",
+      "options": { "cwd": "libs/web" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "libs/web" }
+    },
+    "format-check": {
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "libs/web" }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": { "cwd": "libs/web" }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": { "cwd": "libs/web" }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.json",
+      "options": { "cwd": "libs/web" }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace libs/web",
+      "options": { "cwd": "." }
+    },
+    "fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format",
+          "nx run {projectName}:lint",
+          "nx run {projectName}:type-check"
+        ],
+        "parallel": false
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format-check",
+          "nx run {projectName}:lint-check",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:knip"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

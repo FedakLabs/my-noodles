@@ -16,3 +16,14 @@ export const DELIVERY_PROVIDERS = [
 ] as const;
 
 export const DELIVERY_METHODS = [DeliveryMethod.Warehouse, DeliveryMethod.Courier] as const;
+
+/** Shared OpenAPI enum schema — `enumName` must match generated client types. */
+export const DELIVERY_PROVIDER_OPENAPI = {
+  enum: DELIVERY_PROVIDERS,
+  enumName: 'DeliveryProvider',
+} as const;
+
+export const DELIVERY_METHOD_OPENAPI = {
+  enum: DELIVERY_METHODS,
+  enumName: 'DeliveryMethod',
+} as const;

@@ -1,3 +1,4 @@
+import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -10,7 +11,7 @@ import { HealthModule } from './application/health';
 import { OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
 import { config } from './config';
-import { createWinstonModuleOptions, LoggingModule } from './infrastructure/logging';
+import { LoggingModule } from './infrastructure/logging';
 import { prepareDataSource } from './infrastructure/persistence';
 
 @Module({

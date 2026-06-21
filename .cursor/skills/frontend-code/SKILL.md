@@ -1,6 +1,6 @@
 ---
 name: frontend-code
-description: 'Primary skill for all frontend code changes — features, bug fixes, refactors, and design implementations. Use whenever the user asks to add, change, fix, or build anything in the UI. Covers Next.js App Router, screens, components, forms, API hooks, cart, i18n, and MUI theming. Consult references/common-patterns.md and references/code-style-guide.md before writing code. Stack: TS strict, React 19, Next.js 16, TanStack Query, MUI v9 (packages/theme), react-hook-form + Zod, next-intl, nuqs, Zustand, Vitest.'
+description: 'Primary skill for all frontend code changes — features, bug fixes, refactors, and design implementations. Use whenever the user asks to add, change, fix, or build anything in the UI. Covers Next.js App Router, screens, components, forms, API hooks, cart, i18n, and MUI theming. Consult references/common-patterns.md and references/code-style-guide.md before writing code. Stack: TS strict, React 19, Next.js 16, TanStack Query, MUI v9 (packages/theme + packages/ui), react-hook-form + Zod, next-intl, nuqs, Zustand, Vitest.'
 ---
 
 # Frontend Implementation (my-noodles storefront)
@@ -16,7 +16,7 @@ Consult [references/common-patterns.md](./references/common-patterns.md) and [re
 Given a requirement (design, bug, or feature), implement it by:
 
 1. Mapping the change to the correct layer (`app/` route shell → `screens/` → `components/`, plus `api/` hooks or `hooks/` stores)
-2. Using **`packages/theme`** tokens and MUI components — no raw hex/px drift
+2. Using **`packages/ui`** components and **`packages/theme`** tokens — no raw hex/px drift
 3. Handling loading, error, and empty states
 4. Running quality checks — **MUST PASS**
 
@@ -33,36 +33,71 @@ pnpm nx run web:fix
 - **Next.js 16** App Router (`app/[locale]/…`), ISR + Server Components where planned
 - **React 19**, **TypeScript** strict
 - **TanStack Query v5** — client data; prefetch + `HydrationBoundary` for SSR/ISR
-- **MUI v9** + **`packages/theme`** (design system, skin engine)
+- **MUI v9** + **`packages/ui`** (composed components, skin engine) on top of **`packages/theme`** (tokens, MUI overrides)
 - **next-intl** — UI strings; `localePrefix: 'always'` (`/uk/…`)
 - **react-hook-form + Zod 4** — forms (checkout, etc.)
-- **nuqs** — URL search params (catalog filters); schema in `screens/[feature]/search-params/`
+- **nuqs** — URL search params (catalog filter state); schema + hook in `screens/[feature]/search-params/`; client updates use default **`shallow: true`** (SPA + TanStack Query refetch)
 - **Zustand + persist** — cart (client-only until checkout)
-- **packages/api-clients** — generated OpenAPI axios client; **`apps/web/src/api`** wraps it with RQ hooks
+- **packages/api-clients** — **`@hey-api/openapi-ts`** fetch SDK + hand client layer; **`apps/web/src/api`** wraps it with RQ hooks
 - **Vitest** + Testing Library — co-located `*.test.tsx`
-- **motion** — micro-interactions; native View Transitions where enabled
 
 ## Repo layout (`apps/web/src`)
 
 ```text
 app/           # routing only — thin page.tsx → screens/
-screens/       # one folder per page; search-params/ for nuqs
+screens/       # one folder per page; search-params/ for nuqs URL state
 components/    # feature UI (+ *.test.tsx)
 api/           # React Query hooks + query-key factories
 hooks/         # cart, analytics, skin resolver consumers, …
 utils/         # formatCurrency, helpers
-shared/        # QueryClient, env, shared types
+shared/        # env, ISR, page props, query-client + hydrate
 ```
 
 Providers live in `app/layout.tsx` + `app/providers.tsx` (MUI cache, theme, QueryClient, next-intl, NuqsAdapter).
 
-## Design system (`packages/theme`)
+## Design system (`packages/theme` + `packages/ui`)
 
-- Semantic tokens: `theme.colors.*`, `theme.customSpacing.*`, `theme.borderRadius.*`
+- **`packages/theme`** — bare MUI theme: semantic tokens, spacing, typography, component overrides. Storybook for foundations (colors, type, P0 MUI chrome).
+- **`packages/ui`** — reusable composed components (`DiscoveryCard`, `PriceRangeSlider`, …), **skin engine** (`resolveSkin()` → CSS variables), per-file SVG icons. Storybook for component catalog (`pnpm nx run ui:storybook`).
+- Import **`theme`** from `@my-noodles/theme`; skins and shared components from `@my-noodles/ui`.
 - Typography: use `<Typography variant="…">` — avoid overriding `fontSize`/`fontWeight` via `sx`
-- **Glob `packages/theme`** and existing components before adding one-off styling
-- Country/brand skins: `resolveSkin()` → CSS variables on card/page root (see mvp-plan)
-- Prefer MUI primitives (`Stack`, `Box`, `Button`, `TextField`, `Dialog`) styled via theme — this project does **not** ship a separate `packages/ui` primitive library
+- **Glob `packages/ui` and `packages/theme`** before adding one-off styling
+- Country/brand skins: `resolveSkin()` from `@my-noodles/ui` → CSS variables on card/page root
+- Prefer MUI primitives styled via theme — extract generic UI to **`packages/ui`** when it could ship in another frontend app
+
+### When to extract to `packages/ui`
+
+Move a component from `apps/web` when **all** apply:
+
+1. **Reusable** — no hard dependency on catalog API types, cart store, or next-intl (accept copy via props/slots)
+2. **Complex enough** — multiple states, responsive behavior, or worth documenting in Storybook
+3. **Composes theme** — uses tokens/skins; does not define new visual language (that stays in `theme`)
+
+Keep domain wiring in `apps/web` (thin wrappers that pass i18n labels, API data, and app-specific links). Structure in `packages/ui`:
+
+```text
+src/components/[ComponentName]/
+src/icons/[name].svg          # import: @my-noodles/ui/icons/cart.svg (SVGR, tree-shakeable)
+src/utils/skins/              # skin resolution (enriches theme)
+```
+
+Icons — one file per import (bundler tree-shakes unused SVGs). **Size and color via `style`** (strokes use `currentColor`):
+
+```tsx
+import CartIcon from '@my-noodles/ui/icons/cart.svg';
+import { iconStyle } from '@my-noodles/ui';
+import { useTheme } from '@mui/material/styles';
+
+const theme = useTheme();
+
+<CartIcon aria-hidden style={iconStyle({ size: 24, color: theme.colors.icon.primary })} />;
+// Inside MUI `color="inherit"` chrome: color: 'inherit'
+<MenuIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />;
+```
+
+Do not use `width` / `height` props or parent `color` inheritance for icon sizing/tinting.
+
+SVGR is configured in `apps/web/next.config.ts` (webpack + turbopack) and `packages/ui` Storybook (Vite).
 
 ## Implementation Workflow
 
@@ -82,18 +117,19 @@ Providers live in `app/layout.tsx` + `app/providers.tsx` (MUI cache, theme, Quer
 Example — add catalog sort control:
 
 ```text
-1. screens/catalog/search-params/catalog.search.ts — add sort parser
-2. api/products/products.ts — include sort in query key + API params
-3. components/catalog/sort-select.tsx — UI control
-4. components/catalog/sort-select.test.tsx — tests
-5. messages/uk/catalog.json — i18n keys
+1. screens/catalog/search-params/parsers.ts — add sort parser
+2. screens/catalog/search-params/types.ts — defaults / filter-only type if needed
+3. api/products/products.ts — query keys accept CatalogSearchParams; map in fetchers
+4. components/catalog/sort-select.tsx — UI control
+5. components/catalog/sort-select.test.tsx — tests
+6. messages/uk/catalog.json — i18n keys
 ```
 
 ### Step 3: Implement
 
 - Match existing patterns in the touched feature
 - User-facing text via **next-intl** (`useTranslations`)
-- API calls through **`apps/web/src/api`** hooks, not raw axios in components
+- API calls through **`apps/web/src/api`** hooks, not raw generated SDK calls in components
 - Invalidate query keys on mutations
 
 ### Step 4: Tests
@@ -107,6 +143,8 @@ pnpm nx run web:fix
 ```
 
 Fix and re-run until green.
+
+When API contract changes, regenerate clients from a running API (`pnpm nx run api:clients:generate`) before `web:type-check`.
 
 ### Step 6: Summary
 

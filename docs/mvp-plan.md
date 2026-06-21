@@ -18,7 +18,7 @@ Mobile-first, SEO-optimized full-stack MVP for the food-discovery store. Nx mono
 - **Collections vs intrinsic dimensions**: `Category`, `Brand`, `Country` are **intrinsic per-product dimensions** (manufacturer / product qualities / origin). A `Collection` is an **editorial, manually curated grouping** (TikTok Foods, Around the World, Month-seasoned, etc.) decided by content/food managers (the owner for now) — not derived from product attributes. Implementation: a collection is just another _dimension_ on the products list, so its products are fetched via `GET /api/products?collection=<code>`. `Collection` is a lightweight entity (code/slug, localized name/description, hero, optional `themeKey`, manual M2M to products); `GET /api/collections` serves the list/metadata for nav + the indexable landing pages.
 - **Catalog filtering**: **server-side** via query params (React Query key includes filters). Filter combos canonical -> `/catalog`; Collection pages are real indexable routes.
 - **Faceted filtering (lean, discovery-oriented)**: core facets only -> **Category** + **Country** (multi-select, with counts), **Price** (from/to slider bounded by real min/max), **Sort** (popular/new/price asc/desc), and toggles `isTriedByUs` + `inStock`. Taste axes (spice/sweet) deferred. **Availability-aware** counts with **disjunctive faceting** (a facet's own selection is excluded when counting its options) so users never select into zero results. Mobile: filter bottom-sheet + live result count + removable active-filter chips + reset + friendly empty state.
-- **Facets endpoint + zero handling**: facets/stats served by a **separate `GET /api/products/facets`** keyed by _filters only_ (so they survive pagination and power a live preview), distinct from `GET /api/products` (keyed by filters + page). Zero-dead-end rules: a **currently-selected option is always rendered** (so it never vanishes mid-selection); **non-selected options with count 0 are shown disabled** (labeled `(0)`); boolean toggles compute their would-be count under the other filters and render **disabled when turning them on would yield 0**. Together these make an empty result unreachable via the UI (only stale stock / hand-edited URLs hit the empty state). **MVP v1**: implement facet counts as plain counts under the _current_ active filters (simple `GROUP BY`); the endpoint contract (`{total, facets}`) and all UI behavior stay identical, so upgrading to full disjunctive counting later is a backend-only change.
+- **Filters endpoint + zero handling**: filter preview served by **`GET /api/products/filters`** keyed by _filters only_ (no page), distinct from `GET /api/products` (filters + page). Full category/country taxonomy with zero counts; selected options always shown; non-selected `(0)` options disabled. **MVP v1**: plain counts under current filters; response `{ total, filters }`; disjunctive counting is a later backend-only upgrade.
 - **Monorepo**: **pnpm workspaces + Nx**.
 - **Visual identity**: **playful-premium**; Cyrillic fonts — **display: Unbounded**, **body: Manrope** (both Google Fonts, SIL OFL licensed, self-hosted via `next/font`).
 - **Mobile-first UX (responsive, not mobile-only)**: primary users browse on phones (often deciding what to eat on the go), so the **phone layout is designed first** and every flow (browse -> product -> cart -> checkout) is tuned for one-thumb use: large tap targets, bottom-sheets, sticky add-to-cart / primary CTAs, minimal typing (free-text Nova Poshta fields), and **progressive disclosure** so a product page reveals depth on demand instead of overwhelming. This is explicitly **not** mobile-only — the same components **scale up responsively** through MUI breakpoints to comfortable tablet/desktop layouts (filter bottom-sheet -> sidebar, single-column -> multi-column grid, wider max-width with generous spacing). The quality bar is an **emotional, near-native feel** (smooth View Transitions, tactile micro-interactions, playful-premium skins) that makes discovery and buying feel delightful and effortless rather than information-dense — the experience itself is part of what sells.
@@ -57,7 +57,7 @@ Most items below are now resolved (checked). A few remain open (need input or ar
 **Still open**
 
 - [ ] **Analytics IDs**: GTM container ID (`GTM-XXXXXXX`) + GA4 measurement ID (`G-XXXXXXXXXX`) + consent-banner copy. Non-blocking — wired as env vars, filled before launch. (Meta Pixel dropped; GA4-only.)
-- [ ] **View Transitions QA**: verify Safari morph/slide behavior is acceptable as progressive enhancement.
+- [ ] **Optional View Transitions QA** (Phase 11): verify Safari morph/slide behavior if/when native VT is reintroduced.
 
 ## Project structure (Nx + pnpm)
 
@@ -71,21 +71,17 @@ my-noodles/
   packages/
     theme/                    # MUI design system + skin engine (mirrors example)
     api-clients/              # PURE storefront client layer (no React Query)
-      generated/<service>/    # typescript-axios output (api/, models/, docs/)
-      src/<service>/
-        openapi-generator.json
-        clients.ts            # setupApiClients(baseUrl): axios instance + *Api instances
-        common.ts             # ApiError, shared helpers
-        <domain>/             # *.dto.ts (enums/custom), *.api.ts (custom endpoints), index.ts
-        index.ts              # barrel + re-export of generated/<service>
-      src/index.ts
+      src/storefront/
+        generated/            # @hey-api/openapi-ts output (flat SDK + types)
+        client/               # setupApiClients, runtime.config, constants
+      openapi-ts.config.ts    # live input: http://localhost:3001/api/docs-json
   docker-compose.yml          # local Postgres + grafana/otel-lgtm (opt-in observability profile)
   nx.json / pnpm-workspace.yaml
 ```
 
 (Per-app internal architecture below.)
 
-`packages/api-clients` mirrors the example `@merchant-portal/api-clients`: only `axios` as a runtime dep, an `api:generate` script per service (`openapi-generator-cli generate -c ./src/<service>/openapi-generator.json`), and an exports map (`.`, `./<service>`). It is RQ-agnostic so any monorepo consumer can use it. The example `apps/web/src/api` layer is the only React Query consumer for now.
+`packages/api-clients` uses **`@hey-api/openapi-ts`** (`openapi-ts.config.ts`, live `/api/docs-json` input), **`@hey-api/client-fetch`**, and a thin hand layer (`setupApiClients`, `runtime.config.ts`). RQ-agnostic — `apps/web/src/api` is the React Query consumer.
 
 ### Pinned versions (latest stable, verified against npm 2026-06-18)
 
@@ -109,7 +105,7 @@ Backend (`apps/api`):
 
 Tooling:
 
-- `nx` 23.0.0, `pnpm` 11.8.0, `@openapitools/openapi-generator-cli` 2.38.0
+- `nx` 23.0.0, `pnpm` 11.8.0, `@hey-api/openapi-ts` 0.98.x
 - `typescript` 6.0.3
 - Quality: `eslint` 10.5.0, `typescript-eslint` 8.61.1, `prettier` 3.8.4, `eslint-config-prettier` 10.1.8, `eslint-plugin-simple-import-sort` 13.0.0, `eslint-plugin-react-hooks` 7.1.1, `eslint-plugin-react` 7.37.5, `@next/eslint-plugin-next` 16.2.9, `eslint-plugin-jsx-a11y` 6.10.2, `knip` 6.17.1
 - Hooks/commits: `husky` 9.1.7, `@commitlint/cli` 21.0.2 (+ `@commitlint/config-conventional`)
@@ -148,7 +144,7 @@ apps/web/src/
 ```
 
 - Provider stack (the SPA `main.tsx` role) lives in `app/layout.tsx` + `app/providers.tsx`: `NuqsAdapter`, MUI `AppRouterCacheProvider` + `ThemeProvider`, `QueryClientProvider` + `HydrationBoundary`, `NextIntlClientProvider`.
-- nuqs parser schema in `screens/[feature]/search-params/` is the single source of truth: read on the server via `createSearchParamsCache` in `app/.../page.tsx` (SSR/ISR fetch + facets), and on the client via `useQueryStates` (filter controls, `shallow: false`).
+- nuqs parser schema in `screens/[feature]/search-params/` is the single source of truth: read on the server via `createSearchParamsCache` in `app/.../page.tsx` (SSR/ISR fetch + filters preview), and on the client via `useQueryStates` (filter controls, `shallow: false`).
 
 ### Backend (`apps/api/src`) — adopted as specified
 
@@ -157,7 +153,7 @@ apps/api/src/
 ├── index.ts                  # bootstrap (otel loaded first)
 ├── config.ts                 # env vars / app constants
 ├── ormconfig.ts              # TypeORM datasource
-├── otel-instrumentation.ts   # OpenTelemetry SDK (traces + logs) -> OTLP; imported FIRST in index.ts
+├── instrumentation.ts   # OpenTelemetry SDK (traces + logs) -> OTLP; imported FIRST in index.ts
 ├── configs/                  # standalone configs (feature flags, fixtures ref)
 ├── application/              # one folder per domain
 │   └── [feature]/            # products / collections / countries / brands / orders
@@ -167,7 +163,7 @@ apps/api/src/
 │       ├── [feature].dto.ts             # class-validator in/out shapes
 │       ├── [feature].exceptions.ts      # domain HTTP exceptions
 │       ├── ~[feature].test.ts           # co-located unit tests (tilde-prefixed)
-│       └── [sub-feature]/               # e.g. products/facets
+│       └── [sub-feature]/               # e.g. products filters on products.controller
 ├── infrastructure/
 │   ├── migrations/           # TypeORM migrations
 │   └── services/
@@ -177,7 +173,7 @@ apps/api/src/
 ```
 
 - Controllers = HTTP + validation only; services = logic. Storefront is public, so controllers are public (the `.controller.public.ts` variant is reserved for if/when auth is added).
-- `application/products/facets/` (sub-feature) implements `GET /products/facets`.
+- `GET /products/filters` on `ProductsController` implements catalog filter preview.
 - Telegram lives in `infrastructure/services/Telegram/client/` (hand-written Bot API), called by `OrdersService`. `infrastructure/services/<Service>/generated/` is reserved for any _third-party_ OpenAPI client (distinct from `packages/api-clients`, which is OUR API's client for the web app).
 - Jest `testMatch` includes the tilde pattern (`**/~*.test.ts`); ESLint/knip configured to recognize it.
 
@@ -229,7 +225,7 @@ All dimensions are **separate entities (lookup tables)**, not bare columns/enums
 API (class-validator DTOs, Throttler, honeypot on POSTs; `@nestjs/swagger` -> `/api/docs-json`):
 
 - `GET /api/products` (server-side filters: collection, category[], country[], brand, priceMin, priceMax, isTriedByUs, inStock, sort [`popular` = `sortWeight` desc / `new` / `price` asc|desc]; pagination: page-number `page` + `limit`, where **`limit` is required whenever paginating and capped at max `100`** — no implicit large default, guarding against unbounded heavy queries; `?locale`). Returns `{ items, total }` (keyed by filters + page).
-- `GET /api/products/facets` (same filters, **no page**) -> `{ total, facets }` where `facets = { category: [{value,label,count}], country: [...], price: {min,max}, isTriedByUs: count, inStock: count }`, computed **disjunctively** (each facet/toggle ignores its own selection) and availability-aware given the other active filters. **MVP v1 ships plain counts under the current filters** (identical response shape); disjunctive counting is a later backend-only upgrade. Powers the filter UI counts/disabling and the live "Показати N товарів" preview (call with draft filter state).
+- `GET /api/products/filters` (same filters, **no page**) -> `{ total, filters }` where `filters = { category: [{value,label,count}], country: [...], price: {min,max}, isTriedByUs: count, inStock: count }`. Full taxonomy with zero counts. Powers filter UI and live "Показати N товарів" preview.
 - `GET /api/products/:slug` (+ alternatives)
 - `GET /api/collections`, `GET /api/collections/:slug`
 - `GET /api/countries`
@@ -238,11 +234,11 @@ API (class-validator DTOs, Throttler, honeypot on POSTs; `@nestjs/swagger` -> `/
 
 ## API clients & data layer (two layers)
 
-- `packages/api-clients` (pure clients, reusable, no RQ): `openapi-generator-cli` (config in `src/<service>/openapi-generator.json`: `typescript-axios`, `withSeparateModelsAndApi`, `stringEnums`, `supportsES6`, `withInterfaces`) emits into `generated/<service>/`. `src/<service>/clients.ts` exposes `setupApiClients(baseURL)` that creates one `axios` instance and instantiates each generated `*Api` (plus any hand-written `*.api.ts` for endpoints the generator handles poorly, e.g. uploads), returning `{ instance, productsApi, ... }`. `common.ts` holds `ApiError`; per-domain `*.dto.ts`/`index.ts` add enums and re-export generated types. Runs in Node + browser.
+- `packages/api-clients`: `@hey-api/openapi-ts` (`openapi-ts.config.ts`, live `/api/docs-json`), `api:generate` → `src/storefront/generated`, hand layer in `src/storefront/client/` (`setupApiClients`, `runtime.config.ts`, `ApiError`).
 - `apps/web/src/api` (React Query layer, web-only consumer): `clients.ts` calls `setupApiClients(PUBLIC_API_URL)` once into a singleton and attaches interceptors (base URL, headers; auth/refresh not needed for the public storefront). Per-domain folders hold the `useQuery`/`useMutation` hooks with **query-key factories** (e.g. `productsQueryKeys.list(filters)`), `types.ts` view models, and `utils.ts` mappers. Server Components import the same singleton/client for ISR prefetch into `HydrationBoundary`. Shared wrappers (`formatUseQuery`-style) live in `apps/web/src/api/_lib`.
 - Routes (ISR + `HydrationBoundary`): `/` home, `/catalog` (server-side filters via `searchParams`), `/collections/[slug]`, `/product/[slug]`, `/cart`, `/checkout`, `/checkout/success`, `/contacts`.
 - Product page: gallery, flavor notes (spice/sweet meters, texture), "для кого", allergens/risks, story, alternatives, delivery estimate, add-to-cart + Telegram quick-order fallback.
-- Catalog filtering UI: `FilterSheet` (bottom-sheet on mobile, sidebar on desktop) driven by `GET /api/products/facets`; Category/Country as counted multi-selects (zero-count non-selected options shown disabled with `(0)`; selected options always shown), `PriceRangeSlider` bounded by `facets.price.min/max` (+ manual numeric entry), Sort select, `isTriedByUs`/`inStock` toggles (disabled when turning on would yield 0). Active filters as removable chips; live "Показати N товарів" preview from the facets `total` (draft filter state); Скинути (reset); empty-state CTA. Filter state lives in a typed **nuqs** parser schema (`screens/catalog/search-params/`) — read server-side via `createSearchParamsCache` for SSR/ISR fetch, set client-side via `useQueryStates` (`shallow: false`) — and feeds both React Query keys (products by filters+page, facets by filters).
+- Catalog filtering UI: `FilterSheet` driven by `GET /api/products/filters`; Category/Country multi-select with full taxonomy + zero counts; `PriceRangeSlider` bounded by `filters.price.min/max`; live preview from `total`. Filter state in nuqs schema — SSR prefetch + client `useQueryStates`.
 - Skin engine `resolveSkin({brand, country, category, slug})` -> CSS vars on card/page root.
 - Native View Transitions: catalog->product shared-element morph + directional route slides; `motion` micro-interactions; `prefers-reduced-motion` respected.
 
@@ -250,7 +246,7 @@ API (class-validator DTOs, Throttler, honeypot on POSTs; `@nestjs/swagger` -> `/
 
 OpenTelemetry-first, with Winston as the logger wired into OTel:
 
-- `apps/api/src/otel-instrumentation.ts` initializes the `NodeSDK` (`@opentelemetry/sdk-node`) with `auto-instrumentations-node` (HTTP, Express/Nest, `pg`, etc.) and **OTLP exporters** (traces + logs) over the OTLP protocol; **imported first** in `index.ts` (before Nest bootstrap) so instrumentation patches modules early. **OTLP export is opt-in via `OTEL_ENABLED` (default off)**: when unset, the SDK/exporters and the `otel-lgtm` container are not needed to run the app, and **Winston logging stays always-on** (console in dev). Endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:4318`), service name via `OTEL_SERVICE_NAME`.
+- `apps/api/src/instrumentation.ts` initializes the `NodeSDK` (`@opentelemetry/sdk-node`) with `auto-instrumentations-node` (HTTP, Express/Nest, `pg`, etc.) and **OTLP exporters** (traces + logs) over the OTLP protocol; **imported first** in `index.ts` (before Nest bootstrap) so instrumentation patches modules early. **OTLP export is opt-in via `OTEL_ENABLED` (default off)**: when unset, the SDK/exporters and the `otel-lgtm` container are not needed to run the app, and **Winston logging stays always-on** (console in dev). Endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:4318`), service name via `OTEL_SERVICE_NAME`.
 - **Logging**: `winston` as the app logger (integrated into Nest via `nest-winston` as the Nest logger), with `@opentelemetry/instrumentation-winston` (auto-injects `trace_id`/`span_id` into log records) + `@opentelemetry/winston-transport` (ships logs to the OTel Logs pipeline -> OTLP). One logger, correlated logs+traces.
 - **Local backend** for debugging: a `grafana/otel-lgtm` all-in-one container (Grafana + Loki + Tempo + Prometheus + OTel Collector) in `docker-compose` under an **opt-in `observability` profile** (`docker compose --profile observability up`) so it is not spun up for normal dev — Grafana UI on `:3030`, OTLP ingest on `:4317` (gRPC) / `:4318` (HTTP). Equivalent to `docker run -d --name otel-lgtm -p 3030:3000 -p 4317:4317 -p 4318:4318 grafana/otel-lgtm`.
 - MVP keeps spans/logs flowing locally; no hosted backend (deploy out of scope).
@@ -414,29 +410,29 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 4 - Backend foundation
 
-- [x] `apps/api` bootstrap: `config.ts`, `data-source.ts` (`synchronize: false`), `otel-instrumentation.ts` via Node `--import` preload (OTLP opt-in via `OTEL_ENABLED`).
+- [x] `apps/api` bootstrap: `config.ts`, `data-source.ts` (`synchronize: false`), `instrumentation.ts` via Node `--import` preload (OTLP opt-in via `OTEL_ENABLED`).
 - [x] Winston via `nest-winston` + OTel winston instrumentation/transport (trace-correlated logs, always-on).
 
 ### Phase 5 - Backend domain
 
 - [x] Entities (JSONB i18n: name/description/story/forWhom): Product (`quantity`, `sortWeight`, relations to Brand/Country/Category, self-ref alternatives), Brand, Category, Country, Collection (M2M), Order/OrderItem (snapshots) + migrations (`CreateCatalog`, `CreateOrders`; `OrderDelivery` for structured delivery).
 - [x] DTOs (`class-validator`) + `Throttler` (60/min; orders 5/min) + honeypot (`company`).
-- [x] Endpoints: `GET /products` (filters + page-number pagination, `limit` required<=100), `GET /products/facets` (v1 plain counts, same contract), `GET /products/:slug`, `GET /collections(/:slug)`, `GET /countries`, `POST /orders`.
+- [x] Endpoints: `GET /products`, `GET /products/filters`, `GET /products/:slug`, `GET /collections(/:slug)`, `GET /countries`, `POST /orders`.
 - [x] `POST /orders`: persist + Telegram notify (failure-tolerant; format per plan; `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`).
 - [x] `@nestjs/swagger` -> `/api/docs-json` (Swagger CLI plugin on DTOs; UI at `/api/docs`).
 
 ### Phase 6 - API client + web data layer
 
-- [x] `packages/api-clients`: `openapi-generator.json` (live `/api/docs-json` inputSpec), `api:generate` → `generated/storefront`, `setupApiClients(baseURL)`, `common.ts` (`ApiError`), `locale.dto.ts` / `products.dto.ts` re-exports.
-- [x] `apps/web/src/api`: `clients.ts` singleton + interceptors; per-domain `*.ts` fetchers + `*.hooks.ts` with `formatUseQuery`/`formatUseMutation`; `useAppLocale` in `hooks/locale.ts`; generated DTOs directly (no view-model mappers); `shared/env.ts` + `shared/query-client.ts`.
+- [x] `packages/api-clients`: `@hey-api/openapi-ts`, `api:generate` → `storefront/generated`, `setupApiClients`, `ApiError`, fetch SDK.
+- [x] `apps/web/src/api`: `clients.ts` singleton + interceptors; per-domain `*.ts` fetchers + `*.hooks.ts` with `formatUseQuery`/`formatUseMutation` from `@my-noodles/web-lib/react-query`; `useAppLocale` in `hooks/locale.ts`; generated DTOs directly (no view-model mappers); `shared/env.ts` + `shared/query-client/` (`getQueryClient`, `QueryHydrate`).
 
 ### Phase 7 - Frontend
 
-- [ ] Provider stack (`app/layout.tsx` + `providers.tsx`): Nuqs, MUI cache + ThemeProvider, QueryClient + HydrationBoundary, NextIntl.
-- [ ] Pages (ISR + HydrationBoundary): home, catalog (server-side filters via search-params schema), collections/[slug], product/[slug], cart, checkout, success, contacts.
-- [ ] `FilterSheet` (counted multi-selects, price slider, sort, toggles, chips, live "Показати N", reset, empty state); URL search-params drive both RQ keys.
-- [ ] Cart (Zustand + persist + version/migrate dropping stale cart); checkout form (RHF + zod, fields: name/phone/city/branch).
-- [ ] Native View Transitions (morph, Suspense reveals, directional slides, crossfade) + `motion` micro-interactions; `prefers-reduced-motion`.
+- [x] Provider stack (`app/[locale]/layout.tsx` + `providers.tsx`): Nuqs, MUI cache + ThemeProvider, QueryClientProvider, NextIntl. Per-route dehydrate + `QueryHydrate` (not a global `HydrationBoundary`).
+- [x] Pages (ISR + hydration): home, catalog (nuqs search-params schema), collections/[slug], product/[slug], cart, checkout, success, contacts; shared generic `not-found`.
+- [x] `FilterSheet` (counted multi-selects, price slider, sort, toggles, chips, live "Показати N", reset, empty state); URL search-params drive RQ keys; load/error/empty/busy/refetch from `formatUseQuery` (see `@my-noodles/web-lib/react-query`).
+- [x] Cart (Zustand + persist + version/migrate dropping stale cart); checkout form (RHF + zod, fields: name/phone/city/branch).
+- [x] Phase 7 close-out: funnel QA on real devices; fix remaining lint/UX nits (e.g. cart empty-state deps).
 
 ### Phase 8 - SEO
 
@@ -448,9 +444,10 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 10 - Tests
 
-- [ ] Jest (api): OrderService unit + supertest e2e (`POST /orders`, `GET /products` & `/facets`). Vitest (web/packages): cart store, skin resolver. Playwright: funnel smoke.
+- [ ] Jest (api): OrderService unit + supertest e2e (`POST /orders`, `GET /products` & `/filters`). Vitest (web/packages): cart store, skin resolver. Playwright: funnel smoke.
 
 ### Phase 11 - Pre-launch (open items)
 
 - [ ] Fill analytics env (`GTM-…`, `G-…`) + consent-banner copy.
-- [ ] QA native View Transitions on Safari.
+- [ ] **Feel polish** (`hooks/smooth/`): `useSmoothBusyState` for refetch/busy dims and controls; respect `prefers-reduced-motion`; audit catalog filter-sheet, product grid veil, and cart for a near-native, low-jank discovery flow (no third-party animation lib required for MVP).
+- [ ] **Optional — native View Transitions** (deferred from Phase 7): morph, Suspense reveals, directional slides, crossfade behind Next `experimental.viewTransition`; Safari QA as progressive enhancement.

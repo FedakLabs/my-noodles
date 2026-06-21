@@ -1,0 +1,48 @@
+{
+  "name": "@my-noodles/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./icons/*.svg": "./src/icons/*.svg"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json",
+    "storybook": "storybook dev -p 6007",
+    "build-storybook": "storybook build -o dist/storybook"
+  },
+  "dependencies": {
+    "@my-noodles/theme": "workspace:*"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.0.0",
+    "@emotion/styled": "^11.0.0",
+    "@mui/material": "^9.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.0",
+    "@mui/material": "9.1.1",
+    "@my-noodles/eslint-config": "workspace:*",
+    "@storybook/addon-docs": "10.4.6",
+    "@storybook/react-vite": "10.4.6",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "10.5.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-storybook": "10.4.6",
+    "vite-plugin-svgr": "4.5.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "storybook": "10.4.6",
+    "vite": "8.0.16",
+    "vitest": "4.1.9"
+  }
+}

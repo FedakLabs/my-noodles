@@ -1,8 +1,8 @@
 'use client';
 
+import { formatUseMutation } from '@my-noodles/web-lib/react-query';
 import { useMutation } from '@tanstack/react-query';
 
-import { formatUseMutation } from '../_lib/queries';
 import { createOrder } from './orders';
 
 export function useCreateOrder() {

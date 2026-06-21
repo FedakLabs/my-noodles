@@ -56,9 +56,26 @@ export function useProductsList(filters: ProductListFilters) {
 
 ### URL state → nuqs
 
-- Parser schema in `screens/[feature]/search-params/`
-- Server: `createSearchParamsCache` in `page.tsx`
-- Client: `useQueryStates(…, { shallow: false })` for filter controls
+Domain **search params are the source of truth** for shareable filter/sort/pagination state. Layout per feature:
+
+```text
+screens/[feature]/search-params/
+  parsers.ts   # nuqs parsers + createSearchParamsCache (server-safe)
+  types.ts     # CatalogSearchParams, CatalogFilterParams, defaults, appliedKey helpers
+  hooks.ts     # useCatalogSearchParams() — wraps useQueryStates + reset/apply helpers
+  index.ts     # public barrel
+```
+
+- **Server:** `catalogSearchParamsCache.parse(searchParams)` in `page.tsx` for initial prefetch only
+- **Client:** `useCatalogSearchParams()` from the barrel — **do not** pass `{ shallow: false }` unless a Server Component must re-render on every URL change (catalog does not; TanStack Query refetches client-side)
+- **No mappers in search-params/** — map to API query shapes inside `api/[feature]/` fetchers (`utils.ts`), which accept search-param types directly
+
+```ts
+export function useCatalogSearchParams() {
+  const [params, setParams] = useQueryStates(catalogSearchParamsParsers);
+  // default shallow: true — instant URL sync, no server round-trip per filter change
+}
+```
 
 ### Client-only → Zustand
 
@@ -74,20 +91,33 @@ Use Zustand for **ephemeral client state** that is not server data and should no
 
 **Conventions:**
 
-- Stores live in `hooks/` (or `hooks/[feature]/`); expose a `use*Store` hook, not raw store imports in screens.
-- Persist only when the customer expects continuity across sessions (cart). Use `persist` + `version`/`migrate` so a schema bump drops stale localStorage instead of silently breaking.
-- Do not mirror server entities in Zustand — RQ owns fetched data; the store holds IDs, quantities, and UI-only fields.
-
-**Cart** (planned) follows this pattern: client-only until checkout submit, then a mutation sends the payload to the API.
+- Stores live in `hooks/[feature]/` — **`cart-store.ts`** (Zustand instance, internal) + **`use-*.ts`** (selector/action hooks) + **`index.ts`** barrel. Screens import `@/hooks/cart`, never the raw store.
+- **Persist only what the customer expects across sessions** (`persist` + `partialize`). Ephemeral UI (`panelOpen`, suppression flags, draft toggles) stays in memory — not localStorage.
+- **`version` + `migrate`:** bump on shape changes; migrate returns a clean slate instead of patching unknown fields.
+- **Actions as store methods;** expose thin hooks for components (`useCartActions`, `useCartItems`) rather than `useCartStore` in screens.
+- Do not mirror server entities — RQ owns fetched data; the store holds IDs, quantities, and UI-only fields.
+- Reference implementation: `hooks/cart/` (persisted lines + ephemeral panel state).
 
 ### UI states (always handle)
 
+Every network-backed surface covers the **full lifecycle**:
+
+| State | Typical signal | UI |
+| --- | --- | --- |
+| **Loading (initial)** | `isPending && !data` | Skeleton — replaces content |
+| **Error** | `isError && !data` | Error copy + retry (`refetch`) |
+| **Empty** | success, nothing meaningful to show | Friendly empty state |
+| **Data** | success + content | Happy path |
+| **Refetching** | `isFetching && !isPending` | Keep stale content visible; soft feedback nearby (see [common-patterns — Initial load vs refetch](./common-patterns.md#initial-load-vs-refetch)) |
+
 ```tsx
-if (isLoading) return <Skeleton … />;
-if (isError) return <Alert severity="error">{…}</Alert>;
-if (!items.length) return <EmptyState … />;
-return <ProductGrid items={items} />;
+if (isPending && !data) return <Skeleton />;
+if (isError && !data) return <ErrorState onRetry={refetch} />;
+if (!items.length) return <EmptyState />;
+return <Content isRefetching={isFetching && !isPending} />;
 ```
+
+While **refetching with stale data** (filter preview, sort change): dim the existing UI and disable interaction — do not remount the panel or fall back to skeleton.
 
 ---
 
@@ -96,18 +126,57 @@ return <ProductGrid items={items} />;
 - ISR/`revalidate` for catalog and product pages per mvp-plan
 - RQ caching — don't refetch on every render
 - `next/image` for product photos (remote URLs from API)
-- View Transitions / `motion` as progressive enhancement
+- Catalog refetch smoothness: `useSmoothBusyState` + grid veil (`ProductGridRefreshVeil`) — debounced in/out overlay while stale data stays visible
 - Optimize only when measured — no premature `memo` everywhere
+
+### Loading UI vs SEO (indexable routes)
+
+**SEO-sensitive routes** — home, catalog, product detail, collection landing — must ship **real content in the initial HTML** (product names, links, copy). Crawlers and “View Page Source” should not see route-level skeleton markup.
+
+| Mechanism | SEO-sensitive routes | Non-SEO routes (cart, checkout, …) |
+| --- | --- | --- |
+| **`loading.tsx`** | **Do not add** | OK for client-nav polish |
+| **`<Suspense fallback={…}>`** around async prefetch in `page.tsx` | **Do not use** — streams skeleton into the document | OK when the route is not indexed |
+| **`page.tsx` data loading** | `async` page — `await` prefetch, then return `QueryHydrate` + screen | Same or lighter |
+| **Loading UX after hydration** | Client screens/components — RQ `isPending` / `isFetching`, inline skeletons, contextual refetch overlays (`ProductGrid`, `FilterSheet`) | Same pattern |
+
+```tsx
+// ✅ indexable catalog page — full HTML, no route skeleton
+export default async function CatalogPage({ params, searchParams }: PageProps) {
+  await prefetchCatalogQueries(/* … */);
+  return (
+    <QueryHydrate state={dehydrate(queryClient)}>
+      <CatalogScreen />
+    </QueryHydrate>
+  );
+}
+
+// ❌ indexable page — skeleton can appear in streamed / navigated HTML
+export default function CatalogPage(props: PageProps) {
+  return (
+    <Suspense fallback={<CatalogLoadingFallback />}>
+      <CatalogPageContent {...props} />
+    </Suspense>
+  );
+}
+```
+
+**Post-hydration loading** belongs in the component that owns the data — grid veil, filter skeletons, inline progress — not route-level `loading.tsx` or global floating indicators.
+
+**SSR + React Query:** `getQueryClient()` must return the **same server instance** for `Providers` and `page.tsx` prefetch (`React.cache` in `shared/query-client/`). Otherwise prefetched catalog data never reaches SSR of client hooks and indexable HTML shows skeletons instead of product cards. Use **`formatUseQuery`** view-state flags (`*IsInitialLoad`, `*IsLoadFailed`, `*IsEmpty`, `*IsRefetching`, `*IsBusy`) instead of hand-rolling `isPending && !data` everywhere — see [Remote data lifecycle](./common-patterns.md#remote-data-lifecycle-loading--error--empty) for screen branching and i18n.
 
 ---
 
 ## Design & Theme
 
-- **`packages/theme`** is the source of truth — semantic tokens, component defaults, and skins
-- Consume tokens via the theme (`theme.colors.*`, spacing scales, `borderRadius`, typography) — not ad-hoc hex, px, or font stacks in feature code
-- Extend look-and-feel in **`packages/theme/src/components.ts`** (MUI `styleOverrides` / `variants`) so `apps/web` reuses defaults instead of repeating `sx`
+- **`packages/theme`** — bare tokens and MUI component defaults (`theme.colors.*`, spacing, typography)
+- **`packages/ui`** — composed components, icons (`iconStyle` + per-file SVGR imports), skin engine (`resolveSkin` from `@my-noodles/ui`)
+- Import **`theme`** from `@my-noodles/theme`; shared UI from `@my-noodles/ui`
+- Extend look-and-feel in **`packages/theme/src/components.ts`** (MUI `styleOverrides` / `variants`) so apps reuse defaults instead of repeating `sx`
 - Cyrillic fonts: **Unbounded** (display), **Manrope** (body) via `@my-noodles/theme/fonts.css`
+- Extract generic composed UI to **`packages/ui`** when reusable across frontend apps (`StableLinearProgress`, `DiscoveryCard`, …)
 - Product/collection surfaces: CSS variables from `resolveSkin()` — do not hardcode brand/country accent colors in screens
+- **Icons:** `@my-noodles/ui/icons/[name].svg` + `iconStyle({ size, color })` on `style` — not `width`/`height` props or wrapper `color`
 
 ---
 
@@ -121,15 +190,18 @@ apps/web/src/
 │   └── catalog/page.tsx    # → screens/catalog
 ├── screens/[feature]/
 │   ├── index.tsx
-│   └── search-params/
+│   └── search-params/      # parsers.ts, types.ts, hooks.ts, index.ts
 ├── components/[feature]/
-├── api/[feature]/
-│   ├── [feature].ts        # fetchers + query keys (server-safe, no React)
-│   ├── [feature].hooks.ts  # `'use client'` — RQ hooks + formatUseQuery/Mutation
-│   ├── types.ts            # re-export generated DTOs + query-input types only
-│   ├── utils.ts            # optional: request builders (not response mappers)
-│   └── index.ts
-├── hooks/                  # useAppLocale, cart, useSkin, …
+├── api/[feature]/           # React Query module (mirrors backend domain folders)
+│   ├── [feature].ts         # fetchers + query keys (server-safe, no React)
+│   ├── [feature].hooks.ts   # `'use client'` — RQ hooks
+│   ├── types.ts             # re-export generated DTOs + query-input types only
+│   ├── utils.ts             # optional: request builders
+│   └── index.ts             # **public barrel** — only entry point for other layers
+├── hooks/[feature]/         # client-state modules (cart, …)
+│   ├── [feature]-store.ts   # Zustand store (internal)
+│   ├── use-[feature].ts     # public hooks (internal)
+│   └── index.ts             # **public barrel** — re-exports hooks + types for reuse
 ├── utils/
 └── shared/                 # env.ts (API_URL), query-client.ts
 ```
@@ -139,9 +211,31 @@ apps/web/src/
 - Layer by technical concern, group by feature inside each folder
 - Co-locate `*.test.tsx` with source
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
-- **`packages/api-clients`** = axios client only; **`apps/web/src/api`** = React Query layer
+- **`packages/api-clients`** = `@hey-api/openapi-ts` fetch SDK; **`apps/web/src/api`** = React Query layer
+- **`api/clients.ts`** — side-effect `setupApiClients(API_URL)`; import from `app/providers.tsx` + root layout
 - **`shared/env.ts`** — Zod-validated client env (`API_URL` from `NEXT_PUBLIC_API_URL`); copy `apps/web/.env.example` → `.env.local`
 - **`hooks/locale.ts`** — `useAppLocale()` (next-intl); client API hooks merge locale internally, server fetchers take explicit `locale`
+
+### Module barrels (same idea as backend domains)
+
+Each **`api/[feature]/`** and **`hooks/[feature]/`** folder is a **module**. The **`index.ts`** is the only public surface — it re-exports what other layers may use (hooks, fetchers, query keys, types). Implementation files stay internal.
+
+```ts
+// ✅ screens, components, app pages
+import { useCreateOrder } from '@/api/orders';
+import { useCartActions } from '@/hooks/cart';
+import { fetchProductsList, productsQueryKeys } from '@/api/products';
+
+// ❌ deep imports into module internals
+import { useCreateOrder } from '@/api/orders/orders.hooks';
+import { useCartActions } from '@/hooks/cart/use-cart';
+import { fetchProductsList } from '@/api/products/products';
+```
+
+- **`index.ts` exports** — hooks, server fetchers, query-key factories, shared types
+- **Keep internal** — `*.hooks.ts` vs `*.ts` split, Zustand store instances, `utils.ts` helpers (unless explicitly part of the public API)
+- **Cross-module** — always import via `@/api/[feature]` or `@/hooks/[feature]`, not sibling files
+- Optional umbrella `@/api` re-exports all domains; prefer **feature barrel** when only one domain is needed (clearer boundaries, better tree-shaking intent)
 
 ---
 
@@ -151,9 +245,11 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 
 | Avoid | Prefer |
 | --- | --- |
-| `fetch` / axios / `getApiClients()` inside screens or components | Server-safe fetchers + query keys in `api/[feature]/[feature].ts`; client hooks in `*.hooks.ts` |
+| Raw generated SDK calls / `fetch` inside screens or components | Server-safe fetchers + query keys in `api/[feature]/[feature].ts`; client hooks in `*.hooks.ts` |
+| Deep imports into module internals (`@/api/orders/orders.hooks`, `@/hooks/cart/use-cart`) | Module barrel only: `@/api/orders`, `@/hooks/cart` (see [Module barrels](#module-barrels-same-idea-as-backend-domains)) |
 | Duplicating OpenAPI shapes as `*ViewModel` / hand-rolled DTOs | Types from `@my-noodles/api-clients/storefront`; local `types.ts` only for query-input/filter shapes |
-| `useState` for catalog filters, sort, or pagination | nuqs schema in `screens/[feature]/search-params/`; server cache in `page.tsx`, client `useQueryStates(…, { shallow: false })` |
+| `useState` for catalog filters, sort, or pagination | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI; prefetch once in `page.tsx` |
+| Mappers from search params in `screens/` | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept `CatalogSearchParams` / `CatalogFilterParams` |
 | Passing `locale` through every screen into hooks | `useAppLocale()` inside `*.hooks.ts`; explicit `locale` only in server prefetch fetchers |
 | User-visible strings in JSX | `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json` |
 | `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
@@ -161,7 +257,10 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | Inline defaults for `NEXT_PUBLIC_API_URL` | Zod schema in `shared/env.ts`; values in `.env.local` (see `.env.example`) |
 | Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; local `sx` only for one-off layout |
 | Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
-| Skipping loading, error, or empty UI | Skeleton / Alert / empty state before the happy path |
+| Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
+| `loading.tsx` or Suspense fallbacks on home / catalog / product / collection | Async `page.tsx` with awaited prefetch; client loading in `screens/` + `components/` only |
+| Global fixed loading indicator for route-local refetch | Contextual feedback near updating content (toolbar + grid veil, filter panel dim) |
+| `{condition && <LinearProgress />}` — mount/unmount shifts layout | `@my-noodles/ui` `StableLinearProgress` — reserved slot, `opacity` + `visibility` |
 | Premature `memo` / micro-optimizations | Measure first; ISR + RQ caching cover most cases |
 
 ---
@@ -175,3 +274,4 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 - [ ] Theme tokens, not raw hex
 - [ ] Tests co-located
 - [ ] `pnpm nx run web:fix` passes
+- [ ] Indexable routes: no `loading.tsx`, no Suspense around server prefetch in `page.tsx`

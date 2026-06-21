@@ -33,6 +33,7 @@ pnpm nx run api:migration:run
 - Migrations only — `synchronize: false`
 - Jest + supertest; tests co-located as `~*.test.ts`
 - Winston + OTEL bootstrap (`OTEL_ENABLED` opt-in for export)
+- **OpenAPI** — `@nestjs/swagger` serves live spec at `/api/docs-json`; storefront TS client is generated in `packages/api-clients` via **`@hey-api/openapi-ts`** (not OpenAPI Generator)
 
 ## Repo layout
 
@@ -50,6 +51,13 @@ If preconditions fail, stop and tell the user.
 4. **Implement** — validators on all inputs; migrations for schema
 5. **Test** — unit + supertest where applicable
 6. **Run** `pnpm nx run api:fix`
+
+After DTO/controller changes that affect the public API, regenerate the storefront client (API must be running on port 3001):
+
+```bash
+pnpm nx run api:clients:generate
+pnpm nx run api-clients:build
+```
 
 ## Reference Files
 

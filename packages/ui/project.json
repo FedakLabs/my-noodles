@@ -1,0 +1,76 @@
+{
+  "name": "ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ui/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib", "platform:web"],
+  "targets": {
+    "build": {
+      "command": "tsc -p tsconfig.lib.json",
+      "options": { "cwd": "packages/ui" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "packages/ui" }
+    },
+    "format-check": {
+      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+      "options": { "cwd": "packages/ui" }
+    },
+    "lint": {
+      "command": "eslint . --fix",
+      "options": { "cwd": "packages/ui" }
+    },
+    "lint-check": {
+      "command": "eslint .",
+      "options": { "cwd": "packages/ui" }
+    },
+    "type-check": {
+      "command": "tsc --noEmit -p tsconfig.lib.json",
+      "options": { "cwd": "packages/ui" }
+    },
+    "test": {
+      "command": "vitest run",
+      "options": { "cwd": "packages/ui" }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace packages/ui",
+      "options": { "cwd": "." }
+    },
+    "storybook": {
+      "command": "storybook dev -p 6007",
+      "options": { "cwd": "packages/ui" }
+    },
+    "build-storybook": {
+      "command": "storybook build -o dist/storybook",
+      "options": { "cwd": "packages/ui" },
+      "outputs": ["{projectRoot}/dist/storybook"]
+    },
+    "fix": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format",
+          "nx run {projectName}:lint",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test"
+        ],
+        "parallel": false
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format-check",
+          "nx run {projectName}:lint-check",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:test",
+          "nx run {projectName}:knip"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

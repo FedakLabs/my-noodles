@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 
+import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
+import { clientBaggageMiddleware, responseDelayMiddleware } from '@my-noodles/api-lib/middlewares';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -9,11 +11,7 @@ import { AppModule } from './app.module';
 import { config } from './config';
 import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs/api';
 import { localeMiddleware } from './infrastructure/i18n';
-import {
-  clientBaggageMiddleware,
-  createWinstonModuleOptions,
-  ManifestHttpExceptionFilter,
-} from './infrastructure/logging';
+import { HttpExceptionLogFilter } from './infrastructure/logging';
 import { registerGracefulShutdown } from './shutdown';
 
 async function bootstrap() {
@@ -21,8 +19,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger });
 
+  app.enableCors();
+
   app.useGlobalFilters(
-    new ManifestHttpExceptionFilter(app.get(HttpAdapterHost), app.get(WINSTON_MODULE_PROVIDER)),
+    new HttpExceptionLogFilter(app.get(HttpAdapterHost), app.get(WINSTON_MODULE_PROVIDER)),
   );
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
@@ -35,6 +35,12 @@ async function bootstrap() {
   );
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);
+  app.use(
+    responseDelayMiddleware({
+      responseDelayMs: config.responseDelayMs,
+      skipPaths: [`/${API_GLOBAL_PREFIX}/health`, `/${SWAGGER_UI_PATH}`, `/${SWAGGER_JSON_PATH}`],
+    }),
+  );
 
   const swaggerDocument = SwaggerModule.createDocument(
     app,

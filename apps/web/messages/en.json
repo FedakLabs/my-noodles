@@ -3,8 +3,118 @@
     "title": "my-noodles",
     "description": "Food-discovery store for imported snacks"
   },
+  "common": {
+    "brand": "my-noodles",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "nav": {
+      "home": "Home",
+      "catalog": "Catalog",
+      "contacts": "Contacts",
+      "cart": "Cart",
+      "menuOpen": "Open menu",
+      "menuClose": "Close menu"
+    }
+  },
   "home": {
-    "title": "my-noodles",
-    "description": "Food-discovery store — foundation scaffold."
+    "title": "Tasty discoveries from around the world",
+    "description": "Explore imported snacks — pick a country, a flavor, and add to cart.",
+    "ctaCatalog": "Browse catalog",
+    "collectionsTitle": "Collections",
+    "loading": "Loading collections…"
+  },
+  "catalog": {
+    "title": "Catalog",
+    "loading": "Loading products…",
+    "error": "Could not load catalog",
+    "emptyState": "Nothing matches these filters — try adjusting them.",
+    "openFilters": "Filters",
+    "resultsCount": "{count, plural, one {# product} other {# products}}",
+    "addToCart": "Add to cart",
+    "outOfStock": "Out of stock",
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset",
+      "sort": "Sort",
+      "sortPopular": "Popular",
+      "sortNew": "New",
+      "sortPriceAsc": "Price ↑",
+      "sortPriceDesc": "Price ↓",
+      "category": "Category",
+      "country": "Country",
+      "price": "Price",
+      "priceMin": "Min",
+      "priceMax": "Max",
+      "triedByUs": "Tried by us",
+      "inStock": "In stock",
+      "searching": "Searching…",
+      "loading": "Loading filters…",
+      "error": "Could not load filters",
+      "retry": "Try again",
+      "empty": "Nothing to filter yet — check back soon for tasty picks.",
+      "showResults": "Show {count, plural, one {# product} other {# products}}"
+    }
+  },
+  "product": {
+    "loading": "Loading…",
+    "error": "Couldn't load this product",
+    "empty": "Product not found",
+    "addToCart": "Add to cart",
+    "outOfStock": "Out of stock",
+    "forWhom": "For whom",
+    "alternatives": "You might also like"
+  },
+  "collections": {
+    "loading": "Loading…",
+    "error": "Couldn't load this collection",
+    "empty": "Collection not found"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty — time to discover something tasty!",
+    "emptyMessages": {
+      "spicy": "Your cart is empty — perfect time to find something tasty! 🍜",
+      "quiet": "It's quiet here… Add something delicious from the catalog ✨",
+      "curious": "Nothing picked yet — the catalog is full of surprises 👀",
+      "room": "Empty cart = more room for new flavors 🌍",
+      "next": "Your next favorite snack is waiting in the catalog 💛",
+      "wink": "Nothing here yet — we know where to look 😉"
+    },
+    "browse": "Browse catalog",
+    "remove": "Remove",
+    "increase": "Increase quantity",
+    "decrease": "Decrease quantity",
+    "total": "Total",
+    "checkout": "Checkout",
+    "continueBrowsing": "Continue browsing",
+    "close": "Close cart"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "submit": "Place order",
+    "error": "Could not place order. Please try again.",
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "city": "City",
+      "branch": "Nova Poshta branch",
+      "company": "Company"
+    },
+    "success": {
+      "title": "Thank you!",
+      "description": "We received your order and will confirm shortly.",
+      "backToCatalog": "Back to catalog"
+    }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "description": "Message us on Telegram — we’ll help you pick flavors and place an order.",
+    "telegram": "Telegram",
+    "telegramHandle": "@my_noodles"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The link may be outdated or the page was removed. Browse the catalog — there’s always something tasty to try.",
+    "ctaCatalog": "Go to catalog"
   }
 }

@@ -1,20 +1,23 @@
+import { PaginationHelper } from '@my-noodles/api-lib/pagination';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { PaginationHelper } from '@/utils/pagination';
-
+import { Category } from '../categories/category.entity';
+import { Country } from '../countries/country.entity';
 import { Product } from './product.entity';
 import type {
   PaginatedProductsDto,
   ProductDetailDto,
+  ProductFacetOptionDto,
   ProductFacetsResponseDto,
   ProductSummaryDto,
 } from './products.dto';
 import { ProductNotFoundException } from './products.exceptions';
-import type { ProductFilters, ProductListPagination } from './products.filters';
+import type { ProductFacetFilters, ProductFilters, ProductListPagination } from './products.filters';
 import {
   buildProductOrder,
+  buildProductPriceBoundsScope,
   buildProductWhere,
   productFacetSelect,
   productListRelations,
@@ -25,6 +28,10 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(Country)
+    private readonly countriesRepository: Repository<Country>,
   ) {}
 
   async list(filters: ProductFilters & ProductListPagination): Promise<PaginatedProductsDto> {
@@ -40,17 +47,27 @@ export class ProductsService {
     };
   }
 
-  async getFacets(filters: ProductFilters): Promise<ProductFacetsResponseDto> {
-    const products = await this.productsRepository.find({
-      where: buildProductWhere(filters),
-      relations: {
-        category: true,
-        country: true,
-      },
-      select: productFacetSelect,
-    });
+  async getFacets(filters: ProductFacetFilters): Promise<ProductFacetsResponseDto> {
+    const [products, categories, countries, priceScopeProducts] = await Promise.all([
+      this.productsRepository.find({
+        where: buildProductWhere(filters),
+        relations: {
+          category: true,
+          country: true,
+        },
+        select: productFacetSelect,
+      }),
+      this.categoriesRepository.find({ order: { sortOrder: 'ASC', slug: 'ASC' } }),
+      this.countriesRepository.find({ order: { slug: 'ASC' } }),
+      this.productsRepository.find({
+        where: buildProductWhere(buildProductPriceBoundsScope(filters)),
+        select: { priceMinor: true },
+      }),
+    ]);
 
-    return this.buildFacetsResponse(products);
+    const response = this.buildFacetsResponse(products, categories, countries);
+    response.facets.price = this.computePriceBounds(priceScopeProducts);
+    return response;
   }
 
   async getBySlug(slug: string): Promise<ProductDetailDto> {
@@ -86,32 +103,20 @@ export class ProductsService {
     };
   }
 
-  private buildFacetsResponse(products: Product[]): ProductFacetsResponseDto {
-    const categoryCounts = new Map<string, { name: Product['category']['name']; count: number }>();
-    const countryCounts = new Map<string, { name: Product['country']['name']; count: number }>();
+  private buildFacetsResponse(
+    products: Product[],
+    categories: Category[],
+    countries: Country[],
+  ): ProductFacetsResponseDto {
+    const categoryCounts = new Map<string, number>();
+    const countryCounts = new Map<string, number>();
 
-    let priceMin = Number.POSITIVE_INFINITY;
-    let priceMax = 0;
     let isTriedByUs = 0;
     let inStock = 0;
 
     for (const product of products) {
-      const categoryEntry = categoryCounts.get(product.category.slug);
-      if (categoryEntry) {
-        categoryEntry.count += 1;
-      } else {
-        categoryCounts.set(product.category.slug, { name: product.category.name, count: 1 });
-      }
-
-      const countryEntry = countryCounts.get(product.country.slug);
-      if (countryEntry) {
-        countryEntry.count += 1;
-      } else {
-        countryCounts.set(product.country.slug, { name: product.country.name, count: 1 });
-      }
-
-      priceMin = Math.min(priceMin, product.priceMinor);
-      priceMax = Math.max(priceMax, product.priceMinor);
+      categoryCounts.set(product.category.slug, (categoryCounts.get(product.category.slug) ?? 0) + 1);
+      countryCounts.set(product.country.slug, (countryCounts.get(product.country.slug) ?? 0) + 1);
 
       if (product.isTriedByUs) {
         isTriedByUs += 1;
@@ -125,28 +130,46 @@ export class ProductsService {
     return {
       total: products.length,
       facets: {
-        category: [...categoryCounts.entries()].map(([value, entry]) => ({
-          value,
-          label: entry.name.localized,
-          count: entry.count,
-        })),
-        country: [...countryCounts.entries()].map(([value, entry]) => ({
-          value,
-          label: entry.name.localized,
-          count: entry.count,
-        })),
-        price: {
-          min: products.length === 0 ? 0 : priceMin,
-          max: products.length === 0 ? 0 : priceMax,
-        },
+        category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name.localized),
+        country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name.localized),
+        price: { min: 0, max: 0 },
         isTriedByUs,
         inStock,
       },
     };
   }
 
+  private computePriceBounds(products: Pick<Product, 'priceMinor'>[]): { min: number; max: number } {
+    if (products.length === 0) {
+      return { min: 0, max: 0 };
+    }
+
+    let min = Number.POSITIVE_INFINITY;
+    let max = 0;
+
+    for (const product of products) {
+      min = Math.min(min, product.priceMinor);
+      max = Math.max(max, product.priceMinor);
+    }
+
+    return { min, max };
+  }
+
+  private toFacetOptions<T extends { slug: string }>(
+    taxonomy: T[],
+    counts: Map<string, number>,
+    labelFor: (entry: T) => string | null,
+  ): ProductFacetOptionDto[] {
+    return taxonomy.map((entry) => ({
+      value: entry.slug,
+      label: labelFor(entry),
+      count: counts.get(entry.slug) ?? 0,
+    }));
+  }
+
   private toSummary(product: Product): ProductSummaryDto {
     return {
+      id: product.id,
       slug: product.slug,
       name: product.name.localized,
       priceMinor: product.priceMinor,

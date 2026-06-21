@@ -1,10 +1,10 @@
 'use client';
 
+import { formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAppLocale } from '@/hooks/locale';
 
-import { formatUseQuery } from '../_lib/queries';
 import { collectionsQueryKeys, fetchCollectionDetail, fetchCollections } from './collections';
 
 export function useCollections() {
@@ -26,6 +26,7 @@ export function useCollectionDetail(slug: string) {
     useQuery({
       queryKey: collectionsQueryKeys.detail(slug, locale),
       queryFn: () => fetchCollectionDetail(slug, locale),
+      placeholderData: undefined,
     }),
     'collection',
   );

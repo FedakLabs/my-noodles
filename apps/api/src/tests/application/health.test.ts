@@ -1,5 +1,6 @@
 import type { Server } from 'node:http';
 
+import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
 import { type INestApplication, ServiceUnavailableException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
@@ -7,7 +8,7 @@ import request from 'supertest';
 
 import { HealthController, HealthService } from '@/application/health';
 import { config } from '@/config';
-import { createWinstonModuleOptions, LoggingModule } from '@/infrastructure/logging';
+import { LoggingModule } from '@/infrastructure/logging';
 
 import { jest } from '../jest-globals';
 

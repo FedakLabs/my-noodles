@@ -3,10 +3,6 @@ export { useProductDetail, useProductFacets, useProductsList } from './products.
 export type {
   PaginatedProductsDto,
   ProductDetailDto,
-  ProductFacetFilters,
-  ProductFacetQueryFilters,
   ProductFacetsResponseDto,
-  ProductListFilters,
-  ProductListQueryFilters,
   ProductSummaryDto,
 } from './types';

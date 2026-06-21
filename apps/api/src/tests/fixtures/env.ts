@@ -1,4 +1,4 @@
-import type { ConfigEnvironment } from '@/env';
+import type { ConfigEnvironment } from '@my-noodles/api-lib/config';
 
 export const validEnv = {
   PORT: '3001',

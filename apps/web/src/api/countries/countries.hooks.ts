@@ -1,10 +1,10 @@
 'use client';
 
+import { formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAppLocale } from '@/hooks/locale';
 
-import { formatUseQuery } from '../_lib/queries';
 import { countriesQueryKeys, fetchCountries } from './countries';
 
 export function useCountries() {

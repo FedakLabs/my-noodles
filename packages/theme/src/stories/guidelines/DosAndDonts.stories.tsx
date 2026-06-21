@@ -5,11 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { resolveSkin, skinVarsToStyle } from '../../skins';
-
 function DosAndDonts() {
-  const skin = resolveSkin({ country: 'US' });
-
   return (
     <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
       <Box sx={{ flex: 1 }}>
@@ -28,13 +24,14 @@ function DosAndDonts() {
         </Card>
       </Box>
 
-      <Box style={skinVarsToStyle(skin.cssVars)} sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1 }}>
         <Typography variant="subtitle2" color="success.main" sx={{ mb: 1 }}>
           Do — flavor gradient on card top
         </Typography>
         <Card
           sx={{
-            backgroundImage: 'var(--skin-card-gradient)',
+            backgroundImage:
+              'linear-gradient(180deg, rgba(185, 28, 28, 0.15) 0%, rgba(60, 59, 110, 0.08) 45%, transparent 45%)',
             backgroundColor: 'background.paper',
           }}
         >

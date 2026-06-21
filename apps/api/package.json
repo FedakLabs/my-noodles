@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "start": "node --import=./dist/otel-instrumentation.js dist/index.js",
+    "start": "node --import=./dist/instrumentation.js dist/index.js",
     "start:dev": "node scripts/dev.cjs"
   },
   "dependencies": {
+    "@my-noodles/api-lib": "workspace:*",
     "@nestjs/common": "11.1.27",
     "@nestjs/core": "11.1.27",
     "@nestjs/platform-express": "11.1.27",

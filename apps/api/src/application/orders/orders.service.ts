@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, type Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { type DataSource, In, type Repository } from 'typeorm';
 
 import { TransactionalRepository } from '@/infrastructure/persistence';
 import { TelegramService } from '@/infrastructure/services/Telegram';
@@ -20,6 +20,8 @@ export class OrdersService extends TransactionalRepository {
   private readonly logger = new Logger(OrdersService.name);
 
   constructor(
+    @InjectDataSource()
+    dataSource: DataSource,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
     @InjectRepository(Order)
@@ -31,7 +33,7 @@ export class OrdersService extends TransactionalRepository {
     @Inject(TelegramService)
     private readonly telegramService: TelegramService,
   ) {
-    super();
+    super(dataSource);
   }
 
   async create(dto: CreateOrderDto): Promise<OrderResponseDto> {

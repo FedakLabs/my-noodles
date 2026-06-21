@@ -1,0 +1,36 @@
+const TRUTHY_VALUES = new Set(['1', 'true', 'yes', 'on']);
+const FALSY_VALUES = new Set(['0', 'false', 'no', 'off']);
+
+function normalizeBooleanInput(value: unknown): string | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value).trim().toLowerCase();
+  }
+
+  return undefined;
+}
+
+/** Coerce env/query scalars to boolean; unknown or missing values use `defaultValue`. */
+export function parseBoolean(value: unknown, defaultValue = false): boolean {
+  const normalized = normalizeBooleanInput(value);
+  if (normalized === undefined) {
+    return defaultValue;
+  }
+
+  if (TRUTHY_VALUES.has(normalized)) {
+    return true;
+  }
+
+  if (FALSY_VALUES.has(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}

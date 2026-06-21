@@ -1,21 +1,20 @@
 'use client';
 
+import { formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAppLocale } from '@/hooks/locale';
+import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog/search-params';
 
-import { formatUseQuery } from '../_lib/queries';
 import { fetchProductDetail, fetchProductFacets, fetchProductsList, productsQueryKeys } from './products';
-import type { ProductFacetQueryFilters, ProductListQueryFilters } from './types';
 
-export function useProductsList(filters: ProductListQueryFilters) {
+export function useProductsList(params: CatalogSearchParams) {
   const locale = useAppLocale();
-  const resolvedFilters = { ...filters, locale };
 
   return formatUseQuery(
     useQuery({
-      queryKey: productsQueryKeys.list(resolvedFilters),
-      queryFn: () => fetchProductsList(resolvedFilters),
+      queryKey: productsQueryKeys.list(params, locale),
+      queryFn: () => fetchProductsList(params, locale),
     }),
     'products',
   );
@@ -28,19 +27,19 @@ export function useProductDetail(slug: string) {
     useQuery({
       queryKey: productsQueryKeys.detail(slug, locale),
       queryFn: () => fetchProductDetail(slug, locale),
+      placeholderData: undefined,
     }),
     'product',
   );
 }
 
-export function useProductFacets(filters: ProductFacetQueryFilters) {
+export function useProductFacets(params: CatalogFacetsParams) {
   const locale = useAppLocale();
-  const resolvedFilters = { ...filters, locale };
 
   return formatUseQuery(
     useQuery({
-      queryKey: productsQueryKeys.facets(resolvedFilters),
-      queryFn: () => fetchProductFacets(resolvedFilters),
+      queryKey: productsQueryKeys.facets(params, locale),
+      queryFn: () => fetchProductFacets(params, locale),
     }),
     'productFacets',
   );

@@ -1,42 +1,44 @@
 import type {
-  ProductsApiProductsControllerGetFacetsRequest,
-  ProductsApiProductsControllerListRequest,
+  Locale,
+  ProductsControllerGetFacetsData,
+  ProductsControllerListData,
 } from '@my-noodles/api-clients/storefront';
 
-import type { ProductFacetFilters, ProductListFilters } from './types';
+import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog/search-params';
 
-export function buildProductListRequest(
-  filters: ProductListFilters,
-): ProductsApiProductsControllerListRequest {
+export function searchParamsToListQuery(
+  params: CatalogSearchParams,
+  locale: Locale,
+): ProductsControllerListData['query'] {
   return {
-    locale: filters.locale as ProductsApiProductsControllerListRequest['locale'],
-    page: filters.page,
-    limit: filters.limit,
-    collection: filters.collection,
-    category: filters.category,
-    country: filters.country,
-    brand: filters.brand,
-    priceMin: filters.priceMin,
-    priceMax: filters.priceMax,
-    isTriedByUs: filters.isTriedByUs,
-    inStock: filters.inStock,
-    sort: filters.sort,
+    locale,
+    page: params.page,
+    limit: params.limit,
+    collection: params.collection ?? undefined,
+    category: params.category.length > 0 ? params.category : undefined,
+    country: params.country.length > 0 ? params.country : undefined,
+    brand: params.brand ?? undefined,
+    priceMin: params.priceMin ?? undefined,
+    priceMax: params.priceMax ?? undefined,
+    isTriedByUs: params.isTriedByUs ?? undefined,
+    inStock: params.inStock ?? undefined,
+    sort: params.sort,
   };
 }
 
-export function buildProductFacetsRequest(
-  filters: ProductFacetFilters,
-): ProductsApiProductsControllerGetFacetsRequest {
+export function searchParamsToFacetsQuery(
+  params: CatalogFacetsParams,
+  locale: Locale,
+): NonNullable<ProductsControllerGetFacetsData['query']> {
   return {
-    locale: filters.locale as ProductsApiProductsControllerGetFacetsRequest['locale'],
-    collection: filters.collection,
-    category: filters.category,
-    country: filters.country,
-    brand: filters.brand,
-    priceMin: filters.priceMin,
-    priceMax: filters.priceMax,
-    isTriedByUs: filters.isTriedByUs,
-    inStock: filters.inStock,
-    sort: filters.sort as ProductsApiProductsControllerGetFacetsRequest['sort'],
+    locale,
+    collection: params.collection ?? undefined,
+    category: params.category.length > 0 ? params.category : undefined,
+    country: params.country.length > 0 ? params.country : undefined,
+    brand: params.brand ?? undefined,
+    priceMin: params.priceMin ?? undefined,
+    priceMax: params.priceMax ?? undefined,
+    isTriedByUs: params.isTriedByUs ?? undefined,
+    inStock: params.inStock ?? undefined,
   };
 }

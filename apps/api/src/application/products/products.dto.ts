@@ -1,126 +1,19 @@
 import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 import { LocaleQueryDto } from '@/utils/locale-query';
 import { PaginatedMetaDto, PaginationQueryDto } from '@/utils/pagination';
-import { parseOptionalBoolean, parseOptionalIntQuery, parseStringArray } from '@/utils/transformers';
 
-import { PRODUCT_SORT_OPTIONS, type ProductSort } from './products.filters';
+import { ProductFilterQueryDto, ProductListFilterQueryDto } from './products.filter-query.dto';
 
-export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, LocaleQueryDto) {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  collection?: string;
+export type { ProductFacetFilters, ProductFilters } from './products.filter-query.dto';
 
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
-  category?: string[];
+export class ListProductsQueryDto extends IntersectionType(
+  PaginationQueryDto,
+  ProductListFilterQueryDto,
+  LocaleQueryDto,
+) {}
 
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
-  country?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  brand?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
-  @IsInt()
-  @Min(0)
-  priceMin?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
-  @IsInt()
-  @Min(0)
-  priceMax?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean()
-  isTriedByUs?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean()
-  inStock?: boolean;
-
-  @ApiPropertyOptional({ enum: PRODUCT_SORT_OPTIONS })
-  @IsOptional()
-  @IsIn(PRODUCT_SORT_OPTIONS)
-  sort?: ProductSort;
-}
-
-export class ProductFacetsQueryDto extends LocaleQueryDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  collection?: string;
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
-  category?: string[];
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
-  country?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  brand?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
-  @IsInt()
-  @Min(0)
-  priceMin?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
-  @IsInt()
-  @Min(0)
-  priceMax?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean()
-  isTriedByUs?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
-  @IsBoolean()
-  inStock?: boolean;
-
-  @ApiPropertyOptional({ enum: PRODUCT_SORT_OPTIONS })
-  @IsOptional()
-  @IsIn(PRODUCT_SORT_OPTIONS)
-  sort?: ProductSort;
-}
+export class ProductFacetsQueryDto extends IntersectionType(ProductFilterQueryDto, LocaleQueryDto) {}
 
 export class BrandRefDto {
   @ApiProperty()
@@ -150,6 +43,9 @@ export class CategoryRefDto {
 }
 
 export class ProductSummaryDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+
   @ApiProperty()
   slug!: string;
 
@@ -223,7 +119,7 @@ export class ProductDetailDto extends ProductSummaryDto {
   alternatives!: ProductSummaryDto[];
 }
 
-export class FacetOptionDto {
+export class ProductFacetOptionDto {
   @ApiProperty()
   value!: string;
 
@@ -243,11 +139,11 @@ export class PriceFacetDto {
 }
 
 export class ProductFacetsDto {
-  @ApiProperty({ type: [FacetOptionDto] })
-  category!: FacetOptionDto[];
+  @ApiProperty({ type: [ProductFacetOptionDto] })
+  category!: ProductFacetOptionDto[];
 
-  @ApiProperty({ type: [FacetOptionDto] })
-  country!: FacetOptionDto[];
+  @ApiProperty({ type: [ProductFacetOptionDto] })
+  country!: ProductFacetOptionDto[];
 
   @ApiProperty({ type: PriceFacetDto })
   price!: PriceFacetDto;

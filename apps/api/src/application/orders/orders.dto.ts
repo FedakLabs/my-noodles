@@ -17,7 +17,12 @@ import {
 
 import { parseIntQuery } from '@/utils/transformers';
 
-import { DELIVERY_METHODS, DELIVERY_PROVIDERS, DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
+import {
+  DELIVERY_METHOD_OPENAPI,
+  DELIVERY_PROVIDER_OPENAPI,
+  DeliveryMethod,
+  DeliveryProvider,
+} from './order-delivery.dto';
 
 export class CreateOrderItemDto {
   @ApiProperty({ format: 'uuid' })
@@ -32,11 +37,11 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDeliveryDto {
-  @ApiProperty({ enum: DELIVERY_PROVIDERS })
+  @ApiProperty(DELIVERY_PROVIDER_OPENAPI)
   @IsEnum(DeliveryProvider)
   provider!: DeliveryProvider;
 
-  @ApiProperty({ enum: DELIVERY_METHODS })
+  @ApiProperty(DELIVERY_METHOD_OPENAPI)
   @IsEnum(DeliveryMethod)
   method!: DeliveryMethod;
 

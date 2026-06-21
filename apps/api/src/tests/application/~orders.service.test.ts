@@ -64,6 +64,7 @@ describe('OrdersService', () => {
     telegramSend = jest.fn().mockResolvedValue(undefined);
 
     service = new OrdersService(
+      { transaction } as never,
       { find: productsFind } as never,
       { save: orderSave } as never,
       { save: deliverySave } as never,
@@ -72,7 +73,6 @@ describe('OrdersService', () => {
         sendOrderNotification: telegramSend,
       } as never,
     );
-    Object.assign(service, { dataSource: { transaction } });
   });
 
   it('creates an order and notifies Telegram', async () => {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreDependencies": ["@openapitools/openapi-generator-cli", "eslint-config-prettier"],
+  "ignoreDependencies": ["eslint-config-prettier"],
   "workspaces": {
     "apps/web": {
       "entry": ["next.config.ts", "src/**/*.{ts,tsx}"],
@@ -15,9 +15,9 @@
         "@mui/material-nextjs",
         "@my-noodles/api-clients",
         "@my-noodles/theme",
+        "@my-noodles/ui",
         "@next/third-parties",
         "@tanstack/react-query",
-        "axios",
         "motion",
         "next-intl",
         "nuqs",
@@ -65,16 +65,36 @@
       ],
       "ignore": ["src/css.d.ts"],
       "ignoreIssues": {
-        "src/index.ts": ["exports"],
-        "src/skins/index.ts": ["exports"],
-        "src/skins/cssVars.ts": ["exports"]
+        "src/index.ts": ["exports"]
       }
     },
+    "packages/ui": {
+      "entry": [
+        "src/index.ts",
+        ".storybook/main.ts",
+        ".storybook/preview.tsx",
+        "src/stories/**/*.stories.tsx"
+      ],
+      "project": ["src/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}", "vitest.config.ts"],
+      "ignoreIssues": {
+        "src/index.ts": ["exports"]
+      },
+      "ignoreDependencies": ["@emotion/react", "@emotion/styled", "@mui/material"]
+    },
     "packages/api-clients": {
+      "entry": ["src/index.ts", "openapi-ts.config.ts"],
+      "project": ["src/**/*.ts", "openapi-ts.config.ts"],
+      "ignore": ["src/**/generated/**"]
+    },
+    "libs/web": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
-      "ignore": ["src/**/generated/**"],
-      "ignoreDependencies": ["axios"]
+      "ignoreDependencies": ["@tanstack/react-query"]
+    },
+    "libs/api": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"],
+      "ignoreDependencies": ["typeorm"]
     }
   }
 }

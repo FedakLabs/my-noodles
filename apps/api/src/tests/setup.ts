@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { resolve } from 'node:path';
 
-import { loadAppEnv } from '@/env';
+import { loadAppEnv } from '@my-noodles/api-lib/config';
 
 import { validEnv } from './fixtures/env';
 

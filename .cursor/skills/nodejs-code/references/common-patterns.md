@@ -44,7 +44,7 @@ async getBySlug(
 
 ## 2. New feature module
 
-Domains in mvp-plan: **products** (incl. facets), **collections**, **countries**, **brands**, **orders**.
+Domains in mvp-plan: **products** (incl. catalog filters preview), **collections**, **countries**, **brands**, **orders**.
 
 ```text
 application/orders/
@@ -72,7 +72,7 @@ Import integration modules from their **barrel** (`@/application/acme-notificati
 
 Register feature modules in `AppModule.imports` from each domain barrel (`./application/orders`), not `orders.module`.
 
-**Sub-features:** nest under the parent domain when scope is small (`application/products/facets/`); split into its own module only when it has distinct lifecycle or many files. Match what the repo already does — grep before inventing a new layout.
+**Sub-features:** nest under the parent domain when scope is small (`application/products/` with `GET /products/filters` on the products controller); split into its own module only when it has distinct lifecycle or many files. Match what the repo already does — grep before inventing a new layout.
 
 **List/filter endpoints:** keep query-building out of the service body — e.g. `*.filters.ts` with `buildWhere` / `buildOrder` helpers; use `findAndCount` for paginated lists. See [code-style-guide § Repository queries](./code-style-guide.md#repository-queries).
 
@@ -113,17 +113,19 @@ application/<integration>/
 └── index.ts                  # public barrel
 ```
 
-**OpenAPI-generated** — third-party HTTP API with a spec:
+**OpenAPI-generated** — third-party HTTP API with a spec (prefer **`@hey-api/openapi-ts`** for codegen; wire through `ExternalApi` + axios in Nest):
 
 ```text
 infrastructure/services/<ServiceName>/
-├── generated/                # read-only; regen from upstream spec
+├── generated/                # read-only; regen via @hey-api/openapi-ts from upstream spec
 ├── client/
 │   ├── <service>.config.ts
-│   ├── <service>.client.ts   # extends ExternalApi; wires generated *Api
+│   ├── <service>.client.ts   # extends ExternalApi; wraps generated SDK calls
 │   └── index.ts
 └── index.ts
 ```
+
+**Storefront client (web → our API)** lives in **`packages/api-clients`**, not under `apps/api`. Nest only exposes Swagger; generation is configured in `packages/api-clients/openapi-ts.config.ts` with live input `http://localhost:3001/api/docs-json`.
 
 Setup checklist:
 
@@ -237,8 +239,8 @@ export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, L
   // filters only
 }
 
-export class ProductFacetsQueryDto extends LocaleQueryDto {
-  // filters only
+export class ProductFiltersQueryDto extends LocaleQueryDto {
+  // filters only (no page/limit) — powers GET /products/filters
 }
 ```
 
@@ -253,14 +255,15 @@ list(@Query() _query: LocaleQueryDto): Promise<CountryDto[]> {
 }
 ```
 
-Regenerate storefront clients after changing locale metadata (API must be running on port 3001):
+Regenerate storefront clients after changing DTOs, routes, or OpenAPI metadata (API must be running on port 3001):
 
 ```bash
-pnpm nx run api-clients:api:generate
+pnpm nx run api:clients:generate
+# or: pnpm nx run api-clients:api:generate
 pnpm nx run api-clients:build
 ```
 
-`openapi-generator.json` uses live `inputSpec`: `http://localhost:3001/api/docs-json` (no committed `openapi.json` snapshot).
+`packages/api-clients/openapi-ts.config.ts` uses **`@hey-api/openapi-ts`** with live input `http://localhost:3001/api/docs-json` (no committed `openapi.json` snapshot). Plugins: `@hey-api/typescript`, `@hey-api/client-fetch`, `@hey-api/sdk` (flat operations). Hand layer: `src/storefront/client/` (`setupApiClients`, `runtime.config.ts` with `throwOnError: true`).
 
 Shared validators live in `src/utils/validators/` — grep before duplicating.
 

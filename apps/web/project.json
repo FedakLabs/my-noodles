@@ -32,19 +32,33 @@
     },
     "lint": {
       "command": "eslint . --fix",
+      "dependsOn": [
+        { "projects": "api-clients", "target": "build" },
+        { "projects": "web-lib", "target": "build" },
+        { "projects": "ui", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/web"
       }
     },
     "lint-check": {
       "command": "eslint .",
+      "dependsOn": [
+        { "projects": "api-clients", "target": "build" },
+        { "projects": "web-lib", "target": "build" },
+        { "projects": "ui", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/web"
       }
     },
     "type-check": {
       "command": "tsc --noEmit -p tsconfig.json",
-      "dependsOn": [{ "projects": "api-clients", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-clients", "target": "build" },
+        { "projects": "web-lib", "target": "build" },
+        { "projects": "ui", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/web"
       }

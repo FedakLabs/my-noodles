@@ -1,22 +1,15 @@
+import { TransactionalRepository as TransactionalRepositoryBase } from '@my-noodles/api-lib/persistence';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { DataSource } from 'typeorm';
 
-import { runInTransaction } from './transaction-context';
-
 /**
- * Base for services that orchestrate DB transactions.
- * Extend this class and use `@InjectRepository` repos registered via
- * `TransactionalTypeOrmModule.forFeature` — they join the active tx automatically.
+ * Nest DI wrapper around `@my-noodles/api-lib/persistence` `TransactionalRepository`.
+ * Extend this in services that use `@InjectRepository` repos from `TransactionalTypeOrmModule`.
  */
 @Injectable()
-export abstract class TransactionalRepository {
-  @InjectDataSource()
-  protected readonly dataSource!: DataSource;
-
-  protected constructor() {}
-
-  protected withTransaction<T>(work: () => Promise<T>): Promise<T> {
-    return runInTransaction(this.dataSource, work);
+export abstract class TransactionalRepository extends TransactionalRepositoryBase {
+  protected constructor(@InjectDataSource() dataSource: DataSource) {
+    super(dataSource);
   }
 }

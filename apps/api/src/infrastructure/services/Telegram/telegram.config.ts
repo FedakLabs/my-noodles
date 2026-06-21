@@ -1,6 +1,4 @@
-import { loadAppEnv, readConfigEnvironment } from '@/env';
-
-loadAppEnv();
+import { readConfigEnvironment } from '@my-noodles/api-lib/config';
 
 export const TELEGRAM_API_ORIGIN = 'https://api.telegram.org';
 

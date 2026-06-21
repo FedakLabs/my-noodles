@@ -1,3 +1,4 @@
+import { HttpAccessLog } from '@my-noodles/api-lib/logging';
 import {
   type CallHandler,
   type ExecutionContext,
@@ -12,31 +13,26 @@ import type { Logger } from 'winston';
 
 import { config } from '@/config';
 
-import { buildHttpAccessLog, emitManifestLog } from './manifest-log';
-
 @Injectable()
 export class HttpAccessLogInterceptor implements NestInterceptor {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+  private readonly accessLog: HttpAccessLog;
+
+  constructor(@Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    this.accessLog = new HttpAccessLog(logger, {
+      appName: config.appName,
+      appVersion: config.appVersion,
+    });
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const started = performance.now();
     const http = context.switchToHttp();
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();
-
-    request.startTimeMs = started;
+    const started = this.accessLog.markRequestStart(request);
 
     return next.handle().pipe(
       tap(() => {
-        const record = buildHttpAccessLog({
-          request,
-          statusCode: response.statusCode,
-          execTimeMs: performance.now() - started,
-          appName: config.appName,
-          appVersion: config.appVersion,
-        });
-
-        emitManifestLog(this.logger, record);
+        this.accessLog.logSuccess(request, response.statusCode, started);
       }),
     );
   }
