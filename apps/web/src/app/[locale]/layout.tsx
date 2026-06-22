@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { AnalyticsHead } from '@/components/analytics/analytics-head';
+import { ConsentBanner } from '@/components/analytics/consent-banner';
 import { AppShell } from '@/components/layout/app-shell';
 import { routing } from '@/i18n/routing';
 import { SITE_URL } from '@/shared/env';
@@ -80,11 +82,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <html lang={locale}>
+      <AnalyticsHead />
       <body>
         <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <AppShell>{children}</AppShell>
+            <ConsentBanner />
           </Providers>
         </NextIntlClientProvider>
       </body>

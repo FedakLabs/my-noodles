@@ -10,8 +10,10 @@ import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import { useCreateOrder } from '@/api/orders';
+import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCartActions, useCartItems } from '@/hooks/cart';
 import { useRouter } from '@/i18n/navigation';
+import { cartLineToGa4Item } from '@/shared/analytics';
 
 import { branchToWarehouseNumber, type CheckoutFormData, checkoutSchema } from './validation';
 
@@ -20,6 +22,7 @@ export function CheckoutForm() {
   const router = useRouter();
   const items = useCartItems();
   const { clear } = useCartActions();
+  const { trackPurchase } = useAnalyticsActions();
   const { createOrderAsync, createOrderIsPending, createOrderIsError } = useCreateOrder();
 
   const form = useForm<CheckoutFormData>({
@@ -50,7 +53,13 @@ export function CheckoutForm() {
         warehouseName: data.branch,
       },
       items: items.map((item) => ({ productId: item.productId, qty: item.qty })),
-    }).then(() => {
+    }).then((order) => {
+      trackPurchase({
+        transactionId: order.id,
+        valueMinor: order.totalMinor,
+        currency: order.currency,
+        items: items.map((item) => cartLineToGa4Item(item)),
+      });
       clear();
       router.push('/checkout/success');
     });

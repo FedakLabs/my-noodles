@@ -15,6 +15,7 @@ Task recipes for `apps/web`. **Grep the repo first** and copy the nearest featur
 7. [Client state (Zustand)](#7-client-state-zustand)
 8. [New presentational component](#8-new-presentational-component)
 9. [Custom hook](#9-custom-hook)
+10. [External URLs](#10-external-urls)
 
 ---
 
@@ -46,6 +47,8 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 ## 2. Forms (react-hook-form + Zod)
 
 Define a **Zod schema that matches the mutation input** — no separate mapper layer unless merging unrelated sources (e.g. cart lines + form fields into one DTO).
+
+**Zod-first (forms, env, and any input boundary):** prefer schema validation, `.transform()`, and `.pipe()` for coercion and derived shapes. Custom parse helpers are a fallback when Zod cannot express the rule cleanly — not the default.
 
 ### File layout
 
@@ -109,7 +112,7 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 - **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
 - **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
 
-Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout). All env vars — including `SITE_URL` for SEO — come from `shared/env.ts` only.
+Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout). All env vars — including `SITE_URL` for SEO — come from `shared/env.ts` only (normalized in the Zod schema, e.g. trailing slash stripped via `.transform()`).
 
 ### Types: generated DTOs first
 
@@ -228,7 +231,7 @@ Most screens and several **remote-backed components** (product detail, collectio
 | --- | --- | --- |
 | `*IsInitialLoad` | First fetch, no cached data yet | **Loading** — skeleton or short inline copy |
 | `*IsLoadFailed` | Query errored with no cached data | **Error** — failure message; retry when actionable |
-| `*IsEmpty` | Settled successfully but entity is missing (`!data`, not pending, not error) | **Empty / not found** — friendly “nothing here” (not the same as error) |
+| `*IsEmpty` | Settled with no entity (`!data`, not pending/fetching/error) | **Empty / not found** — friendly “nothing here” (not the same as error) |
 | `*IsRefetching` | TanStack Query native — background refetch while data is visible |
 | `*IsBusy` | `isPending \|\| isFetching` | Disable actions, “searching…” labels |
 
@@ -249,8 +252,12 @@ if (productIsLoadFailed) {
   return <PageContainer><Typography color="error">{t('error')}</Typography></PageContainer>;
 }
 
-if (productIsEmpty || !product) {
+if (productIsEmpty) {
   return <PageContainer><Typography color="text.secondary">{t('empty')}</Typography></PageContainer>;
+}
+
+if (!product) {
+  return <PageContainer><Typography color="text.secondary">{t('loading')}</Typography></PageContainer>;
 }
 
 // product is defined — render the happy path
@@ -263,11 +270,13 @@ Same pattern on **collections**, **filter-sheet** (skeleton / error panel / empt
 - **`error`** — “Couldn’t load …” (network, 5xx, or thrown client). User may retry.
 - **`empty`** — “Not found” or legitimately no rows. No retry unless filters can change.
 
+**Do not** write `*IsEmpty || !entity` for the empty branch — `*IsEmpty` already means settled with no data. The extra `!entity` check is redundant for empty UX and can mis-route a rare in-flight-no-cache state to empty copy. Use `*IsEmpty` alone for empty; if `!entity` remains after that, treat it as loading/busy (then TypeScript narrows for the happy path).
+
 **404 vs empty today:** if the fetcher throws on 404 (`requestData`), TanStack Query sets `isError` → `*IsLoadFailed`, not `*IsEmpty`. Map 404 to empty at the fetch layer only if product wants not-found copy instead of error copy.
 
 **Lists vs single entity:**
 
-- **Entity screen** (product, collection): use `*IsEmpty` when the query succeeds but the DTO is absent.
+- **Entity screen** (product, collection): `*IsEmpty` for not-found / missing entity — not `*IsEmpty || !entity`.
 - **List/grid** (catalog): after load, **zero items** is usually domain empty (`products.items.length === 0`) with copy like `catalog.emptyState` — not `*IsEmpty` on the query (the query succeeded with an empty page).
 
 **Prefetch + hydration:** server `page.tsx` may dehydrate data so the client often **skips** `*IsInitialLoad` on first paint. Flags still matter for client navigations, hard refresh without cache, and refetch.
@@ -516,9 +525,6 @@ Test: renders, callback wiring, missing image fallback.
 **Location:** `hooks/use-*.ts` (+ test)
 
 ```ts
-/**
- * Resolves active skin CSS variables for the current product context.
- */
 export function useProductSkin(product: ProductSummaryDto | undefined) {
   return useMemo(
     () =>
@@ -536,6 +542,34 @@ export function useProductSkin(product: ProductSummaryDto | undefined) {
 ```
 
 Keep hooks focused; data fetching belongs in `api/`, not generic hooks.
+
+---
+
+## 10. External URLs
+
+Off-origin links (Telegram, help center, hosted policies, payment portals) live in **`shared/urls.ts`**. Do not hardcode `https://…` in screens or components.
+
+| Kind | Where |
+| --- | --- |
+| External / third-party | `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
+| In-app routes | `@/i18n/navigation` — `Link`, `href="/catalog"` |
+| Canonical / hreflang / sitemap paths | `shared/seo/urls.ts` — `localePath`, `absoluteUrl`, … |
+| API / site origins from env | `shared/env.ts` — `API_URL`, `SITE_URL`, … |
+
+```ts
+// shared/urls.ts
+export const TELEGRAM_SUPPORT_URL = 'https://t.me/my_noodles';
+```
+
+```tsx
+import { TELEGRAM_SUPPORT_URL } from '@/shared/urls';
+
+<Button component="a" href={TELEGRAM_SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+  {t('telegramCta', { handle: t('telegramHandle') })}
+</Button>
+```
+
+Use descriptive export names (`TELEGRAM_SUPPORT_URL`, `PRIVACY_POLICY_URL`) and blank lines between unrelated groups — not section comments.
 
 ---
 

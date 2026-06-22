@@ -6,9 +6,14 @@ import { useTranslations } from 'next-intl';
 
 import { CheckoutForm } from '@/components/checkout/checkout-form';
 import { PageContainer } from '@/components/layout/page-container';
+import { useBeginCheckout } from '@/hooks/analytics';
+import { useCartItems } from '@/hooks/cart';
 
 export function CheckoutScreen() {
   const t = useTranslations('checkout');
+  const items = useCartItems();
+
+  useBeginCheckout(items, items.length > 0);
 
   return (
     <PageContainer>

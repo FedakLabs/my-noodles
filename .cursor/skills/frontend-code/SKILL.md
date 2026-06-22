@@ -50,10 +50,14 @@ components/    # feature UI (+ *.test.tsx)
 api/           # React Query hooks + query-key factories
 hooks/         # cart, analytics, skin resolver consumers, …
 utils/         # formatCurrency, helpers
-shared/        # env.ts (all env vars), ISR, page props, query-client + hydrate
+shared/        # env.ts (all env vars), urls.ts (external links), ISR, page props, query-client + hydrate
 ```
 
-**Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, named exports (`API_URL`, `SITE_URL`, …). Never parse `process.env` elsewhere.
+**Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). Never parse `process.env` elsewhere. **Zod-first:** use validation, `.transform()`, and `.pipe()` for normalization; ad-hoc parse helpers only when Zod cannot express the rule cleanly (same principle as forms and DTO boundaries).
+
+**External URLs:** off-origin links in **`shared/urls.ts`** — see [common-patterns.md § External URLs](./references/common-patterns.md#10-external-urls). In-app paths use `@/i18n/navigation`; SEO path helpers use `shared/seo/urls`.
+
+**Comments:** sparse in product code — self-explanatory names and structure first; see [code-style-guide.md § Comments](./references/code-style-guide.md#comments).
 
 Providers live in `app/layout.tsx` + `app/providers.tsx` (MUI cache, theme, QueryClient, next-intl, NuqsAdapter).
 

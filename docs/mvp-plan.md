@@ -441,7 +441,7 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 9 - Analytics
 
-- [ ] GTM via `@next/third-parties` (GA4-only tag); clean `dataLayer` ecommerce events; Consent Mode v2 + banner.
+- [x] GTM via `@next/third-parties` (GA4-only tag); clean `dataLayer` ecommerce events; Consent Mode v2 + banner.
 
 ### Phase 10 - Tests
 

@@ -111,7 +111,16 @@
     "title": "Контакти",
     "description": "Пиши нам у Telegram — допоможемо обрати смак і оформити замовлення.",
     "telegram": "Telegram",
-    "telegramHandle": "@my_noodles"
+    "telegramHandle": "@my_noodles",
+    "telegramCta": "Написати в {handle}"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Аналітика та cookies",
+      "description": "Ми використовуємо Google Analytics через GTM, щоб краще розуміти, що цікавить наших гостей. Дані анонімні — без рекламних трекерів.",
+      "accept": "Прийняти",
+      "reject": "Відхилити"
+    }
   },
   "notFound": {
     "title": "Сторінку не знайдено",

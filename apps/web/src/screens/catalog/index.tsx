@@ -12,6 +12,7 @@ import { FilterChips } from '@/components/catalog/filter-chips/filter-chips';
 import { FilterSheet } from '@/components/catalog/filter-sheet/filter-sheet';
 import { ProductGrid } from '@/components/catalog/product-grid/product-grid';
 import { PageContainer } from '@/components/layout/page-container';
+import { useViewItemList } from '@/hooks/analytics';
 import { useCatalogSearchParams } from '@/screens/catalog/search-params';
 
 export function CatalogScreen() {
@@ -21,6 +22,8 @@ export function CatalogScreen() {
   const [mobileDraftKey, setMobileDraftKey] = useState(0);
   const { products, productsIsInitialLoad, productsIsLoadFailed, productsIsRefetching } =
     useProductsList(params);
+
+  useViewItemList('catalog', t('title'), products?.items, !productsIsInitialLoad && !productsIsLoadFailed);
 
   return (
     <PageContainer>

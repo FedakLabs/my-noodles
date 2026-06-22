@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { trackAddToCart, trackRemoveFromCart } from '@/shared/analytics';
+
 const STORE_VERSION = 1;
 
 export type CartLine = {
@@ -52,17 +54,33 @@ export const useCartStore = create<CartState>()(
               state.autoOpenSuppressed || state.panelOpen ? state.panelOpenNonce : state.panelOpenNonce + 1,
           };
         });
+        trackAddToCart(line, qty);
       },
       removeItem: (productId) => {
-        set((state) => ({ items: state.items.filter((item) => item.productId !== productId) }));
+        const item = get().items.find((entry) => entry.productId === productId);
+
+        set((state) => ({ items: state.items.filter((entry) => entry.productId !== productId) }));
+
+        if (item) {
+          trackRemoveFromCart(item);
+        }
       },
       setQuantity: (productId, qty) => {
         if (qty <= 0) {
           get().removeItem(productId);
           return;
         }
+
+        const item = get().items.find((entry) => entry.productId === productId);
+
+        if (item && qty < item.qty) {
+          trackRemoveFromCart({ ...item, qty: item.qty - qty });
+        } else if (item && qty > item.qty) {
+          trackAddToCart(item, qty - item.qty);
+        }
+
         set((state) => ({
-          items: state.items.map((item) => (item.productId === productId ? { ...item, qty } : item)),
+          items: state.items.map((entry) => (entry.productId === productId ? { ...entry, qty } : entry)),
         }));
       },
       clear: () => set({ items: [] }),

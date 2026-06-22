@@ -10,6 +10,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useProductDetail } from '@/api/products';
 import { ProductGrid } from '@/components/catalog/product-grid/product-grid';
 import { PageContainer } from '@/components/layout/page-container';
+import { useViewItem, useViewItemList } from '@/hooks/analytics';
 import { useCartActions } from '@/hooks/cart';
 import { formatCurrency } from '@/utils/format-currency';
 
@@ -22,6 +23,14 @@ export function ProductScreen({ slug }: ProductScreenProps) {
   const locale = useLocale();
   const { addItem } = useCartActions();
   const { product, productIsInitialLoad, productIsLoadFailed, productIsEmpty } = useProductDetail(slug);
+
+  useViewItem(product, Boolean(product) && !productIsInitialLoad && !productIsLoadFailed);
+  useViewItemList(
+    `product-alternatives:${slug}`,
+    t('alternatives'),
+    product?.alternatives,
+    Boolean(product?.alternatives.length) && !productIsInitialLoad && !productIsLoadFailed,
+  );
 
   if (productIsInitialLoad) {
     return (
@@ -39,10 +48,18 @@ export function ProductScreen({ slug }: ProductScreenProps) {
     );
   }
 
-  if (productIsEmpty || !product) {
+  if (productIsEmpty) {
     return (
       <PageContainer>
         <Typography color="text.secondary">{t('empty')}</Typography>
+      </PageContainer>
+    );
+  }
+
+  if (!product) {
+    return (
+      <PageContainer>
+        <Typography color="text.secondary">{t('loading')}</Typography>
       </PageContainer>
     );
   }

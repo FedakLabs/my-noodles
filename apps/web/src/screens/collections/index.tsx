@@ -8,6 +8,7 @@ import { useCollectionDetail } from '@/api/collections';
 import { useProductsList } from '@/api/products';
 import { ProductGrid } from '@/components/catalog/product-grid/product-grid';
 import { PageContainer } from '@/components/layout/page-container';
+import { useViewItemList } from '@/hooks/analytics';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 
 type CollectionScreenProps = {
@@ -25,6 +26,18 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
     collection: collection?.code ?? null,
   });
 
+  const collectionProducts =
+    collection && products?.items
+      ? products.items.filter((product) => collection.productSlugs.includes(product.slug))
+      : [];
+
+  useViewItemList(
+    `collection:${slug}`,
+    collection?.name ?? slug,
+    collectionProducts,
+    Boolean(collection) && !collectionIsInitialLoad && !productsIsInitialLoad,
+  );
+
   if (collectionIsInitialLoad) {
     return (
       <PageContainer>
@@ -41,7 +54,7 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
     );
   }
 
-  if (collectionIsEmpty || !collection) {
+  if (collectionIsEmpty) {
     return (
       <PageContainer>
         <Typography color="text.secondary">{t('empty')}</Typography>
@@ -49,10 +62,13 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
     );
   }
 
-  const collectionProducts =
-    products?.items.filter((product) => collection.productSlugs.includes(product.slug)) ??
-    products?.items ??
-    [];
+  if (!collection) {
+    return (
+      <PageContainer>
+        <Typography color="text.secondary">{t('loading')}</Typography>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>

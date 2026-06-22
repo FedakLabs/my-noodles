@@ -7,6 +7,7 @@ Conventions for `apps/web`. When unsure, grep the nearest analogous module. Arch
 ## Table of Contents
 
 - [TypeScript Standards](#typescript-standards)
+- [Comments](#comments)
 - [Component Patterns](#component-patterns)
 - [State Management](#state-management)
 - [Performance](#performance)
@@ -33,6 +34,26 @@ export function useProductsList(filters: ProductListFilters) {
   });
 }
 ```
+
+---
+
+## Comments
+
+**Default: no comment.** Names, types, folder layout, and small focused functions should carry the meaning.
+
+**Add a comment only when:**
+
+- Non-obvious **business rules** that are easy to misread (e.g. honeypot field, consent edge case, “why not the obvious fix”)
+- A **warning** for future maintainers (ordering constraint, intentional deviation from a library default)
+
+**Avoid:**
+
+- Restating what the code already says (`// increment counter`)
+- File/section banners (`// — Support & contact —`) — use naming (`TELEGRAM_SUPPORT_URL`) and blank lines between groups
+- Commented-out placeholders for future work — add the export when needed
+- Architecture essays in source files — that belongs in `docs/` or skill references, not next to every module
+
+Same bar as `AGENTS.md`: comments are the exception, not the baseline.
 
 ---
 
@@ -203,7 +224,7 @@ apps/web/src/
 │   ├── use-[feature].ts     # public hooks (internal)
 │   └── index.ts             # **public barrel** — re-exports hooks + types for reuse
 ├── utils/
-└── shared/                 # env.ts (all env vars), query-client.ts
+└── shared/                 # env.ts, urls.ts (external links), query-client, seo/
 ```
 
 **Rules:**
@@ -213,7 +234,8 @@ apps/web/src/
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
 - **`packages/api-clients`** = `@hey-api/openapi-ts` fetch SDK; **`apps/web/src/api`** = React Query layer
 - **`api/clients.ts`** — side-effect `setupApiClients(API_URL)`; import from `app/providers.tsx` + root layout
-- **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`.
+- **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`. **Zod-first:** use schema validation, `.transform()`, and `.pipe()` for coercion and normalization; custom parse helpers only as a last resort.
+- **`shared/urls.ts`** — external off-origin links (`TELEGRAM_SUPPORT_URL`, …). In-app routes → `@/i18n/navigation`; SEO path builders → `shared/seo/urls`.
 - **Test configs** — shared presets in `configs/vitest` (`createBaseVitestConfig`) and `configs/jest` (`createJestConfig`); each app/package keeps a thin config file with project-specific overrides (alias, include globs, env stubs, …).
 - **`hooks/locale.ts`** — `useAppLocale()` (next-intl); client API hooks merge locale internally, server fetchers take explicit `locale`
 
@@ -256,6 +278,9 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
 | Business logic and layout mixed in `app/**/page.tsx` | Thin `page.tsx` → `screens/[feature]`; routing shell stays in `app/` |
 | Inline defaults for `NEXT_PUBLIC_*` or scattered env parsing (`process.env` outside `env.ts`) | One Zod schema in `shared/env.ts`; import named exports (`API_URL`, `SITE_URL`, …); values in `.env.local` (see `.env.example`) |
+| Post-parse string cleanup on env exports (`replace`, `trim`, … outside the schema) | Zod `.transform()` / `.pipe()` on the field in `shared/env.ts` — same pattern as forms and DTO validation |
+| Hardcoded external `https://…` in screens/components | Named exports in `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
+| Comments that narrate obvious code or section banners | Self-explanatory names and structure; comments only for non-obvious business logic or maintainer warnings (see [Comments](#comments)) |
 | Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; local `sx` only for one-off layout |
 | Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
 | Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
@@ -273,6 +298,7 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 - [ ] RQ keys include all filter/pagination inputs
 - [ ] Client boundary justified
 - [ ] Theme tokens, not raw hex
+- [ ] No narrating comments — only non-obvious business logic or warnings
 - [ ] Tests co-located
 - [ ] `pnpm nx run web:fix` passes
 - [ ] Indexable routes: no `loading.tsx`, no Suspense around server prefetch in `page.tsx`
