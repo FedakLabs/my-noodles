@@ -50,8 +50,10 @@ components/    # feature UI (+ *.test.tsx)
 api/           # React Query hooks + query-key factories
 hooks/         # cart, analytics, skin resolver consumers, …
 utils/         # formatCurrency, helpers
-shared/        # env, ISR, page props, query-client + hydrate
+shared/        # env.ts (all env vars), ISR, page props, query-client + hydrate
 ```
+
+**Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, named exports (`API_URL`, `SITE_URL`, …). Never parse `process.env` elsewhere.
 
 Providers live in `app/layout.tsx` + `app/providers.tsx` (MUI cache, theme, QueryClient, next-intl, NuqsAdapter).
 

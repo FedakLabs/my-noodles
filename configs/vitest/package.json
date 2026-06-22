@@ -1,0 +1,15 @@
+{
+  "name": "@my-noodles/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.ts"
+  },
+  "dependencies": {
+    "vitest": "4.1.9"
+  },
+  "devDependencies": {
+    "vite": "8.0.16"
+  }
+}

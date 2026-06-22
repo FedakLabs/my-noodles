@@ -203,7 +203,7 @@ apps/web/src/
 │   ├── use-[feature].ts     # public hooks (internal)
 │   └── index.ts             # **public barrel** — re-exports hooks + types for reuse
 ├── utils/
-└── shared/                 # env.ts (API_URL), query-client.ts
+└── shared/                 # env.ts (all env vars), query-client.ts
 ```
 
 **Rules:**
@@ -213,7 +213,8 @@ apps/web/src/
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
 - **`packages/api-clients`** = `@hey-api/openapi-ts` fetch SDK; **`apps/web/src/api`** = React Query layer
 - **`api/clients.ts`** — side-effect `setupApiClients(API_URL)`; import from `app/providers.tsx` + root layout
-- **`shared/env.ts`** — Zod-validated client env (`API_URL` from `NEXT_PUBLIC_API_URL`); copy `apps/web/.env.example` → `.env.local`
+- **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`.
+- **Test configs** — shared presets in `configs/vitest` (`createBaseVitestConfig`) and `configs/jest` (`createJestConfig`); each app/package keeps a thin config file with project-specific overrides (alias, include globs, env stubs, …).
 - **`hooks/locale.ts`** — `useAppLocale()` (next-intl); client API hooks merge locale internally, server fetchers take explicit `locale`
 
 ### Module barrels (same idea as backend domains)
@@ -254,7 +255,7 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | User-visible strings in JSX | `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json` |
 | `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
 | Business logic and layout mixed in `app/**/page.tsx` | Thin `page.tsx` → `screens/[feature]`; routing shell stays in `app/` |
-| Inline defaults for `NEXT_PUBLIC_API_URL` | Zod schema in `shared/env.ts`; values in `.env.local` (see `.env.example`) |
+| Inline defaults for `NEXT_PUBLIC_*` or scattered env parsing (`process.env` outside `env.ts`) | One Zod schema in `shared/env.ts`; import named exports (`API_URL`, `SITE_URL`, …); values in `.env.local` (see `.env.example`) |
 | Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; local `sx` only for one-off layout |
 | Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
 | Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |

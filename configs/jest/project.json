@@ -1,0 +1,8 @@
+{
+  "name": "jest-config",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "configs/jest",
+  "projectType": "library",
+  "tags": ["scope:configs", "type:config"],
+  "targets": {}
+}

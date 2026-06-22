@@ -31,6 +31,7 @@
     "@emotion/styled": "11.14.0",
     "@mui/material": "9.1.1",
     "@my-noodles/eslint-config": "workspace:*",
+    "@my-noodles/vitest-config": "workspace:*",
     "@storybook/addon-docs": "10.4.6",
     "@storybook/react-vite": "10.4.6",
     "@types/react": "19.2.17",

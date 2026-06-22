@@ -1,9 +1,3 @@
-import { defineConfig } from 'vitest/config';
+import { createBaseVitestConfig } from '@my-noodles/vitest-config/base';
 
-export default defineConfig({
-  test: {
-    environment: 'node',
-    include: ['src/**/*.{test,spec}.ts', 'src/**/~*.test.ts'],
-    passWithNoTests: true,
-  },
-});
+export default createBaseVitestConfig();

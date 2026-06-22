@@ -1,12 +1,11 @@
+const { createJestConfig } = require('@my-noodles/jest-config/base');
+
 /** @type {import('jest').Config} */
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+module.exports = createJestConfig({
   roots: ['<rootDir>/src'],
   testMatch: ['**/~*.test.ts'],
-  passWithNoTests: true,
   setupFiles: ['reflect-metadata'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }],
   },
-};
+});

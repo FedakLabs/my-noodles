@@ -1,0 +1,36 @@
+import type { MetadataRoute } from 'next';
+
+import type { AppLocale } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
+import { absoluteUrl, fetchAllCollectionSlugs, fetchAllProductSlugs, localePath } from '@/shared/seo';
+
+const STATIC_INDEXABLE_PATHS = ['', '/catalog', '/contacts'] as const;
+
+function buildStaticSitemapEntries(locale: AppLocale): MetadataRoute.Sitemap {
+  return STATIC_INDEXABLE_PATHS.map((pathname) => ({
+    url: absoluteUrl(localePath(locale, pathname)),
+    changeFrequency: pathname === '' ? ('daily' as const) : ('weekly' as const),
+    priority: pathname === '' ? 1 : 0.8,
+  }));
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [productSlugs, collectionSlugs] = await Promise.all([
+    fetchAllProductSlugs(),
+    fetchAllCollectionSlugs(),
+  ]);
+
+  return routing.locales.flatMap((locale) => [
+    ...buildStaticSitemapEntries(locale),
+    ...productSlugs.map((slug) => ({
+      url: absoluteUrl(localePath(locale, `/product/${slug}`)),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+    ...collectionSlugs.map((slug) => ({
+      url: absoluteUrl(localePath(locale, `/collections/${slug}`)),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })),
+  ]);
+}

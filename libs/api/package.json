@@ -63,6 +63,7 @@
   "devDependencies": {
     "@jest/globals": "29.7.0",
     "@my-noodles/eslint-config": "workspace:*",
+    "@my-noodles/jest-config": "workspace:*",
     "@types/express": "5.0.3",
     "@types/express-serve-static-core": "5.0.7",
     "@types/jest": "29.5.14",

@@ -150,6 +150,9 @@ importers:
       '@my-noodles/eslint-config':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@my-noodles/jest-config':
+        specifier: workspace:*
+        version: link:../../configs/jest
       '@nestjs/testing':
         specifier: 11.1.27
         version: 11.1.27(@nestjs/common@11.1.27(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.27)(@nestjs/platform-express@11.1.27)
@@ -253,6 +256,9 @@ importers:
       '@my-noodles/eslint-config':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@my-noodles/vitest-config':
+        specifier: workspace:*
+        version: link:../../configs/vitest
       '@svgr/webpack':
         specifier: 8.1.0
         version: 8.1.0(typescript@6.0.3)
@@ -311,7 +317,19 @@ importers:
         specifier: 8.61.1
         version: 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3)
 
+  configs/jest: {}
+
   configs/typescript: {}
+
+  configs/vitest:
+    dependencies:
+      vitest:
+        specifier: 4.1.9
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.15.3)(vite@8.0.16(@types/node@22.15.3)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0))
+    devDependencies:
+      vite:
+        specifier: 8.0.16
+        version: 8.0.16(@types/node@22.15.3)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0)
 
   libs/api:
     dependencies:
@@ -355,6 +373,9 @@ importers:
       '@my-noodles/eslint-config':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@my-noodles/jest-config':
+        specifier: workspace:*
+        version: link:../../configs/jest
       '@types/express':
         specifier: 5.0.3
         version: 5.0.3
@@ -431,6 +452,9 @@ importers:
       '@my-noodles/eslint-config':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@my-noodles/vitest-config':
+        specifier: workspace:*
+        version: link:../../configs/vitest
       '@storybook/addon-docs':
         specifier: 10.4.6
         version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.8.4)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vite@8.0.16(@types/node@22.15.3)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0))(webpack@5.105.2(@swc/core@1.15.41(@swc/helpers@0.5.15))(postcss@8.5.15))
@@ -486,6 +510,9 @@ importers:
       '@my-noodles/eslint-config':
         specifier: workspace:*
         version: link:../../configs/eslint
+      '@my-noodles/vitest-config':
+        specifier: workspace:*
+        version: link:../../configs/vitest
       '@storybook/addon-docs':
         specifier: 10.4.6
         version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.8.4)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(vite@8.0.16(@types/node@22.15.3)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0))(webpack@5.105.2(@swc/core@1.15.41(@swc/helpers@0.5.15))(postcss@8.5.15))

@@ -8,7 +8,14 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 
 import { AppShell } from '@/components/layout/app-shell';
 import { routing } from '@/i18n/routing';
+import { SITE_URL } from '@/shared/env';
 import type { LocalePageProps } from '@/shared/page-props';
+import {
+  buildHreflangAlternates,
+  buildOrganizationWebSiteJsonLd,
+  JsonLdScript,
+  openGraphLocale,
+} from '@/shared/seo';
 
 import { Providers } from '../providers';
 
@@ -28,12 +35,31 @@ export async function generateMetadata({ params }: Pick<LocaleLayoutProps, 'para
   }
 
   const t = await getTranslations({ locale, namespace: 'metadata' });
+  const siteName = t('title');
+  const alternateLocales = routing.locales.filter((loc) => loc !== locale).map(openGraphLocale);
 
   return {
-    title: t('title'),
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
+    },
     description: t('description'),
     alternates: {
-      languages: Object.fromEntries(routing.locales.map((loc) => [loc, `/${loc}`])),
+      languages: buildHreflangAlternates('/'),
+    },
+    openGraph: {
+      type: 'website',
+      siteName,
+      title: siteName,
+      description: t('description'),
+      locale: openGraphLocale(locale),
+      ...(alternateLocales.length > 0 ? { alternateLocale: alternateLocales } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description: t('description'),
     },
   };
 }
@@ -47,11 +73,15 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  const [messages, t] = await Promise.all([
+    getMessages(),
+    getTranslations({ locale, namespace: 'metadata' }),
+  ]);
 
   return (
     <html lang={locale}>
       <body>
+        <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <AppShell>{children}</AppShell>

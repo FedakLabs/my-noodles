@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@my-noodles/eslint-config": "workspace:*",
+    "@my-noodles/vitest-config": "workspace:*",
     "@svgr/webpack": "8.1.0",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",

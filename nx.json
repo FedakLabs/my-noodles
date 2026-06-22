@@ -47,7 +47,7 @@
       "cache": true
     },
     "test": {
-      "inputs": ["default", "^default"],
+      "inputs": ["default", "^default", "{workspaceRoot}/configs/vitest/**", "{workspaceRoot}/configs/jest/**"],
       "cache": true
     },
     "knip": {

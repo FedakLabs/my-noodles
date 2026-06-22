@@ -1,4 +1,5 @@
 import { dehydrate } from '@tanstack/react-query';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -11,8 +12,26 @@ import { CollectionScreen } from '@/screens/collections';
 import { ISR_REVALIDATE_SECONDS } from '@/shared/isr';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate } from '@/shared/query-client';
+import { buildPageMetadata } from '@/shared/seo';
 
 export const revalidate = ISR_REVALIDATE_SECONDS;
+
+export async function generateMetadata({ params }: LocaleSlugPageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+
+  if (!hasLocale(routing.locales, locale)) {
+    return {};
+  }
+
+  const collection = await fetchCollectionDetail(slug, locale);
+
+  return buildPageMetadata({
+    locale,
+    pathname: `/collections/${slug}`,
+    title: collection.name ?? collection.slug,
+    description: collection.description,
+  });
+}
 
 export default async function CollectionPage({ params }: LocaleSlugPageProps) {
   const { locale, slug } = await params;

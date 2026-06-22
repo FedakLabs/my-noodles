@@ -1,0 +1,8 @@
+{
+  "name": "@my-noodles/jest-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base": "./base.cjs"
+  }
+}

@@ -25,6 +25,7 @@
   },
   "catalog": {
     "title": "Catalog",
+    "metaDescription": "Browse imported snacks by country, taste, and price — filter the catalog and discover something new.",
     "loading": "Loading products…",
     "error": "Could not load catalog",
     "emptyState": "Nothing matches these filters — try adjusting them.",

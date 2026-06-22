@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config';
+import { createBaseVitestConfig } from '@my-noodles/vitest-config/base';
 
-export default defineConfig({
+export default createBaseVitestConfig({
   test: {
     include: ['src/**/~*.test.ts'],
   },

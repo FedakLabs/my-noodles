@@ -109,7 +109,7 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 - **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
 - **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
 
-Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout).
+Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout). All env vars — including `SITE_URL` for SEO — come from `shared/env.ts` only.
 
 ### Types: generated DTOs first
 

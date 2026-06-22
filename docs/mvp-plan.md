@@ -268,15 +268,16 @@ OpenTelemetry-first, with Winston as the logger wired into OTel:
 
 Per-project composition:
 
-- `apps/web`: fix = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest; validate = read-only format/lint checks + type-check + test + knip; `e2e` (Playwright funnel) separate.
-- `apps/api`: fix = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e); validate adds read-only checks + knip.
-- `packages/*`: fix = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist); validate adds read-only checks + knip. `api-clients` has no tests.
+- `apps/web`: fix = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest; validate = read-only format/lint checks + type-check + test + knip; `e2e` (Playwright funnel) separate. Vitest: `@my-noodles/vitest-config/base` + app-specific `vitest.config.ts`.
+- `apps/api`: fix = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e); validate adds read-only checks + knip. Jest: `@my-noodles/jest-config/base` + app-specific `jest.config.cjs`.
+- `packages/*`: fix = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist); validate adds read-only checks + knip. Vitest: `@my-noodles/vitest-config/base`. `api-clients` has no tests.
+- `libs/api`: Jest via `@my-noodles/jest-config/base` + lib-specific `jest.config.cjs`.
 
 Root scripts: `pnpm fix` = `nx run-many -t fix` (use `nx affected -t fix` for incremental); `pnpm validate` = `nx run-many -t validate`; `pnpm format` = `prettier --write` (repo-wide format shortcut). CI runs `nx affected -t validate` + `e2e` as the authoritative gate.
 
 Prettier config is **shared at the root** (uniform formatting everywhere): 2-space, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
 
-ESLint via **composable presets** (shared base, no rule mixing across stacks). A small `configs/eslint` package exports flat-config presets; each project's `eslint.config.mjs` composes only what it needs:
+ESLint via **composable presets** (shared base, no rule mixing across stacks). A small `configs/eslint` package exports flat-config presets; **`configs/vitest`** and **`configs/jest`** export the same style of factory presets for test runners. Each project's `eslint.config.mjs` / `vitest.config.ts` / `jest.config.cjs` composes only what it needs:
 
 - **base** (all projects): `@eslint/js` recommended + `typescript-eslint` recommended + curated type-checked rules (`no-floating-promises`, `no-misused-promises`, `await-thenable`, `consistent-type-imports`, `no-unused-vars` ignore `_`); `eslint-plugin-simple-import-sort`; `@nx/enforce-module-boundaries` (tags: `packages/*` pure libs can't import apps; web can't import api); `eslint-config-prettier` last.
 - **web preset** (extends base): `eslint-plugin-react-hooks` (rules-of-hooks error / exhaustive-deps warn), `@next/eslint-plugin-next` core-web-vitals, `eslint-plugin-jsx-a11y` recommended, `eslint-plugin-react` jsx-runtime.
@@ -436,7 +437,7 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 8 - SEO
 
-- [ ] `metadata`/`generateMetadata`, JSON-LD (Product + Organization/WebSite), `sitemap.ts`, `robots.ts`, dynamic `next/og` images, canonical of filtered catalog -> `/catalog`, hreflang.
+- [x] `metadata`/`generateMetadata`, JSON-LD (Product + Organization/WebSite), `sitemap.ts`, `robots.ts`, dynamic `next/og` images, canonical of filtered catalog -> `/catalog`, hreflang.
 
 ### Phase 9 - Analytics
 
