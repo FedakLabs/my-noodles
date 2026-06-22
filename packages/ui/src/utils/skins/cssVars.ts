@@ -1,5 +1,5 @@
 import type { Colors } from '@my-noodles/theme';
-import { baseColors, colors as baseThemeColors } from '@my-noodles/theme';
+import { colors as baseThemeColors } from '@my-noodles/theme';
 
 import type { SkinDefinition } from './types';
 
@@ -72,5 +72,3 @@ export function colorsToCssVars(colorTokens: Colors): Record<string, string> {
 }
 
 export const baseSkinCssVars = colorsToCssVars(baseThemeColors);
-
-export { baseColors };

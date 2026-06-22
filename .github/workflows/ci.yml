@@ -1,0 +1,116 @@
+# CI pipeline (staged for clarity, parallel where safe):
+#
+#   Stage 1 — quality (parallel): format-check, lint-check, type-check, knip
+#   Stage 2 — unit tests:          nx affected -t test
+#   Stage 3 — e2e:                 nx affected -t e2e (web funnel; skipped when web untouched)
+#
+# Local parity:
+#   pre-commit  → nx affected -t validate --uncommitted
+#   full gate   → CI workflow (atomic read-only jobs)
+#
+# CI calls atomic Nx targets (not the composite `validate`) so each job
+# maps to one concern in the GitHub UI and failures are easy to spot.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Stage 1: quality (parallel) ───────────────────────────────────────────
+
+  format-check:
+    name: Quality · Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: Prettier (affected)
+        run: pnpm nx affected -t format-check --parallel=3
+
+  lint-check:
+    name: Quality · Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: ESLint (affected)
+        run: pnpm nx affected -t lint-check --parallel=3
+
+  type-check:
+    name: Quality · Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: TypeScript (affected)
+        run: pnpm nx affected -t type-check --parallel=3
+
+  knip:
+    name: Quality · Knip
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: Unused exports/deps (affected)
+        run: pnpm nx affected -t knip --parallel=3
+
+  # ── Stage 2: unit tests ─────────────────────────────────────────────────────
+
+  unit-test:
+    name: Test · Unit
+    runs-on: ubuntu-latest
+    needs: [format-check, lint-check, type-check, knip]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: Jest / Vitest (affected)
+        run: pnpm nx affected -t test --parallel=3
+
+  # ── Stage 3: e2e ──────────────────────────────────────────────────────────
+
+  e2e:
+    name: Test · E2E
+    runs-on: ubuntu-latest
+    needs: [unit-test]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium --with-deps
+      - name: Playwright funnel (affected)
+        run: pnpm nx affected -t e2e --parallel=1
+        env:
+          CI: true

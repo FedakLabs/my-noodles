@@ -1,2 +1,2 @@
-pnpm nx affected -t fix
+pnpm nx affected -t validate --uncommitted
 git add -u

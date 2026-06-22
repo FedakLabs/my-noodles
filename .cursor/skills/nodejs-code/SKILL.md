@@ -16,7 +16,7 @@ Consult [references/common-patterns.md](./references/common-patterns.md) and [re
 1. Identify affected feature module(s) and layers (controller → service → repository/client)
 2. Use NestJS modules, DTOs, and TypeORM patterns
 3. Keep controllers thin; services own logic
-4. Pass **`pnpm nx run api:fix`**
+4. Pass **`pnpm nx run api:validate`**
 
 Migration after schema changes:
 
@@ -50,7 +50,7 @@ If preconditions fail, stop and tell the user.
 3. **Plan** files (DTO, controller, service, module, migration, tests)
 4. **Implement** — validators on all inputs; migrations for schema
 5. **Test** — unit + supertest where applicable
-6. **Run** `pnpm nx run api:fix`
+6. **Run** `pnpm nx run api:validate`
 
 After DTO/controller changes that affect the public API, regenerate the storefront client (API must be running on port 3001):
 

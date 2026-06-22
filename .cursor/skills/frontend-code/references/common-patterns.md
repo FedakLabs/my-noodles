@@ -16,6 +16,7 @@ Task recipes for `apps/web`. **Grep the repo first** and copy the nearest featur
 8. [New presentational component](#8-new-presentational-component)
 9. [Custom hook](#9-custom-hook)
 10. [External URLs](#10-external-urls)
+11. [Testing](#11-testing)
 
 ---
 
@@ -573,9 +574,67 @@ Use descriptive export names (`TELEGRAM_SUPPORT_URL`, `PRIVACY_POLICY_URL`) and 
 
 ---
 
-## Running tests
+## 11. Testing
+
+### Unit (Vitest, no DOM)
+
+Stores, formatters, pure utils — co-located `~*.test.ts` or `*.test.ts`:
+
+```ts
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { useCartStore } from './cart-store';
+
+describe('useCartStore', () => {
+  beforeEach(() => useCartStore.setState({ items: [] }));
+
+  it('merges lines by productId', () => {
+    // assert state — no render, no selectors
+  });
+});
+```
+
+### Component (Vitest + Testing Library)
+
+Prefer accessible queries; mock `next-intl` when needed:
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+it('submits checkout when form is valid', async () => {
+  render(<CheckoutForm />);
+  await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+});
+```
+
+Use **`shared/test-ids.ts`** only when multiple identical controls share the same role+name.
+
+### E2E (Playwright)
+
+Smoke tests live in `apps/web/e2e/`. Import i18n from fixtures — never inline Ukrainian/English copy:
+
+```ts
+import { testIds } from '../src/shared/test-ids';
+
+import { e2eLocale, uk } from './fixtures/uk-messages';
+
+await page.goto(`/${e2eLocale}/catalog`);
+await page.getByTestId(testIds.catalog.addToCart('pocky-matcha')).click();
+await page.getByRole('link', { name: uk.cart.checkout }).click();
+await page.getByLabel(uk.checkout.fields.name).fill('Andrii');
+await page.getByTestId(testIds.checkout.submit).click();
+await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/success$`));
+```
+
+**Mock API for e2e:** `e2e/mock-api.mjs` — Playwright `webServer` starts it before Next dev (see `playwright.config.ts`).
+
+### Running tests
 
 ```bash
-pnpm nx run web:test
-pnpm nx run web:fix
+pnpm nx run web:test          # Vitest unit/component
+pnpm nx run web:e2e           # Playwright funnel
+pnpm nx run web:validate           # format + lint + type-check + Vitest + knip
 ```
+
+Pre-push runs `nx affected -t knip`; CI runs staged quality → unit → e2e (`.github/workflows/ci.yml`).

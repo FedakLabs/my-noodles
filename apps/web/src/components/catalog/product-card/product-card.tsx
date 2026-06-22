@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { useCartActions } from '@/hooks/cart';
 import { Link } from '@/i18n/navigation';
+import { testIds } from '@/shared/test-ids';
 import { formatCurrency } from '@/utils/format-currency';
 
 export type ProductCardProps = {
@@ -41,6 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
           size="small"
           fullWidth
           disabled={!product.inStock}
+          data-testid={testIds.catalog.addToCart(product.slug)}
           onClick={() =>
             addItem({
               productId: product.id,

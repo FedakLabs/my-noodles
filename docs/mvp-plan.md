@@ -261,19 +261,19 @@ OpenTelemetry-first, with Winston as the logger wired into OTel:
 
 ## Code quality & validation pipeline
 
-**Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. Two composite commands layer on top of the atomic targets (`format` / `format-check` / `lint` / `lint-check` / `type-check` / `test` / `knip`):
+**Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. One composite `validate` target layers on top of the atomic targets (`format` / `format-check` / `lint` / `lint-check` / `type-check` / `test` / `knip`):
 
-- `fix` (inner-loop / **AI self-check** / **pre-commit gate**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api). Auto-fixes what it can, then verifies. **Excludes knip and Playwright `e2e`** (heavier; knip stays in `validate`, e2e in CI).
-- `validate` (CI gate): `format-check` -> `lint-check` -> `type-check` -> `test` -> `knip` (read-only; fails if anything still needs fixing). Playwright `e2e` stays a separate target.
+- `validate` (inner-loop / **AI self-check** / **pre-commit gate**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api) -> `knip`. Auto-fixes what it can, then verifies. **Excludes Playwright `e2e`** (heavier; e2e in CI only).
+- Atomic read-only targets (`format-check`, `lint-check`, …) remain for **CI** — see `.github/workflows/ci.yml` (parallel jobs, no composite `validate` in CI).
 
 Per-project composition:
 
-- `apps/web`: fix = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest; validate = read-only format/lint checks + type-check + test + knip; `e2e` (Playwright funnel) separate. Vitest: `@my-noodles/vitest-config/base` + app-specific `vitest.config.ts`.
-- `apps/api`: fix = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e); validate adds read-only checks + knip. Jest: `@my-noodles/jest-config/base` + app-specific `jest.config.cjs`.
-- `packages/*`: fix = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist); validate adds read-only checks + knip. Vitest: `@my-noodles/vitest-config/base`. `api-clients` has no tests.
+- `apps/web`: validate = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest -> knip; `e2e` (Playwright funnel) separate. Vitest: `@my-noodles/vitest-config/base` + app-specific `vitest.config.ts`.
+- `apps/api`: validate = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e) -> knip. Jest: `@my-noodles/jest-config/base` + app-specific `jest.config.cjs`.
+- `packages/*`: validate = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist) -> knip. Vitest: `@my-noodles/vitest-config/base`. `api-clients` has no tests.
 - `libs/api`: Jest via `@my-noodles/jest-config/base` + lib-specific `jest.config.cjs`.
 
-Root scripts: `pnpm fix` = `nx run-many -t fix` (use `nx affected -t fix` for incremental); `pnpm validate` = `nx run-many -t validate`; `pnpm format` = `prettier --write` (repo-wide format shortcut). CI runs `nx affected -t validate` + `e2e` as the authoritative gate.
+Root scripts: `pnpm validate` = `nx run-many -t validate` (use `nx affected -t validate` for incremental); `pnpm format` = `prettier --write` (repo-wide format shortcut). CI (`.github/workflows/ci.yml`) runs staged `nx affected` atomic jobs: format/lint/types/knip (parallel) → unit tests → e2e.
 
 Prettier config is **shared at the root** (uniform formatting everywhere): 2-space, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
 
@@ -284,13 +284,13 @@ ESLint via **composable presets** (shared base, no rule mixing across stacks). A
 - **node preset** (extends base, for api): Node/Nest-appropriate rules, no React/DOM plugins.
 - Curated **moderate** ruleset; `unicorn`/`sonarjs` excluded (too opinionated for co-dev review).
 
-Git hooks (husky, repo root): **pre-commit** = `nx affected -t fix --uncommitted` then `git add -u` (format, ESLint --fix, type-check, and unit tests on affected projects only; re-stages auto-fixes) — a commit must pass the full fix pipeline before it lands; **commit-msg** = `commitlint` (conventional commits). No pre-push hook. CI runs `nx affected -t validate` + `e2e` as the authoritative read-only gate (includes knip; Playwright stays separate from `fix`).
+Git hooks (husky, repo root): **pre-commit** = `nx affected -t validate --uncommitted` then `git add -u` (format, ESLint --fix, type-check, unit tests, knip on affected projects only; re-stages auto-fixes); **commit-msg** = `commitlint` (conventional commits). No pre-push hook. CI (`.github/workflows/ci.yml`) runs staged read-only atomic jobs → unit tests → e2e as the authoritative gate.
 
 TypeScript: shared base `tsconfig` with **`strict: true`** + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes` (enabled — favor strictness); each project extends it.
 
 ## Build order
 
-1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/commitlint; per-project `fix` (AI inner-loop + pre-commit gate) + `validate` (read-only CI gate), husky pre-commit runs `nx affected -t fix`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
+1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/commitlint; per-project `validate` composite + atomic CI targets; husky pre-commit runs `nx affected -t validate`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
 2. `packages/theme` design system (tokens, MUI theme, Cyrillic fonts) + skin engine.
 3. next-intl setup + message catalogs.
 4. NestJS API: OTel instrumentation + winston logging, entities (JSONB i18n), migrations, DTOs, endpoints (incl. `?collection=`), Swagger, Throttler, seed, Telegram notify.
@@ -382,7 +382,7 @@ erDiagram
 
 ## Implementation steps (execution checklist)
 
-Ordered, dependency-aware steps to build the MVP. Each box is a self-contained unit that ends green on `pnpm fix`.
+Ordered, dependency-aware steps to build the MVP. Each box is a self-contained unit that ends green on `pnpm validate`.
 
 ### Phase 0 - Foundation
 
@@ -395,8 +395,8 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 - [x] `configs/eslint` flat-config presets: base / web / node (+ Nx module boundaries, `eslint-config-prettier` last).
 - [x] Root Prettier config; per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`).
-- [x] Compose `fix` (format->lint->type-check->test) and `validate` (read-only format-check/lint-check + type-check + test + knip); root `pnpm fix` / `pnpm validate` / `pnpm format`.
-- [x] husky: pre-commit (`nx affected -t fix --uncommitted` + `git add -u`), commit-msg (`commitlint`).
+- [x] Per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`); composite `validate` (format→lint→type-check→test→knip); root `pnpm validate` / `pnpm format`.
+- [x] husky: pre-commit (`nx affected -t validate --uncommitted` + `git add -u`), commit-msg (`commitlint`).
 
 ### Phase 2 - Design system + skins
 
@@ -445,7 +445,7 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 10 - Tests
 
-- [ ] Jest (api): OrderService unit + supertest e2e (`POST /orders`, `GET /products` & `/filters`). Vitest (web/packages): cart store, skin resolver. Playwright: funnel smoke.
+- [x] Jest (api): OrderService unit + supertest e2e (`POST /orders`, `GET /products` & `/filters`). Vitest (web/packages): cart store, skin resolver. Playwright: funnel smoke.
 
 ### Phase 11 - Pre-launch (open items)
 

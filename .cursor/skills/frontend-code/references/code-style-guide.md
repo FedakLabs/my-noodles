@@ -262,6 +262,58 @@ import { fetchProductsList } from '@/api/products/products';
 
 ---
 
+## Testing
+
+Three layers — pick the lightest tool that proves the behavior:
+
+| Layer | Tool | DOM? | Selector strategy |
+| --- | --- | --- | --- |
+| **Unit** | Vitest | No | Pure functions, Zustand stores, formatters — no selectors |
+| **Component / integration** | Vitest + Testing Library | Yes | **`getByRole` → `getByLabel` → `getByText`** (non-i18n data only) |
+| **E2E smoke** | Playwright (`apps/web/e2e/`) | Yes | Roles/labels + **i18n fixtures** + URL/state; **`data-testid` sparingly** |
+
+### Selector priority (component + e2e)
+
+1. **`getByRole`** + accessible name — buttons, links, headings, dialogs
+2. **`getByLabel`** — form fields (checkout, filters)
+3. **URL / store / API state** — `/checkout/success`, cart count, mocked responses
+4. **`getByTestId`** — only when role/label is ambiguous (e.g. repeated catalog cards) or the action must stay stable across copy changes
+5. **Avoid** hardcoded UI copy in specs and **`getByText` for primary actions**
+
+**Do not** replace roles/labels with testIds everywhere — testIds skip the accessibility contract customers and assistive tech rely on.
+
+### i18n in tests
+
+- **Production UI:** `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json`
+- **Playwright:** import `e2e/fixtures/uk-messages.ts` (wraps `messages/uk.json`) — reference **`uk.catalog.addToCart`**, not inline `'У кошик'`
+- **Vitest component tests:** mock `next-intl` or pass labels as props; assert behavior, not marketing headlines
+- **API/mock data** (product names, slugs) — stable strings from fixtures, not translation files
+
+### `data-testid` policy
+
+- Centralize in **`shared/test-ids.ts`** — one source for components and `e2e/*.spec.ts`
+- Name by **action + domain**, not visual copy: `catalog-add-to-cart--{slug}`, `checkout-submit`
+- Add a testId only when role/label cannot uniquely target the element; never on typography or static headings
+
+### File layout
+
+```text
+hooks/cart/~cart-store.test.ts          # unit — co-located, ~ prefix optional
+components/checkout/checkout-form.test.tsx
+e2e/funnel.spec.ts                      # Playwright smoke
+e2e/fixtures/uk-messages.ts             # i18n fixture for e2e
+src/shared/test-ids.ts                  # shared data-testid constants
+```
+
+### Git hooks vs CI
+
+- **pre-commit** — `nx affected -t validate --uncommitted` (format, lint --fix, type-check, unit tests, knip)
+- **CI** — staged jobs: format/lint/types/knip → unit → e2e (see `.github/workflows/ci.yml`)
+
+Run locally: `pnpm nx run web:validate` (inner loop); full gate matches CI targets.
+
+---
+
 ## Anti-Patterns
 
 Grounded in how `apps/web` is actually structured. When in doubt, grep the nearest feature and copy its shape.
@@ -288,6 +340,9 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | Global fixed loading indicator for route-local refetch | Contextual feedback near updating content (toolbar + grid veil, filter panel dim) |
 | `{condition && <LinearProgress />}` — mount/unmount shifts layout | `@my-noodles/ui` `StableLinearProgress` — reserved slot, `opacity` + `visibility` |
 | Premature `memo` / micro-optimizations | Measure first; ISR + RQ caching cover most cases |
+| Hardcoded locale strings in Playwright specs | `e2e/fixtures/uk-messages.ts` + `getByRole` / `getByLabel` |
+| `data-testid` on every element | Roles/labels first; testIds only via `shared/test-ids.ts` for ambiguous actions |
+| Testing marketing copy instead of behavior | Assert flow, URLs, form submission, cart state — not headline wording |
 
 ---
 
@@ -299,6 +354,6 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 - [ ] Client boundary justified
 - [ ] Theme tokens, not raw hex
 - [ ] No narrating comments — only non-obvious business logic or warnings
-- [ ] Tests co-located
-- [ ] `pnpm nx run web:fix` passes
+- [ ] Tests co-located; selectors follow [Testing](#testing) priority
+- [ ] `pnpm nx run web:validate` passes
 - [ ] Indexable routes: no `loading.tsx`, no Suspense around server prefetch in `page.tsx`

@@ -293,5 +293,5 @@ Cover: validation 400, not-found 404, outbound integration failure tolerance whe
 
 ```bash
 pnpm nx run api:test
-pnpm nx run api:fix
+pnpm nx run api:validate
 ```

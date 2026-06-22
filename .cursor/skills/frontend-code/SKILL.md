@@ -23,7 +23,7 @@ Given a requirement (design, bug, or feature), implement it by:
 **CRITICAL:** Implementation is NOT complete until:
 
 ```bash
-pnpm nx run web:fix
+pnpm nx run web:validate
 ```
 
 (format → lint → type-check → Vitest). Use the actual Nx target names once wired.
@@ -39,7 +39,7 @@ pnpm nx run web:fix
 - **nuqs** — URL search params (catalog filter state); schema + hook in `screens/[feature]/search-params/`; client updates use default **`shallow: true`** (SPA + TanStack Query refetch)
 - **Zustand + persist** — cart (client-only until checkout)
 - **packages/api-clients** — **`@hey-api/openapi-ts`** fetch SDK + hand client layer; **`apps/web/src/api`** wraps it with RQ hooks
-- **Vitest** + Testing Library — co-located `*.test.tsx`
+- **Vitest** + Testing Library — co-located `*.test.tsx`; **Playwright** — `e2e/*.spec.ts` (see [Testing](./references/code-style-guide.md#testing))
 
 ## Repo layout (`apps/web/src`)
 
@@ -140,12 +140,18 @@ Example — add catalog sort control:
 
 ### Step 4: Tests
 
-Co-located Vitest tests: render, interaction, validation, edge cases.
+Follow [code-style-guide.md § Testing](./references/code-style-guide.md#testing):
+
+- **Unit** — stores/utils; no DOM
+- **Component** — Vitest + RTL; `getByRole` / `getByLabel` first
+- **E2E** — Playwright; `e2e/fixtures/uk-messages.ts` for copy; `shared/test-ids.ts` for ambiguous actions only
+
+Co-located tests; run `pnpm nx run web:test` and `pnpm nx run web:e2e` when touching flows.
 
 ### Step 5: Quality checks
 
 ```bash
-pnpm nx run web:fix
+pnpm nx run web:validate
 ```
 
 Fix and re-run until green.
@@ -158,7 +164,7 @@ Report check results and files touched only after all checks pass.
 
 ## Reference Files
 
-- **`references/code-style-guide.md`** — TypeScript, components, states, file layout, anti-patterns
+- **`references/code-style-guide.md`** — TypeScript, components, states, file layout, **testing**, anti-patterns
 - **`references/common-patterns.md`** — forms, RQ hooks, routes/screens, nuqs filters, i18n, cart
 
 ## Notes

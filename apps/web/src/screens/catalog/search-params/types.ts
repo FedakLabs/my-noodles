@@ -37,6 +37,3 @@ export function catalogFiltersAppliedKey(params: CatalogSearchParams): string {
     params.inStock ?? '',
   ].join('|');
 }
-
-/** @deprecated Use {@link catalogFiltersAppliedKey} */
-export const catalogSearchParamsKey = catalogFiltersAppliedKey;

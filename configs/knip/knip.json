@@ -6,6 +6,7 @@
       "entry": ["next.config.ts", "src/**/*.{ts,tsx}"],
       "project": ["src/**/*.{ts,tsx}", "e2e/**/*.ts", "vitest.config.ts", "playwright.config.ts"],
       "ignoreDependencies": [
+        "@svgr/webpack",
         "@types/react",
         "@types/react-dom",
         "@emotion/react",
@@ -27,10 +28,28 @@
       ]
     },
     "apps/api": {
-      "entry": ["src/index.ts"],
-      "project": ["src/**/*.ts", "jest.config.mjs"],
+      "entry": [
+        "src/index.ts",
+        "src/instrumentation.ts",
+        "src/infrastructure/migrations/**/*.ts",
+        "src/infrastructure/migrations/scripts/**/*.ts"
+      ],
+      "project": ["src/**/*.ts", "jest.config.cjs"],
       "ignoreIssues": {
-        "src/config.ts": ["exports"]
+        "src/config.ts": ["exports"],
+        "src/application/orders/order-delivery.dto.ts": ["exports"],
+        "src/application/products/products.filters.ts": ["exports"],
+        "src/application/products/products.dto.ts": ["types"],
+        "src/infrastructure/i18n/index.ts": ["exports", "types"],
+        "src/infrastructure/i18n/localized-string.ts": ["exports"],
+        "src/infrastructure/seed/index.ts": ["exports", "types"],
+        "src/infrastructure/services/Telegram/index.ts": ["exports", "types"],
+        "src/infrastructure/services/Telegram/telegram.config.ts": ["exports"],
+        "src/infrastructure/services/Telegram/telegram.dto.ts": ["types"],
+        "src/tests/fixtures/env.ts": ["exports"],
+        "src/tests/jest-globals.ts": ["exports"],
+        "src/utils/locale-query.ts": ["exports"],
+        "src/utils/transformers.ts": ["exports"]
       },
       "ignoreDependencies": [
         "@nestjs/swagger",
@@ -43,11 +62,14 @@
         "@opentelemetry/instrumentation-winston",
         "@opentelemetry/sdk-node",
         "@opentelemetry/winston-transport",
+        "axios",
+        "dotenv",
         "nest-winston",
         "pg",
         "typeorm",
         "winston",
-        "tsx"
+        "tsx",
+        "@types/express-serve-static-core"
       ]
     },
     "packages/theme": {
@@ -65,7 +87,8 @@
       ],
       "ignore": ["src/css.d.ts"],
       "ignoreIssues": {
-        "src/index.ts": ["exports"]
+        "src/index.ts": ["exports"],
+        "src/stories/storyCatalog.ts": ["exports", "types"]
       }
     },
     "packages/ui": {
@@ -94,7 +117,19 @@
     "libs/api": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"],
-      "ignoreDependencies": ["typeorm"]
+      "ignore": [
+        "src/config/index.ts",
+        "src/external-api/logger.ts",
+        "src/logging/index.ts",
+        "src/middlewares/index.ts"
+      ],
+      "ignoreIssues": {
+        "src/config/config.ts": ["exports"],
+        "src/config/env.ts": ["exports"],
+        "src/logging/manifest-log.ts": ["exports"],
+        "src/middlewares/client-baggage.ts": ["exports"]
+      },
+      "ignoreDependencies": ["typeorm", "@types/express-serve-static-core"]
     }
   }
 }

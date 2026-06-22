@@ -34,23 +34,12 @@
       "command": "knip --config configs/knip/knip.json --workspace libs/web",
       "options": { "cwd": "." }
     },
-    "fix": {
+    "validate": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
           "nx run {projectName}:format",
           "nx run {projectName}:lint",
-          "nx run {projectName}:type-check"
-        ],
-        "parallel": false
-      }
-    },
-    "validate": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "nx run {projectName}:format-check",
-          "nx run {projectName}:lint-check",
           "nx run {projectName}:type-check",
           "nx run {projectName}:knip"
         ],

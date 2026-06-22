@@ -1,18 +1,32 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const mockApiUrl = 'http://127.0.0.1:3001';
+const webUrl = 'http://localhost:3000';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: webUrl,
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'node e2e/mock-api.mjs',
+      url: `${mockApiUrl}/api/health/live`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'pnpm dev',
+      url: webUrl,
+      reuseExistingServer: !process.env.CI,
+      env: {
+        NEXT_PUBLIC_API_URL: mockApiUrl,
+        NEXT_PUBLIC_SITE_URL: webUrl,
+      },
+    },
+  ],
 });

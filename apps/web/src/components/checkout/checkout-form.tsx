@@ -14,6 +14,7 @@ import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCartActions, useCartItems } from '@/hooks/cart';
 import { useRouter } from '@/i18n/navigation';
 import { cartLineToGa4Item } from '@/shared/analytics';
+import { testIds } from '@/shared/test-ids';
 
 import { branchToWarehouseNumber, type CheckoutFormData, checkoutSchema } from './validation';
 
@@ -139,7 +140,12 @@ export function CheckoutForm() {
         autoComplete="off"
       />
 
-      <Button type="submit" variant="contained" disabled={createOrderIsPending || items.length === 0}>
+      <Button
+        type="submit"
+        variant="contained"
+        data-testid={testIds.checkout.submit}
+        disabled={createOrderIsPending || items.length === 0}
+      >
         {t('submit')}
       </Button>
     </Stack>

@@ -719,7 +719,7 @@ On limit exceeded, Nest returns 429 — map to friendly message in exception fil
 
 Cover: happy path, validation 400, not-found 404, external client failure behavior, throttling where relevant.
 
-Run: `pnpm nx run api:test` or `api:fix`.
+Run: `pnpm nx run api:test` or `api:validate`.
 
 ---
 
@@ -769,5 +769,5 @@ Before declaring done:
 - [ ] Feature module registered in `AppModule`
 - [ ] DB changes have `up` + `down` migrations
 - [ ] New entities extend `TimestampEntity`; FKs use `onUpdate: 'CASCADE'`, no `onDelete: 'CASCADE'`
-- [ ] `pnpm nx run api:fix` passes
+- [ ] `pnpm nx run api:validate` passes
 - [ ] Swagger/OpenAPI still generates if DTOs/controllers changed

@@ -9,7 +9,7 @@ describe('useCartStore', () => {
 
   it('adds and merges items by productId', () => {
     const line = {
-      productId: '11111111-1111-1111-1111-111111111111',
+      productId: '11111111-1111-4111-8111-111111111111',
       slug: 'spicy-noodles',
       title: 'Spicy Noodles',
       priceMinor: 9900,
@@ -24,9 +24,27 @@ describe('useCartStore', () => {
     expect(useCartStore.getState().totalMinor()).toBe(9900 * 3);
   });
 
-  it('clears items on migrate bump semantics via empty state reset', () => {
-    useCartStore.getState().addItem({
+  it('updates quantity and removes items at zero', () => {
+    const line = {
       productId: '22222222-2222-2222-2222-222222222222',
+      slug: 'mochi',
+      title: 'Mochi',
+      priceMinor: 4500,
+      currency: 'UAH',
+    };
+
+    useCartStore.getState().addItem(line, 2);
+    useCartStore.getState().setQuantity(line.productId, 1);
+
+    expect(useCartStore.getState().items[0]?.qty).toBe(1);
+
+    useCartStore.getState().setQuantity(line.productId, 0);
+    expect(useCartStore.getState().items).toEqual([]);
+  });
+
+  it('clears all items', () => {
+    useCartStore.getState().addItem({
+      productId: '33333333-3333-3333-3333-333333333333',
       slug: 'mochi',
       title: 'Mochi',
       priceMinor: 4500,
