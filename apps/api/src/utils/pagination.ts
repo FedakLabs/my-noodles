@@ -7,27 +7,27 @@ import { parseIntQuery } from '@/utils/transformers';
 
 /** Nest/swagger DTO mirror of `@my-noodles/api-lib` pagination meta. */
 export class PaginationMetaDto implements PaginationMeta {
-  @ApiProperty({ description: 'Total items matching the query across all pages' })
+  @ApiProperty({ type: Number, description: 'Total items matching the query across all pages' })
   total!: number;
 
-  @ApiProperty({ description: 'Number of items returned on the current page' })
+  @ApiProperty({ type: Number, description: 'Number of items returned on the current page' })
   currentTotal!: number;
 
-  @ApiProperty({ minimum: 1 })
+  @ApiProperty({ type: Number, minimum: 1 })
   page!: number;
 
-  @ApiProperty({ minimum: 1, maximum: 100 })
+  @ApiProperty({ type: Number, minimum: 1, maximum: 100 })
   limit!: number;
 }
 
 export class PaginationQueryDto implements PaginationQuery {
-  @ApiProperty({ minimum: 1 })
+  @ApiProperty({ type: Number, minimum: 1 })
   @Transform(({ value }) => parseIntQuery(value))
   @IsInt()
   @Min(1)
   page!: number;
 
-  @ApiProperty({ minimum: 1, maximum: 100 })
+  @ApiProperty({ type: Number, minimum: 1, maximum: 100 })
   @Transform(({ value }) => parseIntQuery(value))
   @IsInt()
   @Min(1)
@@ -36,6 +36,6 @@ export class PaginationQueryDto implements PaginationQuery {
 }
 
 export class PaginatedMetaDto {
-  @ApiProperty({ type: PaginationMetaDto })
+  @ApiProperty({ type: () => PaginationMetaDto })
   meta!: PaginationMetaDto;
 }

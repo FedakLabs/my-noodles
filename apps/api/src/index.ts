@@ -12,7 +12,7 @@ import { config } from './config';
 import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs/api';
 import { localeMiddleware } from './infrastructure/i18n';
 import { HttpExceptionLogFilter } from './infrastructure/logging';
-import { registerGracefulShutdown } from './shutdown';
+import { registerGracefulShutdown } from './infrastructure/shutdown';
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger(createWinstonModuleOptions(config));

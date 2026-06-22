@@ -12,7 +12,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useCreateOrder } from '@/api/orders';
 import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCartActions, useCartItems } from '@/hooks/cart';
-import { useRouter } from '@/i18n/navigation';
+import { usePendingRouter } from '@/hooks/smooth';
 import { cartLineToGa4Item } from '@/shared/analytics';
 import { testIds } from '@/shared/test-ids';
 
@@ -20,7 +20,7 @@ import { branchToWarehouseNumber, type CheckoutFormData, checkoutSchema } from '
 
 export function CheckoutForm() {
   const t = useTranslations('checkout');
-  const router = useRouter();
+  const router = usePendingRouter();
   const items = useCartItems();
   const { clear } = useCartActions();
   const { trackPurchase } = useAnalyticsActions();

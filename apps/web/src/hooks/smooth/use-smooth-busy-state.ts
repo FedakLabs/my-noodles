@@ -1,28 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-function subscribe(onStoreChange: () => void) {
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  mediaQuery.addEventListener('change', onStoreChange);
-  return () => mediaQuery.removeEventListener('change', onStoreChange);
-}
-
-function getSnapshot() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function getServerSnapshot() {
-  return false;
-}
-
-function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-}
-
-const SHOW_DELAY_MS = 250;
-const TRANSITION_MS = 450;
-const TRANSITION_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+import { resolveSmoothMotionTokens } from './smooth-tokens';
+import { usePrefersReducedMotion } from './use-prefers-reduced-motion';
 
 export type SmoothBusyState = {
   /** Overlay/scrim is in the DOM (includes exit animation). */
@@ -35,13 +16,13 @@ export type SmoothBusyState = {
 
 export function useSmoothBusyState(busy: boolean): SmoothBusyState {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const showDelayMs = prefersReducedMotion ? 0 : SHOW_DELAY_MS;
-  const transitionMs = prefersReducedMotion ? 0 : TRANSITION_MS;
-  const transitionEasing = prefersReducedMotion ? 'linear' : TRANSITION_EASING;
+  const { showDelayMs, transitionMs, minVisibleMs, transitionEasing } =
+    resolveSmoothMotionTokens(prefersReducedMotion);
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
-  const mountedRef = useRef(mounted);
+  const mountedRef = useRef(false);
+  const shownAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     mountedRef.current = mounted;
@@ -49,30 +30,52 @@ export function useSmoothBusyState(busy: boolean): SmoothBusyState {
 
   useEffect(() => {
     if (busy) {
+      // Already in the DOM (e.g. re-busy during an exit hold): just (re)activate next frame.
       if (mountedRef.current) {
-        const activateTimer = window.setTimeout(() => setActive(true), 0);
-        return () => window.clearTimeout(activateTimer);
+        const raf = window.requestAnimationFrame(() => {
+          shownAtRef.current ??= Date.now();
+          setActive(true);
+        });
+        return () => window.cancelAnimationFrame(raf);
       }
 
+      // Fresh entry: mount at opacity 0, then flip active on the next frame so the
+      // browser has a 0 -> 1 transition to animate (mounting + activating together pops in).
+      let raf = 0;
       const enterTimer = window.setTimeout(() => {
         setMounted(true);
-        setActive(true);
+        raf = window.requestAnimationFrame(() => {
+          shownAtRef.current = Date.now();
+          setActive(true);
+        });
       }, showDelayMs);
 
-      return () => window.clearTimeout(enterTimer);
+      return () => {
+        window.clearTimeout(enterTimer);
+        window.cancelAnimationFrame(raf);
+      };
     }
 
     if (!mountedRef.current) {
       return undefined;
     }
 
-    const deactivateTimer = window.setTimeout(() => setActive(false), 0);
-    const exitTimer = window.setTimeout(() => setMounted(false), transitionMs);
+    // Keep the veil up for a minimum visible window so a fast finish doesn't flash on/off.
+    const shownAt = shownAtRef.current;
+    const elapsed = shownAt == null ? minVisibleMs : Date.now() - shownAt;
+    const holdMs = Math.max(0, minVisibleMs - elapsed);
+
+    const deactivateTimer = window.setTimeout(() => setActive(false), holdMs);
+    const exitTimer = window.setTimeout(() => {
+      setMounted(false);
+      shownAtRef.current = null;
+    }, holdMs + transitionMs);
+
     return () => {
       window.clearTimeout(deactivateTimer);
       window.clearTimeout(exitTimer);
     };
-  }, [busy, showDelayMs, transitionMs]);
+  }, [busy, showDelayMs, transitionMs, minVisibleMs]);
 
   return { mounted, active, transitionMs, transitionEasing };
 }

@@ -10,6 +10,7 @@ import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useCartActions, useCartItems, useCartTotalMinor } from '@/hooks/cart';
+import { useRoutePrefetch } from '@/hooks/smooth';
 import { Link } from '@/i18n/navigation';
 import { formatCurrency } from '@/utils/format-currency';
 
@@ -25,6 +26,8 @@ export function CartPanel({ onClose }: CartPanelProps) {
   const items = useCartItems();
   const totalMinor = useCartTotalMinor();
   const { setQuantity, removeItem, beginCheckout } = useCartActions();
+  const checkoutHref = '/checkout';
+  const { bindPrefetchOnIntent } = useRoutePrefetch(checkoutHref);
 
   return (
     <Stack sx={{ height: '100%', minHeight: 0 }}>
@@ -122,11 +125,12 @@ export function CartPanel({ onClose }: CartPanelProps) {
           </Typography>
           <Button
             component={Link}
-            href="/checkout"
+            href={checkoutHref}
             variant="contained"
             size="large"
             fullWidth
             onClick={() => beginCheckout()}
+            {...bindPrefetchOnIntent}
           >
             {t('checkout')}
           </Button>

@@ -6,7 +6,7 @@
   "tags": ["scope:api", "type:app"],
   "targets": {
     "serve": {
-      "command": "node scripts/dev.cjs",
+      "command": "tsx watch --import ./src/instrumentation.ts src/index.ts",
       "options": {
         "cwd": "apps/api"
       }

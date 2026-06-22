@@ -6,18 +6,23 @@ import { DiscoveryCard, resolveSkin, skinVarsToStyle } from '@my-noodles/ui';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useCartActions } from '@/hooks/cart';
+import { useRoutePrefetch } from '@/hooks/smooth';
 import { Link } from '@/i18n/navigation';
 import { testIds } from '@/shared/test-ids';
 import { formatCurrency } from '@/utils/format-currency';
 
 export type ProductCardProps = {
   product: ProductSummaryDto;
+  /** Eagerly prefetch the product route (above-the-fold cards). */
+  priorityPrefetch?: boolean;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priorityPrefetch = false }: ProductCardProps) {
   const t = useTranslations('catalog');
   const locale = useLocale();
   const { addItem } = useCartActions();
+  const productHref = `/product/${product.slug}`;
+  const { bindPrefetchOnIntent } = useRoutePrefetch(productHref);
   const skin = resolveSkin({
     brand: product.brand?.slug,
     country: product.country.code,
@@ -25,17 +30,23 @@ export function ProductCard({ product }: ProductCardProps) {
     slug: product.slug,
   });
   const imageUrl = product.images[0];
+  const imageAlt = product.name ?? product.slug;
 
   return (
     <DiscoveryCard
       title={product.name}
       subtitle={product.country.name}
       price={formatCurrency(product.priceMinor, product.currency, locale)}
-      imageUrl={imageUrl}
-      imageAlt={product.name ?? product.slug}
+      image={imageUrl ? { url: imageUrl, alt: imageAlt } : undefined}
       skinStyle={skinVarsToStyle(skin.cssVars)}
-      linkComponent={Link}
-      href={`/product/${product.slug}`}
+      link={{
+        component: Link,
+        href: productHref,
+        props: {
+          prefetch: priorityPrefetch ? true : undefined,
+          ...bindPrefetchOnIntent,
+        },
+      }}
       action={
         <Button
           variant="contained"
@@ -47,7 +58,7 @@ export function ProductCard({ product }: ProductCardProps) {
             addItem({
               productId: product.id,
               slug: product.slug,
-              title: product.name ?? product.slug,
+              title: imageAlt,
               priceMinor: product.priceMinor,
               currency: product.currency,
               imageUrl,

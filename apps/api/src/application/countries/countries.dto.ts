@@ -1,10 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CountryDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   code!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
   @ApiProperty({ type: String, nullable: true })

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node --import=./dist/instrumentation.js dist/index.js",
-    "start:dev": "node scripts/dev.cjs"
+    "start:dev": "tsx watch --import ./src/instrumentation.ts src/index.ts"
   },
   "dependencies": {
     "@my-noodles/api-lib": "workspace:*",
@@ -15,17 +15,8 @@
     "@nestjs/swagger": "11.4.4",
     "@nestjs/throttler": "6.5.0",
     "@nestjs/typeorm": "11.0.2",
-    "@opentelemetry/api": "1.9.1",
-    "@opentelemetry/auto-instrumentations-node": "0.77.0",
-    "@opentelemetry/exporter-logs-otlp-proto": "0.219.0",
-    "@opentelemetry/exporter-trace-otlp-proto": "0.219.0",
-    "@opentelemetry/instrumentation-winston": "0.63.0",
-    "@opentelemetry/sdk-node": "0.219.0",
-    "@opentelemetry/winston-transport": "0.29.0",
-    "axios": "1.9.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
-    "dotenv": "16.4.7",
     "nest-winston": "1.10.2",
     "pg": "8.21.0",
     "reflect-metadata": "0.2.2",

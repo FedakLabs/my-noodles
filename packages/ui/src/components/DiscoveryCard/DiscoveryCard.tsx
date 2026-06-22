@@ -16,35 +16,40 @@ const textSlotSx = {
   overflowWrap: 'anywhere',
 } as const;
 
+export type DiscoveryCardImage = {
+  url: string;
+  alt: string;
+  viewTransitionName?: string;
+};
+
+export type DiscoveryCardLink = {
+  component: ElementType;
+  href: string;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+  props?: Record<string, unknown>;
+};
+
 export type DiscoveryCardProps = {
   title: ReactNode;
   subtitle?: ReactNode;
   price: ReactNode;
-  imageUrl?: string | null;
-  imageAlt?: string;
-  viewTransitionName?: string;
+  image?: DiscoveryCardImage | null;
   skinStyle?: CSSProperties;
   action?: ReactNode;
-  linkComponent?: ElementType;
-  href?: string;
-  onLinkClick?: (event: MouseEvent<HTMLElement>) => void;
-  linkProps?: Record<string, unknown>;
+  link?: DiscoveryCardLink;
 };
 
 export function DiscoveryCard({
   title,
   subtitle,
   price,
-  imageUrl,
-  imageAlt = '',
-  viewTransitionName,
+  image,
   skinStyle,
   action,
-  linkComponent: LinkComponent = 'div',
-  href,
-  onLinkClick,
-  linkProps,
+  link,
 }: DiscoveryCardProps) {
+  const LinkComponent = link?.component ?? 'div';
+
   return (
     <Stack
       spacing={1.5}
@@ -64,9 +69,9 @@ export function DiscoveryCard({
     >
       <Box
         component={LinkComponent}
-        {...(href ? { href } : {})}
-        {...linkProps}
-        onClick={onLinkClick}
+        {...(link?.href ? { href: link.href } : {})}
+        {...link?.props}
+        onClick={link?.onClick}
         sx={{
           flex: 1,
           minHeight: 0,
@@ -88,16 +93,16 @@ export function DiscoveryCard({
             flexShrink: 0,
           }}
         >
-          {imageUrl ? (
+          {image ? (
             <Box
               component="img"
-              src={imageUrl}
-              alt={imageAlt}
+              src={image.url}
+              alt={image.alt}
               sx={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                ...(viewTransitionName ? { viewTransitionName } : {}),
+                ...(image.viewTransitionName ? { viewTransitionName: image.viewTransitionName } : {}),
               }}
             />
           ) : null}

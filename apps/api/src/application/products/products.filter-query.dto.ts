@@ -8,7 +8,7 @@ import { PRODUCT_SORT_OPENAPI, type ProductSort } from './products.filters';
 
 /** Shared catalog filter query fields — single source for facets + list DTOs. */
 export class ProductFilterQueryDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsString()
   collection?: string;
@@ -27,32 +27,32 @@ export class ProductFilterQueryDto {
   @Transform(({ value }) => parseStringArray(value))
   country?: string[];
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsString()
   brand?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Number, minimum: 0 })
   @IsOptional()
   @Transform(({ value }) => parseOptionalIntQuery(value))
   @IsInt()
   @Min(0)
   priceMin?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Number, minimum: 0 })
   @IsOptional()
   @Transform(({ value }) => parseOptionalIntQuery(value))
   @IsInt()
   @Min(0)
   priceMax?: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Boolean })
   @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean()
   isTriedByUs?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: Boolean })
   @IsOptional()
   @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean()

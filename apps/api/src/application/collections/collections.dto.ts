@@ -1,10 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CollectionSummaryDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   code!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
   @ApiProperty({ type: String, nullable: true })
@@ -19,7 +19,7 @@ export class CollectionSummaryDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   themeKey!: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   sortOrder!: number;
 }
 

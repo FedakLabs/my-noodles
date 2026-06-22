@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import type { ReactNode } from 'react';
 
 import { CartPanelHost } from '@/components/cart/cart-panel-host';
+import { NavigationBusyOverlay } from '@/components/navigation/navigation-busy-overlay';
+import { NavigationPendingProvider } from '@/hooks/smooth';
 
 import { SiteHeader } from './site-header';
 
@@ -13,12 +15,12 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
-      <SiteHeader />
-      <Box component="div" sx={{ flex: 1 }}>
-        {children}
+    <NavigationPendingProvider>
+      <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+        <SiteHeader />
+        <NavigationBusyOverlay>{children}</NavigationBusyOverlay>
+        <CartPanelHost />
       </Box>
-      <CartPanelHost />
-    </Box>
+    </NavigationPendingProvider>
   );
 }

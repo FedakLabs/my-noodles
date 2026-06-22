@@ -1,4 +1,4 @@
-import { gracefulShutdown, resetGracefulShutdownState } from '../shutdown';
+import { gracefulShutdown, resetGracefulShutdownState } from '../infrastructure/shutdown';
 import { createMockNestApp } from './helpers/nest-app';
 import { mockProcessExit } from './helpers/process';
 

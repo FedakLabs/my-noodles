@@ -16,18 +16,18 @@ export class ListProductsQueryDto extends IntersectionType(
 export class ProductFacetsQueryDto extends IntersectionType(ProductFilterQueryDto, LocaleQueryDto) {}
 
 export class BrandRefDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name!: string;
 }
 
 export class CountryRefDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   code!: string;
 
   @ApiProperty({ type: String, nullable: true })
@@ -35,7 +35,7 @@ export class CountryRefDto {
 }
 
 export class CategoryRefDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
   @ApiProperty({ type: String, nullable: true })
@@ -43,56 +43,56 @@ export class CategoryRefDto {
 }
 
 export class ProductSummaryDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   id!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   slug!: string;
 
   @ApiProperty({ type: String, nullable: true })
   name!: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   priceMinor!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   currency!: string;
 
   @ApiProperty({ type: [String] })
   images!: string[];
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   inStock!: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   isTriedByUs!: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   sortWeight!: number;
 
-  @ApiPropertyOptional({ type: BrandRefDto, nullable: true })
+  @ApiPropertyOptional({ type: () => BrandRefDto, nullable: true })
   brand!: BrandRefDto | null;
 
-  @ApiProperty({ type: CountryRefDto })
+  @ApiProperty({ type: () => CountryRefDto })
   country!: CountryRefDto;
 
-  @ApiProperty({ type: CategoryRefDto })
+  @ApiProperty({ type: () => CategoryRefDto })
   category!: CategoryRefDto;
 }
 
 export class PaginatedProductsDto extends PaginatedMetaDto {
-  @ApiProperty({ type: [ProductSummaryDto] })
+  @ApiProperty({ type: () => [ProductSummaryDto] })
   items!: ProductSummaryDto[];
 }
 
 export class ProductFlavorDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   spice!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   sweet!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   texture!: string;
 }
 
@@ -109,32 +109,32 @@ export class ProductDetailDto extends ProductSummaryDto {
   @ApiProperty({ type: String, nullable: true })
   forWhom!: string | null;
 
-  @ApiProperty({ type: ProductFlavorDto })
+  @ApiProperty({ type: () => ProductFlavorDto })
   flavor!: ProductFlavorDto;
 
   @ApiProperty({ type: [String] })
   allergens!: string[];
 
-  @ApiProperty({ type: [ProductSummaryDto] })
+  @ApiProperty({ type: () => [ProductSummaryDto] })
   alternatives!: ProductSummaryDto[];
 }
 
 export class ProductFacetOptionDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   value!: string;
 
   @ApiProperty({ type: String, nullable: true })
   label!: string | null;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   count!: number;
 }
 
 export class PriceFacetDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   min!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   max!: number;
 }
 
@@ -145,20 +145,20 @@ export class ProductFacetsDto {
   @ApiProperty({ type: [ProductFacetOptionDto] })
   country!: ProductFacetOptionDto[];
 
-  @ApiProperty({ type: PriceFacetDto })
+  @ApiProperty({ type: () => PriceFacetDto })
   price!: PriceFacetDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   isTriedByUs!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   inStock!: number;
 }
 
 export class ProductFacetsResponseDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   total!: number;
 
-  @ApiProperty({ type: ProductFacetsDto })
+  @ApiProperty({ type: () => ProductFacetsDto })
   facets!: ProductFacetsDto;
 }

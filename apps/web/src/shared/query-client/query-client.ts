@@ -1,12 +1,17 @@
 import { type DefaultOptions, keepPreviousData, QueryClient } from '@tanstack/react-query';
 import { cache } from 'react';
 
+import { ISR_REVALIDATE_MS } from '@/shared/isr';
+
 const defaultOptions: DefaultOptions = {
   queries: {
     retry: 1,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     placeholderData: keepPreviousData,
+    // Match the ISR window so back-navigation to recently-seen data reuses the cache
+    // (no refetch, no busy veil) instead of treating everything as immediately stale.
+    staleTime: ISR_REVALIDATE_MS,
   },
 };
 

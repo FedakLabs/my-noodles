@@ -25,11 +25,11 @@ import {
 } from './order-delivery.dto';
 
 export class CreateOrderItemDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   @IsUUID()
   productId!: string;
 
-  @ApiProperty({ minimum: 1 })
+  @ApiProperty({ type: Number, minimum: 1 })
   @Transform(({ value }) => parseIntQuery(value))
   @IsInt()
   @Min(1)
@@ -45,55 +45,55 @@ export class CreateOrderDeliveryDto {
   @IsEnum(DeliveryMethod)
   method!: DeliveryMethod;
 
-  @ApiProperty({ example: 'Київ' })
+  @ApiProperty({ type: String, example: 'Київ' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(120)
   city!: string;
 
-  @ApiPropertyOptional({ description: 'Required when method is warehouse' })
+  @ApiPropertyOptional({ type: String, description: 'Required when method is warehouse' })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
   warehouseNumber?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: String })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsOptional()
   @IsString()
   @MaxLength(200)
   warehouseName?: string;
 
-  @ApiPropertyOptional({ description: 'Provider API ref for warehouse (future integrations)' })
+  @ApiPropertyOptional({ type: String, description: 'Provider API ref for warehouse (future integrations)' })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsOptional()
   @IsString()
   @MaxLength(80)
   warehouseRef?: string;
 
-  @ApiPropertyOptional({ description: 'Required when method is courier' })
+  @ApiPropertyOptional({ type: String, description: 'Required when method is courier' })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   street?: string;
 
-  @ApiPropertyOptional({ description: 'Required when method is courier' })
+  @ApiPropertyOptional({ type: String, description: 'Required when method is courier' })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
   @IsString()
   @IsNotEmpty()
   @MaxLength(40)
   building?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: String })
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
   @IsOptional()
   @IsString()
   @MaxLength(20)
   apartment?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsString()
   @MaxLength(300)
@@ -101,31 +101,31 @@ export class CreateOrderDeliveryDto {
 }
 
 export class CreateOrderDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   customerName!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   @IsString()
   @IsNotEmpty()
   @MaxLength(30)
   phone!: string;
 
-  @ApiProperty({ type: CreateOrderDeliveryDto })
+  @ApiProperty({ type: () => CreateOrderDeliveryDto })
   @ValidateNested()
   @Type(() => CreateOrderDeliveryDto)
   delivery!: CreateOrderDeliveryDto;
 
-  @ApiProperty({ type: [CreateOrderItemDto] })
+  @ApiProperty({ type: () => [CreateOrderItemDto] })
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items!: CreateOrderItemDto[];
 
-  @ApiPropertyOptional({ description: 'Honeypot field — must stay empty' })
+  @ApiPropertyOptional({ type: String, description: 'Honeypot field — must stay empty' })
   @IsOptional()
   @IsString()
   @MaxLength(0)
@@ -133,18 +133,18 @@ export class CreateOrderDto {
 }
 
 export class OrderResponseDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ type: String, format: 'uuid' })
   id!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   status!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   totalMinor!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   currency!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, format: 'date-time' })
   createdAt!: string;
 }

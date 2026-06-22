@@ -1,1 +1,6 @@
-export { DiscoveryCard, type DiscoveryCardProps } from './DiscoveryCard';
+export {
+  DiscoveryCard,
+  type DiscoveryCardImage,
+  type DiscoveryCardLink,
+  type DiscoveryCardProps,
+} from './DiscoveryCard';

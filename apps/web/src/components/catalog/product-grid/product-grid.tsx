@@ -9,10 +9,10 @@ import { StableLinearProgress } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 
 import { CatalogSortSelect } from '@/components/catalog/catalog-sort-select';
+import { SmoothBusyVeil } from '@/components/navigation/smooth-busy-veil';
 import { useSmoothBusyState } from '@/hooks/smooth';
 
 import { ProductCard } from '../product-card/product-card';
-import { ProductGridRefreshVeil } from './product-grid-refresh-veil';
 import { ProductGridSkeleton } from './product-grid-skeleton';
 
 type ProductGridProps = {
@@ -154,15 +154,15 @@ export function ProductGrid({
           }}
         >
           <Grid container spacing={2}>
-            {products.map((product) => (
+            {products.map((product, index) => (
               <Grid key={product.id} size={{ xs: 6, sm: 4, md: 3 }} sx={{ minWidth: 0 }}>
-                <ProductCard product={product} />
+                <ProductCard product={product} priorityPrefetch={index < 4} />
               </Grid>
             ))}
           </Grid>
 
           {refreshMounted ? (
-            <ProductGridRefreshVeil
+            <SmoothBusyVeil
               visible={refreshActive}
               label={searchingText}
               transitionMs={transitionMs}

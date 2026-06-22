@@ -14,6 +14,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { useProductFacets } from '@/api/products';
+import { SmoothBusyVeil } from '@/components/navigation/smooth-busy-veil';
+import { useSmoothBusyState } from '@/hooks/smooth';
 import {
   type CatalogFilterParams,
   type CatalogSearchParams,
@@ -73,6 +75,12 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
     [applied.country, facets?.country],
   );
   const isEmpty = Boolean(productFacets) && categoryOptions.length === 0 && countryOptions.length === 0;
+  const {
+    mounted: refetchVeilMounted,
+    active: refetchVeilActive,
+    transitionMs,
+    transitionEasing,
+  } = useSmoothBusyState(productFacetsIsRefetching);
 
   const priceBoundsMinor = useMemo(() => {
     const min = facets?.price.min ?? 0;
@@ -236,9 +244,10 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
         p: 2,
         minWidth: 0,
         overflowX: 'hidden',
-        opacity: productFacetsIsRefetching ? 0.72 : 1,
-        pointerEvents: productFacetsIsRefetching ? 'none' : 'auto',
-        transition: (theme) => theme.transitions.create('opacity'),
+        position: 'relative',
+        opacity: refetchVeilActive ? 0.9 : 1,
+        pointerEvents: refetchVeilActive ? 'none' : 'auto',
+        transition: `opacity ${transitionMs}ms ${transitionEasing}`,
       }}
       aria-busy={productFacetsIsBusy ? true : undefined}
       aria-label={productFacetsIsInitialLoad ? t('loading') : undefined}
@@ -260,6 +269,16 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
         >
           {productFacetsIsBusy ? t('searching') : t('showResults', { count: previewTotal })}
         </Button>
+      ) : null}
+
+      {refetchVeilMounted ? (
+        <SmoothBusyVeil
+          visible={refetchVeilActive}
+          label={t('searching')}
+          transitionMs={transitionMs}
+          transitionEasing={transitionEasing}
+          borderRadius={0}
+        />
       ) : null}
     </Stack>
   );
