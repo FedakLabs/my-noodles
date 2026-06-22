@@ -12,15 +12,6 @@ export const Locale = { UK: 'uk', EN: 'en' } as const;
 
 export type Locale = typeof Locale[keyof typeof Locale];
 
-export const ProductSort = {
-    POPULAR: 'popular',
-    NEW: 'new',
-    PRICE_ASC: 'price-asc',
-    PRICE_DESC: 'price-desc'
-} as const;
-
-export type ProductSort = typeof ProductSort[keyof typeof ProductSort];
-
 export type ProductFacetOptionDto = {
     value: string;
     label: string | null;
@@ -35,6 +26,7 @@ export type PriceFacetDto = {
 export type ProductFacetsDto = {
     category: Array<ProductFacetOptionDto>;
     country: Array<ProductFacetOptionDto>;
+    brand: Array<ProductFacetOptionDto>;
     price: PriceFacetDto;
     isTriedByUs: number;
     inStock: number;
@@ -45,18 +37,14 @@ export type ProductFacetsResponseDto = {
     facets: ProductFacetsDto;
 };
 
-export type PaginationMetaDto = {
-    /**
-     * Total items matching the query across all pages
-     */
-    total: number;
-    /**
-     * Number of items returned on the current page
-     */
-    currentTotal: number;
-    page: number;
-    limit: number;
-};
+export const ProductSort = {
+    POPULAR: 'popular',
+    NEW: 'new',
+    PRICE_ASC: 'price-asc',
+    PRICE_DESC: 'price-desc'
+} as const;
+
+export type ProductSort = typeof ProductSort[keyof typeof ProductSort];
 
 export type BrandRefDto = {
     slug: string;
@@ -76,6 +64,7 @@ export type CategoryRefDto = {
 
 export type ProductSummaryDto = {
     id: string;
+    brand?: BrandRefDto | null;
     slug: string;
     name: string | null;
     priceMinor: number;
@@ -84,14 +73,26 @@ export type ProductSummaryDto = {
     inStock: boolean;
     isTriedByUs: boolean;
     sortWeight: number;
-    brand?: BrandRefDto | null;
     country: CountryRefDto;
     category: CategoryRefDto;
 };
 
+export type PaginationMetaDto = {
+    /**
+     * Total items matching the query across all pages.
+     */
+    total: number;
+    /**
+     * Number of items returned on the current page.
+     */
+    currentTotal: number;
+    page: number;
+    limit: number;
+};
+
 export type PaginatedProductsDto = {
-    meta: PaginationMetaDto;
     items: Array<ProductSummaryDto>;
+    meta: PaginationMetaDto;
 };
 
 export type ProductFlavorDto = {
@@ -102,6 +103,7 @@ export type ProductFlavorDto = {
 
 export type ProductDetailDto = {
     id: string;
+    brand?: BrandRefDto | null;
     slug: string;
     name: string | null;
     priceMinor: number;
@@ -110,10 +112,9 @@ export type ProductDetailDto = {
     inStock: boolean;
     isTriedByUs: boolean;
     sortWeight: number;
-    brand?: BrandRefDto | null;
     country: CountryRefDto;
     category: CategoryRefDto;
-    weight?: string | null;
+    weight: string | null;
     description: string | null;
     story: string | null;
     forWhom: string | null;
@@ -123,32 +124,32 @@ export type ProductDetailDto = {
 };
 
 export type CollectionSummaryDto = {
+    heroImage?: string | null;
+    themeKey?: string | null;
     code: string;
     slug: string;
     name: string | null;
     description: string | null;
-    heroImage?: string | null;
-    themeKey?: string | null;
     sortOrder: number;
 };
 
 export type CollectionDetailDto = {
+    heroImage?: string | null;
+    themeKey?: string | null;
     code: string;
     slug: string;
     name: string | null;
     description: string | null;
-    heroImage?: string | null;
-    themeKey?: string | null;
     sortOrder: number;
     productSlugs: Array<string>;
 };
 
 export type CountryDto = {
+    flagEmoji?: string | null;
+    themeKey?: string | null;
     code: string;
     slug: string;
     name: string | null;
-    flagEmoji?: string | null;
-    themeKey?: string | null;
 };
 
 export const DeliveryProvider = {
@@ -167,22 +168,10 @@ export type CreateOrderDeliveryDto = {
     provider: DeliveryProvider;
     method: DeliveryMethod;
     city: string;
-    /**
-     * Required when method is warehouse
-     */
     warehouseNumber?: string;
     warehouseName?: string;
-    /**
-     * Provider API ref for warehouse (future integrations)
-     */
     warehouseRef?: string;
-    /**
-     * Required when method is courier
-     */
     street?: string;
-    /**
-     * Required when method is courier
-     */
     building?: string;
     apartment?: string;
     notes?: string;
@@ -198,18 +187,15 @@ export type CreateOrderDto = {
     phone: string;
     delivery: CreateOrderDeliveryDto;
     items: Array<CreateOrderItemDto>;
-    /**
-     * Honeypot field — must stay empty
-     */
     company?: string;
 };
 
 export type OrderResponseDto = {
     id: string;
+    createdAt: string;
     status: string;
     totalMinor: number;
     currency: string;
-    createdAt: string;
 };
 
 export type HealthControllerGetLiveData = {
@@ -255,19 +241,15 @@ export type ProductsControllerGetFacetsData = {
     body?: never;
     path?: never;
     query?: {
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
         locale?: Locale;
         collection?: string;
         category?: Array<string>;
         country?: Array<string>;
-        brand?: string;
+        brand?: Array<string>;
         priceMin?: number;
         priceMax?: number;
         isTriedByUs?: boolean;
         inStock?: boolean;
-        sort?: ProductSort;
     };
     url: '/api/products/facets';
 };
@@ -282,21 +264,18 @@ export type ProductsControllerListData = {
     body?: never;
     path?: never;
     query: {
+        sort?: ProductSort;
+        locale?: Locale;
         page: number;
         limit: number;
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
-        locale?: Locale;
         collection?: string;
         category?: Array<string>;
         country?: Array<string>;
-        brand?: string;
+        brand?: Array<string>;
         priceMin?: number;
         priceMax?: number;
         isTriedByUs?: boolean;
         inStock?: boolean;
-        sort?: ProductSort;
     };
     url: '/api/products';
 };
@@ -313,9 +292,6 @@ export type ProductsControllerGetBySlugData = {
         slug: string;
     };
     query?: {
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
         locale?: Locale;
     };
     url: '/api/products/{slug}';
@@ -338,9 +314,6 @@ export type CollectionsControllerListData = {
     body?: never;
     path?: never;
     query?: {
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
         locale?: Locale;
     };
     url: '/api/collections';
@@ -358,9 +331,6 @@ export type CollectionsControllerGetBySlugData = {
         slug: string;
     };
     query?: {
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
         locale?: Locale;
     };
     url: '/api/collections/{slug}';
@@ -383,9 +353,6 @@ export type CountriesControllerListData = {
     body?: never;
     path?: never;
     query?: {
-        /**
-         * Response locale for localized fields. Falls back to Accept-Language, then the default locale.
-         */
         locale?: Locale;
     };
     url: '/api/countries';

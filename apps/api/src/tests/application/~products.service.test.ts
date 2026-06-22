@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
+import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductNotFoundException, ProductsService } from '@/application/products';
@@ -14,12 +15,14 @@ describe('ProductsService', () => {
   let productsFind: jest.Mock;
   let categoriesFind: jest.Mock;
   let countriesFind: jest.Mock;
+  let brandsFind: jest.Mock;
 
   beforeEach(async () => {
     findOne = jest.fn();
     productsFind = jest.fn();
     categoriesFind = jest.fn();
     countriesFind = jest.fn();
+    brandsFind = jest.fn();
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -42,6 +45,12 @@ describe('ProductsService', () => {
           provide: getRepositoryToken(Country),
           useValue: {
             find: countriesFind,
+          },
+        },
+        {
+          provide: getRepositoryToken(Brand),
+          useValue: {
+            find: brandsFind,
           },
         },
       ],
@@ -92,16 +101,36 @@ describe('ProductsService', () => {
     await expect(service.getBySlug('missing')).rejects.toBeInstanceOf(ProductNotFoundException);
   });
 
-  it('returns full category and country taxonomy with zero counts', async () => {
-    productsFind.mockResolvedValue([
-      {
-        priceMinor: 1_000,
-        isTriedByUs: true,
-        quantity: 2,
-        category: { slug: 'snacks' },
-        country: { slug: 'japan' },
+  it('returns facet counts without applying that facet filter (multi-select within facet)', async () => {
+    productsFind.mockImplementation(
+      (options: {
+        relations?: { category?: boolean; country?: boolean; brand?: boolean };
+        select?: { id?: boolean; priceMinor?: boolean };
+      }) => {
+        if (options.relations?.category) {
+          return Promise.resolve([{ category: { slug: 'snacks' } }, { category: { slug: 'drinks' } }]);
+        }
+
+        if (options.relations?.country) {
+          return Promise.resolve([{ country: { slug: 'japan' } }]);
+        }
+
+        if (options.relations?.brand) {
+          return Promise.resolve([{ brand: { slug: 'glico', name: 'Glico' } }]);
+        }
+
+        if (options.select?.priceMinor) {
+          return Promise.resolve([{ priceMinor: 500 }, { priceMinor: 5_000 }]);
+        }
+
+        return Promise.resolve([
+          {
+            isTriedByUs: true,
+            quantity: 2,
+          },
+        ]);
       },
-    ]);
+    );
     categoriesFind.mockResolvedValue([
       {
         slug: 'snacks',
@@ -122,38 +151,61 @@ describe('ProductsService', () => {
         name: new LocalizedString({ uk: 'Корея', en: 'Korea' }),
       },
     ]);
+    brandsFind.mockResolvedValue([
+      { slug: 'glico', name: 'Glico' },
+      { slug: 'samyang', name: 'Samyang' },
+    ]);
 
     const result = await LocaleContext.run('uk', () => service.getFacets({ category: ['snacks'] }));
 
     expect(result.total).toBe(1);
     expect(result.facets.category).toEqual([
       { value: 'snacks', label: 'Снеки', count: 1 },
-      { value: 'drinks', label: 'Напої', count: 0 },
+      { value: 'drinks', label: 'Напої', count: 1 },
     ]);
     expect(result.facets.country).toEqual([
       { value: 'japan', label: 'Японія', count: 1 },
       { value: 'korea', label: 'Корея', count: 0 },
     ]);
+    expect(result.facets.brand).toEqual([
+      { value: 'glico', label: 'Glico', count: 1 },
+      { value: 'samyang', label: 'Samyang', count: 0 },
+    ]);
   });
 
   it('returns catalog-wide price bounds independent of other facet filters', async () => {
-    productsFind.mockImplementation((options: { select?: { priceMinor?: boolean }; relations?: unknown }) => {
-      if (options.select?.priceMinor && !options.relations) {
-        return Promise.resolve([{ priceMinor: 500 }, { priceMinor: 5_000 }]);
-      }
+    productsFind.mockImplementation(
+      (options: {
+        select?: { priceMinor?: boolean };
+        relations?: { category?: boolean; country?: boolean; brand?: boolean };
+      }) => {
+        if (options.select?.priceMinor && !options.relations) {
+          return Promise.resolve([{ priceMinor: 500 }, { priceMinor: 5_000 }]);
+        }
 
-      return Promise.resolve([
-        {
-          priceMinor: 1_000,
-          isTriedByUs: true,
-          quantity: 2,
-          category: { slug: 'snacks' },
-          country: { slug: 'japan' },
-        },
-      ]);
-    });
+        if (options.relations?.category) {
+          return Promise.resolve([{ category: { slug: 'snacks' } }]);
+        }
+
+        if (options.relations?.country) {
+          return Promise.resolve([{ country: { slug: 'japan' } }]);
+        }
+
+        if (options.relations?.brand) {
+          return Promise.resolve([]);
+        }
+
+        return Promise.resolve([
+          {
+            isTriedByUs: true,
+            quantity: 2,
+          },
+        ]);
+      },
+    );
     categoriesFind.mockResolvedValue([]);
     countriesFind.mockResolvedValue([]);
+    brandsFind.mockResolvedValue([]);
 
     const result = await LocaleContext.run('uk', () =>
       service.getFacets({ category: ['snacks'], priceMin: 900, priceMax: 1_100 }),

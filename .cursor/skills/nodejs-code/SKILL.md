@@ -55,8 +55,10 @@ If preconditions fail, stop and tell the user.
 After DTO/controller changes that affect the public API, regenerate the storefront client (API must be running on port 3001):
 
 ```bash
-pnpm nx run api:clients:generate
+pnpm nx run api:generate:openapi
+pnpm --dir apps/web run generate:clients
 pnpm nx run api-clients:build
+pnpm nx run web:type-check
 ```
 
 ## Reference Files

@@ -1,3 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
+
 export enum DeliveryProvider {
   NovaPoshta = 'nova-poshta',
   Ukrposhta = 'ukrposhta',
@@ -9,21 +12,16 @@ export enum DeliveryMethod {
   Courier = 'courier',
 }
 
-export const DELIVERY_PROVIDERS = [
-  DeliveryProvider.NovaPoshta,
-  DeliveryProvider.Ukrposhta,
-  DeliveryProvider.Meest,
-] as const;
+export function IsDeliveryProvider(): PropertyDecorator {
+  return (target, propertyKey) => {
+    ApiProperty({ enum: DeliveryProvider, enumName: 'DeliveryProvider' })(target, propertyKey);
+    IsEnum(DeliveryProvider)(target, propertyKey);
+  };
+}
 
-export const DELIVERY_METHODS = [DeliveryMethod.Warehouse, DeliveryMethod.Courier] as const;
-
-/** Shared OpenAPI enum schema — `enumName` must match generated client types. */
-export const DELIVERY_PROVIDER_OPENAPI = {
-  enum: DELIVERY_PROVIDERS,
-  enumName: 'DeliveryProvider',
-} as const;
-
-export const DELIVERY_METHOD_OPENAPI = {
-  enum: DELIVERY_METHODS,
-  enumName: 'DeliveryMethod',
-} as const;
+export function IsDeliveryMethod(): PropertyDecorator {
+  return (target, propertyKey) => {
+    ApiProperty({ enum: DeliveryMethod, enumName: 'DeliveryMethod' })(target, propertyKey);
+    IsEnum(DeliveryMethod)(target, propertyKey);
+  };
+}

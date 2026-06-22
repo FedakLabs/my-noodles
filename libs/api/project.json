@@ -6,32 +6,32 @@
   "tags": ["scope:libs", "type:lib", "platform:node"],
   "targets": {
     "build": {
-      "command": "tsc -p tsconfig.build.json",
+      "command": "pnpm build",
       "options": { "cwd": "libs/api" },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
-      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+      "command": "pnpm format",
       "options": { "cwd": "libs/api" }
     },
     "format-check": {
-      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+      "command": "pnpm format-check",
       "options": { "cwd": "libs/api" }
     },
     "lint": {
-      "command": "eslint . --fix",
+      "command": "pnpm lint",
       "options": { "cwd": "libs/api" }
     },
     "lint-check": {
-      "command": "eslint .",
+      "command": "pnpm lint-check",
       "options": { "cwd": "libs/api" }
     },
     "type-check": {
-      "command": "tsc --noEmit -p tsconfig.json",
+      "command": "pnpm type-check",
       "options": { "cwd": "libs/api" }
     },
     "test": {
-      "command": "jest",
+      "command": "pnpm test",
       "options": { "cwd": "libs/api" }
     },
     "knip": {

@@ -5,8 +5,8 @@
   "prettier": "./configs/prettier/.prettierrc.json",
   "scripts": {
     "prepare": "husky",
-    "dev:web": "nx dev web",
-    "dev:api": "nx serve api",
+    "dev:web": "nx run web:dev",
+    "dev:api": "nx run api:dev",
     "dev:ui": "nx run ui:storybook",
     "build": "nx run-many -t build",
     "format": "prettier --write . --ignore-path configs/prettier/.prettierignore",

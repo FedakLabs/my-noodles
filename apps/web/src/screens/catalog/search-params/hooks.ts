@@ -4,7 +4,7 @@ import { useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
 import { catalogSearchParamsParsers } from './parsers';
-import { type CatalogFilterParams, catalogFiltersAppliedKey, DEFAULT_CATALOG_FILTER_PARAMS } from './types';
+import { catalogFiltersAppliedKey, DEFAULT_CATALOG_FILTER_PARAMS } from './types';
 
 export function useCatalogSearchParams() {
   const [params, setParams] = useQueryStates(catalogSearchParamsParsers);
@@ -19,18 +19,10 @@ export function useCatalogSearchParams() {
     });
   }, [params.limit, setParams]);
 
-  const applyFilters = useCallback(
-    (draft: CatalogFilterParams) => {
-      void setParams({ ...draft, page: 1 });
-    },
-    [setParams],
-  );
-
   return {
     params,
     setParams,
     appliedKey,
     resetFilters,
-    applyFilters,
   };
 }

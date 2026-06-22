@@ -8,6 +8,7 @@ import type { ProductSort, ProductSummaryDto } from '@my-noodles/api-clients/sto
 import { StableLinearProgress } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 
+import { CatalogEmptyState } from '@/components/catalog/catalog-empty-state';
 import { CatalogSortSelect } from '@/components/catalog/catalog-sort-select';
 import { SmoothBusyVeil } from '@/components/navigation/smooth-busy-veil';
 import { useSmoothBusyState } from '@/hooks/smooth';
@@ -142,9 +143,7 @@ export function ProductGrid({
       ) : null}
 
       {products.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-          {t('emptyState')}
-        </Typography>
+        <CatalogEmptyState />
       ) : (
         <Box
           sx={{

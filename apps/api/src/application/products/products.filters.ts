@@ -3,7 +3,7 @@ import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 import { Between, In, LessThanOrEqual, MoreThan, MoreThanOrEqual } from 'typeorm';
 
 import type { Product } from './product.entity';
-import type { ProductFilters } from './products.filter-query.dto';
+import type { ProductFilterQueryDto, ProductFilters } from './products.filter-query.dto';
 
 export type { ProductFacetFilters, ProductFilters } from './products.filter-query.dto';
 
@@ -28,6 +28,33 @@ const PRODUCT_SORT_ORDER: Record<ProductSort, FindOptionsOrder<Product>> = {
 
 export type ProductListPagination = PaginationQuery;
 
+/** Multi-select facet dimensions — string[] filter keys from the shared query DTO. */
+export type ProductFacetDimension = {
+  [K in keyof ProductFilterQueryDto]: NonNullable<ProductFilterQueryDto[K]> extends string[] ? K : never;
+}[keyof ProductFilterQueryDto];
+
+/** Facet counts for one dimension ignore that dimension's filter (OR within facet, AND across facets). */
+export function buildProductWhereForFacet(
+  filters: ProductFilters,
+  omit: ProductFacetDimension,
+): FindOptionsWhere<Product> {
+  const scoped = { ...filters };
+
+  switch (omit) {
+    case 'category':
+      delete scoped.category;
+      break;
+    case 'country':
+      delete scoped.country;
+      break;
+    case 'brand':
+      delete scoped.brand;
+      break;
+  }
+
+  return buildProductWhere(scoped);
+}
+
 /** Type-safe `find` / `count` filter — prefer over query-builder string columns. */
 export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
   const where: FindOptionsWhere<Product> = {};
@@ -44,8 +71,8 @@ export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Pro
     where.country = { slug: In(filters.country) };
   }
 
-  if (filters.brand) {
-    where.brand = { slug: filters.brand };
+  if (filters.brand?.length) {
+    where.brand = { slug: In(filters.brand) };
   }
 
   if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
@@ -93,6 +120,11 @@ export const productFacetSelect = {
     name: true,
   },
   country: {
+    id: true,
+    slug: true,
+    name: true,
+  },
+  brand: {
     id: true,
     slug: true,
     name: true,

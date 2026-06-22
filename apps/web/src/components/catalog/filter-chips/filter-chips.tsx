@@ -34,6 +34,16 @@ export function FilterChips() {
     });
   });
 
+  filters.brand.forEach((value) => {
+    chips.push({
+      key: `brand-${value}`,
+      label: `${t('brand')}: ${value}`,
+      onDelete: () => {
+        void setParams({ brand: filters.brand.filter((item) => item !== value), page: 1 });
+      },
+    });
+  });
+
   if (filters.priceMin != null) {
     chips.push({
       key: 'priceMin',

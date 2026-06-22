@@ -1,5 +1,5 @@
 export type { Locale, LocalizedStringData, LocalizedStringRecord } from './locale.config';
-export { DEFAULT_LOCALE, LOCALE_OPENAPI, SUPPORTED_LOCALES } from './locale.config';
+export { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './locale.config';
 export { LocaleContext } from './locale.context';
 export { localeMiddleware } from './locale.middleware';
 export { LocalizedColumn } from './localized-column.decorator';

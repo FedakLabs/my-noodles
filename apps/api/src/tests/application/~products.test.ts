@@ -2,6 +2,7 @@ import { type INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 
+import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductsController, ProductsService } from '@/application/products';
@@ -55,6 +56,12 @@ describe('products (e2e)', () => {
             find: jest.fn().mockResolvedValue(sampleCountries),
           },
         },
+        {
+          provide: getRepositoryToken(Brand),
+          useValue: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
       ],
     });
   });
@@ -103,6 +110,36 @@ describe('products (e2e)', () => {
         price: { min: 9_900, max: 9_900 },
       },
     });
+  });
+
+  it('GET /api/products/facets transforms query DTO values through the global validation pipe', async () => {
+    const server = apiHttpServer(app);
+    const getFacets = jest.spyOn(app.get(ProductsService), 'getFacets').mockResolvedValue({
+      total: 0,
+      facets: {
+        category: [],
+        country: [],
+        brand: [],
+        price: { min: 0, max: 0 },
+        isTriedByUs: 0,
+        inStock: 0,
+      },
+    });
+
+    await request(server)
+      .get('/api/products/facets?locale=uk&category=snacks&priceMin=100&inStock=true')
+      .expect(200);
+
+    expect(getFacets).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locale: 'uk',
+        category: ['snacks'],
+        priceMin: 100,
+        inStock: true,
+      }),
+    );
+
+    getFacets.mockRestore();
   });
 
   it('GET /api/products rejects invalid filter query', async () => {

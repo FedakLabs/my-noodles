@@ -13,6 +13,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",
+    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+    "lint": "eslint . --fix",
+    "lint-check": "eslint .",
+    "type-check": "tsc --noEmit -p tsconfig.lib.json",
+    "test": "vitest run",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build -o dist/storybook"
   },

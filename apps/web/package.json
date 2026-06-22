@@ -5,7 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+    "lint": "eslint . --fix",
+    "lint-check": "eslint .",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "generate:clients": "nx run api-clients:api:generate"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

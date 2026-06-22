@@ -36,7 +36,6 @@ export function FilterSheetSkeleton() {
 
       <Skeleton variant="rounded" height={36} />
       <Skeleton variant="rounded" height={36} />
-      <Skeleton variant="rounded" height={40} />
     </Stack>
   );
 }

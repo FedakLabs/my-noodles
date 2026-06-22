@@ -78,8 +78,6 @@ import { Product } from '../products/product.entity';
 import { OrdersService } from './orders.service';
 ```
 
-**Tooling:** `api:serve` runs `scripts/dev.cjs` (`tsc -w` + `tsc-alias` + `node dist/`). Use `tsx` only for one-off scripts (migrations, seed). Jest: `jest.config.cjs` + `ts-jest`. Production: `tsc` + `tsc-alias` (see `apps/api/project.json`).
-
 **Import order** (simple-import-sort): externals → same-module / sibling relative → `@/` cross-layer.
 
 ---
@@ -234,9 +232,8 @@ Register in `AppModule.imports`. Export providers other modules need.
 - `app.setGlobalPrefix('api')` — routes are `/api/...`, no versioning.
 - Global `ValidationPipe`: `whitelist: true`, `transform: true`, `forbidNonWhitelisted: true`.
 - Swagger at `/api/docs-json` via `@nestjs/swagger`.
-- **OpenAPI CLI plugin** enabled in `tsconfig.build.json` ([NestJS docs](https://docs.nestjs.com/openapi/cli-plugin)): auto-generates `@ApiProperty` on `*.dto.ts` / `*.entity.ts` and wires `@Query()` / `@Body()` params on `*.controller.ts` at compile time. Do **not** duplicate query params in separate `*.openapi.ts` files.
-- DTOs keep **class-validator** decorators for runtime validation; `@ApiProperty` is optional (plugin fills gaps). Override with explicit `@ApiProperty()` when you need custom examples or descriptions.
-- `api:serve` must compile through `tsc` (not `tsx`) so the plugin transforms apply before Swagger boots.
+- Public API contract changes should be validated through the project commands, not by hand-maintaining OpenAPI metadata files.
+- Do **not** duplicate query params in separate `*.openapi.ts` files.
 
 ### Controller template
 
@@ -322,6 +319,7 @@ throw err;
 ### Layout
 
 - All DTOs in `<feature>.dto.ts` (request, query, response shapes as needed).
+- Nest-facing DTO classes must live in files matched by the OpenAPI generation conventions. Prefer `*.dto.ts`; keep stable imports through small barrel files when moving shared DTOs.
 - Regex/constants above the classes that use them.
 
 ### class-validator
@@ -344,7 +342,9 @@ export class CreateOrderDto {
 
 ### Swagger
 
-Add `@ApiProperty()` / `@ApiPropertyOptional()` only when overriding plugin defaults (examples, descriptions). Prefer `class-validator` decorators on DTO fields — the CLI plugin mirrors them when `classValidatorShim: true`.
+Prefer `class-validator` decorators on DTO fields and let OpenAPI generation infer simple schema metadata from TypeScript and validators.
+
+Add `@ApiProperty()` / `@ApiPropertyOptional()` only when the generated schema needs metadata that cannot be safely inferred, such as custom descriptions/examples, enum schema names, UUID/date-time formats without an equivalent validator, `nullable: true`, or mapped/intersection DTO cases that drop inherited fields.
 
 **Response strings (`string | null`)** — set `{ type: String, nullable: true }` on `@ApiProperty()` / `@ApiPropertyOptional()`. Union types collapse to `Object` under `emitDecoratorMetadata`, so Swagger would otherwise emit `type: object` for locale-resolved copy.
 
@@ -682,7 +682,7 @@ if (config.otel.enabled) {
 
 ## 12. Logging, Tracing, Observability
 
-- OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js` (see `package.json` `start` and `scripts/dev.cjs`).
+- OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js`.
 - `instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
 - **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
 - **Logging**: Winston via `nest-winston` as Nest logger; structured fields, no PII (no raw phones in logs).

@@ -42,7 +42,13 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+    "lint": "eslint . --fix",
+    "lint-check": "eslint .",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "jest"
   },
   "dependencies": {
     "@opentelemetry/api": "1.9.1",

@@ -1,4 +1,5 @@
 # dependencies
+openapi.json
 node_modules/
 
 # build outputs

@@ -29,6 +29,15 @@
     "loading": "Loading products…",
     "error": "Could not load catalog",
     "emptyState": "Nothing matches these filters — try adjusting them.",
+    "emptyResetFilters": "Reset filters",
+    "emptyMessages": {
+      "filters": "Nothing matches these filters — maybe loosen them a little? 🔍",
+      "wander": "No hits yet — but the catalog loves a curious wanderer 🌏",
+      "surprise": "Empty for now — the next surprise might be one filter away ✨",
+      "tweak": "These filters are picky — try another combo 🎯",
+      "patience": "Patience, snack explorer — tasty things hide in odd corners 🍜",
+      "nudge": "Zero results, infinite possibilities — tweak and try again 😉"
+    },
     "openFilters": "Filters",
     "resultsCount": "{count, plural, one {# product} other {# products}}",
     "addToCart": "Add to cart",
@@ -43,6 +52,7 @@
       "sortPriceDesc": "Price ↓",
       "category": "Category",
       "country": "Country",
+      "brand": "Brand",
       "price": "Price",
       "priceMin": "Min",
       "priceMax": "Max",
@@ -52,8 +62,7 @@
       "loading": "Loading filters…",
       "error": "Could not load filters",
       "retry": "Try again",
-      "empty": "Nothing to filter yet — check back soon for tasty picks.",
-      "showResults": "Show {count, plural, one {# product} other {# products}}"
+      "empty": "Nothing to filter yet — check back soon for tasty picks."
     }
   },
   "product": {

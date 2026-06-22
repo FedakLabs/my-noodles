@@ -258,12 +258,13 @@ list(@Query() _query: LocaleQueryDto): Promise<CountryDto[]> {
 Regenerate storefront clients after changing DTOs, routes, or OpenAPI metadata (API must be running on port 3001):
 
 ```bash
-pnpm nx run api:clients:generate
-# or: pnpm nx run api-clients:api:generate
+pnpm nx run api:generate:openapi
+pnpm --dir apps/web run generate:clients
 pnpm nx run api-clients:build
+pnpm nx run web:type-check
 ```
 
-`packages/api-clients/openapi-ts.config.ts` uses **`@hey-api/openapi-ts`** with live input `http://localhost:3001/api/docs-json` (no committed `openapi.json` snapshot). Plugins: `@hey-api/typescript`, `@hey-api/client-fetch`, `@hey-api/sdk` (flat operations). Hand layer: `src/storefront/client/` (`setupApiClients`, `runtime.config.ts` with `throwOnError: true`).
+The generated storefront client lives in `packages/api-clients`; hand-written wrappers stay in `src/storefront/client/`.
 
 Shared validators live in `src/utils/validators/` — grep before duplicating.
 

@@ -1,18 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": false,
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": true,
-          "introspectComments": true,
-          "dtoFileNameSuffix": [".dto.ts"],
-          "controllerFileNameSuffix": ".controller.ts"
-        }
-      }
-    ]
+    "noEmit": false
   },
   "exclude": ["node_modules", "dist", "src/tests/**", "src/**/*.spec.ts", "src/**/~*.test.ts"]
 }

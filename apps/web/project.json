@@ -6,32 +6,32 @@
   "tags": ["scope:web", "type:app"],
   "targets": {
     "dev": {
-      "command": "next dev",
+      "command": "pnpm dev",
       "options": {
         "cwd": "apps/web"
       }
     },
     "build": {
-      "command": "next build",
+      "command": "pnpm build",
       "options": {
         "cwd": "apps/web"
       },
       "outputs": ["{projectRoot}/.next"]
     },
     "format": {
-      "command": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+      "command": "pnpm format",
       "options": {
         "cwd": "apps/web"
       }
     },
     "format-check": {
-      "command": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+      "command": "pnpm format-check",
       "options": {
         "cwd": "apps/web"
       }
     },
     "lint": {
-      "command": "eslint . --fix",
+      "command": "pnpm lint",
       "dependsOn": [
         { "projects": "api-clients", "target": "build" },
         { "projects": "web-lib", "target": "build" },
@@ -42,7 +42,7 @@
       }
     },
     "lint-check": {
-      "command": "eslint .",
+      "command": "pnpm lint-check",
       "dependsOn": [
         { "projects": "api-clients", "target": "build" },
         { "projects": "web-lib", "target": "build" },
@@ -53,7 +53,7 @@
       }
     },
     "type-check": {
-      "command": "tsc --noEmit -p tsconfig.json",
+      "command": "pnpm type-check",
       "dependsOn": [
         { "projects": "api-clients", "target": "build" },
         { "projects": "web-lib", "target": "build" },
@@ -64,7 +64,7 @@
       }
     },
     "test": {
-      "command": "vitest run",
+      "command": "pnpm test",
       "options": {
         "cwd": "apps/web"
       }
@@ -89,9 +89,18 @@
       }
     },
     "e2e": {
-      "command": "playwright test",
+      "command": "pnpm e2e",
       "options": {
         "cwd": "apps/web"
+      }
+    },
+    "generate:clients": {
+      "command": "pnpm generate:clients",
+      "options": {
+        "cwd": "apps/web"
+      },
+      "metadata": {
+        "description": "Regenerate storefront TypeScript client from the live API OpenAPI spec (http://localhost:3001/api/docs-json). Start the API first."
       }
     }
   }

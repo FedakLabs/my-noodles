@@ -14,7 +14,7 @@ export const catalogSearchParamsParsers = {
   collection: parseAsString,
   category: parseAsArrayOf(parseAsString).withDefault([]),
   country: parseAsArrayOf(parseAsString).withDefault([]),
-  brand: parseAsString,
+  brand: parseAsArrayOf(parseAsString).withDefault([]),
   priceMin: parseAsInteger,
   priceMax: parseAsInteger,
   sort: sortParser,

@@ -1,60 +1,53 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
-import { parseOptionalBoolean, parseOptionalIntQuery, parseStringArray } from '@/utils/transformers';
+import { TransformToArray, TransformToOptionalBoolean, TransformToOptionalInt } from '@/utils/transformers';
 
 import { PRODUCT_SORT_OPENAPI, type ProductSort } from './products.filters';
 
 /** Shared catalog filter query fields — single source for facets + list DTOs. */
 export class ProductFilterQueryDto {
-  @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsString()
   collection?: string;
 
-  @ApiPropertyOptional({ type: [String] })
+  @TransformToArray()
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
   category?: string[];
 
-  @ApiPropertyOptional({ type: [String] })
+  @TransformToArray()
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @Transform(({ value }) => parseStringArray(value))
   country?: string[];
 
-  @ApiPropertyOptional({ type: String })
+  @TransformToArray()
   @IsOptional()
-  @IsString()
-  brand?: string;
+  @IsArray()
+  @IsString({ each: true })
+  brand?: string[];
 
-  @ApiPropertyOptional({ type: Number, minimum: 0 })
+  @TransformToOptionalInt()
   @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
   @IsInt()
   @Min(0)
   priceMin?: number;
 
-  @ApiPropertyOptional({ type: Number, minimum: 0 })
+  @TransformToOptionalInt()
   @IsOptional()
-  @Transform(({ value }) => parseOptionalIntQuery(value))
   @IsInt()
   @Min(0)
   priceMax?: number;
 
-  @ApiPropertyOptional({ type: Boolean })
+  @TransformToOptionalBoolean()
   @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean()
   isTriedByUs?: boolean;
 
-  @ApiPropertyOptional({ type: Boolean })
+  @TransformToOptionalBoolean()
   @IsOptional()
-  @Transform(({ value }) => parseOptionalBoolean(value))
   @IsBoolean()
   inStock?: boolean;
 }

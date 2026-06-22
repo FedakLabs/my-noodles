@@ -13,6 +13,7 @@ import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs
 import { localeMiddleware } from './infrastructure/i18n';
 import { HttpExceptionLogFilter } from './infrastructure/logging';
 import { registerGracefulShutdown } from './infrastructure/shutdown';
+import { VALIDATION_PIPE_OPTIONS } from './utils/validation-pipe-options';
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger(createWinstonModuleOptions(config));
@@ -26,13 +27,7 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);
   app.use(

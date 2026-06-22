@@ -11,50 +11,33 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import { PriceRangeSlider } from '@my-noodles/ui';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useProductFacets } from '@/api/products';
 import { SmoothBusyVeil } from '@/components/navigation/smooth-busy-veil';
 import { useSmoothBusyState } from '@/hooks/smooth';
 import {
-  type CatalogFilterParams,
+  type CatalogFacetKey,
   type CatalogSearchParams,
-  DEFAULT_CATALOG_FILTER_PARAMS,
   toCatalogFacetsParams,
   useCatalogSearchParams,
 } from '@/screens/catalog/search-params';
 import { DEFAULT_CURRENCY, formatCurrency, majorToMinor, minorToMajor } from '@/utils/format-currency';
 
-import { isFilterOptionDisabled, sortFilterOptionsByAppliedUrl } from './filter-options';
+import { isFilterOptionDisabled } from './filter-options';
 import { FilterSheetSkeleton } from './filter-sheet-skeleton';
 
-function draftFromApplied(applied: CatalogSearchParams): CatalogFilterParams {
-  return {
-    collection: applied.collection,
-    category: applied.category,
-    country: applied.country,
-    brand: applied.brand,
-    priceMin: applied.priceMin,
-    priceMax: applied.priceMax,
-    sort: applied.sort,
-    isTriedByUs: applied.isTriedByUs,
-    inStock: applied.inStock,
-  };
-}
-
 type FilterSheetPanelProps = {
-  applied: CatalogSearchParams;
-  onApplyFilters: (draft: CatalogFilterParams) => void;
+  params: CatalogSearchParams;
+  onSetParams: (patch: Partial<CatalogSearchParams>) => void;
   onResetFilters: () => void;
-  onApplied?: () => void;
 };
 
-function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }: FilterSheetPanelProps) {
+function FilterSheetPanel({ params, onSetParams, onResetFilters }: FilterSheetPanelProps) {
   const t = useTranslations('catalog.filters');
   const locale = useLocale();
-  const [draft, setDraft] = useState<CatalogFilterParams>(() => draftFromApplied(applied));
 
-  const facetsParams = useMemo(() => toCatalogFacetsParams(draft), [draft]);
+  const facetsParams = useMemo(() => toCatalogFacetsParams(params), [params]);
   const {
     productFacets,
     productFacetsIsInitialLoad,
@@ -64,17 +47,15 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
     productFacetsRefetch,
   } = useProductFacets(facetsParams);
   const facets = productFacets?.facets;
-  const previewTotal = productFacets?.total ?? 0;
 
-  const categoryOptions = useMemo(
-    () => sortFilterOptionsByAppliedUrl(facets?.category ?? [], applied.category),
-    [applied.category, facets?.category],
-  );
-  const countryOptions = useMemo(
-    () => sortFilterOptionsByAppliedUrl(facets?.country ?? [], applied.country),
-    [applied.country, facets?.country],
-  );
-  const isEmpty = Boolean(productFacets) && categoryOptions.length === 0 && countryOptions.length === 0;
+  const categoryOptions = facets?.category ?? [];
+  const countryOptions = facets?.country ?? [];
+  const brandOptions = facets?.brand ?? [];
+  const isEmpty =
+    Boolean(productFacets) &&
+    categoryOptions.length === 0 &&
+    countryOptions.length === 0 &&
+    brandOptions.length === 0;
   const {
     mounted: refetchVeilMounted,
     active: refetchVeilActive,
@@ -98,29 +79,19 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
 
   const priceValueMajor = useMemo<[number, number]>(
     () => [
-      minorToMajor(draft.priceMin ?? priceBoundsMinor.min, DEFAULT_CURRENCY),
-      minorToMajor(draft.priceMax ?? priceBoundsMinor.max, DEFAULT_CURRENCY),
+      minorToMajor(params.priceMin ?? priceBoundsMinor.min, DEFAULT_CURRENCY),
+      minorToMajor(params.priceMax ?? priceBoundsMinor.max, DEFAULT_CURRENCY),
     ],
-    [draft.priceMax, draft.priceMin, priceBoundsMinor.max, priceBoundsMinor.min],
+    [params.priceMax, params.priceMin, priceBoundsMinor.max, priceBoundsMinor.min],
   );
 
   const formatPriceLabel = (amountMajor: number) =>
     formatCurrency(majorToMinor(amountMajor, DEFAULT_CURRENCY), DEFAULT_CURRENCY, locale);
 
-  const toggleArrayValue = (key: 'category' | 'country', value: string) => {
-    const current = draft[key];
+  const toggleArrayValue = (key: CatalogFacetKey, value: string) => {
+    const current = params[key];
     const next = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
-    setDraft({ ...draft, [key]: next });
-  };
-
-  const applyDraft = () => {
-    onApplyFilters({ ...draft, sort: applied.sort });
-    onApplied?.();
-  };
-
-  const resetFilters = () => {
-    setDraft({ ...DEFAULT_CATALOG_FILTER_PARAMS, sort: applied.sort });
-    onResetFilters();
+    onSetParams({ [key]: next, page: 1 });
   };
 
   const panelBody = productFacetsIsInitialLoad ? (
@@ -149,8 +120,8 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
         <Typography variant="subtitle2">{t('category')}</Typography>
         <FormGroup>
           {categoryOptions.map((option) => {
-            const selected = draft.category.includes(option.value);
-            const disabled = isFilterOptionDisabled(option, draft.category);
+            const selected = params.category.includes(option.value);
+            const disabled = isFilterOptionDisabled(option, params.category);
             return (
               <FormControlLabel
                 key={option.value}
@@ -173,8 +144,8 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
         <Typography variant="subtitle2">{t('country')}</Typography>
         <FormGroup>
           {countryOptions.map((option) => {
-            const selected = draft.country.includes(option.value);
-            const disabled = isFilterOptionDisabled(option, draft.country);
+            const selected = params.country.includes(option.value);
+            const disabled = isFilterOptionDisabled(option, params.country);
             return (
               <FormControlLabel
                 key={option.value}
@@ -193,6 +164,30 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
         </FormGroup>
       </Stack>
 
+      <Stack spacing={1}>
+        <Typography variant="subtitle2">{t('brand')}</Typography>
+        <FormGroup>
+          {brandOptions.map((option) => {
+            const selected = params.brand.includes(option.value);
+            const disabled = isFilterOptionDisabled(option, params.brand);
+            return (
+              <FormControlLabel
+                key={option.value}
+                sx={{ color: disabled ? 'text.disabled' : 'text.primary' }}
+                control={
+                  <Checkbox
+                    checked={selected}
+                    disabled={disabled}
+                    onChange={() => toggleArrayValue('brand', option.value)}
+                  />
+                }
+                label={`${option.label ?? option.value} (${option.count})`}
+              />
+            );
+          })}
+        </FormGroup>
+      </Stack>
+
       <PriceRangeSlider
         min={priceBoundsMajor.min}
         max={priceBoundsMajor.max}
@@ -202,10 +197,10 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
           const priceMinMinor = majorToMinor(priceMinMajor, DEFAULT_CURRENCY);
           const priceMaxMinor = majorToMinor(priceMaxMajor, DEFAULT_CURRENCY);
 
-          setDraft({
-            ...draft,
+          onSetParams({
             priceMin: priceMinMinor <= priceBoundsMinor.min ? null : priceMinMinor,
             priceMax: priceMaxMinor >= priceBoundsMinor.max ? null : priceMaxMinor,
+            page: 1,
           });
         }}
         label={t('price')}
@@ -216,9 +211,9 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
       <FormControlLabel
         control={
           <Switch
-            checked={Boolean(draft.isTriedByUs)}
-            disabled={!draft.isTriedByUs && (facets?.isTriedByUs ?? 0) === 0}
-            onChange={(_, checked) => setDraft({ ...draft, isTriedByUs: checked || null })}
+            checked={Boolean(params.isTriedByUs)}
+            disabled={!params.isTriedByUs && (facets?.isTriedByUs ?? 0) === 0}
+            onChange={(_, checked) => onSetParams({ isTriedByUs: checked || null, page: 1 })}
           />
         }
         label={t('triedByUs')}
@@ -227,9 +222,9 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
       <FormControlLabel
         control={
           <Switch
-            checked={Boolean(draft.inStock)}
-            disabled={!draft.inStock && (facets?.inStock ?? 0) === 0}
-            onChange={(_, checked) => setDraft({ ...draft, inStock: checked || null })}
+            checked={Boolean(params.inStock)}
+            disabled={!params.inStock && (facets?.inStock ?? 0) === 0}
+            onChange={(_, checked) => onSetParams({ inStock: checked || null, page: 1 })}
           />
         }
         label={t('inStock')}
@@ -239,11 +234,10 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
 
   return (
     <Stack
-      spacing={3}
       sx={{
-        p: 2,
+        flex: 1,
+        minHeight: 0,
         minWidth: 0,
-        overflowX: 'hidden',
         position: 'relative',
         opacity: refetchVeilActive ? 0.9 : 1,
         pointerEvents: refetchVeilActive ? 'none' : 'auto',
@@ -252,24 +246,24 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
       aria-busy={productFacetsIsBusy ? true : undefined}
       aria-label={productFacetsIsInitialLoad ? t('loading') : undefined}
     >
-      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">{t('title')}</Typography>
-        <Button size="small" onClick={resetFilters} disabled={productFacetsIsBusy}>
-          {t('reset')}
-        </Button>
+      <Stack
+        spacing={3}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          p: 2,
+        }}
+      >
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">{t('title')}</Typography>
+          <Button size="small" onClick={onResetFilters} disabled={productFacetsIsBusy}>
+            {t('reset')}
+          </Button>
+        </Stack>
+
+        {panelBody}
       </Stack>
-
-      {panelBody}
-
-      {!productFacetsIsInitialLoad && !productFacetsIsLoadFailed ? (
-        <Button
-          variant="contained"
-          onClick={applyDraft}
-          disabled={productFacetsIsBusy || previewTotal === 0 || isEmpty}
-        >
-          {productFacetsIsBusy ? t('searching') : t('showResults', { count: previewTotal })}
-        </Button>
-      ) : null}
 
       {refetchVeilMounted ? (
         <SmoothBusyVeil
@@ -285,35 +279,35 @@ function FilterSheetPanel({ applied, onApplyFilters, onResetFilters, onApplied }
 }
 
 type FilterSheetProps = {
+  desktopMaxHeight?: number;
   mobileOpen?: boolean;
-  mobileDraftKey?: number;
   onMobileClose?: () => void;
 };
 
-export function FilterSheet({ mobileOpen = false, mobileDraftKey = 0, onMobileClose }: FilterSheetProps) {
-  const {
-    params: applied,
-    appliedKey: filtersAppliedKey,
-    applyFilters,
-    resetFilters,
-  } = useCatalogSearchParams();
+export function FilterSheet({ desktopMaxHeight, mobileOpen = false, onMobileClose }: FilterSheetProps) {
+  const { params, setParams, resetFilters } = useCatalogSearchParams();
+
+  const setFilterParams = (patch: Partial<CatalogSearchParams>) => {
+    void setParams(patch);
+  };
 
   return (
     <>
       <Box
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
           flex: '0 0 30%',
           maxWidth: 320,
           minWidth: 240,
+          alignSelf: 'flex-start',
+          position: 'sticky',
+          top: 16,
+          height: { md: desktopMaxHeight },
+          maxHeight: 'calc(100dvh - 32px)',
         }}
       >
-        <FilterSheetPanel
-          key={filtersAppliedKey}
-          applied={applied}
-          onApplyFilters={applyFilters}
-          onResetFilters={resetFilters}
-        />
+        <FilterSheetPanel params={params} onSetParams={setFilterParams} onResetFilters={resetFilters} />
       </Box>
 
       <Drawer
@@ -325,6 +319,8 @@ export function FilterSheet({ mobileOpen = false, mobileDraftKey = 0, onMobileCl
           paper: {
             sx: {
               maxHeight: '85dvh',
+              display: 'flex',
+              flexDirection: 'column',
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
               overflowX: 'hidden',
@@ -332,13 +328,7 @@ export function FilterSheet({ mobileOpen = false, mobileDraftKey = 0, onMobileCl
           },
         }}
       >
-        <FilterSheetPanel
-          key={`${filtersAppliedKey}-${mobileDraftKey}`}
-          applied={applied}
-          onApplyFilters={applyFilters}
-          onResetFilters={resetFilters}
-          onApplied={onMobileClose}
-        />
+        <FilterSheetPanel params={params} onSetParams={setFilterParams} onResetFilters={resetFilters} />
       </Drawer>
     </>
   );

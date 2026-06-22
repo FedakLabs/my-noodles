@@ -20,7 +20,10 @@ export function CartEmptyState({ onClose }: CartEmptyStateProps) {
   const t = useTranslations('cart');
   const panelOpenNonce = useCartPanelOpenNonce();
   const messageKeys = useMemo(() => [...EMPTY_MESSAGE_KEYS], []);
-  const messageKey = useMemo(() => pickRandom(messageKeys), [messageKeys, panelOpenNonce]);
+  const messageKey = useMemo(() => {
+    void panelOpenNonce;
+    return pickRandom(messageKeys);
+  }, [messageKeys, panelOpenNonce]);
 
   return (
     <Stack

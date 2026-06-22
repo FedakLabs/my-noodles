@@ -4,10 +4,10 @@ import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { fetchProductFacets, fetchProductsList, productsQueryKeys } from '@/api/products';
+import { fetchProductsList, productsQueryKeys } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import { CatalogScreen } from '@/screens/catalog';
-import { catalogSearchParamsCache, toCatalogFacetsParams } from '@/screens/catalog/search-params';
+import { catalogSearchParamsCache } from '@/screens/catalog/search-params';
 import { ISR_REVALIDATE_SECONDS } from '@/shared/isr';
 import type { LocalePageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate } from '@/shared/query-client';
@@ -46,20 +46,12 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   setRequestLocale(locale);
 
   const searchParamsParsed = await catalogSearchParamsCache.parse(searchParams);
-  const { page: _page, limit: _limit, ...filterParams } = searchParamsParsed;
-  const facetsParams = toCatalogFacetsParams(filterParams);
   const queryClient = getQueryClient();
 
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: productsQueryKeys.list(searchParamsParsed, locale),
-      queryFn: () => fetchProductsList(searchParamsParsed, locale),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: productsQueryKeys.facets(facetsParams, locale),
-      queryFn: () => fetchProductFacets(facetsParams, locale),
-    }),
-  ]);
+  await queryClient.prefetchQuery({
+    queryKey: productsQueryKeys.list(searchParamsParsed, locale),
+    queryFn: () => fetchProductsList(searchParamsParsed, locale),
+  });
 
   return (
     <QueryHydrate state={dehydrate(queryClient)}>

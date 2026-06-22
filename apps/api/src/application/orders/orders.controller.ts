@@ -1,11 +1,5 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
 import { CreateOrderDto, OrderResponseDto } from './orders.dto';
@@ -20,7 +14,6 @@ export class OrdersController {
   @Post()
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiCreatedResponse({ type: OrderResponseDto })
   @ApiBadRequestResponse({ description: 'Validation error or honeypot triggered' })
   @ApiNotFoundResponse({ description: 'One or more products not found' })
   create(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {

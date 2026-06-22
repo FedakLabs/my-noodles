@@ -1,6 +1,24 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignoreDependencies": ["eslint-config-prettier", "@commitlint/config-conventional"],
+  "ignoreBinaries": [
+    "api:generate",
+    "build",
+    "build-storybook",
+    "dev",
+    "e2e",
+    "format",
+    "format-check",
+    "generate:clients",
+    "lint",
+    "lint-check",
+    "migration:revert",
+    "migration:run",
+    "seed",
+    "storybook",
+    "test",
+    "type-check"
+  ],
   "workspaces": {
     "apps/web": {
       "entry": ["next.config.ts", "src/**/*.{ts,tsx}"],
@@ -21,6 +39,7 @@
       "entry": [
         "src/index.ts",
         "src/instrumentation.ts",
+        "src/openapi/generate-openapi.ts",
         "src/infrastructure/migrations/**/*.ts",
         "src/infrastructure/migrations/scripts/**/*.ts"
       ],
@@ -39,7 +58,7 @@
         "src/tests/fixtures/env.ts": ["exports"],
         "src/tests/jest-globals.ts": ["exports"],
         "src/utils/locale-query.ts": ["exports"],
-        "src/utils/transformers.ts": ["exports"]
+        "src/utils/transformers/index.ts": ["exports"]
       },
       "ignoreDependencies": [
         "@nestjs/swagger",

@@ -17,7 +17,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "api:generate": "openapi-ts -f ./openapi-ts.config.ts"
+    "api:generate": "openapi-ts -f ./openapi-ts.config.ts",
+    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
+    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
+    "lint": "eslint . --fix",
+    "lint-check": "eslint .",
+    "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.98.2",

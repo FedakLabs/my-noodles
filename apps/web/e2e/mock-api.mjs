@@ -40,7 +40,7 @@ const productFacets = {
   total: 1,
   facets: {
     category: [{ value: 'snacks', label: 'Снеки', count: 1 }],
-    country: [{ value: 'taiwan', label: 'Тайвань', count: 1 }],
+    brand: [{ value: 'glico', label: 'Glico', count: 1 }],
     price: { min: 9900, max: 9900 },
     isTriedByUs: 1,
     inStock: 1,

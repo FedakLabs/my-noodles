@@ -5,7 +5,7 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useProductsList } from '@/api/products';
 import { FilterChips } from '@/components/catalog/filter-chips/filter-chips';
@@ -19,9 +19,34 @@ export function CatalogScreen() {
   const t = useTranslations('catalog');
   const { params, setParams } = useCatalogSearchParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [mobileDraftKey, setMobileDraftKey] = useState(0);
+  const [desktopFilterHeight, setDesktopFilterHeight] = useState<number>();
+  const productColumnRef = useRef<HTMLDivElement | null>(null);
   const { products, productsIsInitialLoad, productsIsLoadFailed, productsIsRefetching } =
     useProductsList(params);
+
+  useEffect(() => {
+    const productColumn = productColumnRef.current;
+
+    if (!productColumn || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const updateFilterHeight = () => {
+      const nextHeight = Math.ceil(productColumn.getBoundingClientRect().height);
+      setDesktopFilterHeight((currentHeight) => (currentHeight === nextHeight ? currentHeight : nextHeight));
+    };
+
+    updateFilterHeight();
+
+    const resizeObserver = new ResizeObserver(updateFilterHeight);
+    resizeObserver.observe(productColumn);
+    window.addEventListener('resize', updateFilterHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateFilterHeight);
+    };
+  }, []);
 
   useViewItemList('catalog', t('title'), products?.items, !productsIsInitialLoad && !productsIsLoadFailed);
 
@@ -33,10 +58,7 @@ export function CatalogScreen() {
           <Button
             variant="outlined"
             sx={{ display: { xs: 'inline-flex', md: 'none' } }}
-            onClick={() => {
-              setMobileDraftKey((key) => key + 1);
-              setMobileFiltersOpen(true);
-            }}
+            onClick={() => setMobileFiltersOpen(true)}
           >
             {t('openFilters')}
           </Button>
@@ -47,11 +69,11 @@ export function CatalogScreen() {
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ alignItems: 'flex-start' }}>
           <FilterSheet
             mobileOpen={mobileFiltersOpen}
-            mobileDraftKey={mobileDraftKey}
             onMobileClose={() => setMobileFiltersOpen(false)}
+            desktopMaxHeight={desktopFilterHeight}
           />
 
-          <Stack spacing={2} sx={{ flex: 1, width: '100%' }}>
+          <Stack ref={productColumnRef} spacing={2} sx={{ flex: 1, width: '100%' }}>
             {productsIsLoadFailed ? (
               <Typography color="error">{t('error')}</Typography>
             ) : (
