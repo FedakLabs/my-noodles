@@ -11,20 +11,7 @@ pnpm commitlint --config configs/commitlint/commitlint.config.mjs --edit "$1" ||
   echo "  fix(api): handle missing product slug"
   echo "  docs: update mvp implementation plan"
   echo ""
-  echo "Allowed types:"
-  echo "  build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test"
-  echo ""
-  echo "Received:"
-  echo "  $msg"
-  echo ""
-
-  if echo "$msg" | grep -q ':'; then
-    bad_type=$(echo "$msg" | cut -d: -f1 | sed 's/(.*//')
-    subject=$(echo "$msg" | sed 's/^[^:]*:[[:space:]]*//')
-    echo "Hint: \"$bad_type\" is not a valid type. For this message, try:"
-    echo "  chore: $subject"
-    echo ""
-  fi
+  echo "Validate draft: pnpm exec commitlint --config configs/commitlint/commitlint.config.mjs --edit .git/COMMIT_EDITMSG_DRAFT"
 
   exit 1
 }

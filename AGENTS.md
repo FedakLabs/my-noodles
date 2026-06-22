@@ -43,7 +43,7 @@ Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v
 - Prefer extending existing patterns over inventing new ones.
 - Comments only for non-obvious business logic.
 - Do not add tests unless asked or they cover meaningful behavior.
-- Do not create commits or PRs unless explicitly requested.
+- Do not create commits or PRs unless explicitly requested. When committing, follow [.cursor/skills/git-commit/SKILL.md](./.cursor/skills/git-commit/SKILL.md).
 
 ### Product vs plumbing
 
