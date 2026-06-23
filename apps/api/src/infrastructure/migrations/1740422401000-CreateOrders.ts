@@ -6,7 +6,7 @@ export class CreateOrders1740422401000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE orders (
-        id            UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id            UUID        NOT NULL DEFAULT uuidv7(),
         customer_name TEXT        NOT NULL,
         phone         TEXT        NOT NULL,
         total_minor   INTEGER     NOT NULL,
@@ -19,7 +19,7 @@ export class CreateOrders1740422401000 implements MigrationInterface {
       );
 
       CREATE TABLE order_deliveries (
-        id                UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id                UUID        NOT NULL DEFAULT uuidv7(),
         order_id          UUID        NOT NULL,
         provider          TEXT        NOT NULL,
         method            TEXT        NOT NULL,
@@ -43,7 +43,7 @@ export class CreateOrders1740422401000 implements MigrationInterface {
       );
 
       CREATE TABLE order_items (
-        id                   UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id                   UUID        NOT NULL DEFAULT uuidv7(),
         order_id             UUID        NOT NULL
             CONSTRAINT order_items_orders_fk
                 REFERENCES orders(id)

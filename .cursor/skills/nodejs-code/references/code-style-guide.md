@@ -389,8 +389,8 @@ Choose per table — do not default every entity to UUID.
 | Opaque, non-guessable identifiers for security-sensitive resources | Admin-only tables where numeric IDs are acceptable |
 
 ```ts
-// Public-facing resource
-@PrimaryGeneratedColumn('uuid')
+// Public-facing resource (PostgreSQL 18+ — DB-generated UUID v7)
+@UuidV7PrimaryColumn()
 id!: string;
 
 // Internal lookup / high-volume log
@@ -420,7 +420,7 @@ export abstract class TimestampEntity {
 ```ts
 @Entity({ name: 'products' })
 export class Product extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
   // ...
 }
@@ -516,7 +516,7 @@ return { items: rows.map(toSummary), meta };
 - Column layout: align types; put `created_at`, `updated_at`, `deleted_at` on every domain table.
 - **String columns:** use `TEXT` in PostgreSQL (same performance as `VARCHAR(n)`; avoid arbitrary length caps in SQL).
 - Name constraints explicitly: `{table}_pkey`, `{table}_{column}_key` (unique), `{child}_{parent}_fk` (foreign keys).
-- **No DB defaults for business/content fields** (`currency`, `flavor`, `status`, `sort_order`, empty arrays, placeholder JSON). Seed scripts and application code must supply intentional values. DB defaults are only for infrastructure: `gen_random_uuid()`, timestamp columns (`now()`).
+- **No DB defaults for business/content fields** (`currency`, `flavor`, `status`, `sort_order`, empty arrays, placeholder JSON). Seed scripts and application code must supply intentional values. DB defaults are only for infrastructure: `uuidv7()` (PostgreSQL 18+), timestamp columns (`now()`).
 - **Foreign keys — default for every relationship:**
 
 ```sql
