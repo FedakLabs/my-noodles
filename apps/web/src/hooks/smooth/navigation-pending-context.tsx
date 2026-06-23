@@ -1,5 +1,6 @@
 'use client';
 
+import { type BusyAreaState, useBusyAreaState } from '@my-noodles/ui';
 import {
   createContext,
   type ReactNode,
@@ -13,17 +14,17 @@ import {
 
 import { usePathname } from '@/i18n/navigation';
 
-import { type SmoothBusyState, useSmoothBusyState } from './use-smooth-busy-state';
-
 type NavigationPendingActions = {
   registerTransitionPending: (pending: boolean) => void;
 };
 
 const NavigationPendingActionsContext = createContext<NavigationPendingActions | null>(null);
-const NavigationSmoothContext = createContext<SmoothBusyState | null>(null);
+const NavigationSmoothContext = createContext<BusyAreaState | null>(null);
 
 /** Safety net so an anchor click that never resolves to a new pathname (query-only/aborted) can't wedge the overlay. */
 const LINK_PENDING_TIMEOUT_MS = 5_000;
+/** Ignore click events that follow a drag/pan gesture (e.g. Embla carousel over linked cards). */
+const LINK_CLICK_DRAG_THRESHOLD_PX = 8;
 
 function isInAppNavigationAnchor(anchor: HTMLAnchorElement): boolean {
   const href = anchor.getAttribute('href');
@@ -86,34 +87,79 @@ export function NavigationPendingProvider({ children }: NavigationPendingProvide
   }, [linkOriginPathname]);
 
   useEffect(() => {
+    let pointerOrigin: { x: number; y: number } | null = null;
+    let pointerTravelPx = 0;
+
+    const resetPointerTracking = () => {
+      pointerOrigin = null;
+      pointerTravelPx = 0;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) {
+        return;
+      }
+
+      pointerOrigin = { x: event.clientX, y: event.clientY };
+      pointerTravelPx = 0;
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!pointerOrigin) {
+        return;
+      }
+
+      const travel = Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y);
+      pointerTravelPx = Math.max(pointerTravelPx, travel);
+    };
+
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0) {
+        resetPointerTracking();
+        return;
+      }
+
+      if (pointerTravelPx > LINK_CLICK_DRAG_THRESHOLD_PX) {
+        resetPointerTracking();
         return;
       }
 
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        resetPointerTracking();
         return;
       }
 
       const target = event.target;
       if (!(target instanceof Element)) {
+        resetPointerTracking();
         return;
       }
 
       const anchor = target.closest('a[href]');
       if (!(anchor instanceof HTMLAnchorElement) || !isInAppNavigationAnchor(anchor)) {
+        resetPointerTracking();
         return;
       }
 
+      resetPointerTracking();
       setLinkOriginPathname(pathname);
     };
 
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('pointermove', onPointerMove, true);
+    document.addEventListener('pointercancel', resetPointerTracking, true);
     document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('pointermove', onPointerMove, true);
+      document.removeEventListener('pointercancel', resetPointerTracking, true);
+      document.removeEventListener('click', onClick, true);
+    };
   }, [pathname]);
 
   const rawPending = linkPending || transitionPending;
-  const smoothBusy = useSmoothBusyState(rawPending);
+  const smoothBusy = useBusyAreaState(rawPending, { minVisibleMs: 0 });
 
   const actions = useMemo(() => ({ registerTransitionPending }), [registerTransitionPending]);
 
@@ -133,7 +179,7 @@ export function useNavigationPendingActions(): NavigationPendingActions {
   return context;
 }
 
-export function useNavigationSmoothBusy(): SmoothBusyState {
+export function useNavigationSmoothBusy(): BusyAreaState {
   const context = useContext(NavigationSmoothContext);
   if (!context) {
     throw new Error('useNavigationSmoothBusy must be used within NavigationPendingProvider');

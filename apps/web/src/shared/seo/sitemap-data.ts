@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { Locale } from '@my-noodles/api-clients/storefront';
 
 import { fetchCollections } from '@/api/collections';

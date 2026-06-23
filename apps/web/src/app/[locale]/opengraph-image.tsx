@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { routing } from '@/i18n/routing';
 import type { LocalePageProps } from '@/shared/page-props';
-import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo';
+import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 
-export const alt = 'my-noodles';
+export const alt = 'MyNoodles';
 export const size = OG_IMAGE_SIZE;
 export const contentType = OG_IMAGE_CONTENT_TYPE;
 
@@ -15,14 +15,17 @@ export default async function Image({ params }: LocaleOpenGraphImageProps) {
   const { locale } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
-    return createOgImage({ title: 'my-noodles' });
+    return createOgImage({ title: 'MyNoodles' });
   }
 
-  const t = await getTranslations({ locale, namespace: 'home' });
+  const [tHome, tMetadata] = await Promise.all([
+    getTranslations({ locale, namespace: 'home' }),
+    getTranslations({ locale, namespace: 'metadata' }),
+  ]);
 
   return createOgImage({
-    eyebrow: 'my-noodles',
-    title: t('title'),
-    subtitle: t('description'),
+    eyebrow: tMetadata('title'),
+    title: tHome('title'),
+    subtitle: tHome('description'),
   });
 }

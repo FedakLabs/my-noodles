@@ -12,6 +12,7 @@ export const sampleProduct = {
   priceMinor: 9_900,
   currency: 'UAH',
   images: ['https://example.com/pocky.jpg'],
+  videos: ['https://example.com/pocky.mp4'],
   quantity: 5,
   isTriedByUs: true,
   sortWeight: 10,

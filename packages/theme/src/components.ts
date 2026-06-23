@@ -1,8 +1,9 @@
 import type { Components } from '@mui/material/styles';
 
 import { colors } from './palette';
+import { scrollbarStyles } from './scrollbars';
 import { cardShadow, sheetShadow } from './shadows';
-import { borderRadius } from './shape';
+import { borderRadius, edgeAnchoredBorderRadius } from './shape';
 import { spacingUnit } from './spacing';
 
 export const components: Components = {
@@ -12,6 +13,7 @@ export const components: Components = {
         backgroundColor: colors.surface.page,
         color: colors.text.primary,
       },
+      '*': scrollbarStyles(),
     },
   },
   MuiButton: {
@@ -96,6 +98,13 @@ export const components: Components = {
       variant: 'outlined',
     },
   },
+  MuiAppBar: {
+    styleOverrides: {
+      root: {
+        borderRadius: borderRadius.none,
+      },
+    },
+  },
   MuiPaper: {
     styleOverrides: {
       root: {
@@ -131,14 +140,28 @@ export const components: Components = {
   },
   MuiDrawer: {
     styleOverrides: {
-      paper: {
-        borderTopLeftRadius: borderRadius.sheet,
-        borderTopRightRadius: borderRadius.sheet,
+      paper: ({ ownerState }) => ({
+        borderRadius: borderRadius.none,
         border: `1px solid ${colors.border.subtle}`,
-        borderBottom: 'none',
         boxShadow: sheetShadow,
         backgroundColor: colors.surface.elevated,
-      },
+        ...(ownerState.anchor === 'bottom' && {
+          ...edgeAnchoredBorderRadius('bottom'),
+          borderBottom: 'none',
+        }),
+        ...(ownerState.anchor === 'right' && {
+          ...edgeAnchoredBorderRadius('right'),
+          borderRight: 'none',
+        }),
+        ...(ownerState.anchor === 'left' && {
+          ...edgeAnchoredBorderRadius('left'),
+          borderLeft: 'none',
+        }),
+        ...(ownerState.anchor === 'top' && {
+          ...edgeAnchoredBorderRadius('top'),
+          borderTop: 'none',
+        }),
+      }),
     },
   },
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import Drawer from '@mui/material/Drawer';
+import { layoutDisplay } from '@my-noodles/theme';
 
 import { useCartActions, useCartPanelOpen } from '@/hooks/cart';
 
@@ -9,8 +10,6 @@ import { CartPanel } from './cart-panel';
 const drawerPaperSx = {
   mobile: {
     maxHeight: '85dvh',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
     overflow: 'hidden',
   },
   desktop: {
@@ -30,7 +29,7 @@ export function CartPanelHost() {
         anchor="bottom"
         open={panelOpen}
         onClose={closePanel}
-        sx={{ display: { xs: 'block', md: 'none' } }}
+        sx={{ display: layoutDisplay.mobileOnlyBlock }}
         slotProps={{ paper: { sx: drawerPaperSx.mobile } }}
       >
         <CartPanel onClose={closePanel} />
@@ -40,7 +39,7 @@ export function CartPanelHost() {
         anchor="right"
         open={panelOpen}
         onClose={closePanel}
-        sx={{ display: { xs: 'none', md: 'block' } }}
+        sx={{ display: layoutDisplay.desktopOnlyBlock }}
         slotProps={{ paper: { sx: drawerPaperSx.desktop } }}
       >
         <CartPanel onClose={closePanel} />

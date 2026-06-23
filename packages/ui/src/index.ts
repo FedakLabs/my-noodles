@@ -1,9 +1,54 @@
 export {
+  BUSY_CONTENT_DIM_OPACITY,
+  BUSY_SCRIM_ALPHA,
+  BusyArea,
+  type BusyAreaProps,
+  type BusyAreaState,
+  type BusyAreaTimingOptions,
+  busyContentDimTransition,
+  busyScrimTransition,
+  resolveSmoothMotionTokens,
+  SMOOTH_MIN_VISIBLE_MS,
+  SMOOTH_SHOW_DELAY_MS,
+  SMOOTH_TRANSITION_EASING,
+  SMOOTH_TRANSITION_MS,
+  type SmoothMotionTokens,
+  useBusyAreaState,
+  usePrefersReducedMotion,
+} from './components/BusyArea';
+export {
+  Carousel,
+  CarouselContent,
+  type CarouselContentProps,
+  CarouselDots,
+  type CarouselDotsProps,
+  type CarouselProps,
+  type CarouselResponsiveBasis,
+  CarouselSlide,
+  type CarouselSlideProps,
+  galleryCarouselOptions,
+  railCarouselOptions,
+  useCarouselContext,
+} from './components/Carousel';
+export {
   DiscoveryCard,
   type DiscoveryCardImage,
   type DiscoveryCardLink,
   type DiscoveryCardProps,
 } from './components/DiscoveryCard';
+export {
+  type GalleryImageInput,
+  galleryImages,
+  MediaGallery,
+  MediaGalleryImage,
+  type MediaGalleryImageItem,
+  type MediaGalleryImageProps,
+  type MediaGalleryItem,
+  type MediaGalleryLabels,
+  type MediaGalleryProps,
+  type MediaGalleryVideoItem,
+  type MediaGalleryVideoLabels,
+} from './components/MediaGallery';
 export { PriceRangeSlider, type PriceRangeSliderProps } from './components/PriceRangeSlider';
 export { StableLinearProgress, type StableLinearProgressProps } from './components/StableLinearProgress';
 export { iconStyle, type IconStyleInput } from './utils/iconStyle';

@@ -19,7 +19,6 @@ type CartState = {
   items: CartLine[];
   panelOpen: boolean;
   panelOpenNonce: number;
-  autoOpenSuppressed: boolean;
   addItem: (line: Omit<CartLine, 'qty'>, qty?: number) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, qty: number) => void;
@@ -37,9 +36,9 @@ export const useCartStore = create<CartState>()(
       items: [],
       panelOpen: false,
       panelOpenNonce: 0,
-      autoOpenSuppressed: false,
       addItem: (line, qty = 1) => {
         set((state) => {
+          const wasEmpty = state.items.length === 0;
           const existing = state.items.find((item) => item.productId === line.productId);
           const items = existing
             ? state.items.map((item) =>
@@ -47,11 +46,14 @@ export const useCartStore = create<CartState>()(
               )
             : [...state.items, { ...line, qty }];
 
+          if (!wasEmpty) {
+            return { items };
+          }
+
           return {
             items,
-            panelOpen: state.autoOpenSuppressed ? state.panelOpen : true,
-            panelOpenNonce:
-              state.autoOpenSuppressed || state.panelOpen ? state.panelOpenNonce : state.panelOpenNonce + 1,
+            panelOpen: true,
+            panelOpenNonce: state.panelOpen ? state.panelOpenNonce : state.panelOpenNonce + 1,
           };
         });
         trackAddToCart(line, qty);
@@ -89,8 +91,8 @@ export const useCartStore = create<CartState>()(
           panelOpen: true,
           panelOpenNonce: state.panelOpen ? state.panelOpenNonce : state.panelOpenNonce + 1,
         })),
-      closePanel: () => set({ panelOpen: false, autoOpenSuppressed: true }),
-      beginCheckout: () => set({ panelOpen: false, autoOpenSuppressed: false }),
+      closePanel: () => set({ panelOpen: false }),
+      beginCheckout: () => set({ panelOpen: false }),
       totalMinor: () => get().items.reduce((sum, item) => sum + item.priceMinor * item.qty, 0),
       itemCount: () => get().items.reduce((sum, item) => sum + item.qty, 0),
     }),

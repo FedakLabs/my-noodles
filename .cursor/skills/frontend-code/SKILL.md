@@ -55,7 +55,7 @@ shared/        # env.ts (all env vars), urls.ts (external links), ISR, page prop
 
 **Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). Never parse `process.env` elsewhere. **Zod-first:** use validation, `.transform()`, and `.pipe()` for normalization; ad-hoc parse helpers only when Zod cannot express the rule cleanly (same principle as forms and DTO boundaries).
 
-**External URLs:** off-origin links in **`shared/urls.ts`** — see [common-patterns.md § External URLs](./references/common-patterns.md#10-external-urls). In-app paths use `@/i18n/navigation`; SEO path helpers use `shared/seo/urls`.
+**External URLs:** off-origin links in **`shared/urls.ts`** — see [common-patterns.md § External URLs](./references/common-patterns.md#11-external-urls). In-app paths use `@/i18n/navigation`; SEO path helpers use `shared/seo/urls`.
 
 **Comments:** sparse in product code — self-explanatory names and structure first; see [code-style-guide.md § Comments](./references/code-style-guide.md#comments).
 
@@ -165,7 +165,7 @@ Report check results and files touched only after all checks pass.
 ## Reference Files
 
 - **`references/code-style-guide.md`** — TypeScript, components, states, file layout, **testing**, anti-patterns
-- **`references/common-patterns.md`** — forms, RQ hooks, routes/screens, nuqs filters, i18n, cart
+- **`references/common-patterns.md`** — forms, RQ hooks, routes/screens, nuqs filters, i18n, cart, feature-scoped React Context
 
 ## Notes
 

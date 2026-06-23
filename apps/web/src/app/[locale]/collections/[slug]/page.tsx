@@ -9,12 +9,9 @@ import { fetchProductsList, productsQueryKeys } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 import { CollectionScreen } from '@/screens/collections';
-import { ISR_REVALIDATE_SECONDS } from '@/shared/isr';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
-
-export const revalidate = ISR_REVALIDATE_SECONDS;
 
 export async function generateMetadata({ params }: LocaleSlugPageProps): Promise<Metadata> {
   const { locale, slug } = await params;

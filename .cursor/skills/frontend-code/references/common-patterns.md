@@ -13,10 +13,11 @@ Task recipes for `apps/web`. **Grep the repo first** and copy the nearest featur
 5. [URL filters (nuqs)](#5-url-filters-nuqs)
 6. [i18n (next-intl)](#6-i18n-next-intl)
 7. [Client state (Zustand)](#7-client-state-zustand)
-8. [New presentational component](#8-new-presentational-component)
-9. [Custom hook](#9-custom-hook)
-10. [External URLs](#10-external-urls)
-11. [Testing](#11-testing)
+8. [Feature-scoped React Context](#8-feature-scoped-react-context)
+9. [New presentational component](#9-new-presentational-component)
+10. [Custom hook](#10-custom-hook)
+11. [External URLs](#11-external-urls)
+12. [Testing](#12-testing)
 
 ---
 
@@ -42,6 +43,73 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 
 - Wrap pages with existing layout from `screens/` or `app/[locale]/layout.tsx`
 - Product/collection cards: apply skin CSS variables from `resolveSkin()` (`@my-noodles/ui`) at the card root
+
+### Mobile vs desktop layout split
+
+Shell layout (sidebar vs drawer, horizontal nav vs hamburger) uses semantic breakpoints **`mobile`** / **`desktop`** in `@my-noodles/theme` — both bound to **`DESKTOP_MIN_WIDTH`** (900px). Change that constant once to retune the split everywhere.
+
+**JS (conditional render, mount one panel):**
+
+```tsx
+import { useViewport } from '@/hooks/layout';
+
+const { isDesktop, isMobile } = useViewport();
+```
+
+**`sx` (show/hide by viewport):**
+
+```tsx
+import { layoutDisplay } from '@my-noodles/theme';
+
+<Drawer sx={{ display: layoutDisplay.mobileOnlyBlock }} />
+<Stack sx={{ display: layoutDisplay.desktopOnlyFlex }} />
+<Box sx={{ px: { mobile: 1, desktop: 1.5 } }} />
+```
+
+Keep MUI **`xs` / `sm` / `md`** for density grids (e.g. product card columns `{ xs: 6, sm: 4, md: 3 }`) — those are not the mobile/desktop shell split.
+
+### Progressive disclosure (smooth layout shifts)
+
+When part of the UI can grow or shrink by a **large amount** — filter “show all”, long product descriptions, expandable detail blocks — **do not mount/unmount the extra content instantly**. A sudden height jump feels jarring and makes the page hard to follow.
+
+**Default:** wrap the revealed block in MUI **`Collapse`**. Keep the stable summary (first N items, teaser copy, toggle control) outside; animate only the delta.
+
+```tsx
+'use client';
+
+import Collapse from '@mui/material/Collapse';
+import Stack from '@mui/material/Stack';
+
+import { usePrefersReducedMotion } from '@/hooks/smooth/use-prefers-reduced-motion';
+
+export function ExpandableBlock({ expanded, teaser, rest }: {
+  expanded: boolean;
+  teaser: React.ReactNode;
+  rest: React.ReactNode;
+}) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  return (
+    <Stack spacing={1}>
+      {teaser}
+      <Collapse in={expanded} timeout={prefersReducedMotion ? 0 : undefined} sx={{ width: '100%' }}>
+        <Stack component="div" sx={{ width: '100%' }}>
+          {rest}
+        </Stack>
+      </Collapse>
+    </Stack>
+  );
+}
+```
+
+**Rules:**
+
+- **`Collapse` for height changes** — catalog filter facets (`filter-facet-group.tsx`), playful load-more copy (`catalog-load-more.tsx`)
+- **`usePrefersReducedMotion()`** → `timeout={0}` so expand/collapse is instant when the customer prefers reduced motion
+- **Keep toggles outside** the collapsing region so “Show all / Show less” stays reachable while height animates
+- **Pinned selections when collapsed** — if collapsed UI must still show active choices (e.g. selected filters beyond the first N), render them outside the collapse; put only the hidden remainder inside `Collapse` (see `filter-facet-group.tsx`)
+- **`unmountOnExit`** — only when removed content is decorative and remount cost is low (load-more waiting line); keep filter/checkbox lists mounted so focus and state stay stable
+- **Not for loading** — skeletons, progress bars, and refetch veils use [Initial load vs refetch](#initial-load-vs-refetch) patterns instead
 
 ---
 
@@ -487,7 +555,120 @@ import { useCartActions } from '@/hooks/cart';
 
 ---
 
-## 8. New presentational component
+## 8. Feature-scoped React Context
+
+When the same client state must reach **several siblings or nested components** within one screen — and passing props through intermediate layers adds noise without clarity — use a **feature-scoped context**: a **Provider wrapper** near the screen root and a **dedicated access hook** for consumers.
+
+**Do not reach for context by default.** Prefer props for one or two levels. Use the right tool first:
+
+| Need | Use |
+| --- | --- |
+| Shareable filters, sort, pagination | nuqs ([§5](#5-url-search-params-nuqs)) |
+| Server data, cache, refetch | TanStack Query ([§3](#3-react-query-hooks)) |
+| Cross-route client state (cart, global drawers) | Zustand ([§7](#7-client-state-zustand)) |
+| Local to one component | `useState` |
+| Shared UI state within one screen subtree (deep prop drilling) | React Context + hook |
+
+**When to add context:** you notice the same props (`viewMode`, `setViewMode`, `menuOpen`, …) threaded through a toolbar → grid → menu chain, or multiple distant components need the same handlers/state and intermediate components only forward them.
+
+### File layout
+
+Colocate with the screen feature — not a global `contexts/` dump:
+
+```text
+screens/catalog/view-mode/
+├── catalog-view-mode-context.tsx   # Provider + useViewMode()
+└── index.ts                        # barrel
+```
+
+### Provider + access hook
+
+- **`createContext<T | null>(null)`** — nullable default so the hook can guard misuse
+- **Provider** owns state, derives memoized `value`, wraps the screen subtree in `screens/[feature]/index.tsx`
+- **Access hook** (`useViewMode`, `useCatalogFiltersUi`, …) calls `useContext`, **throws** if used outside the provider
+- Export a typed **`ContextValue`** interface — consumers destructure from the hook, not raw context
+
+```tsx
+'use client';
+
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+
+export type CatalogViewModeContextValue = {
+  viewMode: CatalogViewMode;
+  isInfiniteScroll: boolean;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  setViewMode: (mode: CatalogViewMode) => void;
+};
+
+const CatalogViewModeContext = createContext<CatalogViewModeContextValue | null>(null);
+
+type CatalogViewModeProviderProps = {
+  initialViewMode: CatalogViewMode;
+  children: ReactNode;
+};
+
+export function CatalogViewModeProvider({ initialViewMode, children }: CatalogViewModeProviderProps) {
+  const [viewMode, setViewModeState] = useState(initialViewMode);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const setViewMode = useCallback((next: CatalogViewMode) => {
+    setViewModeState(next);
+    setMenuOpen(false);
+  }, []);
+
+  const value = useMemo(
+    (): CatalogViewModeContextValue => ({
+      viewMode,
+      isInfiniteScroll: viewMode === 'infinite',
+      menuOpen,
+      setMenuOpen,
+      setViewMode,
+    }),
+    [viewMode, menuOpen, setViewMode],
+  );
+
+  return <CatalogViewModeContext.Provider value={value}>{children}</CatalogViewModeContext.Provider>;
+}
+
+export function useViewMode(): CatalogViewModeContextValue {
+  const context = useContext(CatalogViewModeContext);
+
+  if (context == null) {
+    throw new Error('useViewMode must be used within CatalogViewModeProvider');
+  }
+
+  return context;
+}
+```
+
+```tsx
+// screens/catalog/index.tsx — wrap once at the screen root
+export function CatalogScreen({ initialViewMode }: CatalogScreenProps) {
+  return (
+    <CatalogViewModeProvider initialViewMode={initialViewMode}>
+      {/* toolbar, grid, menus — no viewMode props drilled through */}
+    </CatalogViewModeProvider>
+  );
+}
+```
+
+```tsx
+// components/catalog/catalog-view-mode-menu.tsx — consumer
+const { viewMode, setViewMode, menuOpen, setMenuOpen } = useViewMode();
+```
+
+**Rules:**
+
+- **One context per cohesive concern** — view mode, filter sheet open state, wizard step; not a grab-bag “catalog context”
+- **Keep providers shallow** — wrap the smallest subtree that needs the value (usually the screen), not `app/layout.tsx`
+- **Memoize `value`** with `useMemo`; stabilize callbacks with `useCallback` when they sit in the dependency array
+- **Do not put server/query data in context** — components that need API data call `useProductsList` / `useProductFacets` directly; context is for client UI coordination only
+- **Reference:** `screens/catalog/view-mode/catalog-view-mode-context.tsx` (`CatalogViewModeProvider`, `useViewMode`)
+
+---
+
+## 9. New presentational component
 
 ```text
 components/catalog/product-card/
@@ -521,7 +702,7 @@ Test: renders, callback wiring, missing image fallback.
 
 ---
 
-## 9. Custom hook
+## 10. Custom hook
 
 **Location:** `hooks/use-*.ts` (+ test)
 
@@ -546,7 +727,7 @@ Keep hooks focused; data fetching belongs in `api/`, not generic hooks.
 
 ---
 
-## 10. External URLs
+## 11. External URLs
 
 Off-origin links (Telegram, help center, hosted policies, payment portals) live in **`shared/urls.ts`**. Do not hardcode `https://…` in screens or components.
 
@@ -574,7 +755,7 @@ Use descriptive export names (`TELEGRAM_SUPPORT_URL`, `PRIVACY_POLICY_URL`) and 
 
 ---
 
-## 11. Testing
+## 12. Testing
 
 ### Unit (Vitest, no DOM)
 

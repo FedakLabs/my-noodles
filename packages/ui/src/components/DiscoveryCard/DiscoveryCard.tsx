@@ -5,6 +5,15 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { CSSProperties, ElementType, MouseEvent, ReactNode } from 'react';
 
+import {
+  type GalleryImageInput,
+  galleryImages,
+  MediaGallery,
+  MediaGalleryImage,
+  type MediaGalleryLabels,
+  MediaGalleryPlaceholder,
+} from '../MediaGallery';
+
 const TITLE_LINES = 2;
 const TITLE_LINE_HEIGHT = 1.3;
 const SUBTITLE_LINE_HEIGHT = 1.43;
@@ -16,11 +25,7 @@ const textSlotSx = {
   overflowWrap: 'anywhere',
 } as const;
 
-export type DiscoveryCardImage = {
-  url: string;
-  alt: string;
-  viewTransitionName?: string;
-};
+export type DiscoveryCardImage = GalleryImageInput;
 
 export type DiscoveryCardLink = {
   component: ElementType;
@@ -33,7 +38,9 @@ export type DiscoveryCardProps = {
   title: ReactNode;
   subtitle?: ReactNode;
   price: ReactNode;
-  image?: DiscoveryCardImage | null;
+  images?: DiscoveryCardImage[];
+  imageMode?: 'carousel' | 'static';
+  galleryLabels?: Pick<MediaGalleryLabels, 'gallery' | 'slide'>;
   skinStyle?: CSSProperties;
   action?: ReactNode;
   link?: DiscoveryCardLink;
@@ -43,12 +50,42 @@ export function DiscoveryCard({
   title,
   subtitle,
   price,
-  image,
+  images = [],
+  imageMode = 'carousel',
+  galleryLabels,
   skinStyle,
   action,
   link,
 }: DiscoveryCardProps) {
   const LinkComponent = link?.component ?? 'div';
+  const heroImage = images[0];
+  const imageFrameSx = {
+    aspectRatio: '1',
+    borderRadius: 1.5,
+    overflow: 'hidden',
+    bgcolor: 'action.hover',
+    flexShrink: 0,
+  } as const;
+
+  const renderHeroImage = () => {
+    if (!heroImage) {
+      return (
+        <Box sx={imageFrameSx}>
+          <MediaGalleryPlaceholder />
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={imageFrameSx}>
+        <MediaGalleryImage
+          url={heroImage.url}
+          alt={heroImage.alt}
+          viewTransitionName={heroImage.viewTransitionName}
+        />
+      </Box>
+    );
+  };
 
   return (
     <Stack
@@ -67,6 +104,18 @@ export function DiscoveryCard({
       }}
       style={skinStyle}
     >
+      {images.length > 0 ? (
+        imageMode === 'static' ? (
+          renderHeroImage()
+        ) : (
+          <MediaGallery items={galleryImages(images)} density="compact" labels={galleryLabels} />
+        )
+      ) : (
+        <Box sx={imageFrameSx}>
+          <MediaGalleryPlaceholder />
+        </Box>
+      )}
+
       <Box
         component={LinkComponent}
         {...(link?.href ? { href: link.href } : {})}
@@ -83,36 +132,10 @@ export function DiscoveryCard({
           flexDirection: 'column',
         }}
       >
-        <Box
-          sx={{
-            position: 'relative',
-            aspectRatio: '1',
-            borderRadius: 1.5,
-            overflow: 'hidden',
-            bgcolor: 'action.hover',
-            flexShrink: 0,
-          }}
-        >
-          {image ? (
-            <Box
-              component="img"
-              src={image.url}
-              alt={image.alt}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                ...(image.viewTransitionName ? { viewTransitionName: image.viewTransitionName } : {}),
-              }}
-            />
-          ) : null}
-        </Box>
-
         <Typography
           variant="subtitle1"
           sx={{
             ...textSlotSx,
-            mt: 1,
             lineHeight: TITLE_LINE_HEIGHT,
             minHeight: `${TITLE_LINES * TITLE_LINE_HEIGHT}em`,
             display: '-webkit-box',

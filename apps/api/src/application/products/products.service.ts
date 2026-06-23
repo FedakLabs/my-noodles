@@ -136,6 +136,7 @@ export class ProductsService {
       forWhom: product.forWhom.localized,
       flavor: product.flavor,
       allergens: product.allergens,
+      videos: product.videos,
       alternatives: (product.alternatives ?? []).map((alternative) => this.toSummary(alternative)),
     };
   }

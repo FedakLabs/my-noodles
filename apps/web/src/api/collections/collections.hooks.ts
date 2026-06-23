@@ -26,7 +26,6 @@ export function useCollectionDetail(slug: string) {
     useQuery({
       queryKey: collectionsQueryKeys.detail(slug, locale),
       queryFn: () => fetchCollectionDetail(slug, locale),
-      placeholderData: undefined,
     }),
     'collection',
   );

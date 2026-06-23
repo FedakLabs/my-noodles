@@ -1,9 +1,10 @@
 import { hasLocale } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { fetchProductDetail } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
-import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo';
+import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 import { formatCurrency } from '@/utils/format-currency';
 
 export const size = OG_IMAGE_SIZE;
@@ -18,12 +19,15 @@ export default async function Image({ params }: ProductOpenGraphImageProps) {
     return createOgImage({ title: slug });
   }
 
-  const product = await fetchProductDetail(slug, locale);
+  const [product, tMetadata] = await Promise.all([
+    fetchProductDetail(slug, locale),
+    getTranslations({ locale, namespace: 'metadata' }),
+  ]);
   const title = product.name ?? product.slug;
   const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
 
   return createOgImage({
-    eyebrow: 'my-noodles',
+    eyebrow: tMetadata('title'),
     title,
     subtitle,
   });

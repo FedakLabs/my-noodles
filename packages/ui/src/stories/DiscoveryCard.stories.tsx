@@ -23,11 +23,13 @@ const meta = {
     title: 'Buldak Carbonara',
     subtitle: 'South Korea',
     price: '₴189',
-    image: {
-      url: 'https://picsum.photos/seed/noodles/400/400',
-      alt: 'Buldak Carbonara',
-      viewTransitionName: 'product-image-demo',
-    },
+    images: [
+      {
+        url: 'https://picsum.photos/seed/noodles/400/400',
+        alt: 'Buldak Carbonara',
+        viewTransitionName: 'product-image-demo',
+      },
+    ],
   },
   argTypes: {
     country: { control: 'select', options: ['', 'KR', 'TH', 'CN', 'US', 'CA', 'TW'] },
@@ -92,7 +94,28 @@ export const Default: Story = {
 export const NoImage: Story = {
   render: (args) => (
     <CardPreview width={CARD_WIDTH_MD}>
-      <DiscoveryCard {...args} image={null} action={addToCartAction} />
+      <DiscoveryCard {...args} images={[]} action={addToCartAction} />
+    </CardPreview>
+  ),
+};
+
+export const MultipleImages: Story = {
+  render: (args) => (
+    <CardPreview width={CARD_WIDTH_MD}>
+      <DiscoveryCard
+        {...args}
+        images={[
+          {
+            url: 'https://picsum.photos/seed/noodles-front/400/400',
+            alt: 'Buldak Carbonara front',
+          },
+          {
+            url: 'https://picsum.photos/seed/noodles-detail/400/400',
+            alt: 'Buldak Carbonara detail',
+          },
+        ]}
+        action={addToCartAction}
+      />
     </CardPreview>
   ),
 };

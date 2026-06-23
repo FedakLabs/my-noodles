@@ -15,9 +15,11 @@ export type ProductCardProps = {
   product: ProductSummaryDto;
   /** Eagerly prefetch the product route (above-the-fold cards). */
   priorityPrefetch?: boolean;
+  /** Show only the hero image — avoids nested carousels (e.g. alternatives rail). */
+  singleImage?: boolean;
 };
 
-export function ProductCard({ product, priorityPrefetch = false }: ProductCardProps) {
+export function ProductCard({ product, priorityPrefetch = false, singleImage = false }: ProductCardProps) {
   const t = useTranslations('catalog');
   const locale = useLocale();
   const { addItem } = useCartActions();
@@ -29,15 +31,33 @@ export function ProductCard({ product, priorityPrefetch = false }: ProductCardPr
     category: product.category.slug,
     slug: product.slug,
   });
-  const imageUrl = product.images[0];
   const imageAlt = product.name ?? product.slug;
+  const imageUrl = product.images[0];
+  const cardImages = singleImage
+    ? imageUrl
+      ? [{ url: imageUrl, alt: imageAlt, viewTransitionName: `product-image-${product.slug}` }]
+      : []
+    : product.images.map((url, index) => ({
+        url,
+        alt: imageAlt,
+        viewTransitionName: index === 0 ? `product-image-${product.slug}` : undefined,
+      }));
 
   return (
     <DiscoveryCard
       title={product.name}
       subtitle={product.country.name}
       price={formatCurrency(product.priceMinor, product.currency, locale)}
-      image={imageUrl ? { url: imageUrl, alt: imageAlt } : undefined}
+      images={cardImages}
+      imageMode={singleImage ? 'static' : 'carousel'}
+      galleryLabels={
+        singleImage
+          ? undefined
+          : {
+              gallery: t('imageGallery'),
+              slide: (index, total) => t('imageSlide', { index, total }),
+            }
+      }
       skinStyle={skinVarsToStyle(skin.cssVars)}
       link={{
         component: Link,

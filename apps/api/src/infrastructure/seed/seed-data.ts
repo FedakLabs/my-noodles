@@ -338,6 +338,24 @@ export function productImages(row: SeedProductRow): string[] {
   ];
 }
 
+const SAMPLE_PRODUCT_VIDEOS = [
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/fruits.mp4',
+] as const;
+
+export function productVideos(row: SeedProductRow): string[] {
+  if (!row.isTriedByUs) {
+    return [];
+  }
+
+  const slug = slugify(row.name);
+  const index =
+    Math.abs(slug.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) %
+    SAMPLE_PRODUCT_VIDEOS.length;
+
+  return [SAMPLE_PRODUCT_VIDEOS[index]!];
+}
+
 export function uniqueSlug(base: string, used: Set<string>): string {
   let candidate = slugify(base);
   if (!candidate) {

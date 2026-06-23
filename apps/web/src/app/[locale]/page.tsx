@@ -7,12 +7,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { collectionsQueryKeys, fetchCollections } from '@/api/collections';
 import { routing } from '@/i18n/routing';
 import { HomeScreen } from '@/screens/home';
-import { ISR_REVALIDATE_SECONDS } from '@/shared/isr';
 import type { LocalePageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
-
-export const revalidate = ISR_REVALIDATE_SECONDS;
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   const { locale } = await params;

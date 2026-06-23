@@ -1,9 +1,10 @@
 import { hasLocale } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { fetchCollectionDetail } from '@/api/collections';
 import { routing } from '@/i18n/routing';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
-import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo';
+import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 
 export const size = OG_IMAGE_SIZE;
 export const contentType = OG_IMAGE_CONTENT_TYPE;
@@ -17,10 +18,13 @@ export default async function Image({ params }: CollectionOpenGraphImageProps) {
     return createOgImage({ title: slug });
   }
 
-  const collection = await fetchCollectionDetail(slug, locale);
+  const [collection, tMetadata] = await Promise.all([
+    fetchCollectionDetail(slug, locale),
+    getTranslations({ locale, namespace: 'metadata' }),
+  ]);
 
   return createOgImage({
-    eyebrow: 'my-noodles',
+    eyebrow: tMetadata('title'),
     title: collection.name ?? collection.slug,
     subtitle: collection.description ?? undefined,
   });

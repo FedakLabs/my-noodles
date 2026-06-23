@@ -63,6 +63,10 @@ export async function generateMetadata({ params }: Pick<LocaleLayoutProps, 'para
       title: siteName,
       description: t('description'),
     },
+    icons: {
+      icon: '/brand/mynoodles-logo.svg',
+      apple: '/brand/mynoodles-logo.svg',
+    },
   };
 }
 

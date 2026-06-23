@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "title": "my-noodles",
+    "title": "MyNoodles",
     "description": "Магазин food-discovery для імпортних снеків"
   },
   "common": {
-    "brand": "my-noodles",
+    "brand": "MyNoodles",
     "loading": "Завантаження…",
     "retry": "Спробувати ще",
     "nav": {
@@ -40,16 +40,41 @@
     },
     "openFilters": "Фільтри",
     "resultsCount": "{count, plural, one {# товар} few {# товари} many {# товарів} other {# товарів}}",
+    "pageOfTotal": "Сторінка {page} з {pageCount}",
+    "previousPage": "Попередня сторінка",
+    "nextPage": "Наступна сторінка",
+    "loadMore": "Показати ще смачненького",
+    "loadMoreWaitingMessages": {
+      "sniff": "Нюхаємо наступну полицю…",
+      "crunch": "Хрум-хрум уже близько…",
+      "shelf": "Заглядаємо за кут полиці…",
+      "unwrap": "Розгортаємо ще сюрпризи…",
+      "taste": "Шукаємо те, що варто спробувати першим…",
+      "hunt": "Полюємо далі — смачне добре ховається"
+    },
     "addToCart": "У кошик",
     "outOfStock": "Немає в наявності",
+    "imageGallery": "Фото продукту",
+    "imageSlide": "Фото {index} з {total}",
     "filters": {
       "title": "Фільтри",
       "reset": "Скинути",
       "sort": "Сортування",
       "sortPopular": "Популярні",
+      "sortPopularDescription": "Те, що пробують найчастіше",
       "sortNew": "Новинки",
-      "sortPriceAsc": "Ціна ↑",
-      "sortPriceDesc": "Ціна ↓",
+      "sortNewDescription": "Свіжі смаколики — щойно на полиці",
+      "sortPriceAsc": "Ціна: від дешевших",
+      "sortPriceAscDescription": "Спочатку легші для гаманця",
+      "sortPriceDesc": "Ціна: від дорожчих",
+      "sortPriceDescDescription": "Преміум і подарункові — спочатку",
+      "viewMode": "Стиль перегляду",
+      "viewModeInfinite": "Гортати далі",
+      "viewModeInfiniteDescription": "Нові смаколики з’являться, коли скролиш — для допитливих мандрівників",
+      "viewModePagination": "Сторінка за сторінкою",
+      "viewModePaginationDescription": "Перегортай сторінки, коли знаєш, що шукаєш",
+      "viewModeIntroTitle": "Як тобі зручніше гортати?",
+      "viewModeIntroDescription": "Обери свій стиль — змінити можна тут у будь-який момент",
       "category": "Категорія",
       "country": "Країна",
       "brand": "Бренд",
@@ -62,7 +87,9 @@
       "loading": "Завантаження фільтрів…",
       "error": "Не вдалося завантажити фільтри",
       "retry": "Спробувати ще",
-      "empty": "Поки немає чого фільтрувати — скоро з’являться смаколики."
+      "empty": "Поки немає чого фільтрувати — скоро з’являться смаколики.",
+      "showAll": "Показати всі ({count})",
+      "showLess": "Згорнути"
     }
   },
   "product": {
@@ -72,7 +99,21 @@
     "addToCart": "Додати в кошик",
     "outOfStock": "Немає в наявності",
     "forWhom": "Для кого",
-    "alternatives": "Схожі смаки"
+    "alternatives": "Схожі смаки",
+    "mediaGallery": "Медіа продукту",
+    "mediaSlide": "Слайд {index} з {total}",
+    "playVideo": "Відтворити відео",
+    "pauseVideo": "Призупинити відео",
+    "muteVideo": "Вимкнути звук",
+    "unmuteVideo": "Увімкнути звук",
+    "share": "Поділитися товаром",
+    "shareText": "Подивись {name}!",
+    "shareNative": "Поділитися…",
+    "shareCopyLink": "Скопіювати посилання",
+    "shareTelegram": "Telegram",
+    "shareFacebook": "Facebook",
+    "shareWhatsapp": "WhatsApp",
+    "shareViber": "Viber"
   },
   "collections": {
     "loading": "Завантаження…",

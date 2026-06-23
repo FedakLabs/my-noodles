@@ -81,6 +81,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
         flavor          JSONB       NOT NULL,
         allergens       TEXT[]      NOT NULL,
         images          TEXT[]      NOT NULL,
+        videos          TEXT[]      NOT NULL,
         is_tried_by_us  BOOLEAN     NOT NULL,
         quantity        INTEGER     NOT NULL,
         sort_weight     INTEGER     NOT NULL,

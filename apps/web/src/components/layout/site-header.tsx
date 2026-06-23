@@ -2,6 +2,7 @@
 
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +15,7 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { layoutDisplay } from '@my-noodles/theme';
 import { iconStyle } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
@@ -27,6 +29,8 @@ import { type FC, type SVGProps, useState } from 'react';
 
 import { useCartActions, useCartItemCount } from '@/hooks/cart';
 import { Link, usePathname } from '@/i18n/navigation';
+
+import { SiteLogo } from './site-logo';
 
 type NavIcon = FC<SVGProps<SVGSVGElement>>;
 
@@ -135,21 +139,14 @@ export function SiteHeader() {
             color="inherit"
             aria-label={t('nav.menuOpen')}
             onClick={() => setMobileNavOpen(true)}
-            sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 0.5 }}
+            sx={{ display: layoutDisplay.mobileOnlyInlineFlex, mr: 0.5 }}
           >
             <MenuIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
           </IconButton>
 
-          <Typography
-            component={Link}
-            href="/"
-            variant="h6"
-            sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
-          >
-            {t('brand')}
-          </Typography>
+          <SiteLogo label={t('brand')} />
 
-          <Stack direction="row" spacing={0.5} sx={{ display: { xs: 'none', md: 'flex' } }}>
+          <Stack direction="row" spacing={0.5} sx={{ display: layoutDisplay.desktopOnlyFlex }}>
             {navItems.map((item) => (
               <NavLink
                 key={item.href}
@@ -169,8 +166,8 @@ export function SiteHeader() {
               alignItems: 'center',
               display: 'inline-flex',
               minWidth: 'auto',
-              ml: { xs: 0, md: 0.5 },
-              px: { xs: 1, md: 1.5 },
+              ml: { mobile: 0, desktop: 0.5 },
+              px: { mobile: 1, desktop: 1.5 },
             }}
           >
             <CartNavBadge count={cartCount} label={t('nav.cart')} />
@@ -183,12 +180,12 @@ export function SiteHeader() {
         open={mobileNavOpen}
         onClose={closeMobileNav}
         ModalProps={{ keepMounted: true }}
-        sx={{ display: { xs: 'block', md: 'none' } }}
+        sx={{ display: layoutDisplay.mobileOnlyBlock }}
       >
         <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', px: 1, py: 0.5 }}>
-          <Typography variant="subtitle1" sx={{ px: 1 }}>
-            {t('brand')}
-          </Typography>
+          <Box sx={{ px: 0.5 }}>
+            <SiteLogo label={t('brand')} markSize={28} flexGrow={false} />
+          </Box>
           <IconButton onClick={closeMobileNav} aria-label={t('nav.menuClose')}>
             <CloseIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
           </IconButton>

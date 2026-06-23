@@ -1,10 +1,11 @@
-export { breakpoints } from './breakpoints';
+export { breakpoints, DESKTOP_MIN_WIDTH, layoutDisplay } from './breakpoints';
 export { components } from './components';
 export type { FontRole } from './fonts';
 export { fontCssVariableReference, fontFamilyFallback, fonts } from './fonts';
 export { baseColors, colors, muiPalette } from './palette';
 export { cardShadow, discoveryWash, sheetShadow, skinCardGradient } from './shadows';
-export { borderRadius } from './shape';
+export type { EdgeAnchor } from './shape';
+export { borderRadius, edgeAnchoredBorderRadius } from './shape';
 export { customSpacing, modalWidths, spacingUnit } from './spacing';
 export { createTheme, createThemeFromMui, theme } from './theme';
 export type { BorderRadiusTokens, Colors, CustomSpacing, ModalWidths } from './types';

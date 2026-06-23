@@ -7,12 +7,9 @@ import { setRequestLocale } from 'next-intl/server';
 import { fetchProductDetail, productsQueryKeys } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import { ProductScreen } from '@/screens/product';
-import { ISR_REVALIDATE_SECONDS } from '@/shared/isr';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate } from '@/shared/query-client';
 import { buildPageMetadata, buildProductJsonLd, JsonLdScript } from '@/shared/seo';
-
-export const revalidate = ISR_REVALIDATE_SECONDS;
 
 type ProductPageProps = LocaleSlugPageProps;
 

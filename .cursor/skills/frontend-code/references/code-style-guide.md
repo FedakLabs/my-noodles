@@ -108,6 +108,7 @@ Use Zustand for **ephemeral client state** that is not server data and should no
 | --- | --- |
 | API / cacheable data | TanStack Query (`apps/web/src/api/`) |
 | Shareable or bookmarkable filters, sort, pagination | nuqs (`screens/[feature]/search-params/`) |
+| Shared UI state within one screen (deep prop drilling) | React Context — Provider + access hook ([common-patterns §8](./common-patterns.md#8-feature-scoped-react-context)) |
 | Scoped to one subtree | Local `useState` / component state |
 
 **Conventions:**

@@ -8,6 +8,8 @@ import type { CatalogSearchParams } from './parsers';
 
 export type CatalogFilterParams = Omit<CatalogSearchParams, 'page' | 'limit'>;
 
+export type CatalogInfiniteListParams = Omit<CatalogSearchParams, 'page'>;
+
 /** Multi-select facet dimensions — keys shared by URL filters and `/products/facets` response. */
 export type CatalogFacetKey = {
   [K in keyof ProductFacetsDto]: ProductFacetsDto[K] extends Array<ProductFacetOptionDto> ? K : never;
@@ -33,6 +35,11 @@ export function toCatalogFacetsParams(params: CatalogFilterParams): CatalogFacet
   return facetsParams;
 }
 
+export function toCatalogInfiniteListParams(params: CatalogSearchParams): Omit<CatalogSearchParams, 'page'> {
+  const { page: _page, ...listParams } = params;
+  return listParams;
+}
+
 /** Stable key for syncing filter UI when URL-confirmed filter params change (excludes sort, page, limit). */
 export function catalogFiltersAppliedKey(params: CatalogSearchParams): string {
   return [
@@ -45,4 +52,15 @@ export function catalogFiltersAppliedKey(params: CatalogSearchParams): string {
     params.isTriedByUs ?? '',
     params.inStock ?? '',
   ].join('|');
+}
+
+export function hasCatalogFiltersApplied(params: CatalogSearchParams): boolean {
+  return (
+    catalogFiltersAppliedKey(params) !==
+    catalogFiltersAppliedKey({
+      ...params,
+      ...DEFAULT_CATALOG_FILTER_PARAMS,
+      collection: null,
+    })
+  );
 }

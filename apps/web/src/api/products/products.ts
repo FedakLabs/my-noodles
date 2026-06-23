@@ -9,7 +9,11 @@ import {
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
 
-import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog/search-params';
+import type {
+  CatalogFacetsParams,
+  CatalogInfiniteListParams,
+  CatalogSearchParams,
+} from '@/screens/catalog/search-params';
 
 import { searchParamsToFacetsQuery, searchParamsToListQuery } from './utils';
 
@@ -17,6 +21,8 @@ export const productsQueryKeys = {
   all: ['products'] as const,
   list: (params: CatalogSearchParams, locale: Locale) =>
     [...productsQueryKeys.all, 'list', locale, params] as const,
+  infiniteList: (params: CatalogInfiniteListParams, locale: Locale) =>
+    [...productsQueryKeys.all, 'infiniteList', locale, params] as const,
   detail: (slug: string, locale: Locale) => [...productsQueryKeys.all, 'detail', slug, locale] as const,
   facets: (params: CatalogFacetsParams, locale: Locale) =>
     [...productsQueryKeys.all, 'facets', locale, params] as const,

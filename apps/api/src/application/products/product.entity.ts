@@ -47,6 +47,9 @@ export class Product extends TimestampEntity {
   @Column({ type: 'text', array: true })
   images!: string[];
 
+  @Column({ type: 'text', array: true })
+  videos!: string[];
+
   @Column({ name: 'is_tried_by_us', type: 'boolean' })
   isTriedByUs!: boolean;
 

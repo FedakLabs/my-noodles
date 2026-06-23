@@ -88,6 +88,8 @@ export class ProductDetailDto extends ProductSummaryDto {
 
   allergens!: string[];
 
+  videos!: string[];
+
   alternatives!: ProductSummaryDto[];
 }
 

@@ -1,0 +1,119 @@
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+
+import * as BusyAreaStories from './BusyArea.stories';
+
+<Meta of={BusyAreaStories} />
+
+# BusyArea
+
+One wrapper for “this region is loading.” Two visual layers you configure with props — not three different components.
+
+## Two different mechanisms
+
+When a region is busy, there are only **two visual tricks** — everything else is timing, layout, and click blocking.
+
+```
+┌─────────────────────────────┐
+│  SCRIM (layer on top)       │  ← separate element, sits above content
+│  semi-transparent sheet     │
+├─────────────────────────────┤
+│  CONTENT (dimmed)           │  ← same nodes, opacity reduced
+│  product tiles, text…       │
+└─────────────────────────────┘
+```
+
+### Dim
+
+- **What it is:** The content itself is faded (`opacity: 0.65` on the wrapper).
+- **In code:** internal `BusyDim`, prop `dim`, token `BUSY_CONTENT_DIM_OPACITY`.
+- **Effect:** Text and images look washed out. No extra layer — you are changing the pixels that are already there. **Clicks still reach the content.**
+
+### Scrim
+
+- **What it is:** A separate overlay on top — a flat tinted sheet (background at ~55% alpha). Not blur.
+- **In code:** internal `BusyScrim`, prop `scrim`, token `BUSY_SCRIM_ALPHA`.
+- **Effect:** Content stays full opacity underneath; the sheet tints everything uniformly. Carries `aria-busy` and **captures pointer events** when visible — tiles are not clickable through it.
+
+### Why both dim + scrim together?
+
+On the catalog grid we stack them:
+
+- **Dim** — content feels inactive
+- **Scrim** — uniform “paused” read + a11y + interaction surface
+
+Alone they read similarly at a glance; together they are slightly stronger.
+
+| Prop         | What it does                | When to use                                        |
+| ------------ | --------------------------- | -------------------------------------------------- |
+| **`dim`**    | Fades wrapped children      | Toolbar status slice; optional extra mute on grids |
+| **`scrim`**  | Flat overlay on top         | Grids, filters, navigation shell                   |
+| **`show`**   | Gate dim + scrim visibility | Empty grid — timing runs, chrome hidden            |
+| **`timing`** | Shared `useBusyAreaState`   | One hook per screen, multiple BusyAreas            |
+
+**Default:** `dim` and `scrim` are both `true` (catalog grid, filter panel).
+
+### Presets (apps/web)
+
+| Screen         | Props                                                        |
+| -------------- | ------------------------------------------------------------ |
+| Toolbar status | `dim scrim={false}` + shared `timing`                        |
+| Product grid   | `timing` + `show={hasProducts}`                              |
+| Filter panel   | `busy` + `blockInteraction`                                  |
+| Navigation     | `scrim dim={false} position="fixed"` + `timing` from context |
+
+---
+
+## Live comparison
+
+<Canvas of={BusyAreaStories.ComparisonGuide} />
+
+Toggle busy, then **click tiles in each column**:
+
+### dim only (left)
+
+- Wrapper opacity only — no extra layer.
+- Tiles look washed out but **clicks get through**.
+
+### scrim only (middle)
+
+- Flat tint sheet on top; content stays full opacity underneath.
+- **Clicks blocked** by the scrim; `aria-busy` on the overlay.
+
+### dim + scrim (right)
+
+- Both layers — strongest pause feel. Default for in-page refetch regions.
+- Scrim blocks clicks; use `blockInteraction` on filter panels.
+
+---
+
+## Timing: `useBusyAreaState(busy)`
+
+| Field     | Meaning                                                  |
+| --------- | -------------------------------------------------------- |
+| `mounted` | Scrim in DOM (exit animation)                            |
+| `active`  | Dim/scrim visually on — pass to `show` or use as default |
+
+Share one hook across toolbar + grid:
+
+```tsx
+const timing = useBusyAreaState(isRefetching);
+
+<BusyArea timing={timing} dim scrim={false} label="…">{status}</BusyArea>
+<BusyArea timing={timing} show={showGrid} label="…">{grid}</BusyArea>
+```
+
+---
+
+## Deep dives
+
+<Canvas of={BusyAreaStories.NavigationScrim} />
+
+<Canvas of={BusyAreaStories.FilterPanel} />
+
+<Canvas of={BusyAreaStories.CatalogRefetchStack} />
+
+**Catalog stack test plan:**
+
+1. Refetch with products — toolbar dims, progress runs, grid gets dim + scrim.
+2. Empty grid + refetch — toolbar + progress animate; grid chrome off (`show={false}`).
+3. Sort · View never inside a dim-only BusyArea slice.

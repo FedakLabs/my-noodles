@@ -2,7 +2,8 @@ import type { MetadataRoute } from 'next';
 
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
-import { absoluteUrl, fetchAllCollectionSlugs, fetchAllProductSlugs, localePath } from '@/shared/seo';
+import { absoluteUrl, localePath } from '@/shared/seo';
+import { fetchAllCollectionSlugs, fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
 
 const STATIC_INDEXABLE_PATHS = ['', '/catalog', '/contacts'] as const;
 

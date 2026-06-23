@@ -61,6 +61,11 @@ export type ModalWidths = {
 };
 
 declare module '@mui/material/styles' {
+  interface BreakpointOverrides {
+    mobile: true;
+    desktop: true;
+  }
+
   interface Theme {
     colors: Colors;
     borderRadius: BorderRadiusTokens;

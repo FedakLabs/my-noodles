@@ -69,6 +69,7 @@ describe('ProductsService', () => {
       priceMinor: 9_900,
       currency: 'UAH',
       images: [],
+      videos: [],
       quantity: 3,
       isTriedByUs: true,
       sortWeight: 10,

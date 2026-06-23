@@ -4,12 +4,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { resolveSkin, skinVarsToStyle } from '@my-noodles/ui';
+import { MediaGallery, resolveSkin, skinVarsToStyle } from '@my-noodles/ui';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useProductDetail } from '@/api/products';
-import { ProductGrid } from '@/components/catalog/product-grid/product-grid';
 import { PageContainer } from '@/components/layout/page-container';
+import { AlternativesRail } from '@/components/product/alternatives-rail/alternatives-rail';
+import { ProductShareMenu } from '@/components/product/product-share-menu/product-share-menu';
 import { useViewItem, useViewItemList } from '@/hooks/analytics';
 import { useCartActions } from '@/hooks/cart';
 import { formatCurrency } from '@/utils/format-currency';
@@ -71,36 +72,52 @@ export function ProductScreen({ slug }: ProductScreenProps) {
     slug: product.slug,
   });
   const heroImage = product.images[0];
+  const mediaItems = [
+    ...product.images.map((url, index) => ({
+      type: 'image' as const,
+      url,
+      alt: product.name ?? product.slug,
+      viewTransitionName: index === 0 ? `product-image-${product.slug}` : undefined,
+    })),
+    ...product.videos.map((url) => ({
+      type: 'video' as const,
+      url,
+      alt: product.name ?? product.slug,
+    })),
+  ];
 
   return (
     <PageContainer>
       <Stack spacing={3} style={skinVarsToStyle(skin.cssVars)}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-          <Box
-            sx={{
-              flex: 1,
-              aspectRatio: '1',
-              borderRadius: 1.5,
-              overflow: 'hidden',
-              bgcolor: 'action.hover',
-            }}
-          >
-            {heroImage ? (
-              <Box
-                component="img"
-                src={heroImage}
-                alt={product.name ?? product.slug}
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            ) : null}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <MediaGallery
+              items={mediaItems}
+              density="comfortable"
+              labels={{
+                gallery: t('mediaGallery'),
+                slide: (index, total) => t('mediaSlide', { index, total }),
+                video: {
+                  play: t('playVideo'),
+                  pause: t('pauseVideo'),
+                  mute: t('muteVideo'),
+                  unmute: t('unmuteVideo'),
+                },
+              }}
+            />
           </Box>
 
           <Stack spacing={2} sx={{ flex: 1 }}>
-            <Typography variant="h4">{product.name}</Typography>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+            >
+              <Typography variant="h4" sx={{ minWidth: 0, flex: 1 }}>
+                {product.name}
+              </Typography>
+              <ProductShareMenu productName={product.name ?? product.slug} productSlug={product.slug} />
+            </Stack>
             <Typography variant="body1" color="text.secondary">
               {product.country.name} · {product.category.name}
             </Typography>
@@ -143,7 +160,7 @@ export function ProductScreen({ slug }: ProductScreenProps) {
         {product.alternatives.length > 0 ? (
           <Stack spacing={2}>
             <Typography variant="h5">{t('alternatives')}</Typography>
-            <ProductGrid products={product.alternatives} />
+            <AlternativesRail products={product.alternatives} ariaLabel={t('alternatives')} />
           </Stack>
         ) : null}
       </Stack>

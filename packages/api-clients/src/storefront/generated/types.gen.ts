@@ -120,6 +120,7 @@ export type ProductDetailDto = {
     forWhom: string | null;
     flavor: ProductFlavorDto;
     allergens: Array<string>;
+    videos: Array<string>;
     alternatives: Array<ProductSummaryDto>;
 };
 

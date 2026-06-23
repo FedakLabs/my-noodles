@@ -2,22 +2,30 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { resolveSmoothMotionTokens } from './smooth-tokens';
+import { resolveSmoothMotionTokens } from './tokens';
 import { usePrefersReducedMotion } from './use-prefers-reduced-motion';
 
-export type SmoothBusyState = {
-  /** Overlay/scrim is in the DOM (includes exit animation). */
+export type BusyAreaState = {
+  /** Scrim is in the DOM (includes exit animation). */
   mounted: boolean;
-  /** Overlay/scrim is visually active (fade-in complete). */
+  /** Dim/scrim is visually active (fade-in complete). */
   active: boolean;
   transitionMs: number;
   transitionEasing: string;
 };
 
-export function useSmoothBusyState(busy: boolean): SmoothBusyState {
+export type BusyAreaTimingOptions = {
+  /** Minimum time busy chrome stays up after `busy` becomes false. Navigation uses 0. */
+  minVisibleMs?: number;
+};
+
+export function useBusyAreaState(busy: boolean, options?: BusyAreaTimingOptions): BusyAreaState {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { showDelayMs, transitionMs, minVisibleMs, transitionEasing } =
-    resolveSmoothMotionTokens(prefersReducedMotion);
+  const tokens = resolveSmoothMotionTokens(prefersReducedMotion);
+  const showDelayMs = tokens.showDelayMs;
+  const transitionMs = tokens.transitionMs;
+  const minVisibleMs = options?.minVisibleMs ?? tokens.minVisibleMs;
+  const transitionEasing = tokens.transitionEasing;
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
@@ -30,7 +38,6 @@ export function useSmoothBusyState(busy: boolean): SmoothBusyState {
 
   useEffect(() => {
     if (busy) {
-      // Already in the DOM (e.g. re-busy during an exit hold): just (re)activate next frame.
       if (mountedRef.current) {
         const raf = window.requestAnimationFrame(() => {
           shownAtRef.current ??= Date.now();
@@ -39,8 +46,6 @@ export function useSmoothBusyState(busy: boolean): SmoothBusyState {
         return () => window.cancelAnimationFrame(raf);
       }
 
-      // Fresh entry: mount at opacity 0, then flip active on the next frame so the
-      // browser has a 0 -> 1 transition to animate (mounting + activating together pops in).
       let raf = 0;
       const enterTimer = window.setTimeout(() => {
         setMounted(true);
@@ -60,7 +65,6 @@ export function useSmoothBusyState(busy: boolean): SmoothBusyState {
       return undefined;
     }
 
-    // Keep the veil up for a minimum visible window so a fast finish doesn't flash on/off.
     const shownAt = shownAtRef.current;
     const elapsed = shownAt == null ? minVisibleMs : Date.now() - shownAt;
     const holdMs = Math.max(0, minVisibleMs - elapsed);

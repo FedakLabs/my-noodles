@@ -4,7 +4,7 @@ import { useCartStore } from './cart-store';
 
 describe('useCartStore', () => {
   beforeEach(() => {
-    useCartStore.setState({ items: [] });
+    useCartStore.setState({ items: [], panelOpen: false, panelOpenNonce: 0 });
   });
 
   it('adds and merges items by productId', () => {
@@ -40,6 +40,27 @@ describe('useCartStore', () => {
 
     useCartStore.getState().setQuantity(line.productId, 0);
     expect(useCartStore.getState().items).toEqual([]);
+  });
+
+  it('opens the cart panel only when adding to an empty cart', () => {
+    const line = {
+      productId: '44444444-4444-4444-4444-444444444444',
+      slug: 'pocky',
+      title: 'Pocky',
+      priceMinor: 5500,
+      currency: 'UAH',
+    };
+
+    useCartStore.getState().addItem(line, 1);
+    expect(useCartStore.getState().panelOpen).toBe(true);
+
+    useCartStore.getState().closePanel();
+    useCartStore.getState().addItem(line, 1);
+    expect(useCartStore.getState().panelOpen).toBe(false);
+
+    useCartStore.getState().clear();
+    useCartStore.getState().addItem(line, 1);
+    expect(useCartStore.getState().panelOpen).toBe(true);
   });
 
   it('clears all items', () => {

@@ -1,20 +1,33 @@
 'use client';
 
-import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ProductSort, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
-import { StableLinearProgress } from '@my-noodles/ui';
+import { BusyArea, type BusyAreaState, StableLinearProgress, useBusyAreaState } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 
 import { CatalogEmptyState } from '@/components/catalog/catalog-empty-state';
-import { CatalogSortSelect } from '@/components/catalog/catalog-sort-select';
-import { SmoothBusyVeil } from '@/components/navigation/smooth-busy-veil';
-import { useSmoothBusyState } from '@/hooks/smooth';
+import { CatalogLoadMore } from '@/components/catalog/catalog-load-more';
+import { CatalogPagination } from '@/components/catalog/catalog-pagination';
+import { CatalogSortMenu } from '@/components/catalog/catalog-sort-menu';
+import { CatalogViewModeMenu } from '@/components/catalog-view-mode';
 
 import { ProductCard } from '../product-card/product-card';
 import { ProductGridSkeleton } from './product-grid-skeleton';
+
+type ProductGridPagination = {
+  page: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
+};
+
+type ProductGridLoadMore = {
+  hasMore: boolean;
+  isLoading: boolean;
+  onLoadMore: () => void;
+};
 
 type ProductGridProps = {
   products: ProductSummaryDto[];
@@ -22,6 +35,8 @@ type ProductGridProps = {
   showResultsCount?: boolean;
   sort?: ProductSort;
   onSortChange?: (sort: ProductSort) => void;
+  pagination?: ProductGridPagination;
+  loadMore?: ProductGridLoadMore;
   isPending?: boolean;
   isFetching?: boolean;
   skeletonCount?: number;
@@ -30,24 +45,31 @@ type ProductGridProps = {
 function ProductGridToolbar({
   statusText,
   searchingText,
-  isSearching,
+  showSearchingText,
+  isBusy,
   sort,
   onSortChange,
+  pagination,
   progressActive,
   progressLabel,
-  transitionMs,
-  transitionEasing,
+  timing,
 }: {
   statusText: string;
   searchingText: string;
-  isSearching: boolean;
+  showSearchingText: boolean;
+  isBusy: boolean;
   sort?: ProductSort;
   onSortChange?: (sort: ProductSort) => void;
+  pagination?: ProductGridPagination;
   progressActive: boolean;
   progressLabel: string;
-  transitionMs: number;
-  transitionEasing: string;
+  timing: BusyAreaState;
 }) {
+  const t = useTranslations('catalog');
+  const showSort = sort != null && onSortChange != null;
+  const showPageNav = pagination != null;
+  const showPageStatus = showPageNav;
+
   return (
     <Stack spacing={0.75}>
       <Stack
@@ -55,26 +77,44 @@ function ProductGridToolbar({
         spacing={2}
         sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 2, minWidth: 0 }}
       >
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            minWidth: 0,
-            transition: `opacity ${transitionMs}ms ${transitionEasing}`,
-            opacity: isSearching ? 0.9 : 1,
-          }}
+        <BusyArea timing={timing} dim scrim={false} label={progressLabel}>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{
+              alignItems: 'center',
+              minWidth: 0,
+              flexWrap: 'wrap',
+              color: 'text.secondary',
+            }}
+          >
+            <Typography variant="body2" sx={{ minWidth: 0, color: 'inherit' }}>
+              {showSearchingText ? searchingText : statusText}
+            </Typography>
+            {!showSearchingText && showPageStatus ? (
+              <>
+                <Divider orientation="vertical" flexItem sx={{ alignSelf: 'center', height: 20 }} />
+                <Typography variant="body2" sx={{ color: 'inherit', flexShrink: 0 }}>
+                  {t('pageOfTotal', { page: pagination.page, pageCount: pagination.pageCount })}
+                </Typography>
+              </>
+            ) : null}
+          </Stack>
+        </BusyArea>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{ alignItems: 'center', color: 'text.secondary', flexShrink: 0 }}
         >
-          {isSearching ? searchingText : statusText}
-        </Typography>
-        {sort != null && onSortChange ? (
-          <CatalogSortSelect value={sort} onChange={onSortChange} labelId="catalog-grid-sort-label" />
-        ) : null}
+          {showSort ? <CatalogSortMenu value={sort} onChange={onSortChange} disabled={isBusy} /> : null}
+          <CatalogViewModeMenu disabled={isBusy} />
+        </Stack>
       </Stack>
 
       <StableLinearProgress
         active={progressActive}
-        transitionMs={transitionMs}
-        transitionEasing={transitionEasing}
+        transitionMs={timing.transitionMs}
+        transitionEasing={timing.transitionEasing}
         aria-label={progressLabel}
       />
     </Stack>
@@ -87,6 +127,8 @@ export function ProductGrid({
   showResultsCount = false,
   sort,
   onSortChange,
+  pagination,
+  loadMore,
   isPending,
   isFetching,
   skeletonCount = 8,
@@ -94,13 +136,13 @@ export function ProductGrid({
   const t = useTranslations('catalog');
   const isInitialLoad = Boolean(isPending && products.length === 0);
   const isRefetching = Boolean(isFetching && !isPending);
-  const {
-    mounted: refreshMounted,
-    active: refreshActive,
-    transitionMs,
-    transitionEasing,
-  } = useSmoothBusyState(isRefetching);
-  const showToolbar = showResultsCount || (sort != null && onSortChange != null);
+  const paginationBusy = Boolean(isFetching);
+  const timing = useBusyAreaState(isRefetching);
+  const refreshActive = timing.active;
+  const hasStatusData = totalCount != null;
+  const showSearchingText = refreshActive && !hasStatusData;
+  const showGridBusy = refreshActive && products.length > 0;
+  const showToolbar = showResultsCount || (sort != null && onSortChange != null) || pagination != null;
 
   if (isInitialLoad) {
     return (
@@ -109,13 +151,14 @@ export function ProductGrid({
           <ProductGridToolbar
             statusText={t('loading')}
             searchingText={t('filters.searching')}
-            isSearching={false}
+            showSearchingText={false}
+            isBusy={false}
             sort={sort}
             onSortChange={onSortChange}
+            pagination={pagination}
             progressActive={false}
             progressLabel={t('filters.searching')}
-            transitionMs={transitionMs}
-            transitionEasing={transitionEasing}
+            timing={timing}
           />
         ) : null}
         <ProductGridSkeleton count={skeletonCount} />
@@ -125,6 +168,13 @@ export function ProductGrid({
 
   const statusText = t('resultsCount', { count: totalCount ?? 0 });
   const searchingText = t('filters.searching');
+  const paginationProps = pagination
+    ? {
+        page: pagination.page,
+        pageCount: pagination.pageCount,
+        onPageChange: pagination.onPageChange,
+      }
+    : null;
 
   return (
     <Stack spacing={2}>
@@ -132,26 +182,21 @@ export function ProductGrid({
         <ProductGridToolbar
           statusText={statusText}
           searchingText={searchingText}
-          isSearching={refreshActive}
+          showSearchingText={showSearchingText}
+          isBusy={refreshActive}
           sort={sort}
           onSortChange={onSortChange}
+          pagination={pagination}
           progressActive={refreshActive}
           progressLabel={searchingText}
-          transitionMs={transitionMs}
-          transitionEasing={transitionEasing}
+          timing={timing}
         />
       ) : null}
 
       {products.length === 0 ? (
         <CatalogEmptyState />
       ) : (
-        <Box
-          sx={{
-            position: 'relative',
-            opacity: refreshActive ? 0.9 : 1,
-            transition: `opacity ${transitionMs}ms ${transitionEasing}`,
-          }}
-        >
+        <BusyArea timing={timing} show={showGridBusy} label={searchingText}>
           <Grid container spacing={2}>
             {products.map((product, index) => (
               <Grid key={product.id} size={{ xs: 6, sm: 4, md: 3 }} sx={{ minWidth: 0 }}>
@@ -159,17 +204,14 @@ export function ProductGrid({
               </Grid>
             ))}
           </Grid>
-
-          {refreshMounted ? (
-            <SmoothBusyVeil
-              visible={refreshActive}
-              label={searchingText}
-              transitionMs={transitionMs}
-              transitionEasing={transitionEasing}
-            />
-          ) : null}
-        </Box>
+        </BusyArea>
       )}
+
+      {paginationProps ? (
+        <CatalogPagination disabled={paginationBusy} sx={{ alignSelf: 'center' }} {...paginationProps} />
+      ) : null}
+
+      {loadMore ? <CatalogLoadMore {...loadMore} /> : null}
     </Stack>
   );
 }

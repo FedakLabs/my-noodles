@@ -1,9 +1,20 @@
 import { expect, test } from '@playwright/test';
 
+import { CATALOG_VIEW_MODE_COOKIE } from '../src/components/catalog-view-mode';
 import { testIds } from '../src/shared/test-ids';
 import { e2eLocale, uk } from './fixtures/uk-messages';
 
 test.describe('discovery funnel', () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies([
+      {
+        name: CATALOG_VIEW_MODE_COOKIE,
+        value: 'infinite',
+        url: 'http://localhost:3000',
+      },
+    ]);
+  });
+
   test('catalog → cart → checkout → success', async ({ page }) => {
     await page.goto(`/${e2eLocale}/catalog`, { waitUntil: 'networkidle' });
 
