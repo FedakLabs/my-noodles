@@ -2,58 +2,195 @@ import type { LocalizedStringData } from '@/infrastructure/i18n';
 import { LocalizedString } from '@/infrastructure/i18n';
 import { slugify } from '@/utils/slugify';
 
+type SeedFlavor = {
+  spice: number;
+  sweet: number;
+  texture: string;
+};
+
 export type SeedProductRow = {
   name: string;
   category: string;
   brand: string;
   country: string;
+  weight: string;
+  priceMinor: number;
+  flavor: SeedFlavor;
+  allergens: readonly string[];
+  quantity: number;
+  sortWeight: number;
+  isTriedByUs: boolean;
+  alternativeGroup: string;
 };
 
-/** Dev-only catalog rows — extend here when adding sample products. */
-export const PRODUCT_SEEDS: readonly SeedProductRow[] = [
+type MarketSeed = {
+  country: string;
+  brands: readonly string[];
+  sortBoost: number;
+};
+
+type ProductBlueprint = {
+  name: string;
+  category: string;
+  weight: string;
+  priceMinor: number;
+  flavor: SeedFlavor;
+  allergens: readonly string[];
+  alternativeGroup: string;
+};
+
+const MARKETS: readonly MarketSeed[] = [
   {
-    name: 'Samyang Buldak Cheese Ramen',
-    category: 'Snacks',
-    brand: 'Samyang',
     country: 'South Korea',
+    brands: ['Samyang', 'Nongshim', 'Orion', 'Lotte', 'Haitai'],
+    sortBoost: 70,
   },
   {
-    name: 'Nongshim Shin Ramyun Black',
-    category: 'Noodles',
-    brand: 'Nongshim',
-    country: 'South Korea',
+    country: 'Japan',
+    brands: ['Nissin', 'Glico', 'Meiji', 'Calbee', 'Bourbon'],
+    sortBoost: 60,
   },
   {
-    name: "Lay's KFC Fried Chicken Flavor",
-    category: 'Snacks',
-    brand: "Lay's",
-    country: 'China',
-  },
-  {
-    name: 'Pocky Chocolate',
-    category: 'Snacks',
-    brand: 'Glico',
-    country: 'Taiwan',
-  },
-  {
-    name: 'Pringles Hot & Spicy',
-    category: 'Snacks',
-    brand: 'Pringles',
-    country: 'USA',
-  },
-  {
-    name: 'Tao Kae Noi Seaweed Snack',
-    category: 'Snacks',
-    brand: 'Tao Kae Noi',
     country: 'Thailand',
+    brands: ['Mama', 'Tao Kae Noi', 'Bento', 'Koh-Kae', 'Dutch Mill'],
+    sortBoost: 50,
   },
   {
-    name: 'Kinder Bueno',
-    category: 'Chocolate',
-    brand: 'Ferrero',
+    country: 'Taiwan',
+    brands: ['Uni-President', 'Kuai Kuai', 'I-Mei', 'HeySong', 'Want Want'],
+    sortBoost: 45,
+  },
+  {
+    country: 'China',
+    brands: ['Haidilao', "Lay's", 'Want Want', 'Master Kong', 'White Rabbit'],
+    sortBoost: 40,
+  },
+  {
+    country: 'USA',
+    brands: ['Pringles', "Reese's", 'Takis', 'Pop-Tarts', 'Cheetos'],
+    sortBoost: 30,
+  },
+  {
     country: 'Canada',
+    brands: ['Hawkins', 'Coffee Crisp', 'Aero', 'Smarties', 'Maynards'],
+    sortBoost: 20,
   },
 ];
+
+const PRODUCT_BLUEPRINTS: readonly ProductBlueprint[] = [
+  {
+    name: 'Fire Cheese Ramen',
+    category: 'Noodles',
+    weight: '140 g',
+    priceMinor: 12_900,
+    flavor: { spice: 5, sweet: 1, texture: 'springy noodles' },
+    allergens: ['wheat', 'soy', 'milk'],
+    alternativeGroup: 'spicy-noodles',
+  },
+  {
+    name: 'Honey Butter Potato Chips',
+    category: 'Snacks',
+    weight: '120 g',
+    priceMinor: 10_900,
+    flavor: { spice: 1, sweet: 2, texture: 'crisp chips' },
+    allergens: ['milk'],
+    alternativeGroup: 'savory-crunch',
+  },
+  {
+    name: 'Seaweed Crunch Snack',
+    category: 'Snacks',
+    weight: '36 g',
+    priceMinor: 8_900,
+    flavor: { spice: 1, sweet: 1, texture: 'paper-thin crunch' },
+    allergens: ['sesame'],
+    alternativeGroup: 'seaweed',
+  },
+  {
+    name: 'Chocolate Biscuit Sticks',
+    category: 'Biscuits',
+    weight: '52 g',
+    priceMinor: 7_900,
+    flavor: { spice: 0, sweet: 4, texture: 'snappy biscuit' },
+    allergens: ['wheat', 'milk'],
+    alternativeGroup: 'biscuit-sticks',
+  },
+  {
+    name: 'Mango Chili Gummies',
+    category: 'Candy',
+    weight: '80 g',
+    priceMinor: 9_500,
+    flavor: { spice: 2, sweet: 5, texture: 'chewy gummies' },
+    allergens: [],
+    alternativeGroup: 'sweet-heat',
+  },
+  {
+    name: 'Brown Sugar Milk Tea',
+    category: 'Drinks',
+    weight: '315 ml',
+    priceMinor: 11_500,
+    flavor: { spice: 0, sweet: 4, texture: 'creamy drink' },
+    allergens: ['milk'],
+    alternativeGroup: 'milk-tea',
+  },
+  {
+    name: 'Peanut Mochi Bites',
+    category: 'Sweets',
+    weight: '120 g',
+    priceMinor: 10_500,
+    flavor: { spice: 0, sweet: 3, texture: 'soft mochi' },
+    allergens: ['peanuts'],
+    alternativeGroup: 'mochi',
+  },
+  {
+    name: 'Wasabi Pea Mix',
+    category: 'Snacks',
+    weight: '90 g',
+    priceMinor: 9_900,
+    flavor: { spice: 4, sweet: 1, texture: 'sharp crunchy peas' },
+    allergens: ['soy'],
+    alternativeGroup: 'spicy-crunch',
+  },
+  {
+    name: 'Strawberry Cream Cake Roll',
+    category: 'Cakes',
+    weight: '68 g',
+    priceMinor: 8_500,
+    flavor: { spice: 0, sweet: 5, texture: 'soft sponge' },
+    allergens: ['wheat', 'egg', 'milk'],
+    alternativeGroup: 'soft-cakes',
+  },
+  {
+    name: 'Fried Chicken Flavor Crisps',
+    category: 'Snacks',
+    weight: '105 g',
+    priceMinor: 10_900,
+    flavor: { spice: 2, sweet: 1, texture: 'stacked crisps' },
+    allergens: ['wheat', 'soy'],
+    alternativeGroup: 'savory-crunch',
+  },
+];
+
+/** Dev-only catalog rows — generated to make the storefront feel stocked and browsable. */
+export const PRODUCT_SEEDS: readonly SeedProductRow[] = MARKETS.flatMap((market, marketIndex) =>
+  PRODUCT_BLUEPRINTS.map((blueprint, blueprintIndex) => {
+    const brand = market.brands[blueprintIndex % market.brands.length]!;
+
+    return {
+      name: `${brand} ${blueprint.name}`,
+      category: blueprint.category,
+      brand,
+      country: market.country,
+      weight: blueprint.weight,
+      priceMinor: blueprint.priceMinor + marketIndex * 300 + blueprintIndex * 120,
+      flavor: blueprint.flavor,
+      allergens: blueprint.allergens,
+      quantity: 4 + ((marketIndex + blueprintIndex) % 9),
+      sortWeight: market.sortBoost + PRODUCT_BLUEPRINTS.length - blueprintIndex,
+      isTriedByUs: (marketIndex + blueprintIndex) % 3 === 0,
+      alternativeGroup: blueprint.alternativeGroup,
+    };
+  }),
+);
 
 type CountrySeed = {
   code: string;
@@ -70,6 +207,13 @@ const COUNTRY_SEEDS: Record<string, CountrySeed> = {
     name: { uk: 'Китай', en: 'China' },
     flagEmoji: '🇨🇳',
     themeKey: 'CN',
+  },
+  Japan: {
+    code: 'JP',
+    slug: 'japan',
+    name: { uk: 'Японія', en: 'Japan' },
+    flagEmoji: '🇯🇵',
+    themeKey: 'JP',
   },
   'South Korea': {
     code: 'KR',
@@ -128,25 +272,70 @@ export function placeholderLocalized(name: string): LocalizedString {
   return new LocalizedString({ uk: name, en: name });
 }
 
-export function defaultProductCopy(name: string): {
+function hashText(value: string): number {
+  return [...value].reduce((total, char) => total + char.charCodeAt(0), 0);
+}
+
+function pickByName(name: string, options: readonly string[]): string {
+  return options[hashText(name) % options.length]!;
+}
+
+export function defaultProductCopy(seed: SeedProductRow | string): {
   description: LocalizedString;
   story: LocalizedString;
   forWhom: LocalizedString;
 } {
+  const name = typeof seed === 'string' ? seed : seed.name;
+  const category = typeof seed === 'string' ? 'snack' : seed.category.toLowerCase();
+  const country = typeof seed === 'string' ? 'its home country' : seed.country;
+  const texture = typeof seed === 'string' ? 'bright texture' : seed.flavor.texture;
+
+  const ukOpeners = [
+    'яскрава знахідка для полиці з імпортними смаколиками',
+    'той самий смак, через який рука тягнеться взяти ще один шматочок',
+    'маленька подорож у форматі снека',
+    'цікавий вибір для вечора, коли хочеться чогось не як завжди',
+  ];
+  const enOpeners = [
+    'a bright little find for the imported-snack shelf',
+    'the kind of treat that makes you reach back into the bag',
+    'a tiny trip packed into snack form',
+    'a fun pick for nights when ordinary snacks feel too ordinary',
+  ];
+
   return {
     description: new LocalizedString({
-      uk: `${name} — смачний імпортний снек. Деталі скоро.`,
-      en: `${name} — tasty imported snack. Details coming soon.`,
+      uk: `${name} — ${pickByName(name, ukOpeners)}. У смаку відчувається ${texture}, а категорія ${category} робить його легким кандидатом у кошик.`,
+      en: `${name} is ${pickByName(name, enOpeners)}. Expect ${texture}, a clear ${category} mood, and enough personality to make the first try feel easy.`,
     }),
     story: new LocalizedString({
-      uk: 'Історія продукту з’явиться незабаром.',
-      en: 'Product story coming soon.',
+      uk: `Привезли натхнення з ${country}: це саме той продукт, який хочеться відкрити з друзями й обговорити після першого укусу.`,
+      en: `Inspired by shelves in ${country}, this is the kind of product you open with friends and talk about after the first bite.`,
     }),
     forWhom: new LocalizedString({
-      uk: 'Для тих, хто любить пробувати нове.',
-      en: 'For curious snack explorers.',
+      uk: pickByName(name, [
+        'Для тих, хто любить пробувати нове без довгих роздумів.',
+        'Для фанатів маленьких відкриттів і чесних, помітних смаків.',
+        'Для кошика, в якому має бути щось несподіване.',
+        'Для вечора кіно, офісної перерви або подарункового боксу.',
+      ]),
+      en: pickByName(name, [
+        'For curious snack explorers who like low-risk discoveries.',
+        'For fans of small surprises and flavors that actually show up.',
+        'For carts that need one unexpected treat.',
+        'For movie nights, office breaks, or a playful gift box.',
+      ]),
     }),
   };
+}
+
+export function productImages(row: SeedProductRow): string[] {
+  const slug = slugify(row.name);
+
+  return [
+    `https://picsum.photos/seed/${slug}-front/900/900`,
+    `https://picsum.photos/seed/${slug}-detail/900/900`,
+  ];
 }
 
 export function uniqueSlug(base: string, used: Set<string>): string {

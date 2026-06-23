@@ -1,15 +1,7 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
 import { LocalizedColumn, type LocalizedString } from '@/infrastructure/i18n';
-import { TimestampEntity } from '@/infrastructure/persistence';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Brand } from '../brands/brand.entity';
 import { Category } from '../categories/category.entity';
@@ -19,7 +11,7 @@ import type { ProductFlavor } from './product.types';
 
 @Entity({ name: 'products' })
 export class Product extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
 
   @Column({ type: 'text', unique: true })

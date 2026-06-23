@@ -1,12 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
-import { TimestampEntity } from '@/infrastructure/persistence';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Product } from '../products/product.entity';
 
 @Entity({ name: 'brands' })
 export class Brand extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
 
   @Column({ type: 'text', unique: true })

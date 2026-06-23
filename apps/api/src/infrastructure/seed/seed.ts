@@ -15,9 +15,16 @@ import {
   defaultProductCopy,
   placeholderLocalized,
   PRODUCT_SEEDS,
+  productImages,
   resolveCountrySeed,
+  type SeedProductRow,
   uniqueSlug,
 } from './seed-data';
+
+type SeededProduct = {
+  row: SeedProductRow;
+  product: Product;
+};
 
 async function upsertBrand(repository: Repository<Brand>, name: string): Promise<Brand> {
   const slug = slugify(name);
@@ -103,9 +110,8 @@ async function seed(dataSource: DataSource): Promise<void> {
   const collectionRepository = dataSource.getRepository(Collection);
   const productRepository = dataSource.getRepository(Product);
 
-  const usedSlugs = new Set(
-    (await productRepository.find({ select: { slug: true } })).map((product) => product.slug),
-  );
+  const usedSeedSlugs = new Set<string>();
+  const seededProducts: SeededProduct[] = [];
 
   const categorySort = new Map<string, number>();
   let categoryOrder = 0;
@@ -130,11 +136,12 @@ async function seed(dataSource: DataSource): Promise<void> {
       categorySort.get(row.category) ?? 0,
     );
 
-    const slug = uniqueSlug(row.name, usedSlugs);
-    const copy = defaultProductCopy(row.name);
+    const slug = uniqueSlug(row.name, usedSeedSlugs);
+    const copy = defaultProductCopy(row);
 
     const existingProduct = await productRepository.findOne({ where: { slug } });
     if (existingProduct) {
+      seededProducts.push({ row, product: existingProduct });
       continue;
     }
 
@@ -144,19 +151,21 @@ async function seed(dataSource: DataSource): Promise<void> {
       description: copy.description,
       story: copy.story,
       forWhom: copy.forWhom,
-      weight: null,
-      priceMinor: 9_900,
+      weight: row.weight,
+      priceMinor: row.priceMinor,
       currency: 'UAH',
-      flavor: { spice: 1, sweet: 1, texture: 'crunchy' },
-      allergens: [],
-      images: [],
-      isTriedByUs: false,
-      quantity: 5,
-      sortWeight: 0,
+      flavor: row.flavor,
+      allergens: [...row.allergens],
+      images: productImages(row),
+      isTriedByUs: row.isTriedByUs,
+      quantity: row.quantity,
+      sortWeight: row.sortWeight,
       brandId: brand.id,
       countryId: country.id,
       categoryId: category.id,
     });
+
+    seededProducts.push({ row, product });
 
     await collectionRepository
       .createQueryBuilder()
@@ -165,7 +174,67 @@ async function seed(dataSource: DataSource): Promise<void> {
       .add(product);
   }
 
+  for (const seeded of seededProducts) {
+    const alternatives = pickAlternatives(seeded, seededProducts);
+    if (alternatives.length === 0) {
+      continue;
+    }
+
+    const existingAlternatives = await productRepository
+      .createQueryBuilder()
+      .relation(Product, 'alternatives')
+      .of(seeded.product)
+      .loadMany<Product>();
+    const existingAlternativeIds = new Set(existingAlternatives.map((product) => product.id));
+    const alternativeIds = alternatives
+      .map((alternative) => alternative.product.id)
+      .filter((id) => !existingAlternativeIds.has(id));
+
+    if (alternativeIds.length > 0) {
+      await productRepository
+        .createQueryBuilder()
+        .relation(Product, 'alternatives')
+        .of(seeded.product)
+        .add(alternativeIds);
+    }
+  }
+
   console.log(`Seeded ${PRODUCT_SEEDS.length} products`);
+}
+
+function pickAlternatives(current: SeededProduct, products: readonly SeededProduct[]): SeededProduct[] {
+  return products
+    .filter((candidate) => candidate.product.id !== current.product.id)
+    .map((candidate) => ({
+      candidate,
+      score: alternativeScore(current.row, candidate.row),
+    }))
+    .filter(({ score }) => score > 0)
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.candidate.row.name.localeCompare(right.candidate.row.name),
+    )
+    .slice(0, 3)
+    .map(({ candidate }) => candidate);
+}
+
+function alternativeScore(current: SeedProductRow, candidate: SeedProductRow): number {
+  let score = 0;
+
+  if (candidate.alternativeGroup === current.alternativeGroup) {
+    score += 6;
+  }
+  if (candidate.category === current.category) {
+    score += 4;
+  }
+  if (candidate.country === current.country) {
+    score += 2;
+  }
+  if (candidate.brand !== current.brand) {
+    score += 1;
+  }
+
+  return score;
 }
 
 async function main(): Promise<void> {

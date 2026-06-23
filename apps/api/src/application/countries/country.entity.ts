@@ -1,13 +1,13 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 import { LocalizedColumn, type LocalizedString } from '@/infrastructure/i18n';
-import { TimestampEntity } from '@/infrastructure/persistence';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Product } from '../products/product.entity';
 
 @Entity({ name: 'countries' })
 export class Country extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
 
   @Column({ type: 'text', unique: true })

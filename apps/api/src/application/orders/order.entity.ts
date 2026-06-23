@@ -1,6 +1,6 @@
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 
-import { TimestampEntity } from '@/infrastructure/persistence';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { OrderDelivery } from './order-delivery.entity';
 import { OrderItem } from './order-item.entity';
@@ -8,7 +8,7 @@ import { OrderStatus } from './order-status';
 
 @Entity({ name: 'orders' })
 export class Order extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
 
   @Column({ name: 'customer_name', type: 'text' })

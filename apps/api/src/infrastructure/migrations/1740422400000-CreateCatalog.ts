@@ -7,7 +7,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
     await queryRunner.query(`
       -- Dimension tables
       CREATE TABLE brands (
-        id          UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id          UUID        NOT NULL DEFAULT uuidv7(),
         slug        TEXT        NOT NULL,
         name        TEXT        NOT NULL,
         logo_url    TEXT,
@@ -20,7 +20,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
       );
 
       CREATE TABLE countries (
-        id          UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id          UUID        NOT NULL DEFAULT uuidv7(),
         code        TEXT        NOT NULL,
         slug        TEXT        NOT NULL,
         name        JSONB       NOT NULL,
@@ -35,7 +35,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
       );
 
       CREATE TABLE categories (
-        id          UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id          UUID        NOT NULL DEFAULT uuidv7(),
         slug        TEXT        NOT NULL,
         name        JSONB       NOT NULL,
         icon        TEXT,
@@ -49,7 +49,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
       );
 
       CREATE TABLE collections (
-        id          UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id          UUID        NOT NULL DEFAULT uuidv7(),
         code        TEXT        NOT NULL,
         slug        TEXT        NOT NULL,
         name        JSONB       NOT NULL,
@@ -69,7 +69,7 @@ export class CreateCatalog1740422400000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE products (
-        id              UUID        NOT NULL DEFAULT gen_random_uuid(),
+        id              UUID        NOT NULL DEFAULT uuidv7(),
         slug            TEXT        NOT NULL,
         name            JSONB       NOT NULL,
         description     JSONB       NOT NULL,

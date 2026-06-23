@@ -7,6 +7,7 @@ export default [
       'vitest.config.ts',
       'playwright.config.ts',
       'next.config.ts',
+      'next-env.d.ts',
       'e2e/mock-api.mjs',
     ],
   },

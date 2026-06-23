@@ -1,13 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
-import { TimestampEntity } from '@/infrastructure/persistence';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import type { Order } from './order.entity';
 import { DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
 
 @Entity({ name: 'order_deliveries' })
 export class OrderDelivery extends TimestampEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @UuidV7PrimaryColumn()
   id!: string;
 
   @Column({ name: 'order_id', type: 'uuid', unique: true })
