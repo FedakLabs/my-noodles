@@ -1,0 +1,13 @@
+{
+  "brand": "MyNoodles",
+  "loading": "Loading…",
+  "retry": "Try again",
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "contacts": "Contacts",
+    "cart": "Cart",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu"
+  }
+}

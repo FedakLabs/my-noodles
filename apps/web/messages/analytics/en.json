@@ -1,0 +1,8 @@
+{
+  "consent": {
+    "title": "Analytics & cookies",
+    "description": "We use Google Analytics via GTM to learn what guests enjoy browsing. Data is anonymous — no ad trackers.",
+    "accept": "Accept",
+    "reject": "Reject"
+  }
+}

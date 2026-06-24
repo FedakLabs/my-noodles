@@ -1,0 +1,23 @@
+{
+  "loading": "Завантаження…",
+  "error": "Не вдалося завантажити товар",
+  "empty": "Товар не знайдено",
+  "addToCart": "Додати в кошик",
+  "outOfStock": "Немає в наявності",
+  "forWhom": "Для кого",
+  "alternatives": "Схожі смаки",
+  "mediaGallery": "Медіа продукту",
+  "mediaSlide": "Слайд {index} з {total}",
+  "playVideo": "Відтворити відео",
+  "pauseVideo": "Призупинити відео",
+  "muteVideo": "Вимкнути звук",
+  "unmuteVideo": "Увімкнути звук",
+  "share": "Поділитися товаром",
+  "shareText": "Подивись {name}!",
+  "shareNative": "Поділитися…",
+  "shareCopyLink": "Скопіювати посилання",
+  "shareTelegram": "Telegram",
+  "shareFacebook": "Facebook",
+  "shareWhatsapp": "WhatsApp",
+  "shareViber": "Viber"
+}

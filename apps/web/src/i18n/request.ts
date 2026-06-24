@@ -1,13 +1,8 @@
 import { hasLocale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 
-import type ukMessages from '../../messages/uk.json';
-import { type AppLocale, routing } from './routing';
-
-const messageLoaders = {
-  uk: () => import('../../messages/uk.json'),
-  en: () => import('../../messages/en.json'),
-} as const satisfies Record<AppLocale, () => Promise<{ default: typeof ukMessages }>>;
+import { messageCatalogs } from '../../messages';
+import { routing } from './routing';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
@@ -15,6 +10,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
-    messages: (await messageLoaders[locale]()).default,
+    messages: messageCatalogs[locale],
   };
 });

@@ -1,0 +1,7 @@
+{
+  "title": "Contacts",
+  "description": "Message us on Telegram — we'll help you pick flavors and place an order.",
+  "telegram": "Telegram",
+  "telegramHandle": "@my_noodles",
+  "telegramCta": "Message {handle}"
+}

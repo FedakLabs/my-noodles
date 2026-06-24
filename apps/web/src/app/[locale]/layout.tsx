@@ -1,6 +1,3 @@
-import '@my-noodles/theme/fonts.css';
-import '@my-noodles/theme/fonts.local.css';
-
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
@@ -85,17 +82,15 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   ]);
 
   return (
-    <html lang={locale}>
+    <>
       <AnalyticsHead />
-      <body>
-        <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
-        <NextIntlClientProvider messages={messages}>
-          <Providers>
-            <AppShell>{children}</AppShell>
-            <ConsentBanner />
-          </Providers>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+      <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
+      <NextIntlClientProvider messages={messages}>
+        <Providers>
+          <AppShell>{children}</AppShell>
+          <ConsentBanner />
+        </Providers>
+      </NextIntlClientProvider>
+    </>
   );
 }

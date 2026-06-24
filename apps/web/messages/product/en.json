@@ -1,0 +1,23 @@
+{
+  "loading": "Loading…",
+  "error": "Couldn't load this product",
+  "empty": "Product not found",
+  "addToCart": "Add to cart",
+  "outOfStock": "Out of stock",
+  "forWhom": "For whom",
+  "alternatives": "You might also like",
+  "mediaGallery": "Product media",
+  "mediaSlide": "Slide {index} of {total}",
+  "playVideo": "Play video",
+  "pauseVideo": "Pause video",
+  "muteVideo": "Mute video",
+  "unmuteVideo": "Unmute video",
+  "share": "Share product",
+  "shareText": "Check out {name}!",
+  "shareNative": "Share…",
+  "shareCopyLink": "Copy link",
+  "shareTelegram": "Telegram",
+  "shareFacebook": "Facebook",
+  "shareWhatsapp": "WhatsApp",
+  "shareViber": "Viber"
+}

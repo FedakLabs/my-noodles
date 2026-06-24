@@ -1,0 +1,20 @@
+{
+  "title": "Cart",
+  "empty": "Your cart is empty — time to discover something tasty!",
+  "emptyMessages": {
+    "spicy": "Your cart is empty — perfect time to find something tasty! 🍜",
+    "quiet": "It's quiet here… Add something delicious from the catalog ✨",
+    "curious": "Nothing picked yet — the catalog is full of surprises 👀",
+    "room": "Empty cart = more room for new flavors 🌍",
+    "next": "Your next favorite snack is waiting in the catalog 💛",
+    "wink": "Nothing here yet — we know where to look 😉"
+  },
+  "browse": "Browse catalog",
+  "remove": "Remove",
+  "increase": "Increase quantity",
+  "decrease": "Decrease quantity",
+  "total": "Total",
+  "checkout": "Checkout",
+  "continueBrowsing": "Continue browsing",
+  "close": "Close cart"
+}

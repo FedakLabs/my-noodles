@@ -1,0 +1,17 @@
+{
+  "title": "Checkout",
+  "submit": "Place order",
+  "error": "Could not place order. Please try again.",
+  "fields": {
+    "name": "Name",
+    "phone": "Phone",
+    "city": "City",
+    "branch": "Nova Poshta branch",
+    "company": "Company"
+  },
+  "success": {
+    "title": "Thank you!",
+    "description": "We received your order and will confirm shortly.",
+    "backToCatalog": "Back to catalog"
+  }
+}
