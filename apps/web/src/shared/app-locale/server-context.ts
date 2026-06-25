@@ -1,15 +1,15 @@
 import 'server-only';
 
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { createContext } from '@my-noodles/web-lib/context';
 
 import type { AppLocale } from '@/i18n/routing';
 
-const storage = new AsyncLocalStorage<AppLocale>();
+const appLocaleContext = createContext<AppLocale>('APP_LOCALE');
 
 export function runWithAppLocale<T>(locale: AppLocale, fn: () => T): T {
-  return storage.run(locale, fn);
+  return appLocaleContext.run(locale, fn);
 }
 
 export function getRequestAppLocale(): AppLocale | undefined {
-  return storage.getStore();
+  return appLocaleContext.get({ silent: true }) ?? undefined;
 }

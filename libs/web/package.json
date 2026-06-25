@@ -9,6 +9,11 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./context": {
+      "types": "./src/context/index.ts",
+      "import": "./src/context/index.ts",
+      "default": "./src/context/index.ts"
+    },
     "./react-query": {
       "types": "./src/react-query/index.ts",
       "import": "./src/react-query/index.ts",
@@ -29,6 +34,7 @@
   "devDependencies": {
     "@my-noodles/eslint-config": "workspace:*",
     "@tanstack/react-query": "5.101.0",
+    "@types/node": "22.15.3",
     "eslint": "10.5.0",
     "eslint-config-prettier": "10.1.8"
   }

@@ -1,0 +1,158 @@
+import type { Repository } from 'typeorm';
+
+import type { FeedSession } from '@/application/feed';
+import { type FeedCommentsService, FeedService, type FeedSessionService } from '@/application/feed';
+import type { Product } from '@/application/products';
+import { LocaleContext, LocalizedString } from '@/infrastructure/i18n';
+
+import { jest } from '../jest-globals';
+
+function makeProduct(overrides: Partial<Product> = {}): Product {
+  return {
+    id: 'product-1',
+    slug: 'fire-ramen',
+    name: new LocalizedString({ uk: 'Вогняний рамен', en: 'Fire Ramen' }),
+    priceMinor: 12_900,
+    currency: 'UAH',
+    images: ['https://img/1.jpg'],
+    videos: [],
+    quantity: 5,
+    sortWeight: 10,
+    category: { slug: 'noodles', name: new LocalizedString({ uk: 'Локшина', en: 'Noodles' }) },
+    country: { slug: 'south-korea', code: 'KR', name: new LocalizedString({ uk: 'Корея', en: 'Korea' }) },
+    brand: { slug: 'samyang', name: 'Samyang' },
+    ...overrides,
+  } as unknown as Product;
+}
+
+describe('FeedService', () => {
+  let productsFind: jest.Mock;
+  let recordView: jest.Mock;
+  let getViewedProductIds: jest.Mock;
+  let getLikedProducts: jest.Mock;
+  let getCategoryDwell: jest.Mock;
+  let countForProduct: jest.Mock;
+  let service: FeedService;
+
+  const session = { id: 'session-1' } as FeedSession;
+
+  beforeEach(() => {
+    productsFind = jest.fn().mockResolvedValue([makeProduct()]);
+    recordView = jest.fn().mockResolvedValue(undefined);
+    getViewedProductIds = jest.fn().mockResolvedValue([]);
+    getLikedProducts = jest.fn().mockResolvedValue([]);
+    getCategoryDwell = jest.fn().mockResolvedValue(new Map());
+    countForProduct = jest.fn().mockResolvedValue(2);
+
+    const productsRepository = { find: productsFind } as unknown as Repository<Product>;
+    const sessionService = {
+      recordView,
+      getViewedProductIds,
+      getLikedProducts,
+      getCategoryDwell,
+    } as unknown as FeedSessionService;
+    const commentsService = { countForProduct } as unknown as FeedCommentsService;
+
+    service = new FeedService(productsRepository, sessionService, commentsService);
+  });
+
+  it('records the previous product view with dwell + filter context before scoring', async () => {
+    await LocaleContext.run('uk', () =>
+      service.next(session, {
+        previousProduct: { id: 'previous-1', viewTime: 4_200 },
+        filters: { category: ['noodles'] },
+      }),
+    );
+
+    expect(recordView).toHaveBeenCalledWith('session-1', {
+      productId: 'previous-1',
+      dwellMs: 4_200,
+      filters: { category: ['noodles'] },
+    });
+  });
+
+  it('excludes already-viewed products and hard-filters by the body filters', async () => {
+    getViewedProductIds.mockResolvedValue(['seen-1', 'seen-2']);
+
+    await LocaleContext.run('uk', () => service.next(session, { filters: { country: ['south-korea'] } }));
+
+    const calls = productsFind.mock.calls as Array<[{ where?: Record<string, unknown> }]>;
+    const where = calls[0]?.[0]?.where ?? {};
+    expect(where.id).toBeDefined();
+    expect(where.country).toBeDefined();
+  });
+
+  it('returns an exhausted response when no candidates remain', async () => {
+    productsFind.mockResolvedValue([]);
+
+    const result = await LocaleContext.run('uk', () => service.next(session, {}));
+
+    expect(result).toEqual({ item: null, exhausted: true });
+  });
+
+  it('maps a localized item and marks it liked when the session liked it', async () => {
+    getLikedProducts.mockResolvedValue([makeProduct({ id: 'product-1' })]);
+
+    const result = await LocaleContext.run('en', () => service.next(session, {}));
+
+    expect(result.exhausted).toBe(false);
+    expect(result.item?.name).toBe('Fire Ramen');
+    expect(result.item?.country.name).toBe('Korea');
+    expect(result.item?.commentCount).toBe(2);
+    expect(result.item?.liked).toBe(true);
+  });
+
+  it('does not record a view when there is no previous product', async () => {
+    await LocaleContext.run('uk', () => service.next(session, {}));
+
+    expect(recordView).not.toHaveBeenCalled();
+  });
+
+  it('requests candidates in stable sortWeight order before scoring', async () => {
+    await LocaleContext.run('uk', () => service.next(session, {}));
+
+    expect(productsFind).toHaveBeenCalledWith(
+      expect.objectContaining({
+        order: { sortWeight: 'DESC', createdAt: 'DESC' },
+      }),
+    );
+  });
+
+  it('boosts products in liked categories when scoring the next item', async () => {
+    const affinityPick = makeProduct({
+      id: 'affinity-pick',
+      slug: 'affinity-pick',
+      sortWeight: 5,
+      category: {
+        slug: 'noodles',
+        name: new LocalizedString({ uk: 'Локшина', en: 'Noodles' }),
+      } as Product['category'],
+    });
+    const heavier = makeProduct({
+      id: 'heavier',
+      slug: 'heavier',
+      sortWeight: 70,
+      category: {
+        slug: 'drinks',
+        name: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
+      } as Product['category'],
+    });
+
+    productsFind.mockResolvedValue([heavier, affinityPick]);
+    getLikedProducts.mockResolvedValue([
+      makeProduct({
+        category: {
+          slug: 'noodles',
+          name: new LocalizedString({ uk: 'Локшина', en: 'Noodles' }),
+        } as Product['category'],
+      }),
+    ]);
+
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+
+    const result = await LocaleContext.run('uk', () => service.next(session, {}));
+
+    expect(result.item?.id).toBe('affinity-pick');
+    randomSpy.mockRestore();
+  });
+});

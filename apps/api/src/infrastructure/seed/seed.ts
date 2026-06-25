@@ -6,12 +6,14 @@ import { Brand } from '@/application/brands';
 import { Category } from '@/application/categories';
 import { Collection } from '@/application/collections';
 import { Country } from '@/application/countries';
+import { FeedProductComment } from '@/application/feed';
 import { Product } from '@/application/products';
 import { config } from '@/config';
 import { createAppDataSource } from '@/infrastructure/persistence';
 import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 import { slugify } from '@/utils/slugify';
 
+import { buildFeedCommentSeeds } from './feed-seed-data';
 import {
   defaultProductCopy,
   placeholderLocalized,
@@ -202,7 +204,40 @@ async function seed(dataSource: DataSource): Promise<void> {
     }
   }
 
+  await seedFeedComments(dataSource, seededProducts);
+
   console.log(`Seeded ${PRODUCT_SEEDS.length} products`);
+}
+
+async function seedFeedComments(
+  dataSource: DataSource,
+  seededProducts: readonly SeededProduct[],
+): Promise<void> {
+  const commentRepository = dataSource.getRepository(FeedProductComment);
+  let seededCount = 0;
+
+  for (const { product } of seededProducts) {
+    const existing = await commentRepository.count({ where: { productId: product.id } });
+    if (existing > 0) {
+      continue;
+    }
+
+    const seeds = buildFeedCommentSeeds(product.slug);
+    await commentRepository.save(
+      seeds.map((seed) =>
+        commentRepository.create({
+          productId: product.id,
+          authorName: seed.authorName,
+          comment: seed.comment,
+        }),
+      ),
+    );
+    seededCount += seeds.length;
+  }
+
+  if (seededCount > 0) {
+    console.log(`Seeded ${seededCount} feed comments`);
+  }
 }
 
 function pickAlternatives(current: SeededProduct, products: readonly SeededProduct[]): SeededProduct[] {

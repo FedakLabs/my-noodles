@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CollectionsControllerGetBySlugData, CollectionsControllerGetBySlugErrors, CollectionsControllerGetBySlugResponses, CollectionsControllerListData, CollectionsControllerListResponses, CountriesControllerListData, CountriesControllerListResponses, HealthControllerGetLiveData, HealthControllerGetLiveResponses, HealthControllerGetReadyData, HealthControllerGetReadyResponses, HealthControllerGetStartupData, HealthControllerGetStartupResponses, OrdersControllerCreateData, OrdersControllerCreateErrors, OrdersControllerCreateResponses, ProductsControllerGetBySlugData, ProductsControllerGetBySlugErrors, ProductsControllerGetBySlugResponses, ProductsControllerGetFacetsData, ProductsControllerGetFacetsResponses, ProductsControllerListData, ProductsControllerListResponses } from './types.gen';
+import type { CollectionsControllerGetBySlugData, CollectionsControllerGetBySlugErrors, CollectionsControllerGetBySlugResponses, CollectionsControllerListData, CollectionsControllerListResponses, CountriesControllerListData, CountriesControllerListResponses, FeedControllerCommentsData, FeedControllerCommentsResponses, FeedControllerLikeData, FeedControllerLikeErrors, FeedControllerLikeResponses, FeedControllerLikesData, FeedControllerLikesResponses, FeedControllerNextData, FeedControllerNextResponses, FeedControllerUnlikeData, FeedControllerUnlikeResponses, HealthControllerGetLiveData, HealthControllerGetLiveResponses, HealthControllerGetReadyData, HealthControllerGetReadyResponses, HealthControllerGetStartupData, HealthControllerGetStartupResponses, OrdersControllerCreateData, OrdersControllerCreateErrors, OrdersControllerCreateResponses, ProductsControllerGetBySlugData, ProductsControllerGetBySlugErrors, ProductsControllerGetBySlugResponses, ProductsControllerGetFacetsData, ProductsControllerGetFacetsResponses, ProductsControllerListData, ProductsControllerListResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -74,3 +74,35 @@ export const ordersControllerCreate = <ThrowOnError extends boolean = false>(opt
         ...options.headers
     }
 });
+
+/**
+ * Record the previous product view and return the next personalized item
+ */
+export const feedControllerNext = <ThrowOnError extends boolean = false>(options: Options<FeedControllerNextData, ThrowOnError>): RequestResult<FeedControllerNextResponses, unknown, ThrowOnError> => (options.client ?? client).post<FeedControllerNextResponses, unknown, ThrowOnError>({
+    url: '/api/feed/next',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a like in the current feed session
+ */
+export const feedControllerUnlike = <ThrowOnError extends boolean = false>(options: Options<FeedControllerUnlikeData, ThrowOnError>): RequestResult<FeedControllerUnlikeResponses, unknown, ThrowOnError> => (options.client ?? client).delete<FeedControllerUnlikeResponses, unknown, ThrowOnError>({ url: '/api/feed/products/{productId}/like', ...options });
+
+/**
+ * Like a product in the current feed session
+ */
+export const feedControllerLike = <ThrowOnError extends boolean = false>(options: Options<FeedControllerLikeData, ThrowOnError>): RequestResult<FeedControllerLikeResponses, FeedControllerLikeErrors, ThrowOnError> => (options.client ?? client).post<FeedControllerLikeResponses, FeedControllerLikeErrors, ThrowOnError>({ url: '/api/feed/products/{productId}/like', ...options });
+
+/**
+ * List taste-impression comments for a product
+ */
+export const feedControllerComments = <ThrowOnError extends boolean = false>(options: Options<FeedControllerCommentsData, ThrowOnError>): RequestResult<FeedControllerCommentsResponses, unknown, ThrowOnError> => (options.client ?? client).get<FeedControllerCommentsResponses, unknown, ThrowOnError>({ url: '/api/feed/products/{productId}/comments', ...options });
+
+/**
+ * List products liked in the current feed session
+ */
+export const feedControllerLikes = <ThrowOnError extends boolean = false>(options?: Options<FeedControllerLikesData, ThrowOnError>): RequestResult<FeedControllerLikesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<FeedControllerLikesResponses, unknown, ThrowOnError>({ url: '/api/feed/likes', ...options });

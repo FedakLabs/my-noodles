@@ -1,9 +1,12 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import type useEmblaCarousel from 'embla-carousel-react';
+import type { CSSProperties } from 'react';
+import { lazy, type Ref, Suspense, useCallback, useImperativeHandle, useState } from 'react';
 
 import { Carousel, CarouselContent, CarouselDots, CarouselSlide, galleryCarouselOptions } from '../Carousel';
+import { useCarouselContext } from '../Carousel/carousel-context';
 import { MediaGalleryImage } from './MediaGalleryImage';
 import { MediaGalleryPlaceholder } from './MediaGalleryPlaceholder';
 import type { MediaGalleryVideoLabels } from './MediaGalleryVideo';
@@ -19,9 +22,23 @@ export type MediaGalleryLabels = {
   video: MediaGalleryVideoLabels;
 };
 
+type CarouselOptions = NonNullable<Parameters<typeof useEmblaCarousel>[0]>;
+
+export type MediaGalleryHandle = {
+  scrollPrevious: () => void;
+  scrollNext: () => void;
+};
+
 export type MediaGalleryProps = {
   items: MediaGalleryItem[];
   labels?: Partial<MediaGalleryLabels>;
+  /** Fill the parent's height (e.g. a vertical reel card) instead of the default square frame. */
+  fill?: boolean;
+  carouselOptions?: CarouselOptions;
+  /** Touch-action on the slide track — feed reels use `pan-x` so vertical swipes stay on the reel. */
+  slideTouchAction?: CSSProperties['touchAction'];
+  /** Imperative control for keyboard / programmatic slide changes. */
+  mediaRef?: Ref<MediaGalleryHandle>;
 };
 
 const defaultLabels: MediaGalleryLabels = {
@@ -48,25 +65,52 @@ const videoFallbackSx = {
   height: '100%',
 } as const;
 
-export function MediaGallery({ items, labels }: MediaGalleryProps) {
+function MediaGalleryControls({ mediaRef }: { mediaRef?: Ref<MediaGalleryHandle> }) {
+  const { emblaApi } = useCarouselContext();
+
+  useImperativeHandle(
+    mediaRef,
+    () => ({
+      scrollPrevious: () => {
+        emblaApi?.scrollPrev();
+      },
+      scrollNext: () => {
+        emblaApi?.scrollNext();
+      },
+    }),
+    [emblaApi],
+  );
+
+  return null;
+}
+
+export function MediaGallery({
+  items,
+  labels,
+  fill = false,
+  carouselOptions,
+  slideTouchAction,
+  mediaRef,
+}: MediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const resolvedLabels = resolveLabels(labels);
+  const resolvedCarouselOptions = carouselOptions ?? galleryCarouselOptions;
 
   const handleSelect = useCallback((index: number) => {
     setActiveIndex(index);
   }, []);
 
+  const frameSx = {
+    borderRadius: fill ? 0 : 1.5,
+    overflow: 'hidden',
+    bgcolor: 'action.hover',
+    flexShrink: 0,
+    ...(fill ? { height: '100%' } : { aspectRatio: '1' }),
+  } as const;
+
   if (items.length === 0) {
     return (
-      <Box
-        sx={{
-          aspectRatio: '1',
-          borderRadius: 1.5,
-          overflow: 'hidden',
-          bgcolor: 'action.hover',
-          flexShrink: 0,
-        }}
-      >
+      <Box sx={frameSx}>
         <MediaGalleryPlaceholder />
       </Box>
     );
@@ -75,17 +119,12 @@ export function MediaGallery({ items, labels }: MediaGalleryProps) {
   return (
     <Carousel
       ariaLabel={resolvedLabels.gallery}
-      options={galleryCarouselOptions}
+      options={resolvedCarouselOptions}
       onSelect={handleSelect}
-      sx={{
-        aspectRatio: '1',
-        borderRadius: 1.5,
-        overflow: 'hidden',
-        bgcolor: 'action.hover',
-        flexShrink: 0,
-      }}
+      sx={frameSx}
     >
-      <CarouselContent>
+      <MediaGalleryControls mediaRef={mediaRef} />
+      <CarouselContent touchAction={slideTouchAction}>
         {items.map((item, index) => {
           const slideContent =
             item.type === 'image' ? (

@@ -195,6 +195,77 @@ export type OrderResponseDto = {
     currency: string;
 };
 
+export type FeedPreviousProductDto = {
+    id: string;
+    /**
+     * Dwell time on the previous product, in milliseconds.
+     */
+    viewTime: number;
+};
+
+export type FeedFiltersDto = {
+    category?: Array<string>;
+    country?: Array<string>;
+    brand?: Array<string>;
+};
+
+export type FeedNextDto = {
+    previousProduct?: FeedPreviousProductDto;
+    filters?: FeedFiltersDto;
+    /**
+     * Start a fresh anonymous session — clears viewed-product memory for a new personalization pass.
+     */
+    reshuffle?: boolean;
+};
+
+export type FeedTagRefDto = {
+    slug: string;
+    name: string | null;
+};
+
+export type FeedItemDto = {
+    id: string;
+    brand?: FeedTagRefDto | null;
+    slug: string;
+    name: string | null;
+    priceMinor: number;
+    currency: string;
+    images: Array<string>;
+    videos: Array<string>;
+    inStock: boolean;
+    category: FeedTagRefDto;
+    country: FeedTagRefDto;
+    commentCount: number;
+    liked: boolean;
+};
+
+export type FeedNextResponseDto = {
+    item?: FeedItemDto | null;
+    /**
+     * True when no more products match the current filters for this session.
+     */
+    exhausted: boolean;
+};
+
+export type FeedLikeStateDto = {
+    liked: boolean;
+};
+
+export type FeedCommentDto = {
+    id: string;
+    authorName: string;
+    comment: string | null;
+};
+
+export type FeedLikedItemDto = {
+    id: string;
+    slug: string;
+    name: string | null;
+    priceMinor: number;
+    currency: string;
+    images: Array<string>;
+};
+
 export type HealthControllerGetLiveData = {
     body?: never;
     path?: never;
@@ -245,13 +316,13 @@ export type ProductsControllerGetFacetsData = {
     path?: never;
     query?: {
         collection?: string;
-        category?: Array<string>;
-        country?: Array<string>;
-        brand?: Array<string>;
         priceMin?: number;
         priceMax?: number;
         isTriedByUs?: boolean;
         inStock?: boolean;
+        category?: Array<string>;
+        country?: Array<string>;
+        brand?: Array<string>;
     };
     url: '/api/products/facets';
 };
@@ -275,10 +346,10 @@ export type ProductsControllerListData = {
         sort?: ProductSort;
         page: number;
         limit: number;
-        collection?: string;
         category?: Array<string>;
         country?: Array<string>;
         brand?: Array<string>;
+        collection?: string;
         priceMin?: number;
         priceMax?: number;
         isTriedByUs?: boolean;
@@ -410,3 +481,111 @@ export type OrdersControllerCreateResponses = {
 };
 
 export type OrdersControllerCreateResponse = OrdersControllerCreateResponses[keyof OrdersControllerCreateResponses];
+
+export type FeedControllerNextData = {
+    body: FeedNextDto;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/feed/next';
+};
+
+export type FeedControllerNextResponses = {
+    201: FeedNextResponseDto;
+};
+
+export type FeedControllerNextResponse = FeedControllerNextResponses[keyof FeedControllerNextResponses];
+
+export type FeedControllerUnlikeData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/feed/products/{productId}/like';
+};
+
+export type FeedControllerUnlikeResponses = {
+    200: FeedLikeStateDto;
+};
+
+export type FeedControllerUnlikeResponse = FeedControllerUnlikeResponses[keyof FeedControllerUnlikeResponses];
+
+export type FeedControllerLikeData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/feed/products/{productId}/like';
+};
+
+export type FeedControllerLikeErrors = {
+    /**
+     * Product not found
+     */
+    404: unknown;
+};
+
+export type FeedControllerLikeResponses = {
+    201: FeedLikeStateDto;
+};
+
+export type FeedControllerLikeResponse = FeedControllerLikeResponses[keyof FeedControllerLikeResponses];
+
+export type FeedControllerCommentsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/feed/products/{productId}/comments';
+};
+
+export type FeedControllerCommentsResponses = {
+    200: Array<FeedCommentDto>;
+};
+
+export type FeedControllerCommentsResponse = FeedControllerCommentsResponses[keyof FeedControllerCommentsResponses];
+
+export type FeedControllerLikesData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/feed/likes';
+};
+
+export type FeedControllerLikesResponses = {
+    200: Array<FeedLikedItemDto>;
+};
+
+export type FeedControllerLikesResponse = FeedControllerLikesResponses[keyof FeedControllerLikesResponses];

@@ -374,7 +374,9 @@ export function DiscoveryCardView({
 
   const morphBody = (
     <Box ref={morphRef} sx={morphLayoutSx}>
-      <Box sx={mediaSurfaceSx}>{media}</Box>
+      <Box sx={mediaSurfaceSx} onClick={logicalOpen ? (event) => event.stopPropagation() : undefined}>
+        {media}
+      </Box>
       <Stack spacing={0.5} sx={metaStackSx}>
         {meta}
       </Stack>

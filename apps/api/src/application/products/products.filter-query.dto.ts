@@ -5,12 +5,8 @@ import { TransformToArray, TransformToOptionalBoolean, TransformToOptionalInt } 
 
 import { PRODUCT_SORT_OPENAPI, type ProductSort } from './products.filters';
 
-/** Shared catalog filter query fields — single source for facets + list DTOs. */
-export class ProductFilterQueryDto {
-  @IsOptional()
-  @IsString()
-  collection?: string;
-
+/** Intrinsic product dimensions (multi-select) — shared by the catalog and the feed `filters` body. */
+export class ProductDimensionFilterQueryDto {
   @TransformToArray()
   @IsOptional()
   @IsArray()
@@ -28,6 +24,13 @@ export class ProductFilterQueryDto {
   @IsArray()
   @IsString({ each: true })
   brand?: string[];
+}
+
+/** Shared catalog filter query fields — single source for facets + list DTOs. */
+export class ProductFilterQueryDto extends ProductDimensionFilterQueryDto {
+  @IsOptional()
+  @IsString()
+  collection?: string;
 
   @TransformToOptionalInt()
   @IsOptional()

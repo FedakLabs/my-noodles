@@ -7,6 +7,7 @@ import { WinstonModule } from 'nest-winston';
 
 import { CollectionsModule } from './application/collections';
 import { CountriesModule } from './application/countries';
+import { FeedModule } from './application/feed';
 import { HealthModule } from './application/health';
 import { OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
@@ -28,6 +29,7 @@ import { prepareDataSource } from './infrastructure/persistence';
     CollectionsModule,
     CountriesModule,
     OrdersModule,
+    FeedModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

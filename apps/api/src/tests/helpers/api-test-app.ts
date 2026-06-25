@@ -2,6 +2,7 @@ import type { Server } from 'node:http';
 
 import { type INestApplication, type ModuleMetadata, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import cookieParser from 'cookie-parser';
 
 import { API_GLOBAL_PREFIX } from '@/configs/api';
 import { localeMiddleware } from '@/infrastructure/i18n';
@@ -12,6 +13,7 @@ export async function createApiTestApp(metadata: ModuleMetadata): Promise<INestA
   const app = moduleRef.createNestApplication();
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
+  app.use(cookieParser());
   app.use(localeMiddleware);
   app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
 

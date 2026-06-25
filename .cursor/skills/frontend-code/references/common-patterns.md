@@ -80,19 +80,15 @@ When part of the UI can grow or shrink by a **large amount** — filter “show 
 import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 
-import { usePrefersReducedMotion } from '@/hooks/smooth/use-prefers-reduced-motion';
-
 export function ExpandableBlock({ expanded, teaser, rest }: {
   expanded: boolean;
   teaser: React.ReactNode;
   rest: React.ReactNode;
 }) {
-  const prefersReducedMotion = usePrefersReducedMotion();
-
   return (
     <Stack spacing={1}>
       {teaser}
-      <Collapse in={expanded} timeout={prefersReducedMotion ? 0 : undefined} sx={{ width: '100%' }}>
+      <Collapse in={expanded} sx={{ width: '100%' }}>
         <Stack component="div" sx={{ width: '100%' }}>
           {rest}
         </Stack>
@@ -105,7 +101,6 @@ export function ExpandableBlock({ expanded, teaser, rest }: {
 **Rules:**
 
 - **`Collapse` for height changes** — catalog filter facets (`filter-facet-group.tsx`), playful load-more copy (`catalog-load-more.tsx`)
-- **`usePrefersReducedMotion()`** → `timeout={0}` so expand/collapse is instant when the customer prefers reduced motion
 - **Keep toggles outside** the collapsing region so “Show all / Show less” stays reachable while height animates
 - **Pinned selections when collapsed** — if collapsed UI must still show active choices (e.g. selected filters beyond the first N), render them outside the collapse; put only the hidden remainder inside `Collapse` (see `filter-facet-group.tsx`)
 - **`unmountOnExit`** — only when removed content is decorative and remount cost is low (load-more waiting line); keep filter/checkbox lists mounted so focus and state stay stable

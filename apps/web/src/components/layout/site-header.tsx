@@ -25,6 +25,7 @@ import ContactsIcon from '@my-noodles/ui/icons/contacts.svg';
 import HomeIcon from '@my-noodles/ui/icons/home.svg';
 import MenuIcon from '@my-noodles/ui/icons/menu.svg';
 import SearchIcon from '@my-noodles/ui/icons/search.svg';
+import StarIcon from '@my-noodles/ui/icons/star.svg';
 import { useTranslations } from 'next-intl';
 import { type FC, Suspense, type SVGProps, useState } from 'react';
 
@@ -38,13 +39,14 @@ type NavIcon = FC<SVGProps<SVGSVGElement>>;
 
 type NavItem = {
   href: string;
-  labelKey: 'nav.home' | 'nav.catalog' | 'nav.contacts';
+  labelKey: 'nav.home' | 'nav.catalog' | 'nav.feed' | 'nav.contacts';
   Icon: NavIcon;
 };
 
 const navItems: NavItem[] = [
   { href: '/', labelKey: 'nav.home', Icon: HomeIcon },
   { href: '/catalog', labelKey: 'nav.catalog', Icon: SearchIcon },
+  { href: '/feed', labelKey: 'nav.feed', Icon: StarIcon },
   { href: '/contacts', labelKey: 'nav.contacts', Icon: ContactsIcon },
 ];
 

@@ -1,0 +1,64 @@
+{
+  "title": "Taste Feed",
+  "metaDescription": "Swipe through a curated stream of imported snacks — one at a time.",
+  "loading": "Preparing your taste feed…",
+  "error": "Could not load the feed. Please try again.",
+  "exit": "Exit",
+  "previous": "Previous",
+  "next": "Next",
+  "actions": {
+    "like": "Like",
+    "liked": "Liked",
+    "comments": "Comments",
+    "share": "Share",
+    "cart": "Cart",
+    "details": "More details",
+    "viewLiked": "Saved"
+  },
+  "tags": {
+    "label": "Active filters",
+    "empty": "No filters selected yet",
+    "clearAll": "Clear all",
+    "remove": "Remove filter"
+  },
+  "commentsPanel": {
+    "title": "Comments",
+    "empty": "No comments here yet.",
+    "disclaimer": "We gathered and wrote these comments ourselves — to capture how this product tastes. The emotions are real, just like the flavor.",
+    "inputPlaceholder": "You'll only know when you try…",
+    "close": "Close"
+  },
+  "likedList": {
+    "title": "Saved",
+    "notice": "Great picks! Add what you love to the cart while it's still on your mind — saved items quietly drop off after a quiet spell, so your feed can keep surprising you with fresh finds.",
+    "empty": "You haven't liked anything yet.",
+    "remove": "Remove",
+    "addToCart": "Add to cart",
+    "close": "Close"
+  },
+  "details": {
+    "title": "About the product",
+    "country": "Country",
+    "category": "Category",
+    "add": "Add",
+    "outOfStock": "Out of stock",
+    "goToProduct": "Go",
+    "close": "Collapse details"
+  },
+  "end": {
+    "title": "You have reached the end",
+    "tagsHint": "Try removing some tags to widen the search space.",
+    "body": "Try again for a fresh pass, or head to the catalog for a more focused search.",
+    "tryAgain": "Try again",
+    "tryingAgain": "Loading…",
+    "browseCatalog": "Go to catalog"
+  },
+  "media": {
+    "gallery": "Product gallery",
+    "slide": "Slide {index} of {total}",
+    "playVideo": "Play video",
+    "pauseVideo": "Pause video",
+    "muteVideo": "Mute video",
+    "unmuteVideo": "Unmute video"
+  }
+}

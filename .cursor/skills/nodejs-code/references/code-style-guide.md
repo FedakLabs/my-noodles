@@ -446,6 +446,8 @@ Resolve in service layer by locale query param.
 - TypeORM `cascade: true` on `@OneToMany` / `@OneToOne` is **persist cascade** (save/load), not a DB `ON DELETE CASCADE` — use sparingly and only when children are always saved with the parent in the same transaction.
 - `@JoinTable` join / inverse join columns: set `onUpdate: 'CASCADE'` and `onDelete: 'RESTRICT'` on both sides in the **migration** (TypeORM `@JoinTable` metadata may not expose FK actions — keep DB constraints explicit in SQL).
 
+> **Why `RESTRICT` + soft-delete, not `CASCADE`.** Data is the asset that outlives the code: customers, orders, and the engagement signals we use for personalization can't be regenerated once lost. Applications _have_ bugs — a wrong `where`, a mis-scoped admin action, a bad script — and a hard `ON DELETE CASCADE` quietly turns one erroneous parent delete into a silent multi-table wipe with no restore point. `RESTRICT` makes the database refuse that delete, forcing deletion to be an _explicit, intentional_ app decision; pairing it with soft-delete (`deleted_at` via `softRemove` / `softDelete`) keeps the row recoverable and preserves the audit trail. It's the deliberate compromise standard in SRE/data-stewardship practice (e.g. Google's _SRE_ book on data integrity & defense-in-depth recovery): treat data as deleted for the app, but cheap to restore when — not if — something goes wrong. Note this is orthogonal to the FK action: soft-delete is an `UPDATE`, so it never triggers `ON DELETE` at all; `RESTRICT` only guards against accidental _hard_ deletes.
+
 ```ts
 @ManyToOne(() => Country, (country) => country.products, {
   nullable: false,

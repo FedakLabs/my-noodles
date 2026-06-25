@@ -5,6 +5,7 @@ import { clientBaggageMiddleware, responseDelayMiddleware } from '@my-noodles/ap
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AppModule } from './app.module';
@@ -20,7 +21,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger });
 
-  app.enableCors();
+  // `credentials: true` + reflected origin so the storefront can send the feed session cookie cross-origin.
+  app.enableCors({ origin: true, credentials: true });
 
   app.useGlobalFilters(
     new HttpExceptionLogFilter(app.get(HttpAdapterHost), app.get(WINSTON_MODULE_PROVIDER)),
@@ -28,6 +30,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
+  app.use(cookieParser());
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);
   app.use(

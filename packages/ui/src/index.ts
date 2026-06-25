@@ -50,6 +50,7 @@ export {
   type GalleryImageInput,
   galleryImages,
   MediaGallery,
+  type MediaGalleryHandle,
   MediaGalleryImage,
   type MediaGalleryImageItem,
   type MediaGalleryImageProps,

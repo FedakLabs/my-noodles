@@ -13,6 +13,8 @@ import commonEn from './common/en.json';
 import commonUk from './common/uk.json';
 import contactsEn from './contacts/en.json';
 import contactsUk from './contacts/uk.json';
+import feedEn from './feed/en.json';
+import feedUk from './feed/uk.json';
 import homeEn from './home/en.json';
 import homeUk from './home/uk.json';
 import metadataEn from './metadata/en.json';
@@ -30,6 +32,7 @@ export const ukMessages = {
   collections: collectionsUk,
   common: commonUk,
   contacts: contactsUk,
+  feed: feedUk,
   home: homeUk,
   metadata: metadataUk,
   notFound: notFoundUk,
@@ -46,6 +49,7 @@ export const enMessages = {
   collections: collectionsEn,
   common: commonEn,
   contacts: contactsEn,
+  feed: feedEn,
   home: homeEn,
   metadata: metadataEn,
   notFound: notFoundEn,
