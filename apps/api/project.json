@@ -41,12 +41,14 @@
     },
     "lint": {
       "command": "pnpm lint",
+      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
       "options": {
         "cwd": "apps/api"
       }
     },
     "lint-check": {
       "command": "pnpm lint-check",
+      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
       "options": {
         "cwd": "apps/api"
       }

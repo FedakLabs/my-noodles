@@ -1,2 +1,2 @@
-pnpm nx affected -t validate --uncommitted
+pnpm nx affected -t validate --uncommitted --parallel=5 --tui=false
 git add -u
