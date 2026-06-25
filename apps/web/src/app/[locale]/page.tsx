@@ -7,8 +7,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { collectionsQueryKeys, fetchCollections } from '@/api/collections';
 import { routing } from '@/i18n/routing';
 import { HomeScreen } from '@/screens/home';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
-import { getQueryClient, QueryHydrate } from '@/shared/query-client';
+import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
@@ -36,16 +37,20 @@ export default async function HomePage({ params }: LocalePageProps) {
 
   setRequestLocale(locale);
 
-  const queryClient = getQueryClient();
+  return runWithAppLocale(locale, async () => {
+    const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery({
-    queryKey: collectionsQueryKeys.list(locale),
-    queryFn: () => fetchCollections(locale),
+    await runPrefetchSafe(() =>
+      queryClient.prefetchQuery({
+        queryKey: collectionsQueryKeys.list(),
+        queryFn: () => fetchCollections(),
+      }),
+    );
+
+    return (
+      <QueryHydrate state={dehydrate(queryClient)}>
+        <HomeScreen />
+      </QueryHydrate>
+    );
   });
-
-  return (
-    <QueryHydrate state={dehydrate(queryClient)}>
-      <HomeScreen />
-    </QueryHydrate>
-  );
 }

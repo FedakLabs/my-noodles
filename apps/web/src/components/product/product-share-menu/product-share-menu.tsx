@@ -5,11 +5,12 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { cardShadow } from '@my-noodles/theme';
-import { iconStyle } from '@my-noodles/ui';
+import { iconStyle, showToast } from '@my-noodles/ui';
 import ShareIcon from '@my-noodles/ui/icons/share.svg';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 
+import { useAppLocale } from '@/hooks/locale';
 import { absoluteUrl, localePath } from '@/shared/seo/urls';
 import {
   buildSocialShareUrl,
@@ -47,7 +48,7 @@ type ProductShareMenuProps = {
 
 export function ProductShareMenu({ productName, productSlug }: ProductShareMenuProps) {
   const t = useTranslations('product');
-  const locale = useLocale();
+  const locale = useAppLocale();
   const menuId = useId();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = anchorEl != null;
@@ -85,7 +86,12 @@ export function ProductShareMenu({ productName, productSlug }: ProductShareMenuP
 
     if (option.kind === 'copy') {
       handleClose();
-      await copyToClipboard(shareUrl);
+      const copied = await copyToClipboard(shareUrl);
+      if (copied) {
+        showToast.success(t('shareLinkCopied'));
+      } else {
+        showToast.error(t('shareLinkCopyFailed'));
+      }
       return;
     }
 

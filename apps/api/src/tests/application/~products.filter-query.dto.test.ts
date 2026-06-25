@@ -24,14 +24,14 @@ const validationPipe = new ValidationPipe({
 
 describe('ProductFacetsQueryDto', () => {
   it('coerces a single category query value to string[]', async () => {
-    const dto = plainToInstance(ProductFacetsQueryDto, { locale: 'uk', category: 'noodles' });
+    const dto = plainToInstance(ProductFacetsQueryDto, { category: 'noodles' });
 
     expect(await validate(dto)).toEqual([]);
     expect(dto.category).toEqual(['noodles']);
   });
 
   it('coerces a single country query value to string[]', async () => {
-    const dto = plainToInstance(ProductFacetsQueryDto, { locale: 'uk', country: 'canada' });
+    const dto = plainToInstance(ProductFacetsQueryDto, { country: 'canada' });
 
     expect(await validate(dto)).toEqual([]);
     expect(dto.country).toEqual(['canada']);
@@ -39,7 +39,7 @@ describe('ProductFacetsQueryDto', () => {
 
   it('coerces a single country query value through ValidationPipe', async () => {
     const dto = (await validationPipe.transform(
-      { locale: 'uk', country: 'canada' },
+      { country: 'canada' },
       { type: 'query', metatype: ProductFacetsQueryDto },
     )) as ProductFacetsQueryDto;
 
@@ -48,7 +48,6 @@ describe('ProductFacetsQueryDto', () => {
 
   it('keeps repeated country query values as string[]', async () => {
     const dto = plainToInstance(ProductFacetsQueryDto, {
-      locale: 'uk',
       country: ['canada', 'china'],
     });
 
@@ -128,7 +127,7 @@ describe('GET /api/products/facets filter query', () => {
 
     const server = apiHttpServer(app);
 
-    await request(server).get('/api/products/facets?locale=uk&category=noodles').expect(200);
+    await request(server).get('/api/products/facets?category=noodles').set('x-app-locale', 'uk').expect(200);
 
     const filteredCall = productsFind.mock.calls.find(([options]: [{ select?: { id?: boolean } }]) =>
       Boolean(options.select?.id),
@@ -167,7 +166,7 @@ describe('GET /api/products/facets filter query', () => {
 
     const server = apiHttpServer(app);
 
-    await request(server).get('/api/products/facets?locale=uk&country=canada').expect(200);
+    await request(server).get('/api/products/facets?country=canada').set('x-app-locale', 'uk').expect(200);
 
     const filteredCall = productsFind.mock.calls.find(([options]: [{ select?: { id?: boolean } }]) =>
       Boolean(options.select?.id),

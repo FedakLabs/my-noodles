@@ -8,9 +8,13 @@ export {
   writeStoredConsent,
 } from './consent';
 export { cartLineToGa4Item, priceMinorToMajor, productToGa4Item, sumItemsValueMinor } from './ecommerce';
+export type { CatalogBrowseMode, CatalogBrowseModeSource } from './track';
 export {
   trackAddToCart,
   trackBeginCheckout,
+  trackCatalogBrowseMode,
+  trackCatalogLoadMore,
+  trackCatalogPaginate,
   trackClickTelegramOrder,
   trackPurchase,
   trackRemoveFromCart,

@@ -14,10 +14,6 @@ export function parseCatalogViewMode(value: string | undefined | null): CatalogV
   return isCatalogViewMode(value) ? value : DEFAULT_CATALOG_VIEW_MODE;
 }
 
-export function hasCatalogViewModePreference(value: string | undefined | null): boolean {
-  return isCatalogViewMode(value);
-}
-
 export function writeCatalogViewModeCookie(mode: CatalogViewMode): void {
   if (typeof document === 'undefined') {
     return;

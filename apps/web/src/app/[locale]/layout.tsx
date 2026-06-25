@@ -7,6 +7,7 @@ import { AnalyticsHead } from '@/components/analytics/analytics-head';
 import { ConsentBanner } from '@/components/analytics/consent-banner';
 import { AppShell } from '@/components/layout/app-shell';
 import { routing } from '@/i18n/routing';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 import { SITE_URL } from '@/shared/env';
 import type { LocalePageProps } from '@/shared/page-props';
 import {
@@ -81,16 +82,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     getTranslations({ locale, namespace: 'metadata' }),
   ]);
 
-  return (
+  return runWithAppLocale(locale, () => (
     <>
       <AnalyticsHead />
       <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
       <NextIntlClientProvider messages={messages}>
-        <Providers>
+        <Providers locale={locale}>
           <AppShell>{children}</AppShell>
           <ConsentBanner />
         </Providers>
       </NextIntlClientProvider>
     </>
-  );
+  ));
 }

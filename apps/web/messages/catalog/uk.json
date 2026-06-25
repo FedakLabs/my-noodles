@@ -14,6 +14,7 @@
     "nudge": "Нуль результатів, безліч можливостей — підкрути і спробуй ще 😉"
   },
   "openFilters": "Фільтри",
+  "clear": "Очистити",
   "resultsCount": "{count, plural, one {# товар} few {# товари} many {# товарів} other {# товарів}}",
   "pageOfTotal": "Сторінка {page} з {pageCount}",
   "previousPage": "Попередня сторінка",
@@ -29,6 +30,11 @@
   },
   "addToCart": "У кошик",
   "outOfStock": "Немає в наявності",
+  "goToDetails": "Детальніше",
+  "goToProduct": "Перейти",
+  "addShort": "Додати",
+  "previewLoading": "Завантаження превʼю…",
+  "previewDetailsEmpty": "Тут поки тільки смак на картинці — на сторінці товару чекає повна історія 🍜",
   "imageGallery": "Фото продукту",
   "imageSlide": "Фото {index} з {total}",
   "filters": {

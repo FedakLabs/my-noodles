@@ -1,3 +1,4 @@
+export { APP_LOCALE_HEADER } from './app-locale-header';
 export type { Locale, LocalizedStringData, LocalizedStringRecord } from './locale.config';
 export { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './locale.config';
 export { LocaleContext } from './locale.context';

@@ -179,6 +179,8 @@ export type FormattedInfiniteQueryResult<TItem, TError, EntityName extends strin
 } & {
   [K in `${EntityName}IsRefetching`]: boolean;
 } & {
+  [K in `${EntityName}IsFetchingNextPage`]: boolean;
+} & {
   [K in `${EntityName}IsError`]: boolean;
 } & {
   [K in `${EntityName}Error`]: TError | null;
@@ -186,7 +188,18 @@ export type FormattedInfiniteQueryResult<TItem, TError, EntityName extends strin
   [K in `${EntityName}FetchNextPage`]: () => void;
 } & {
   [K in `${EntityName}HasNextPage`]: boolean;
-};
+} & {
+  [K in `${EntityName}Total`]: number | undefined;
+} & RenameMultiple<QueryViewState, QueryViewStateKeyMap<EntityName>>;
+
+function readPagePaginatedTotal<TItem>(page: { items: TItem[] } | undefined): number | undefined {
+  if (!page || !('meta' in page)) {
+    return undefined;
+  }
+
+  const meta = (page as PagePaginatedResponse<TItem>).meta;
+  return typeof meta?.total === 'number' ? meta.total : undefined;
+}
 
 export function formatUseInfiniteQuery<
   TPage extends { items: TItem[] },
@@ -194,28 +207,39 @@ export function formatUseInfiniteQuery<
   TError = unknown,
   EntityName extends string = string,
 >(
-  {
+  query: UseInfiniteQueryResult<InfiniteData<TPage>, TError>,
+  entityName: EntityName,
+): FormattedInfiniteQueryResult<TItem, TError, EntityName> {
+  const {
     data,
     isPending,
     isLoading,
     isFetching,
     isRefetching,
+    isFetchingNextPage,
     isError,
     error,
     fetchNextPage,
     hasNextPage,
-  }: UseInfiniteQueryResult<InfiniteData<TPage>, TError>,
-  entityName: EntityName,
-): FormattedInfiniteQueryResult<TItem, TError, EntityName> {
+  } = query;
+
+  const viewState = deriveQueryViewState(data, isPending, isFetching, isError);
+
   return {
     [entityName]: data?.pages.flatMap((page) => page.items) ?? [],
     [`${entityName}IsPending`]: isPending,
     [`${entityName}IsLoading`]: isLoading,
     [`${entityName}IsFetching`]: isFetching,
-    [`${entityName}IsRefetching`]: isRefetching,
+    [`${entityName}IsRefetching`]: isRefetching && !isFetchingNextPage,
+    [`${entityName}IsFetchingNextPage`]: isFetchingNextPage,
     [`${entityName}IsError`]: isError,
     [`${entityName}Error`]: error,
     [`${entityName}FetchNextPage`]: fetchNextPage,
     [`${entityName}HasNextPage`]: hasNextPage ?? false,
+    [`${entityName}Total`]: readPagePaginatedTotal(data?.pages[0]),
+    [`${entityName}IsInitialLoad`]: viewState.isInitialLoad,
+    [`${entityName}IsLoadFailed`]: viewState.isLoadFailed,
+    [`${entityName}IsEmpty`]: viewState.isEmpty,
+    [`${entityName}IsBusy`]: viewState.isBusy,
   } as FormattedInfiniteQueryResult<TItem, TError, EntityName>;
 }

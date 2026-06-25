@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { fetchProductDetail } from '@/api/products';
 import { routing } from '@/i18n/routing';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 import { formatCurrency } from '@/utils/format-currency';
@@ -19,10 +20,9 @@ export default async function Image({ params }: ProductOpenGraphImageProps) {
     return createOgImage({ title: slug });
   }
 
-  const [product, tMetadata] = await Promise.all([
-    fetchProductDetail(slug, locale),
-    getTranslations({ locale, namespace: 'metadata' }),
-  ]);
+  const [product, tMetadata] = await runWithAppLocale(locale, async () =>
+    Promise.all([fetchProductDetail(slug), getTranslations({ locale, namespace: 'metadata' })]),
+  );
   const title = product.name ?? product.slug;
   const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
 
@@ -40,7 +40,7 @@ export async function generateImageMetadata({ params }: ProductOpenGraphImagePro
     return [{ alt: slug }];
   }
 
-  const product = await fetchProductDetail(slug, locale);
+  const product = await runWithAppLocale(locale, () => fetchProductDetail(slug));
 
   return [
     {

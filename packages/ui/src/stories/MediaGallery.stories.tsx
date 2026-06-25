@@ -8,8 +8,6 @@ import { MediaGallery, type MediaGalleryItem } from '../components/MediaGallery'
 
 /** Product detail column width on `md` layouts. */
 const GALLERY_WIDTH_MD = 480;
-/** DiscoveryCard gallery width at `xs` (2-up catalog grid). */
-const GALLERY_WIDTH_COMPACT = 175;
 
 function GalleryPreview({ children, width }: { children: ReactNode; width: number | string }) {
   return (
@@ -51,11 +49,7 @@ const meta = {
   title: 'Components/MediaGallery',
   component: MediaGallery,
   args: {
-    density: 'comfortable',
     items: sampleImages,
-  },
-  argTypes: {
-    density: { control: 'select', options: ['compact', 'comfortable'] },
   },
 } satisfies Meta<typeof MediaGallery>;
 
@@ -111,39 +105,20 @@ export const WithVideo: Story = {
 
 export const ProductPageLayout: Story = {
   render: (args) => (
-    <Stack spacing={1} sx={{ maxWidth: GALLERY_WIDTH_MD }}>
-      <Typography variant="caption" color="text.secondary">
-        Comfortable density — product detail hero column
-      </Typography>
-      <GalleryPreview width="100%">
-        <MediaGallery
-          {...args}
-          density="comfortable"
-          items={[
-            ...sampleImages.slice(0, 2),
-            {
-              type: 'video',
-              url: sampleVideoUrl,
-              alt: 'Product tasting clip',
-              posterUrl: sampleImages[0]!.url,
-            },
-          ]}
-        />
-      </GalleryPreview>
-    </Stack>
-  ),
-};
-
-export const CompactDensity: Story = {
-  render: (args) => (
-    <Stack spacing={1}>
-      <Typography variant="caption" color="text.secondary">
-        Compact density — DiscoveryCard inline gallery
-      </Typography>
-      <GalleryPreview width={GALLERY_WIDTH_COMPACT}>
-        <MediaGallery {...args} density="compact" items={sampleImages.slice(0, 2)} />
-      </GalleryPreview>
-    </Stack>
+    <GalleryPreview width="100%">
+      <MediaGallery
+        {...args}
+        items={[
+          ...sampleImages.slice(0, 2),
+          {
+            type: 'video',
+            url: sampleVideoUrl,
+            alt: 'Product tasting clip',
+            posterUrl: sampleImages[0]!.url,
+          },
+        ]}
+      />
+    </GalleryPreview>
   ),
 };
 

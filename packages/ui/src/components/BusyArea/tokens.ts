@@ -24,11 +24,11 @@ export type SmoothMotionTokens = {
   transitionEasing: string;
 };
 
-export function resolveSmoothMotionTokens(prefersReducedMotion: boolean): SmoothMotionTokens {
+export function resolveSmoothMotionTokens(): SmoothMotionTokens {
   return {
-    showDelayMs: prefersReducedMotion ? 0 : SMOOTH_SHOW_DELAY_MS,
-    transitionMs: prefersReducedMotion ? 0 : SMOOTH_TRANSITION_MS,
-    minVisibleMs: prefersReducedMotion ? 0 : SMOOTH_MIN_VISIBLE_MS,
-    transitionEasing: prefersReducedMotion ? 'linear' : SMOOTH_TRANSITION_EASING,
+    showDelayMs: SMOOTH_SHOW_DELAY_MS,
+    transitionMs: SMOOTH_TRANSITION_MS,
+    minVisibleMs: SMOOTH_MIN_VISIBLE_MS,
+    transitionEasing: SMOOTH_TRANSITION_EASING,
   };
 }

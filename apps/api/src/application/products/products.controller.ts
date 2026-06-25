@@ -1,7 +1,7 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { LocaleQueryDto } from '@/utils/locale-query';
+import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
 import {
   ListProductsQueryDto,
@@ -14,8 +14,10 @@ import { ProductsService } from './products.service';
 
 @ApiTags('Products')
 @Controller('products')
-export class ProductsController {
-  constructor(@Inject(ProductsService) private readonly productsService: ProductsService) {}
+export class ProductsController extends LocalizedStorefrontController {
+  constructor(@Inject(ProductsService) private readonly productsService: ProductsService) {
+    super();
+  }
 
   @Get('facets')
   @ApiOperation({ summary: 'Catalog facet options and result counts for the current filter state' })
@@ -32,7 +34,7 @@ export class ProductsController {
   @Get(':slug')
   @ApiOperation({ summary: 'Get product by slug' })
   @ApiNotFoundResponse({ description: 'Product not found' })
-  getBySlug(@Param('slug') slug: string, @Query() _query: LocaleQueryDto): Promise<ProductDetailDto> {
+  getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
     return this.productsService.getBySlug(slug);
   }
 }

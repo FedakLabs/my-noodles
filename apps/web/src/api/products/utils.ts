@@ -1,17 +1,12 @@
 import type {
-  Locale,
   ProductsControllerGetFacetsData,
   ProductsControllerListData,
 } from '@my-noodles/api-clients/storefront';
 
 import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog/search-params';
 
-export function searchParamsToListQuery(
-  params: CatalogSearchParams,
-  locale: Locale,
-): ProductsControllerListData['query'] {
+export function searchParamsToListQuery(params: CatalogSearchParams): ProductsControllerListData['query'] {
   return {
-    locale,
     page: params.page,
     limit: params.limit,
     collection: params.collection ?? undefined,
@@ -28,10 +23,8 @@ export function searchParamsToListQuery(
 
 export function searchParamsToFacetsQuery(
   params: CatalogFacetsParams,
-  locale: Locale,
 ): NonNullable<ProductsControllerGetFacetsData['query']> {
   return {
-    locale,
     collection: params.collection ?? undefined,
     category: params.category.length > 0 ? params.category : undefined,
     country: params.country.length > 0 ? params.country : undefined,

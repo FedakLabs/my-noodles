@@ -253,8 +253,8 @@ export class ProductsController {
   }
 
   @Get(':slug')
-  async getBySlug(@Param('slug') slug: string, @Query() query: LocaleQueryDto): Promise<ProductDetailDto> {
-    return this.productsService.getBySlug(slug, query.locale);
+  async getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
+    return this.productsService.getBySlug(slug);
   }
 }
 ```

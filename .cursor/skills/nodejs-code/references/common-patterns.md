@@ -32,11 +32,8 @@ Recipes for `apps/api`. **Grep the repo first** — use domain names from this p
 
 ```ts
 @Get(':slug')
-async getBySlug(
-  @Param('slug') slug: string,
-  @Query() query: LocaleQueryDto,
-): Promise<ProductDetailDto> {
-  return this.productsService.getBySlug(slug, query.locale);
+async getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
+  return this.productsService.getBySlug(slug);
 }
 ```
 
@@ -224,36 +221,22 @@ For joins or custom QB tweaks, use `new PaginationHelper(repo, pagination).execu
 
 `buildPaginationMeta` / `paginationSkip` remain available for non-standard flows.
 
-### Locale query (`src/utils/locale-query.ts`)
+### Locale header (`x-app-locale`)
 
-Locale is resolved per request by `localeMiddleware` (`?locale` → `Accept-Language` → default). Supported values come from `SUPPORTED_LOCALES` in `locale.config.ts`.
+Locale is resolved per request by `localeMiddleware` (`x-app-locale` header → `Accept-Language` → default). Supported values come from `SUPPORTED_LOCALES` in `locale.config.ts`.
 
-**Query DTOs** — compose with `LocaleQueryDto` (validation + Swagger on endpoints that already use `@Query()`):
-
-```ts
-import { IntersectionType } from '@nestjs/swagger';
-import { LocaleQueryDto } from '@/utils/locale-query';
-import { PaginationQueryDto } from '@/utils/pagination';
-
-export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, LocaleQueryDto) {
-  // filters only
-}
-
-export class ProductFiltersQueryDto extends LocaleQueryDto {
-  // filters only (no page/limit) — powers GET /products/filters
-}
-```
-
-Services do not read `locale` from the DTO — `LocaleContext` is already bound. The field exists so `ValidationPipe` whitelists it and OpenAPI documents it.
-
-**Endpoints without other query params** — add `@Query() _query: LocaleQueryDto` on the handler (locale is resolved by middleware, not the service):
+**OpenAPI** — document the optional header with `@AppLocaleHeader()` on storefront controllers:
 
 ```ts
-@Get()
-list(@Query() _query: LocaleQueryDto): Promise<CountryDto[]> {
-  return this.countriesService.list();
-}
+import { AppLocaleHeader } from '@/utils/app-locale-header.decorator';
+
+@ApiTags('Products')
+@AppLocaleHeader()
+@Controller('products')
+export class ProductsController { /* … */ }
 ```
+
+Services do not read locale from query DTOs — `LocaleContext` is already bound by middleware. Query DTOs are filter/pagination only.
 
 Regenerate storefront clients after changing DTOs, routes, or OpenAPI metadata (API must be running on port 3001):
 

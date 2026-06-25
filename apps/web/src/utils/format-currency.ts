@@ -11,17 +11,17 @@ import {
 
 export { type CurrencyCode, DEFAULT_CURRENCY } from './currency.config';
 
-function resolveCurrency(currency: string): CurrencyCode {
-  return isCurrencyCode(currency) ? currency : DEFAULT_CURRENCY;
+function resolveCurrency(currency: string | null | undefined): CurrencyCode {
+  return currency != null && isCurrencyCode(currency) ? currency : DEFAULT_CURRENCY;
 }
 
 /** Integer minor units → major amount (e.g. 9900 kop → 99 UAH). */
-export function minorToMajor(amountMinor: number, currency: string = DEFAULT_CURRENCY): number {
+export function minorToMajor(amountMinor: number, currency?: string | null): number {
   return amountMinor / minorFactor(resolveCurrency(currency));
 }
 
 /** Major amount → integer minor units (rounded). */
-export function majorToMinor(amountMajor: number, currency: string = DEFAULT_CURRENCY): number {
+export function majorToMinor(amountMajor: number, currency?: string | null): number {
   return Math.round(amountMajor * minorFactor(resolveCurrency(currency)));
 }
 
@@ -79,7 +79,11 @@ function applyCurrencySymbol(
  * Display price from integer minor units (`priceMinor` = major × 100 for UAH).
  * Locale keys follow `AppLocale` (`uk` | `en`), not ICU tags.
  */
-export function formatCurrency(amountMinor: number, currency: string, locale: string): string {
+export function formatCurrency(
+  amountMinor: number,
+  currency: string | null | undefined,
+  locale: string,
+): string {
   const code = resolveCurrency(currency);
   const appLocale = resolveAppLocale(locale);
   const localeDisplay = LOCALE_CURRENCY_DISPLAY[appLocale];

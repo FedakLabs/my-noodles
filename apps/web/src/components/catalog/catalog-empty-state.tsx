@@ -12,7 +12,7 @@ const EMPTY_MESSAGE_KEYS = ['filters', 'wander', 'surprise', 'tweak', 'patience'
 
 export function CatalogEmptyState() {
   const t = useTranslations('catalog');
-  const { appliedKey, resetFilters } = useCatalogSearchParams();
+  const { appliedKey, clearCatalog } = useCatalogSearchParams();
   const messageKeys = useMemo(() => [...EMPTY_MESSAGE_KEYS], []);
   const messageKey = useMemo(() => {
     void appliedKey;
@@ -23,8 +23,8 @@ export function CatalogEmptyState() {
     <PlayfulEmptyState
       message={t(`emptyMessages.${messageKey}`)}
       action={
-        <Button variant="outlined" size="small" onClick={resetFilters}>
-          {t('emptyResetFilters')}
+        <Button variant="outlined" size="small" onClick={clearCatalog}>
+          {t('clear')}
         </Button>
       }
     />

@@ -6,18 +6,17 @@ import { useCarouselContext } from './carousel-context';
 
 export type CarouselDotsProps = {
   count: number;
-  density?: 'compact' | 'comfortable';
   slideLabel: (index: number, total: number) => string;
 };
 
-export function CarouselDots({ count, density = 'comfortable', slideLabel }: CarouselDotsProps) {
+export function CarouselDots({ count, slideLabel }: CarouselDotsProps) {
   const { selectedIndex, scrollTo } = useCarouselContext();
 
   if (count <= 1) {
     return null;
   }
 
-  const dotSize = density === 'compact' ? 6 : 8;
+  const dotSize = 8;
 
   return (
     <Box
@@ -25,10 +24,10 @@ export function CarouselDots({ count, density = 'comfortable', slideLabel }: Car
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: density === 'compact' ? 6 : 10,
+        bottom: 10,
         display: 'flex',
         justifyContent: 'center',
-        gap: density === 'compact' ? 0.75 : 1,
+        gap: 1,
         pointerEvents: 'none',
       }}
     >

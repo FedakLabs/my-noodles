@@ -4,6 +4,7 @@ import { cache } from 'react';
 const defaultOptions: DefaultOptions = {
   queries: {
     retry: 1,
+    throwOnError: false,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     placeholderData: keepPreviousData,

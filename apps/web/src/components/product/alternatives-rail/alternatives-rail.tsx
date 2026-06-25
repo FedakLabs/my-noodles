@@ -1,6 +1,5 @@
 'use client';
 
-import Box from '@mui/material/Box';
 import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
 import { Carousel, CarouselContent, CarouselSlide, railCarouselOptions } from '@my-noodles/ui';
 
@@ -22,20 +21,12 @@ export function AlternativesRail({ products, ariaLabel }: AlternativesRailProps)
     return null;
   }
 
-  if (products.length === 1) {
-    return (
-      <Box sx={{ width: ALTERNATIVE_CARD_BASIS, flexShrink: 0 }}>
-        <ProductCard product={products[0]!} singleImage />
-      </Box>
-    );
-  }
-
   return (
     <Carousel ariaLabel={ariaLabel} options={railCarouselOptions}>
       <CarouselContent gap={2}>
         {products.map((product, index) => (
           <CarouselSlide key={product.id} index={index} responsiveBasis={ALTERNATIVE_CARD_BASIS}>
-            <ProductCard product={product} singleImage />
+            <ProductCard product={product} previewEnabled={false} />
           </CarouselSlide>
         ))}
       </CarouselContent>

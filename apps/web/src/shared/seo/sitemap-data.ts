@@ -1,41 +1,43 @@
 import 'server-only';
 
-import type { Locale } from '@my-noodles/api-clients/storefront';
-
 import { fetchCollections } from '@/api/collections';
 import { fetchProductsList } from '@/api/products';
+import type { AppLocale } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 
 const SITEMAP_PRODUCT_PAGE_SIZE = 100;
 
-export async function fetchAllProductSlugs(locale: Locale = 'uk'): Promise<string[]> {
-  const slugs: string[] = [];
-  let page = 1;
+export async function fetchAllProductSlugs(locale: AppLocale = routing.defaultLocale): Promise<string[]> {
+  return runWithAppLocale(locale, async () => {
+    const slugs: string[] = [];
+    let page = 1;
 
-  while (true) {
-    const response = await fetchProductsList(
-      {
+    while (true) {
+      const response = await fetchProductsList({
         ...DEFAULT_CATALOG_FILTER_PARAMS,
         page,
         limit: SITEMAP_PRODUCT_PAGE_SIZE,
-      },
-      locale,
-    );
+      });
 
-    slugs.push(...response.items.map((product) => product.slug));
+      slugs.push(...response.items.map((product) => product.slug));
 
-    if (page * SITEMAP_PRODUCT_PAGE_SIZE >= response.meta.total) {
-      break;
+      if (page * SITEMAP_PRODUCT_PAGE_SIZE >= response.meta.total) {
+        break;
+      }
+
+      page += 1;
     }
 
-    page += 1;
-  }
-
-  return slugs;
+    return slugs;
+  });
 }
 
-export async function fetchAllCollectionSlugs(locale: Locale = 'uk'): Promise<string[]> {
-  const collections = await fetchCollections(locale);
+export async function fetchAllCollectionSlugs(locale: AppLocale = routing.defaultLocale): Promise<string[]> {
+  return runWithAppLocale(locale, async () => {
+    const collections = await fetchCollections();
 
-  return collections.map((collection) => collection.slug);
+    return collections.map((collection) => collection.slug);
+  });
 }

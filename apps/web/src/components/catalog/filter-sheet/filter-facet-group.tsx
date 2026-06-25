@@ -8,7 +8,6 @@ import FormGroup from '@mui/material/FormGroup';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ProductFacetOptionDto } from '@my-noodles/api-clients/storefront';
-import { usePrefersReducedMotion } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
@@ -43,14 +42,12 @@ function splitFacetOptions(
 
 export function FilterFacetGroup({ title, options, selectedValues, onToggle }: FilterFacetGroupProps) {
   const t = useTranslations('catalog.filters');
-  const prefersReducedMotion = usePrefersReducedMotion();
   const [expanded, setExpanded] = useState(false);
   const { head, tail, selectedTail, hiddenTail } = useMemo(
     () => splitFacetOptions(options, selectedValues, INITIAL_VISIBLE_COUNT),
     [options, selectedValues],
   );
   const hasMore = tail.length > 0;
-  const collapseTimeout = prefersReducedMotion ? 0 : undefined;
 
   if (options.length === 0) {
     return null;
@@ -77,7 +74,7 @@ export function FilterFacetGroup({ title, options, selectedValues, onToggle }: F
         {head.map(renderOption)}
         {!expanded ? selectedTail.map(renderOption) : null}
         {hasMore ? (
-          <Collapse in={expanded} timeout={collapseTimeout} sx={{ width: '100%' }}>
+          <Collapse in={expanded} sx={{ width: '100%' }}>
             <Stack component="div" sx={{ width: '100%' }}>
               {(expanded ? tail : hiddenTail).map(renderOption)}
             </Stack>

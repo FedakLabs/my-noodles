@@ -238,7 +238,7 @@ apps/web/src/
 - **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`. **Zod-first:** use schema validation, `.transform()`, and `.pipe()` for coercion and normalization; custom parse helpers only as a last resort.
 - **`shared/urls.ts`** — external off-origin links (`TELEGRAM_SUPPORT_URL`, …). In-app routes → `@/i18n/navigation`; SEO path builders → `shared/seo/urls`.
 - **Test configs** — shared presets in `configs/vitest` (`createBaseVitestConfig`) and `configs/jest` (`createJestConfig`); each app/package keeps a thin config file with project-specific overrides (alias, include globs, env stubs, …).
-- **`hooks/locale.ts`** — `useAppLocale()` (next-intl); client API hooks merge locale internally, server fetchers take explicit `locale`
+- **`hooks/locale/`** — `useAppLocale()` (Zustand); `LocaleSync` binds route locale; client interceptor reads store; SSR uses `runWithAppLocale`
 
 ### Module barrels (same idea as backend domains)
 
@@ -326,7 +326,7 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | Duplicating OpenAPI shapes as `*ViewModel` / hand-rolled DTOs | Types from `@my-noodles/api-clients/storefront`; local `types.ts` only for query-input/filter shapes |
 | `useState` for catalog filters, sort, or pagination | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI; prefetch once in `page.tsx` |
 | Mappers from search params in `screens/` | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept `CatalogSearchParams` / `CatalogFilterParams` |
-| Passing `locale` through every screen into hooks | `useAppLocale()` inside `*.hooks.ts`; explicit `locale` only in server prefetch fetchers |
+| Passing `locale` through every screen into hooks | `useAppLocale()` inside `*.hooks.ts` for query keys; fetchers locale-free — interceptor + ALS/header |
 | User-visible strings in JSX | `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json` |
 | `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
 | Business logic and layout mixed in `app/**/page.tsx` | Thin `page.tsx` → `screens/[feature]`; routing shell stays in `app/` |

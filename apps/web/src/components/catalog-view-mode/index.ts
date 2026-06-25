@@ -8,7 +8,6 @@ export {
   CATALOG_VIEW_MODE_COOKIE,
   type CatalogViewMode,
   DEFAULT_CATALOG_VIEW_MODE,
-  hasCatalogViewModePreference,
   isCatalogViewMode,
   parseCatalogViewMode,
   writeCatalogViewModeCookie,

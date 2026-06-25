@@ -212,12 +212,12 @@ import { searchParamsToListQuery } from './utils';
 
 export const productsQueryKeys = {
   all: ['products'] as const,
-  list: (params: CatalogSearchParams, locale: Locale) =>
+  list: (params: CatalogSearchParams, locale: AppLocale) =>
     [...productsQueryKeys.all, 'list', locale, params] as const,
 };
 
-export async function fetchProductsList(params: CatalogSearchParams, locale: Locale): Promise<PaginatedProductsDto> {
-  return requestData(productsControllerList({ query: searchParamsToListQuery(params, locale) }));
+export async function fetchProductsList(params: CatalogSearchParams): Promise<PaginatedProductsDto> {
+  return requestData(productsControllerList({ query: searchParamsToListQuery(params) }));
 }
 ```
 
@@ -239,7 +239,7 @@ export function useProductsList(params: CatalogSearchParams) {
   return formatUseQuery(
     useQuery({
       queryKey: productsQueryKeys.list(params, locale),
-      queryFn: () => fetchProductsList(params, locale),
+      queryFn: () => fetchProductsList(params),
     }),
     'products',
   );
@@ -280,9 +280,8 @@ For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfi
 **Rules:**
 
 - Return SDK data as-is for our API — use `requestData()` from `@my-noodles/web-lib/react-query` in fetchers; global `throwOnError: true` in `packages/api-clients/.../runtime.config.ts`
-- **Client hooks** call `useAppLocale()` (next-intl app locale, same codes as `Locale`) — do not pass `locale` from screens/components
-- **Server prefetch / fetchers** take explicit `locale` (from route `params` or `setRequestLocale`) — keep in `*.ts`, not `*.hooks.ts`
-- Pass optional `locale` via generated query types on SDK calls (`{ query: { locale, … } }`)
+- **Client hooks** call `useAppLocale()` for query keys — do not pass `locale` from screens/components; fetchers are locale-free (interceptor sets `x-app-locale` from Zustand)
+- **Server prefetch / fetchers** wrap work in `runWithAppLocale(locale, …)` — AsyncLocalStorage feeds the same interceptor on SSR
 - Use generated enums (`ProductSort`, `DeliveryProvider`, …) — do not hand-roll constants in `api-clients`
 - Catalog **facets preview** and product **list** use **separate keys** (facets = `CatalogFilterParams`, no page/limit; list = full `CatalogSearchParams`)
 - Mutations invalidate the smallest relevant key set

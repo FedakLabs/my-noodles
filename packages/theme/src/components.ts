@@ -1,6 +1,8 @@
+import './mui-augmentation';
+
 import type { Components } from '@mui/material/styles';
 
-import { colors } from './palette';
+import { baseColors, colors } from './palette';
 import { scrollbarStyles } from './scrollbars';
 import { cardShadow, sheetShadow } from './shadows';
 import { borderRadius, edgeAnchoredBorderRadius } from './shape';
@@ -44,6 +46,22 @@ export const components: Components = {
         style: {
           borderColor: colors.border.subtle,
           color: colors.text.primary,
+        },
+      },
+      {
+        props: { variant: 'tertiary' },
+        style: {
+          backgroundColor: 'transparent',
+          color: colors.buttonFill.primary,
+          paddingInline: 0,
+          width: 'fit-content',
+          minWidth: 'unset',
+          '&.MuiButton-fullWidth': {
+            width: 'fit-content',
+          },
+          '&:hover': {
+            backgroundColor: baseColors.terracottaLight,
+          },
         },
       },
     ],

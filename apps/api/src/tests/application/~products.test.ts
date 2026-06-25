@@ -73,7 +73,10 @@ describe('products (e2e)', () => {
   it('GET /api/products returns paginated catalog items', async () => {
     const server = apiHttpServer(app);
 
-    const response = await request(server).get('/api/products?locale=uk&page=1&limit=12').expect(200);
+    const response = await request(server)
+      .get('/api/products?page=1&limit=12')
+      .set('x-app-locale', 'uk')
+      .expect(200);
 
     expect(response.body).toMatchObject({
       items: [
@@ -97,7 +100,7 @@ describe('products (e2e)', () => {
   it('GET /api/products/facets returns filter options and counts', async () => {
     const server = apiHttpServer(app);
 
-    const response = await request(server).get('/api/products/facets?locale=uk').expect(200);
+    const response = await request(server).get('/api/products/facets').set('x-app-locale', 'uk').expect(200);
 
     expect(response.body).toMatchObject({
       total: 1,
@@ -127,12 +130,12 @@ describe('products (e2e)', () => {
     });
 
     await request(server)
-      .get('/api/products/facets?locale=uk&category=snacks&priceMin=100&inStock=true')
+      .get('/api/products/facets?category=snacks&priceMin=100&inStock=true')
+      .set('x-app-locale', 'uk')
       .expect(200);
 
     expect(getFacets).toHaveBeenCalledWith(
       expect.objectContaining({
-        locale: 'uk',
         category: ['snacks'],
         priceMin: 100,
         inStock: true,

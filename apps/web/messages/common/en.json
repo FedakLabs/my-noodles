@@ -9,5 +9,9 @@
     "cart": "Cart",
     "menuOpen": "Open menu",
     "menuClose": "Close menu"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch language"
   }
 }

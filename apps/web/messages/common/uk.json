@@ -9,5 +9,9 @@
     "cart": "Кошик",
     "menuOpen": "Відкрити меню",
     "menuClose": "Закрити меню"
+  },
+  "language": {
+    "label": "Мова",
+    "switchTo": "Змінити мову"
   }
 }

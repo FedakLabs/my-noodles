@@ -1,20 +1,32 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ProductSort, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
-import { BusyArea, type BusyAreaState, StableLinearProgress, useBusyAreaState } from '@my-noodles/ui';
+import { layoutDisplay } from '@my-noodles/theme';
+import {
+  BusyArea,
+  type BusyAreaState,
+  iconStyle,
+  StableLinearProgress,
+  useBusyAreaState,
+} from '@my-noodles/ui';
+import FilterIcon from '@my-noodles/ui/icons/filter.svg';
 import { useTranslations } from 'next-intl';
 
 import { CatalogEmptyState } from '@/components/catalog/catalog-empty-state';
 import { CatalogLoadMore } from '@/components/catalog/catalog-load-more';
+import { CatalogLoadMoreButton } from '@/components/catalog/catalog-load-more-button';
 import { CatalogPagination } from '@/components/catalog/catalog-pagination';
 import { CatalogSortMenu } from '@/components/catalog/catalog-sort-menu';
 import { CatalogViewModeMenu } from '@/components/catalog-view-mode';
 
 import { ProductCard } from '../product-card/product-card';
+import { useCatalogGridColumns } from '../product-card/use-catalog-grid-columns';
 import { ProductGridSkeleton } from './product-grid-skeleton';
 
 type ProductGridPagination = {
@@ -29,13 +41,21 @@ type ProductGridLoadMore = {
   onLoadMore: () => void;
 };
 
+type ProductGridPaginationLoadMore = {
+  isLoading: boolean;
+  onLoadMore: () => void;
+};
+
 type ProductGridProps = {
   products: ProductSummaryDto[];
   totalCount?: number;
   showResultsCount?: boolean;
   sort?: ProductSort;
   onSortChange?: (sort: ProductSort) => void;
+  onOpenFilters?: () => void;
+  hasFiltersApplied?: boolean;
   pagination?: ProductGridPagination;
+  paginationLoadMore?: ProductGridPaginationLoadMore;
   loadMore?: ProductGridLoadMore;
   isPending?: boolean;
   isFetching?: boolean;
@@ -50,6 +70,8 @@ function ProductGridToolbar({
   sort,
   onSortChange,
   pagination,
+  onOpenFilters,
+  hasFiltersApplied,
   progressActive,
   progressLabel,
   timing,
@@ -61,6 +83,8 @@ function ProductGridToolbar({
   sort?: ProductSort;
   onSortChange?: (sort: ProductSort) => void;
   pagination?: ProductGridPagination;
+  onOpenFilters?: () => void;
+  hasFiltersApplied?: boolean;
   progressActive: boolean;
   progressLabel: string;
   timing: BusyAreaState;
@@ -106,7 +130,23 @@ function ProductGridToolbar({
           spacing={0.5}
           sx={{ alignItems: 'center', color: 'text.secondary', flexShrink: 0 }}
         >
+          {onOpenFilters ? (
+            <Box sx={{ display: layoutDisplay.mobileOnlyFlex, alignItems: 'center' }}>
+              <IconButton
+                size="small"
+                disabled={isBusy}
+                aria-label={t('openFilters')}
+                onClick={onOpenFilters}
+                sx={{ color: hasFiltersApplied ? 'primary.main' : 'inherit', p: 0.25 }}
+              >
+                <FilterIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+              </IconButton>
+            </Box>
+          ) : null}
           {showSort ? <CatalogSortMenu value={sort} onChange={onSortChange} disabled={isBusy} /> : null}
+          {showSort ? (
+            <Divider orientation="vertical" flexItem sx={{ alignSelf: 'center', height: 20 }} />
+          ) : null}
           <CatalogViewModeMenu disabled={isBusy} />
         </Stack>
       </Stack>
@@ -128,7 +168,10 @@ export function ProductGrid({
   sort,
   onSortChange,
   pagination,
+  paginationLoadMore,
   loadMore,
+  onOpenFilters,
+  hasFiltersApplied,
   isPending,
   isFetching,
   skeletonCount = 8,
@@ -143,6 +186,7 @@ export function ProductGrid({
   const showSearchingText = refreshActive && !hasStatusData;
   const showGridBusy = refreshActive && products.length > 0;
   const showToolbar = showResultsCount || (sort != null && onSortChange != null) || pagination != null;
+  const gridColumns = useCatalogGridColumns();
 
   if (isInitialLoad) {
     return (
@@ -156,6 +200,8 @@ export function ProductGrid({
             sort={sort}
             onSortChange={onSortChange}
             pagination={pagination}
+            onOpenFilters={onOpenFilters}
+            hasFiltersApplied={hasFiltersApplied}
             progressActive={false}
             progressLabel={t('filters.searching')}
             timing={timing}
@@ -187,6 +233,8 @@ export function ProductGrid({
           sort={sort}
           onSortChange={onSortChange}
           pagination={pagination}
+          onOpenFilters={onOpenFilters}
+          hasFiltersApplied={hasFiltersApplied}
           progressActive={refreshActive}
           progressLabel={searchingText}
           timing={timing}
@@ -199,13 +247,20 @@ export function ProductGrid({
         <BusyArea timing={timing} show={showGridBusy} label={searchingText}>
           <Grid container spacing={2}>
             {products.map((product, index) => (
-              <Grid key={product.id} size={{ xs: 6, sm: 4, md: 3 }} sx={{ minWidth: 0 }}>
-                <ProductCard product={product} priorityPrefetch={index < 4} />
+              <Grid key={product.id} size={{ xs: 6, sm: 4, md: 4 }} sx={{ minWidth: 0, display: 'flex' }}>
+                <ProductCard product={product} gridIndex={index} gridColumns={gridColumns} />
               </Grid>
             ))}
           </Grid>
         </BusyArea>
       )}
+
+      {paginationLoadMore ? (
+        <CatalogLoadMoreButton
+          onLoadMore={paginationLoadMore.onLoadMore}
+          isLoading={paginationLoadMore.isLoading}
+        />
+      ) : null}
 
       {paginationProps ? (
         <CatalogPagination disabled={paginationBusy} sx={{ alignSelf: 'center' }} {...paginationProps} />

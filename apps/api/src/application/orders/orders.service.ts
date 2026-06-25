@@ -4,6 +4,7 @@ import { type DataSource, In, type Repository } from 'typeorm';
 
 import { TransactionalRepository } from '@/infrastructure/persistence';
 import { TelegramService } from '@/infrastructure/services/Telegram';
+import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
 import { Product } from '../products/product.entity';
 import { Order } from './order.entity';
@@ -65,7 +66,7 @@ export class OrdersService extends TransactionalRepository {
         customerName: dto.customerName,
         phone: dto.phone,
         totalMinor,
-        currency: 'UAH',
+        currency: DEFAULT_CURRENCY,
         status: OrderStatus.New,
       });
 

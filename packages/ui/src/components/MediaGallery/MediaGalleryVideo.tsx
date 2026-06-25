@@ -54,6 +54,10 @@ function VolumeOffIcon() {
   );
 }
 
+const CONTROL_FONT_SIZE = 'clamp(0.75rem, 5.5cqmin, 1rem)';
+const CONTROL_BUTTON_SIZE = '2.25em';
+const CONTROLS_BOTTOM_OFFSET = 'clamp(0.5rem, 14cqmin, 2.25rem)';
+
 export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: MediaGalleryVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -89,9 +93,7 @@ export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: Med
     video.pause();
   }, []);
 
-  const toggleMute = useCallback((event: MouseEvent) => {
-    event.stopPropagation();
-
+  const toggleMute = useCallback(() => {
     const video = videoRef.current;
     if (!video) {
       return;
@@ -101,7 +103,7 @@ export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: Med
     setIsMuted(video.muted);
   }, []);
 
-  const handleControlClick = useCallback(
+  const handlePlayClick = useCallback(
     (event: MouseEvent) => {
       event.stopPropagation();
       void togglePlay();
@@ -109,19 +111,24 @@ export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: Med
     [togglePlay],
   );
 
+  const handleMuteClick = useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation();
+      toggleMute();
+    },
+    [toggleMute],
+  );
+
   return (
     <Box
       role="group"
       aria-label={alt}
-      onClick={() => {
-        void togglePlay();
-      }}
       sx={{
         position: 'relative',
         width: '100%',
         height: '100%',
+        containerType: 'size',
         bgcolor: showDefaultPoster ? 'action.hover' : 'common.black',
-        cursor: 'pointer',
       }}
     >
       {showDefaultPoster ? (
@@ -164,56 +171,29 @@ export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: Med
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          background: isPlaying
-            ? 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%)'
-            : 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 45%)',
           pointerEvents: 'none',
         }}
       >
-        {!isPlaying ? (
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 3,
-                fontSize: 32,
-              }}
-            >
-              <PlayIcon />
-            </Box>
-          </Box>
-        ) : null}
-
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 0.5,
-            px: 1,
-            pb: 4.5,
+            gap: 'clamp(2px, 1cqmin, 4px)',
+            px: 'clamp(4px, 2cqmin, 8px)',
+            pb: CONTROLS_BOTTOM_OFFSET,
+            fontSize: CONTROL_FONT_SIZE,
             pointerEvents: 'auto',
           }}
         >
           <IconButton
-            size="small"
             aria-label={isPlaying ? labels.pause : labels.play}
-            onClick={handleControlClick}
+            onClick={handlePlayClick}
             sx={{
+              width: CONTROL_BUTTON_SIZE,
+              height: CONTROL_BUTTON_SIZE,
+              fontSize: 'inherit',
+              p: 0,
               color: 'common.white',
               bgcolor: 'rgba(0,0,0,0.35)',
               '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },
@@ -223,10 +203,13 @@ export function MediaGalleryVideo({ url, alt, posterUrl, isActive, labels }: Med
           </IconButton>
 
           <IconButton
-            size="small"
             aria-label={isMuted ? labels.unmute : labels.mute}
-            onClick={toggleMute}
+            onClick={handleMuteClick}
             sx={{
+              width: CONTROL_BUTTON_SIZE,
+              height: CONTROL_BUTTON_SIZE,
+              fontSize: 'inherit',
+              p: 0,
               color: 'common.white',
               bgcolor: 'rgba(0,0,0,0.35)',
               '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },

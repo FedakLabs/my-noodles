@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@my-noodles/theme": "workspace:*",
-    "embla-carousel-react": "^8.6.0"
+    "embla-carousel-react": "^8.6.0",
+    "sonner": "^2.0.7"
   },
   "peerDependencies": {
     "@emotion/react": "^11.0.0",

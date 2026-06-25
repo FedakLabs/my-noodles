@@ -14,6 +14,7 @@
     "nudge": "Zero results, infinite possibilities — tweak and try again 😉"
   },
   "openFilters": "Filters",
+  "clear": "Clear",
   "resultsCount": "{count, plural, one {# product} other {# products}}",
   "pageOfTotal": "Page {page} of {pageCount}",
   "previousPage": "Previous page",
@@ -29,6 +30,11 @@
   },
   "addToCart": "Add to cart",
   "outOfStock": "Out of stock",
+  "goToDetails": "Go to details",
+  "goToProduct": "Go",
+  "addShort": "Add",
+  "previewLoading": "Loading preview…",
+  "previewDetailsEmpty": "For now it's taste in the picture — the full story lives on the product page 🍜",
   "imageGallery": "Product photos",
   "imageSlide": "Photo {index} of {total}",
   "filters": {

@@ -9,6 +9,7 @@ import { Country } from '@/application/countries';
 import { Product } from '@/application/products';
 import { config } from '@/config';
 import { createAppDataSource } from '@/infrastructure/persistence';
+import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 import { slugify } from '@/utils/slugify';
 
 import {
@@ -154,7 +155,7 @@ async function seed(dataSource: DataSource): Promise<void> {
       forWhom: copy.forWhom,
       weight: row.weight,
       priceMinor: row.priceMinor,
-      currency: 'UAH',
+      currency: DEFAULT_CURRENCY,
       flavor: row.flavor,
       allergens: [...row.allergens],
       images: productImages(row),

@@ -1,7 +1,14 @@
 import { ApiError } from '../../common';
 import { client } from '../generated/client.gen';
 
+export const APP_LOCALE_HEADER = 'x-app-locale';
+
 let interceptorsAttached = false;
+let resolveAppLocale: (() => string | undefined) | undefined;
+
+export function registerAppLocaleProvider(fn: () => string | undefined): void {
+  resolveAppLocale = fn;
+}
 
 function toApiError(error: unknown, response?: Response): ApiError {
   if (error instanceof ApiError) {
@@ -31,6 +38,14 @@ function attachInterceptors(): void {
 
   client.interceptors.request.use((request) => {
     request.headers.set('Accept', 'application/json');
+
+    if (!request.headers.has(APP_LOCALE_HEADER)) {
+      const locale = resolveAppLocale?.();
+      if (locale) {
+        request.headers.set(APP_LOCALE_HEADER, locale);
+      }
+    }
+
     return request;
   });
 

@@ -2,18 +2,27 @@ import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-client
 import { sendGTMEvent } from '@next/third-parties/google';
 
 import type { CartLine } from '@/hooks/cart/cart-store';
+import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
 import { isAnalyticsAllowed } from './consent';
 import { cartLineToGa4Item, priceMinorToMajor, productToGa4Item, sumItemsValueMinor } from './ecommerce';
 import type { Ga4Item, PurchasePayload } from './types';
 
-function pushEcommerceEvent(event: string, ecommerce: Record<string, unknown>) {
+export type CatalogBrowseMode = 'infinite' | 'pagination';
+
+export type CatalogBrowseModeSource = 'default' | 'saved' | 'menu';
+
+function pushEcommerceEvent(
+  event: string,
+  ecommerce: Record<string, unknown>,
+  eventParams?: Record<string, unknown>,
+) {
   if (!isAnalyticsAllowed()) {
     return;
   }
 
   sendGTMEvent({ ecommerce: null });
-  sendGTMEvent({ event, ecommerce });
+  sendGTMEvent({ event, ecommerce, ...eventParams });
 }
 
 function pushCustomEvent(event: string, params: Record<string, unknown> = {}) {
@@ -24,22 +33,33 @@ function pushCustomEvent(event: string, params: Record<string, unknown> = {}) {
   sendGTMEvent({ event, ...params });
 }
 
-export function trackViewItemList(listId: string, listName: string, products: ProductSummaryDto[]) {
+export function trackViewItemList(
+  listId: string,
+  listName: string,
+  products: ProductSummaryDto[],
+  options?: { catalogBrowseMode?: CatalogBrowseMode },
+) {
   if (products.length === 0) {
     return;
   }
 
-  const currency = products[0]?.currency ?? 'UAH';
+  const currency = products[0]?.currency ?? DEFAULT_CURRENCY;
   const items = products.map((product) => productToGa4Item(product));
   const valueMinor = products.reduce((sum, product) => sum + product.priceMinor, 0);
+  const eventParams =
+    options?.catalogBrowseMode != null ? { catalog_browse_mode: options.catalogBrowseMode } : undefined;
 
-  pushEcommerceEvent('view_item_list', {
-    item_list_id: listId,
-    item_list_name: listName,
-    currency,
-    value: priceMinorToMajor(valueMinor),
-    items,
-  });
+  pushEcommerceEvent(
+    'view_item_list',
+    {
+      item_list_id: listId,
+      item_list_name: listName,
+      currency,
+      value: priceMinorToMajor(valueMinor),
+      items,
+    },
+    eventParams,
+  );
 }
 
 export function trackViewItem(product: ProductDetailDto | ProductSummaryDto) {
@@ -73,7 +93,7 @@ export function trackBeginCheckout(items: CartLine[]) {
     return;
   }
 
-  const currency = items[0]?.currency ?? 'UAH';
+  const currency = items[0]?.currency ?? DEFAULT_CURRENCY;
   const ga4Items: Ga4Item[] = items.map((item) => cartLineToGa4Item(item));
 
   pushEcommerceEvent('begin_checkout', {
@@ -94,4 +114,25 @@ export function trackPurchase(payload: PurchasePayload) {
 
 export function trackClickTelegramOrder() {
   pushCustomEvent('click_telegram_order');
+}
+
+export function trackCatalogBrowseMode(mode: CatalogBrowseMode, source: CatalogBrowseModeSource) {
+  pushCustomEvent('catalog_browse_mode', {
+    catalog_browse_mode: mode,
+    catalog_browse_mode_source: source,
+  });
+}
+
+export function trackCatalogPaginate(page: number, pageCount: number) {
+  pushCustomEvent('catalog_paginate', {
+    page,
+    page_count: pageCount,
+  });
+}
+
+export function trackCatalogLoadMore(page: number, itemsVisible: number) {
+  pushCustomEvent('catalog_load_more', {
+    page,
+    items_visible: itemsVisible,
+  });
 }

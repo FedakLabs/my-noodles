@@ -8,10 +8,6 @@ export type HealthStatusDto = {
     status: 'ok';
 };
 
-export const Locale = { UK: 'uk', EN: 'en' } as const;
-
-export type Locale = typeof Locale[keyof typeof Locale];
-
 export type ProductFacetOptionDto = {
     value: string;
     label: string | null;
@@ -240,9 +236,14 @@ export type HealthControllerGetStartupResponse = HealthControllerGetStartupRespo
 
 export type ProductsControllerGetFacetsData = {
     body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
     path?: never;
     query?: {
-        locale?: Locale;
         collection?: string;
         category?: Array<string>;
         country?: Array<string>;
@@ -263,10 +264,15 @@ export type ProductsControllerGetFacetsResponse = ProductsControllerGetFacetsRes
 
 export type ProductsControllerListData = {
     body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
     path?: never;
     query: {
         sort?: ProductSort;
-        locale?: Locale;
         page: number;
         limit: number;
         collection?: string;
@@ -289,12 +295,16 @@ export type ProductsControllerListResponse = ProductsControllerListResponses[key
 
 export type ProductsControllerGetBySlugData = {
     body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
     path: {
         slug: string;
     };
-    query?: {
-        locale?: Locale;
-    };
+    query?: never;
     url: '/api/products/{slug}';
 };
 
@@ -313,10 +323,14 @@ export type ProductsControllerGetBySlugResponse = ProductsControllerGetBySlugRes
 
 export type CollectionsControllerListData = {
     body?: never;
-    path?: never;
-    query?: {
-        locale?: Locale;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
     };
+    path?: never;
+    query?: never;
     url: '/api/collections';
 };
 
@@ -328,12 +342,16 @@ export type CollectionsControllerListResponse = CollectionsControllerListRespons
 
 export type CollectionsControllerGetBySlugData = {
     body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
     path: {
         slug: string;
     };
-    query?: {
-        locale?: Locale;
-    };
+    query?: never;
     url: '/api/collections/{slug}';
 };
 
@@ -352,10 +370,14 @@ export type CollectionsControllerGetBySlugResponse = CollectionsControllerGetByS
 
 export type CountriesControllerListData = {
     body?: never;
-    path?: never;
-    query?: {
-        locale?: Locale;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
     };
+    path?: never;
+    query?: never;
     url: '/api/countries';
 };
 

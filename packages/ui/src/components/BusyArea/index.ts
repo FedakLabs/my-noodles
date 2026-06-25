@@ -12,4 +12,3 @@ export {
   type SmoothMotionTokens,
 } from './tokens';
 export { type BusyAreaState, type BusyAreaTimingOptions, useBusyAreaState } from './use-busy-area-state';
-export { usePrefersReducedMotion } from './use-prefers-reduced-motion';

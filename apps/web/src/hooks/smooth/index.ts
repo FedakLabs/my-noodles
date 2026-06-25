@@ -4,4 +4,3 @@ export {
   useNavigationSmoothBusy,
 } from './navigation-pending-context';
 export { usePendingRouter } from './use-pending-router';
-export { useRoutePrefetch } from './use-route-prefetch';

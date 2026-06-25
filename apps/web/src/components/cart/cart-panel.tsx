@@ -7,12 +7,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useCartActions, useCartItems, useCartTotalMinor } from '@/hooks/cart';
-import { useRoutePrefetch } from '@/hooks/smooth';
+import { useCurrency } from '@/hooks/currency';
 import { Link } from '@/i18n/navigation';
-import { formatCurrency } from '@/utils/format-currency';
 
 import { CartEmptyState } from './cart-empty-state';
 
@@ -22,12 +21,10 @@ type CartPanelProps = {
 
 export function CartPanel({ onClose }: CartPanelProps) {
   const t = useTranslations('cart');
-  const locale = useLocale();
+  const { formatCurrency } = useCurrency();
   const items = useCartItems();
   const totalMinor = useCartTotalMinor();
   const { setQuantity, removeItem, beginCheckout } = useCartActions();
-  const checkoutHref = '/checkout';
-  const { bindPrefetchOnIntent } = useRoutePrefetch(checkoutHref);
 
   return (
     <Stack sx={{ height: '100%', minHeight: 0 }}>
@@ -80,7 +77,7 @@ export function CartPanel({ onClose }: CartPanelProps) {
                     {item.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {formatCurrency(item.priceMinor, item.currency, locale)}
+                    {formatCurrency(item.priceMinor, item.currency)}
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     <IconButton
@@ -121,16 +118,15 @@ export function CartPanel({ onClose }: CartPanelProps) {
           }}
         >
           <Typography variant="subtitle1">
-            {t('total')}: {formatCurrency(totalMinor, items[0]?.currency ?? 'UAH', locale)}
+            {t('total')}: {formatCurrency(totalMinor, items[0]?.currency)}
           </Typography>
           <Button
             component={Link}
-            href={checkoutHref}
+            href={'/checkout'}
             variant="contained"
             size="large"
             fullWidth
             onClick={() => beginCheckout()}
-            {...bindPrefetchOnIntent}
           >
             {t('checkout')}
           </Button>

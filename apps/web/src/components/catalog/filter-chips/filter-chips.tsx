@@ -2,14 +2,14 @@
 
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
+import { useCurrency } from '@/hooks/currency';
 import { useCatalogSearchParams } from '@/screens/catalog/search-params';
-import { DEFAULT_CURRENCY, formatCurrency } from '@/utils/format-currency';
 
 export function FilterChips() {
   const t = useTranslations('catalog.filters');
-  const locale = useLocale();
+  const { formatCurrency } = useCurrency();
   const { params: filters, setParams } = useCatalogSearchParams();
 
   const chips: { key: string; label: string; onDelete: () => void }[] = [];
@@ -47,7 +47,7 @@ export function FilterChips() {
   if (filters.priceMin != null) {
     chips.push({
       key: 'priceMin',
-      label: `${t('priceMin')}: ${formatCurrency(filters.priceMin, DEFAULT_CURRENCY, locale)}`,
+      label: `${t('priceMin')}: ${formatCurrency(filters.priceMin)}`,
       onDelete: () => {
         void setParams({ priceMin: null, page: 1 });
       },
@@ -57,7 +57,7 @@ export function FilterChips() {
   if (filters.priceMax != null) {
     chips.push({
       key: 'priceMax',
-      label: `${t('priceMax')}: ${formatCurrency(filters.priceMax, DEFAULT_CURRENCY, locale)}`,
+      label: `${t('priceMax')}: ${formatCurrency(filters.priceMax)}`,
       onDelete: () => {
         void setParams({ priceMax: null, page: 1 });
       },

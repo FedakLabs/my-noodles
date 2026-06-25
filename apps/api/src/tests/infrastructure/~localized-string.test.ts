@@ -29,16 +29,16 @@ describe('LocaleContext', () => {
 });
 
 describe('parseRequestLocale', () => {
-  it('prefers ?locale over Accept-Language', () => {
+  it('prefers x-app-locale over Accept-Language', () => {
     const locale = parseRequestLocale({
-      query: { locale: 'en' },
-      headers: { 'accept-language': 'uk' },
+      query: {},
+      headers: { 'x-app-locale': 'en', 'accept-language': 'uk' },
     } as never);
 
     expect(locale).toBe('en');
   });
 
-  it('parses Accept-Language when query is absent', () => {
+  it('parses Accept-Language when x-app-locale is absent', () => {
     const locale = parseRequestLocale({
       query: {},
       headers: { 'accept-language': 'en-US,en;q=0.9,uk;q=0.8' },

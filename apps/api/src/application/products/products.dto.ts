@@ -1,19 +1,14 @@
 import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 
-import { LocaleQueryDto } from '@/utils/locale-query';
 import { PaginatedMetaDto, PaginationQueryDto } from '@/utils/pagination';
 
 import { ProductFilterQueryDto, ProductListFilterQueryDto } from './products.filter-query.dto';
 
 export type { ProductFacetFilters, ProductFilters } from './products.filter-query.dto';
 
-export class ListProductsQueryDto extends IntersectionType(
-  PaginationQueryDto,
-  ProductListFilterQueryDto,
-  LocaleQueryDto,
-) {}
+export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, ProductListFilterQueryDto) {}
 
-export class ProductFacetsQueryDto extends IntersectionType(ProductFilterQueryDto, LocaleQueryDto) {}
+export { ProductFilterQueryDto as ProductFacetsQueryDto };
 
 export class BrandRefDto {
   slug!: string;

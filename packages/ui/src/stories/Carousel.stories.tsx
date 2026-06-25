@@ -13,8 +13,8 @@ import {
   galleryCarouselOptions,
   railCarouselOptions,
 } from '../components/Carousel';
-import { DiscoveryCard } from '../components/DiscoveryCard';
-import { resolveSkin, skinVarsToStyle } from '../utils/skins';
+import { DiscoveryCard, type MediaGalleryItem } from '../components/DiscoveryCard';
+import { resolveSkin } from '../utils/skins';
 
 const GALLERY_WIDTH = 480;
 const RAIL_CARD_BASIS = { xs: '175px', md: '240px' } as const;
@@ -109,41 +109,6 @@ export const Gallery: Story = {
         </CarouselContent>
         <CarouselDots
           count={gallerySlides.length}
-          density="comfortable"
-          slideLabel={(index, total) => `Slide ${index} of ${total}`}
-        />
-      </Carousel>
-    </Stack>
-  ),
-};
-
-export const CompactGalleryDots: Story = {
-  render: (args) => (
-    <Stack spacing={1} sx={{ width: 175 }}>
-      <Typography variant="caption" color="text.secondary">
-        Compact dot density — DiscoveryCard inline gallery
-      </Typography>
-      <Carousel
-        {...args}
-        ariaLabel="Product photos"
-        options={galleryCarouselOptions}
-        sx={{
-          aspectRatio: '1',
-          borderRadius: 1.5,
-          overflow: 'hidden',
-          bgcolor: 'action.hover',
-        }}
-      >
-        <CarouselContent>
-          {gallerySlides.slice(0, 2).map((slide, index) => (
-            <CarouselSlide key={slide.seed} index={index}>
-              <GallerySlide seed={slide.seed} label={slide.label} />
-            </CarouselSlide>
-          ))}
-        </CarouselContent>
-        <CarouselDots
-          count={2}
-          density="compact"
           slideLabel={(index, total) => `Slide ${index} of ${total}`}
         />
       </Carousel>
@@ -161,13 +126,27 @@ export const ProductRail: Story = {
         <CarouselContent gap={2}>
           {railProducts.map((product, index) => (
             <CarouselSlide key={product.title} index={index} responsiveBasis={RAIL_CARD_BASIS}>
-              <DiscoveryCard
-                title={product.title}
-                subtitle={product.subtitle}
-                price={product.price}
-                images={[{ url: product.image, alt: product.title }]}
-                skinStyle={skinVarsToStyle(product.skin.cssVars)}
-              />
+              <DiscoveryCard skin={product.skin}>
+                <DiscoveryCard.Media
+                  items={[
+                    {
+                      type: 'image',
+                      url: product.image,
+                      alt: product.title,
+                    } satisfies MediaGalleryItem,
+                  ]}
+                  mode="static"
+                />
+                <DiscoveryCard.Body>
+                  <Typography variant="subtitle1">{product.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {product.subtitle}
+                  </Typography>
+                  <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
+                    {product.price}
+                  </Typography>
+                </DiscoveryCard.Body>
+              </DiscoveryCard>
             </CarouselSlide>
           ))}
         </CarouselContent>

@@ -7,6 +7,7 @@ export {
   catalogFiltersAppliedKey,
   type CatalogInfiniteListParams,
   DEFAULT_CATALOG_FILTER_PARAMS,
+  hasCatalogClearableState,
   hasCatalogFiltersApplied,
   toCatalogFacetsParams,
   toCatalogInfiniteListParams,

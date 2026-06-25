@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 
+import { APP_LOCALE_HEADER } from './app-locale-header';
 import { DEFAULT_LOCALE, type Locale, LOCALE_ALIASES, SUPPORTED_LOCALES } from './locale.config';
 
 function isSupportedLocale(value: string): value is Locale {
@@ -55,10 +56,19 @@ function parseAcceptLanguage(header: string): Locale | undefined {
   return undefined;
 }
 
+function parseAppLocaleHeader(value: string | string[] | undefined): Locale | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (typeof raw !== 'string' || raw.length === 0) {
+    return undefined;
+  }
+
+  return resolveLocaleFromLanguageTag(raw);
+}
+
 export function parseRequestLocale(req: Request): Locale {
-  const queryLocale = req.query.locale;
-  if (typeof queryLocale === 'string' && isSupportedLocale(queryLocale)) {
-    return queryLocale;
+  const fromHeader = parseAppLocaleHeader(req.headers[APP_LOCALE_HEADER]);
+  if (fromHeader) {
+    return fromHeader;
   }
 
   const acceptLanguage = req.headers['accept-language'];

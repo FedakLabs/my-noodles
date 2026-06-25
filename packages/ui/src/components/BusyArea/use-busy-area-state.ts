@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { resolveSmoothMotionTokens } from './tokens';
-import { usePrefersReducedMotion } from './use-prefers-reduced-motion';
+import {
+  SMOOTH_MIN_VISIBLE_MS,
+  SMOOTH_SHOW_DELAY_MS,
+  SMOOTH_TRANSITION_EASING,
+  SMOOTH_TRANSITION_MS,
+} from './tokens';
 
 export type BusyAreaState = {
   /** Scrim is in the DOM (includes exit animation). */
@@ -20,12 +24,10 @@ export type BusyAreaTimingOptions = {
 };
 
 export function useBusyAreaState(busy: boolean, options?: BusyAreaTimingOptions): BusyAreaState {
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const tokens = resolveSmoothMotionTokens(prefersReducedMotion);
-  const showDelayMs = tokens.showDelayMs;
-  const transitionMs = tokens.transitionMs;
-  const minVisibleMs = options?.minVisibleMs ?? tokens.minVisibleMs;
-  const transitionEasing = tokens.transitionEasing;
+  const showDelayMs = SMOOTH_SHOW_DELAY_MS;
+  const transitionMs = SMOOTH_TRANSITION_MS;
+  const minVisibleMs = options?.minVisibleMs ?? SMOOTH_MIN_VISIBLE_MS;
+  const transitionEasing = SMOOTH_TRANSITION_EASING;
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);

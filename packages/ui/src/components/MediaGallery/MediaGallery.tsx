@@ -1,5 +1,6 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import { lazy, Suspense, useCallback, useState } from 'react';
 
 import { Carousel, CarouselContent, CarouselDots, CarouselSlide, galleryCarouselOptions } from '../Carousel';
@@ -20,7 +21,6 @@ export type MediaGalleryLabels = {
 
 export type MediaGalleryProps = {
   items: MediaGalleryItem[];
-  density?: 'compact' | 'comfortable';
   labels?: Partial<MediaGalleryLabels>;
 };
 
@@ -48,7 +48,7 @@ const videoFallbackSx = {
   height: '100%',
 } as const;
 
-export function MediaGallery({ items, density = 'comfortable', labels }: MediaGalleryProps) {
+export function MediaGallery({ items, labels }: MediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const resolvedLabels = resolveLabels(labels);
 
@@ -57,7 +57,19 @@ export function MediaGallery({ items, density = 'comfortable', labels }: MediaGa
   }, []);
 
   if (items.length === 0) {
-    return null;
+    return (
+      <Box
+        sx={{
+          aspectRatio: '1',
+          borderRadius: 1.5,
+          overflow: 'hidden',
+          bgcolor: 'action.hover',
+          flexShrink: 0,
+        }}
+      >
+        <MediaGalleryPlaceholder />
+      </Box>
+    );
   }
 
   return (
@@ -102,7 +114,7 @@ export function MediaGallery({ items, density = 'comfortable', labels }: MediaGa
         })}
       </CarouselContent>
 
-      <CarouselDots count={items.length} density={density} slideLabel={resolvedLabels.slide} />
+      <CarouselDots count={items.length} slideLabel={resolvedLabels.slide} />
     </Carousel>
   );
 }

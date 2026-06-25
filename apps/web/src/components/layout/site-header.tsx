@@ -4,6 +4,7 @@ import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -25,11 +26,12 @@ import HomeIcon from '@my-noodles/ui/icons/home.svg';
 import MenuIcon from '@my-noodles/ui/icons/menu.svg';
 import SearchIcon from '@my-noodles/ui/icons/search.svg';
 import { useTranslations } from 'next-intl';
-import { type FC, type SVGProps, useState } from 'react';
+import { type FC, Suspense, type SVGProps, useState } from 'react';
 
 import { useCartActions, useCartItemCount } from '@/hooks/cart';
 import { Link, usePathname } from '@/i18n/navigation';
 
+import { LanguageSwitcher } from './language-switcher';
 import { SiteLogo } from './site-logo';
 
 type NavIcon = FC<SVGProps<SVGSVGElement>>;
@@ -126,7 +128,6 @@ export function SiteHeader() {
   const closeMobileNav = () => setMobileNavOpen(false);
 
   const openCartPanel = () => {
-    closeMobileNav();
     openPanel();
   };
 
@@ -158,20 +159,37 @@ export function SiteHeader() {
             ))}
           </Stack>
 
-          <Button
-            variant="text"
-            color="inherit"
-            onClick={openCartPanel}
-            sx={{
-              alignItems: 'center',
-              display: 'inline-flex',
-              minWidth: 'auto',
-              ml: { mobile: 0, desktop: 0.5 },
-              px: { mobile: 1, desktop: 1.5 },
-            }}
-          >
-            <CartNavBadge count={cartCount} label={t('nav.cart')} />
-          </Button>
+          <Stack direction="row" spacing={0} sx={{ alignItems: 'center', ml: 'auto' }}>
+            <Button
+              variant="text"
+              color="inherit"
+              onClick={openCartPanel}
+              sx={{
+                alignItems: 'center',
+                display: 'inline-flex',
+                minWidth: 'auto',
+                px: { mobile: 1, desktop: 1.5 },
+              }}
+            >
+              <CartNavBadge count={cartCount} label={t('nav.cart')} />
+            </Button>
+
+            <Stack
+              direction="row"
+              spacing={0}
+              sx={{ display: layoutDisplay.desktopOnlyFlex, alignItems: 'center' }}
+            >
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ alignSelf: 'center', height: 24, mx: 0.25, borderColor: 'divider' }}
+              />
+
+              <Suspense fallback={null}>
+                <LanguageSwitcher />
+              </Suspense>
+            </Stack>
+          </Stack>
         </Toolbar>
       </AppBar>
 
@@ -212,10 +230,11 @@ export function SiteHeader() {
             );
           })}
 
-          <ListItemButton onClick={openCartPanel} sx={{ gap: 1 }}>
-            <CartNavBadge count={cartCount} label={t('nav.cart')} labelVariant="body1" sx={{ flex: 1 }} />
-            <ChevronRightIcon aria-hidden style={iconStyle({ size: 18, color: 'inherit' })} />
-          </ListItemButton>
+          <Divider />
+
+          <Suspense fallback={null}>
+            <LanguageSwitcher variant="drawer" onSwitched={closeMobileNav} />
+          </Suspense>
         </List>
       </Drawer>
     </>

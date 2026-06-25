@@ -3,25 +3,27 @@ import {
   collectionsControllerGetBySlug,
   collectionsControllerList,
   type CollectionSummaryDto,
-  type Locale,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
 
+import { withAppLocaleKey } from '@/shared/app-locale';
+
+const collectionsQueryKeyRoot = ['collections'] as const;
+
 export const collectionsQueryKeys = {
-  all: ['collections'] as const,
-  list: (locale: Locale) => [...collectionsQueryKeys.all, 'list', locale] as const,
-  detail: (slug: string, locale: Locale) => [...collectionsQueryKeys.all, 'detail', slug, locale] as const,
+  all: collectionsQueryKeyRoot,
+  list: withAppLocaleKey(() => [...collectionsQueryKeyRoot, 'list'] as const),
+  detail: withAppLocaleKey((slug: string) => [...collectionsQueryKeyRoot, 'detail', slug] as const),
 };
 
-export async function fetchCollections(locale: Locale): Promise<CollectionSummaryDto[]> {
-  return requestData(collectionsControllerList({ query: { locale } }));
+export async function fetchCollections(): Promise<CollectionSummaryDto[]> {
+  return requestData(collectionsControllerList());
 }
 
-export async function fetchCollectionDetail(slug: string, locale: Locale): Promise<CollectionDetailDto> {
+export async function fetchCollectionDetail(slug: string): Promise<CollectionDetailDto> {
   return requestData(
     collectionsControllerGetBySlug({
       path: { slug },
-      query: { locale },
     }),
   );
 }

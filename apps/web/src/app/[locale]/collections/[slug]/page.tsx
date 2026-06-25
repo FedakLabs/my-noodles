@@ -9,8 +9,9 @@ import { fetchProductsList, productsQueryKeys } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 import { CollectionScreen } from '@/screens/collections';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
-import { getQueryClient, QueryHydrate } from '@/shared/query-client';
+import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
 
 export async function generateMetadata({ params }: LocaleSlugPageProps): Promise<Metadata> {
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: LocaleSlugPageProps): Promise
     return {};
   }
 
-  const collection = await fetchCollectionDetail(slug, locale);
+  const collection = await runWithAppLocale(locale, () => fetchCollectionDetail(slug));
 
   return buildPageMetadata({
     locale,
@@ -39,29 +40,34 @@ export default async function CollectionPage({ params }: LocaleSlugPageProps) {
 
   setRequestLocale(locale);
 
-  const queryClient = getQueryClient();
-  const collection = await fetchCollectionDetail(slug, locale);
-  const listParams = {
-    ...DEFAULT_CATALOG_FILTER_PARAMS,
-    page: 1,
-    limit: 48,
-    collection: collection.code,
-  };
+  return runWithAppLocale(locale, async () => {
+    const queryClient = getQueryClient();
 
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: collectionsQueryKeys.detail(slug, locale),
-      queryFn: () => Promise.resolve(collection),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: productsQueryKeys.list(listParams, locale),
-      queryFn: () => fetchProductsList(listParams, locale),
-    }),
-  ]);
+    await runPrefetchSafe(async () => {
+      const collection = await fetchCollectionDetail(slug);
+      const listParams = {
+        ...DEFAULT_CATALOG_FILTER_PARAMS,
+        page: 1,
+        limit: 48,
+        collection: collection.code,
+      };
 
-  return (
-    <QueryHydrate state={dehydrate(queryClient)}>
-      <CollectionScreen slug={slug} />
-    </QueryHydrate>
-  );
+      await Promise.all([
+        queryClient.prefetchQuery({
+          queryKey: collectionsQueryKeys.detail(slug),
+          queryFn: () => Promise.resolve(collection),
+        }),
+        queryClient.prefetchQuery({
+          queryKey: productsQueryKeys.list(listParams),
+          queryFn: () => fetchProductsList(listParams),
+        }),
+      ]);
+    });
+
+    return (
+      <QueryHydrate state={dehydrate(queryClient)}>
+        <CollectionScreen slug={slug} />
+      </QueryHydrate>
+    );
+  });
 }

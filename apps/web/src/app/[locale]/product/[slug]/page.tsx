@@ -1,3 +1,4 @@
+import type { ProductDetailDto } from '@my-noodles/api-clients/storefront';
 import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -7,8 +8,9 @@ import { setRequestLocale } from 'next-intl/server';
 import { fetchProductDetail, productsQueryKeys } from '@/api/products';
 import { routing } from '@/i18n/routing';
 import { ProductScreen } from '@/screens/product';
+import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
-import { getQueryClient, QueryHydrate } from '@/shared/query-client';
+import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata, buildProductJsonLd, JsonLdScript } from '@/shared/seo';
 
 type ProductPageProps = LocaleSlugPageProps;
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     return {};
   }
 
-  const product = await fetchProductDetail(slug, locale);
+  const product = await runWithAppLocale(locale, () => fetchProductDetail(slug));
 
   return buildPageMetadata({
     locale,
@@ -39,20 +41,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   setRequestLocale(locale);
 
-  const product = await fetchProductDetail(slug, locale);
-  const queryClient = getQueryClient();
+  return runWithAppLocale(locale, async () => {
+    const queryClient = getQueryClient();
 
-  await queryClient.prefetchQuery({
-    queryKey: productsQueryKeys.detail(slug, locale),
-    queryFn: () => Promise.resolve(product),
+    await runPrefetchSafe(async () => {
+      const product = await fetchProductDetail(slug);
+
+      await queryClient.prefetchQuery({
+        queryKey: productsQueryKeys.detail(slug),
+        queryFn: () => Promise.resolve(product),
+      });
+    });
+
+    const product = queryClient.getQueryData<ProductDetailDto>(productsQueryKeys.detail(slug));
+
+    return (
+      <>
+        {product ? <JsonLdScript data={buildProductJsonLd(product, locale)} /> : null}
+        <QueryHydrate state={dehydrate(queryClient)}>
+          <ProductScreen slug={slug} />
+        </QueryHydrate>
+      </>
+    );
   });
-
-  return (
-    <>
-      <JsonLdScript data={buildProductJsonLd(product, locale)} />
-      <QueryHydrate state={dehydrate(queryClient)}>
-        <ProductScreen slug={slug} />
-      </QueryHydrate>
-    </>
-  );
 }

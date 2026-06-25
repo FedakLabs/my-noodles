@@ -1,7 +1,7 @@
 import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-  input: 'http://localhost:3001/api/docs-json',
+  input: '../../apps/api/src/openapi/openapi.json',
   output: 'src/storefront/generated',
   plugins: [
     {

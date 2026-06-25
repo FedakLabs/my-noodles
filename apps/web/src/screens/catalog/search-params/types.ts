@@ -35,7 +35,7 @@ export function toCatalogFacetsParams(params: CatalogFilterParams): CatalogFacet
   return facetsParams;
 }
 
-export function toCatalogInfiniteListParams(params: CatalogSearchParams): Omit<CatalogSearchParams, 'page'> {
+export function toCatalogInfiniteListParams(params: CatalogSearchParams): CatalogInfiniteListParams {
   const { page: _page, ...listParams } = params;
   return listParams;
 }
@@ -63,4 +63,8 @@ export function hasCatalogFiltersApplied(params: CatalogSearchParams): boolean {
       collection: null,
     })
   );
+}
+
+export function hasCatalogClearableState(params: CatalogSearchParams): boolean {
+  return hasCatalogFiltersApplied(params) || params.sort !== ProductSort.POPULAR || params.page > 1;
 }

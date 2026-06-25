@@ -14,7 +14,6 @@ export {
   SMOOTH_TRANSITION_MS,
   type SmoothMotionTokens,
   useBusyAreaState,
-  usePrefersReducedMotion,
 } from './components/BusyArea';
 export {
   Carousel,
@@ -31,10 +30,21 @@ export {
   useCarouselContext,
 } from './components/Carousel';
 export {
+  DISCOVERY_CARD_VIEW_TRANSITION_MS,
   DiscoveryCard,
-  type DiscoveryCardImage,
-  type DiscoveryCardLink,
+  type DiscoveryCardActionsProps,
+  discoveryCardGroupedCartButtonSx,
+  discoveryCardGroupedDetailsButtonSx,
+  type DiscoveryCardMediaProps,
   type DiscoveryCardProps,
+  type DiscoveryCardScrollableProps,
+  DiscoveryCardView,
+  type DiscoveryCardViewAnchor,
+  type DiscoveryCardViewDetails,
+  type DiscoveryCardViewPhase,
+  type DiscoveryCardViewProps,
+  isPreviewPhase,
+  useDiscoveryCardView,
 } from './components/DiscoveryCard';
 export {
   type GalleryImageInput,
@@ -48,9 +58,11 @@ export {
   type MediaGalleryProps,
   type MediaGalleryVideoItem,
   type MediaGalleryVideoLabels,
+  resolvePrimaryMediaItem,
 } from './components/MediaGallery';
 export { PriceRangeSlider, type PriceRangeSliderProps } from './components/PriceRangeSlider';
 export { StableLinearProgress, type StableLinearProgressProps } from './components/StableLinearProgress';
+export { showToast, ToastProvider } from './components/Toast';
 export { iconStyle, type IconStyleInput } from './utils/iconStyle';
 export {
   baseSkinCssVars,

@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { MediaGallery, resolveSkin, skinVarsToStyle } from '@my-noodles/ui';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { useProductDetail } from '@/api/products';
 import { PageContainer } from '@/components/layout/page-container';
@@ -13,7 +13,7 @@ import { AlternativesRail } from '@/components/product/alternatives-rail/alterna
 import { ProductShareMenu } from '@/components/product/product-share-menu/product-share-menu';
 import { useViewItem, useViewItemList } from '@/hooks/analytics';
 import { useCartActions } from '@/hooks/cart';
-import { formatCurrency } from '@/utils/format-currency';
+import { useCurrency } from '@/hooks/currency';
 
 type ProductScreenProps = {
   slug: string;
@@ -21,7 +21,7 @@ type ProductScreenProps = {
 
 export function ProductScreen({ slug }: ProductScreenProps) {
   const t = useTranslations('product');
-  const locale = useLocale();
+  const { formatCurrency } = useCurrency();
   const { addItem } = useCartActions();
   const { product, productIsInitialLoad, productIsLoadFailed, productIsEmpty } = useProductDetail(slug);
 
@@ -93,7 +93,6 @@ export function ProductScreen({ slug }: ProductScreenProps) {
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <MediaGallery
               items={mediaItems}
-              density="comfortable"
               labels={{
                 gallery: t('mediaGallery'),
                 slide: (index, total) => t('mediaSlide', { index, total }),
@@ -121,9 +120,7 @@ export function ProductScreen({ slug }: ProductScreenProps) {
             <Typography variant="body1" color="text.secondary">
               {product.country.name} · {product.category.name}
             </Typography>
-            <Typography variant="h5">
-              {formatCurrency(product.priceMinor, product.currency, locale)}
-            </Typography>
+            <Typography variant="h5">{formatCurrency(product.priceMinor, product.currency)}</Typography>
             {product.description ? <Typography variant="body1">{product.description}</Typography> : null}
             {product.forWhom ? (
               <Typography variant="body2">

@@ -14,6 +14,8 @@ function withAlpha(hex: string, alpha: number): string {
 export function skinDefinitionToCssVars(definition: SkinDefinition): Record<string, string> {
   const gradientStart = withAlpha(definition.gradientStart, 0.15);
   const gradientEnd = withAlpha(definition.gradientEnd, 0.08);
+  const gradientStartActive = withAlpha(definition.gradientStart, 0.22);
+  const gradientEndActive = withAlpha(definition.gradientEnd, 0.12);
 
   return {
     '--colors-surface-bg-hue-brand': String(definition.bgHueBrand),
@@ -23,6 +25,9 @@ export function skinDefinitionToCssVars(definition: SkinDefinition): Record<stri
     '--skin-gradient-start': gradientStart,
     '--skin-gradient-end': gradientEnd,
     '--skin-card-gradient': `linear-gradient(180deg, ${gradientStart} 0%, ${gradientEnd} 45%, transparent 45%)`,
+    '--skin-card-gradient-active': `linear-gradient(180deg, ${gradientStartActive} 0%, ${gradientEndActive} 45%, transparent 45%)`,
+    '--skin-card-gradient-band': `linear-gradient(180deg, ${gradientStart} 0%, ${gradientEnd} 100%)`,
+    '--skin-card-gradient-band-active': `linear-gradient(180deg, ${gradientStartActive} 0%, ${gradientEndActive} 100%)`,
     ...(definition.secondary ? { '--colors-tag-secondary': definition.secondary } : {}),
   };
 }

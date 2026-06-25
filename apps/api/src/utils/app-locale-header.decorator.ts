@@ -1,0 +1,16 @@
+import { applyDecorators } from '@nestjs/common';
+import { ApiHeader } from '@nestjs/swagger';
+
+import { APP_LOCALE_HEADER, SUPPORTED_LOCALES } from '@/infrastructure/i18n';
+
+/** Documents optional storefront locale header resolved by locale middleware. */
+export function AppLocaleHeader(): MethodDecorator & ClassDecorator {
+  return applyDecorators(
+    ApiHeader({
+      name: APP_LOCALE_HEADER,
+      required: false,
+      enum: SUPPORTED_LOCALES,
+      description: 'Preferred response locale',
+    }),
+  );
+}

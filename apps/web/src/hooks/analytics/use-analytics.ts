@@ -4,7 +4,7 @@ import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-client
 import { useEffect, useRef } from 'react';
 
 import type { CartLine } from '@/hooks/cart/cart-store';
-import type { PurchasePayload } from '@/shared/analytics';
+import type { CatalogBrowseMode, PurchasePayload } from '@/shared/analytics';
 import {
   trackBeginCheckout,
   trackClickTelegramOrder,
@@ -18,6 +18,7 @@ export function useViewItemList(
   listName: string,
   products: ProductSummaryDto[] | undefined,
   enabled: boolean,
+  catalogBrowseMode?: CatalogBrowseMode,
 ) {
   const lastKeyRef = useRef<string | null>(null);
 
@@ -26,15 +27,15 @@ export function useViewItemList(
       return;
     }
 
-    const key = `${listId}:${products.map((product) => product.id).join(',')}`;
+    const key = `${listId}:${catalogBrowseMode ?? ''}:${products.map((product) => product.id).join(',')}`;
 
     if (lastKeyRef.current === key) {
       return;
     }
 
     lastKeyRef.current = key;
-    trackViewItemList(listId, listName, products);
-  }, [enabled, listId, listName, products]);
+    trackViewItemList(listId, listName, products, { catalogBrowseMode });
+  }, [catalogBrowseMode, enabled, listId, listName, products]);
 }
 
 export function useViewItem(product: ProductDetailDto | ProductSummaryDto | undefined, enabled: boolean) {

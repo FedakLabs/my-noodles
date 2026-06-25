@@ -61,7 +61,7 @@ export const Default: Story = {
 export const NavigationTiming: Story = {
   render: (args) => {
     const [active, setActive] = useState(false);
-    const tokens = resolveSmoothMotionTokens(false);
+    const tokens = resolveSmoothMotionTokens();
 
     return (
       <Stack spacing={2}>
