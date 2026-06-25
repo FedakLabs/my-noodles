@@ -24,6 +24,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   # ── Stage 1: quality (parallel) ───────────────────────────────────────────
