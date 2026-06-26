@@ -70,7 +70,7 @@ describe('Config', () => {
   it('rejects missing postgres credentials', () => {
     applyEnv({ POSTGRES_PASSWORD: undefined });
 
-    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid application configuration/);
+    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid Application configuration/);
   });
 
   it('coerces common truthy OTEL_ENABLED values when otel settings are provided', () => {
@@ -84,7 +84,7 @@ describe('Config', () => {
   it('requires otel settings when OTEL_ENABLED is true', () => {
     applyEnv({ OTEL_ENABLED: 'true' });
 
-    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid application configuration/);
+    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid Application configuration/);
   });
 
   it('allows missing otel settings when OTEL_ENABLED is false', () => {
@@ -107,19 +107,19 @@ describe('Config', () => {
   it('rejects invalid ports', () => {
     applyEnv({ PORT: '0' });
 
-    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid application configuration/);
+    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid Application configuration/);
   });
 
   it('rejects empty postgres host', () => {
     applyEnv({ POSTGRES_HOST: '' });
 
-    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid application configuration/);
+    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid Application configuration/);
   });
 
   it('rejects shutdown timeouts outside the allowed range', () => {
     applyEnv({ SHUTDOWN_TIMEOUT_MS: '500' });
 
-    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid application configuration/);
+    expect(() => new Config({ rootDirname: ROOT_DIRNAME })).toThrow(/Invalid Application configuration/);
   });
 
   it('loads API_RESPONSE_DELAY_MS when set', () => {

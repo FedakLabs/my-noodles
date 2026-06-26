@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { type ClassConstructor, Transform, Type } from 'class-transformer';
+import { type ClassConstructor, instanceToPlain, plainToInstance, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDefined,
@@ -13,49 +13,53 @@ import {
   MinLength,
   ValidateIf,
   ValidateNested,
+  validateSync,
 } from 'class-validator';
 
 import { type OtelOptions } from '../otel';
-import { parseBoolean } from '../utils/transformers/boolean';
+import { TransformToBoolean } from '../utils/transformers/boolean';
 import { DEFAULT_NODE_ENV, loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
-import { loadValidatedConfig } from './utils';
 
 export type ConfigOptions = {
   /** Absolute path to the service `src/` (or `dist/` when compiled) — root for entity/migration globs. */
   rootDirname: string;
 };
 
+type ValidateConfigOptions = {
+  label: string;
+};
+
 export class DatabaseConfig {
   @IsDefined()
   @IsString()
   @MinLength(1)
-  host!: string;
+  host = process.env.POSTGRES_HOST!;
 
   @Type(() => Number)
   @IsDefined()
   @IsInt()
   @Min(1)
   @Max(65535)
-  port!: number;
+  port = process.env.POSTGRES_PORT as unknown as number;
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  username!: string;
+  username = process.env.POSTGRES_USER!;
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  password!: string;
+  password = process.env.POSTGRES_PASSWORD!;
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  database!: string;
+  database = process.env.POSTGRES_DB!;
 
-  @Transform(({ value }) => parseBoolean(value))
+  @TransformToBoolean()
   @IsBoolean()
-  logging = false;
+  logging = process.env.DATABASE_LOGGING as unknown as boolean;
 }
 
 export class Config {
@@ -67,54 +71,53 @@ export class Config {
   @IsDefined()
   @IsString()
   @MinLength(1)
-  appName: string = 'my-noodles-api';
+  appName = process.env.APP_NAME ?? 'my-noodles-api';
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  appVersion: string = 'dev';
+  appVersion = process.env.APP_VERSION ?? 'dev';
 
   @Type(() => Number)
   @IsDefined()
   @IsInt()
   @Min(1)
   @Max(65535)
-  port!: number;
+  port = process.env.PORT as unknown as number;
 
   @IsIn([...NODE_ENVS])
-  nodeEnv: NodeEnv = DEFAULT_NODE_ENV;
+  nodeEnv = (process.env.NODE_ENV ?? DEFAULT_NODE_ENV) as NodeEnv;
 
   @ValidateNested()
   @Type(() => DatabaseConfig)
-  database!: DatabaseConfig;
+  database = new DatabaseConfig();
 
-  @Transform(({ value }) => parseBoolean(value))
+  @TransformToBoolean()
   @IsBoolean()
-  otelEnabled = false;
+  otelEnabled = process.env.OTEL_ENABLED as unknown as boolean;
 
   @ValidateIf((config: Config) => config.otelEnabled)
   @IsDefined()
   @IsUrl({ require_tld: false })
-  otelEndpoint?: string;
+  otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
   @ValidateIf((config: Config) => config.otelEnabled)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  otelServiceName?: string;
+  otelServiceName = process.env.OTEL_SERVICE_NAME;
 
   @Type(() => Number)
   @IsInt()
   @Min(1000)
   @Max(120_000)
-  shutdownTimeoutMs = 30_000;
+  shutdownTimeoutMs = (process.env.SHUTDOWN_TIMEOUT_MS ?? '30000') as unknown as number;
 
-  /** Artificial latency for local UI testing. */
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(60_000)
-  responseDelayMs = 0;
+  responseDelayMs = (process.env.API_RESPONSE_DELAY_MS ?? '0') as unknown as number;
 
   get otel(): OtelOptions {
     if (this.otelEnabled) {
@@ -135,40 +138,39 @@ export class Config {
 
     loadAppEnv(resolve(options.rootDirname, '..'));
 
-    const { env } = process;
+    const instance = new Config();
+    instance.rootDirname = options.rootDirname;
 
-    return loadValidatedConfig(
-      Config,
-      {
-        rootDirname: options.rootDirname,
-        appName: env.APP_NAME,
-        appVersion: env.APP_VERSION,
-        port: env.PORT,
-        nodeEnv: env.NODE_ENV,
-        database: {
-          host: env.POSTGRES_HOST,
-          port: env.POSTGRES_PORT,
-          username: env.POSTGRES_USER,
-          password: env.POSTGRES_PASSWORD,
-          database: env.POSTGRES_DB,
-          logging: env.DATABASE_LOGGING,
-        },
-        otelEnabled: env.OTEL_ENABLED,
-        otelEndpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
-        otelServiceName: env.OTEL_SERVICE_NAME,
-        shutdownTimeoutMs: env.SHUTDOWN_TIMEOUT_MS,
-        responseDelayMs: env.API_RESPONSE_DELAY_MS?.trim() ?? 0,
-      },
-      { label: 'application configuration' },
-    );
+    return instance.validate(instance, 'Application configuration');
   }
 
-  /** Validate an app-local feature config after env has been loaded via the main `Config` constructor. */
-  validate<T extends object>(
-    ConfigClass: ClassConstructor<T>,
-    payload: Record<string, unknown>,
-    label?: string,
-  ): T {
-    return loadValidatedConfig(ConfigClass, payload, { label });
+  /** Apply class-transformer decorators and class-validator rules to a populated config instance. */
+  validate<T extends object>(instance: T, label: string): T {
+    const ConfigClass = instance.constructor as ClassConstructor<T>;
+    const plain = instanceToPlain(instance);
+    const validated = plainToInstance(ConfigClass, plain, { enableImplicitConversion: true });
+    const errors = validateSync(validated, { forbidUnknownValues: false });
+
+    if (errors.length > 0) {
+      this.formatValidationError(validated, { label });
+    }
+
+    return validated;
+  }
+
+  private formatValidationError(instance: object, options: ValidateConfigOptions): never {
+    const errors = validateSync(instance, { forbidUnknownValues: false });
+    const details = errors
+      .map((error) => {
+        const constraints = Object.values(error.constraints ?? {}).join(', ');
+        return `  - ${error.property}: ${constraints}`;
+      })
+      .join('\n');
+
+    throw new Error(
+      [`❌ Invalid ${options.label}.`, 'The following config fields are missing or invalid:', details].join(
+        '\n',
+      ),
+    );
   }
 }

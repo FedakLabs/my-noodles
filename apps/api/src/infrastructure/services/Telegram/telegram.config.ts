@@ -1,26 +1,21 @@
-import { IsDefined, IsString, MinLength } from 'class-validator';
+import { IsDefined, IsString, IsUrl, MinLength } from 'class-validator';
 
 import { config } from '@/config';
 
-export const TELEGRAM_API_ORIGIN = 'https://api.telegram.org';
-
 export class TelegramConfig {
   @IsDefined()
-  @IsString()
-  @MinLength(1)
-  botToken!: string;
+  @IsUrl({ require_tld: false })
+  apiBaseUrl = 'https://api.telegram.org';
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  chatId!: string;
+  botToken = process.env.TELEGRAM_BOT_TOKEN;
+
+  @IsDefined()
+  @IsString()
+  @MinLength(1)
+  chatId = process.env.TELEGRAM_CHAT_ID;
 }
 
-export const telegramConfig = config.validate(
-  TelegramConfig,
-  {
-    botToken: process.env.TELEGRAM_BOT_TOKEN,
-    chatId: process.env.TELEGRAM_CHAT_ID,
-  },
-  'Telegram configuration',
-);
+export const telegramConfig = config.validate(new TelegramConfig(), 'Telegram configuration');

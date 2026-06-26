@@ -3,6 +3,7 @@ export { slugify } from './slugify';
 export {
   parseBoolean,
   TransformToArray,
+  TransformToBoolean,
   TransformToInt,
   TransformToOptionalBoolean,
   TransformToOptionalInt,

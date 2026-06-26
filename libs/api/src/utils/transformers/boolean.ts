@@ -55,6 +55,10 @@ function parseOptionalBoolean(value: unknown): boolean | undefined {
   return undefined;
 }
 
+export function TransformToBoolean(): PropertyDecorator {
+  return Transform(({ value }) => parseBoolean(value), { toClassOnly: true });
+}
+
 export function TransformToOptionalBoolean(): PropertyDecorator {
   return Transform(({ value }) => parseOptionalBoolean(value), { toClassOnly: true });
 }
