@@ -1,4 +1,6 @@
-import { plainToInstance, Transform, Type } from 'class-transformer';
+import { resolve } from 'node:path';
+
+import { type ClassConstructor, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDefined,
@@ -11,17 +13,14 @@ import {
   MinLength,
   ValidateIf,
   ValidateNested,
-  validateSync,
 } from 'class-validator';
 
 import { type OtelOptions } from '../otel';
-import { type ConfigEnvironment, DEFAULT_NODE_ENV, NODE_ENVS, type NodeEnv } from './env';
-import { parseBoolean } from './parse-boolean';
+import { parseBoolean } from '../utils/transformers/boolean';
+import { DEFAULT_NODE_ENV, loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
+import { loadValidatedConfig } from './utils';
 
-export type { ConfigEnvironment } from './env';
-export { DEFAULT_NODE_ENV, NODE_ENVS, type NodeEnv } from './env';
-
-export type LoadConfigOptions = {
+export type ConfigOptions = {
   /** Absolute path to the service `src/` (or `dist/` when compiled) — root for entity/migration globs. */
   rootDirname: string;
 };
@@ -128,59 +127,48 @@ export class Config {
 
     return { enabled: false };
   }
-}
 
-function configFromEnvironment(source: ConfigEnvironment, options: LoadConfigOptions): Config {
-  const payload: Record<string, unknown> = {
-    rootDirname: options.rootDirname,
-    appName: source.APP_NAME,
-    appVersion: source.APP_VERSION,
-    port: source.PORT,
-    nodeEnv: source.NODE_ENV,
-    database: {
-      host: source.POSTGRES_HOST,
-      port: source.POSTGRES_PORT,
-      username: source.POSTGRES_USER,
-      password: source.POSTGRES_PASSWORD,
-      database: source.POSTGRES_DB,
-      logging: source.DATABASE_LOGGING,
-    },
-    otelEnabled: source.OTEL_ENABLED,
-    otelEndpoint: source.OTEL_EXPORTER_OTLP_ENDPOINT,
-    otelServiceName: source.OTEL_SERVICE_NAME,
-    shutdownTimeoutMs: source.SHUTDOWN_TIMEOUT_MS,
-  };
+  constructor(options?: ConfigOptions) {
+    if (!options) {
+      return;
+    }
 
-  if (source.API_RESPONSE_DELAY_MS?.trim()) {
-    payload.responseDelayMs = source.API_RESPONSE_DELAY_MS;
-  }
+    loadAppEnv(resolve(options.rootDirname, '..'));
 
-  return plainToInstance(Config, payload, { enableImplicitConversion: true });
-}
+    const { env } = process;
 
-function validateConfig(instance: Config): Config {
-  const errors = validateSync(instance, { forbidUnknownValues: false });
-  if (errors.length > 0) {
-    const details = errors
-      .map((error) => {
-        const constraints = Object.values(error.constraints ?? {}).join(', ');
-        return `  - ${error.property}: ${constraints}`;
-      })
-      .join('\n');
-
-    throw new Error(
-      [
-        '❌ Invalid application configuration.',
-        'The following config fields are missing or invalid:',
-        details,
-        '\nPlease check your environment (.env, .env.local) and try again.',
-      ].join('\n'),
+    return loadValidatedConfig(
+      Config,
+      {
+        rootDirname: options.rootDirname,
+        appName: env.APP_NAME,
+        appVersion: env.APP_VERSION,
+        port: env.PORT,
+        nodeEnv: env.NODE_ENV,
+        database: {
+          host: env.POSTGRES_HOST,
+          port: env.POSTGRES_PORT,
+          username: env.POSTGRES_USER,
+          password: env.POSTGRES_PASSWORD,
+          database: env.POSTGRES_DB,
+          logging: env.DATABASE_LOGGING,
+        },
+        otelEnabled: env.OTEL_ENABLED,
+        otelEndpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
+        otelServiceName: env.OTEL_SERVICE_NAME,
+        shutdownTimeoutMs: env.SHUTDOWN_TIMEOUT_MS,
+        responseDelayMs: env.API_RESPONSE_DELAY_MS?.trim() ?? 0,
+      },
+      { label: 'application configuration' },
     );
   }
 
-  return instance;
-}
-
-export function loadConfig(source: ConfigEnvironment, options: LoadConfigOptions): Config {
-  return validateConfig(configFromEnvironment(source, options));
+  /** Validate an app-local feature config after env has been loaded via the main `Config` constructor. */
+  validate<T extends object>(
+    ConfigClass: ClassConstructor<T>,
+    payload: Record<string, unknown>,
+    label?: string,
+  ): T {
+    return loadValidatedConfig(ConfigClass, payload, { label });
+  }
 }

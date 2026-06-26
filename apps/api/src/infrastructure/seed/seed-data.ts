@@ -1,6 +1,7 @@
+import { slugify } from '@my-noodles/api-lib/utils';
+
 import type { LocalizedStringData } from '@/infrastructure/i18n';
 import { LocalizedString } from '@/infrastructure/i18n';
-import { slugify } from '@/utils/slugify';
 
 type SeedFlavor = {
   spice: number;

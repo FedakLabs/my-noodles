@@ -3,12 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import type { Logger } from 'winston';
 
-import {
-  isTelegramConfigured,
-  resolveTelegramBaseUrl,
-  type TelegramConfig,
-  telegramConfig,
-} from '../telegram.config';
+import { TELEGRAM_API_ORIGIN, TelegramConfig, telegramConfig } from '../telegram.config';
 import type { OrderTelegramPayload } from '../telegram.dto';
 
 function formatMinor(amountMinor: number, currency: string): string {
@@ -29,18 +24,10 @@ export class TelegramService extends ExternalApi {
   }
 
   protected getBaseUrl(): string {
-    return resolveTelegramBaseUrl(this.settings);
-  }
-
-  isConfigured(): boolean {
-    return isTelegramConfigured(this.settings);
+    return `${TELEGRAM_API_ORIGIN}/bot${this.settings.botToken}`;
   }
 
   async sendOrderNotification(payload: OrderTelegramPayload): Promise<void> {
-    if (!this.isConfigured()) {
-      return;
-    }
-
     const lines = payload.lines
       .map(
         (line) =>

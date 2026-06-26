@@ -1,12 +1,13 @@
 import 'reflect-metadata';
 
-import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
 import { clientBaggageMiddleware, responseDelayMiddleware } from '@my-noodles/api-lib/middlewares';
-import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+
+import { NestWinstonModule } from '@/infrastructure/logging';
+import { validationPipe } from '@/utils/validation-pipe';
 
 import { AppModule } from './app.module';
 import { config } from './config';
@@ -14,10 +15,9 @@ import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs
 import { localeMiddleware } from './infrastructure/i18n';
 import { HttpExceptionLogFilter } from './infrastructure/logging';
 import { registerGracefulShutdown } from './infrastructure/shutdown';
-import { VALIDATION_PIPE_OPTIONS } from './utils/validation-pipe-options';
 
 async function bootstrap() {
-  const logger = WinstonModule.createLogger(createWinstonModuleOptions(config));
+  const logger = NestWinstonModule.logger;
 
   const app = await NestFactory.create(AppModule, { logger });
 
@@ -29,7 +29,7 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
-  app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
+  app.useGlobalPipes(validationPipe);
   app.use(cookieParser());
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);

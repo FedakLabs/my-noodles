@@ -1,7 +1,10 @@
+import {
+  TransformToArray,
+  TransformToOptionalBoolean,
+  TransformToOptionalInt,
+} from '@my-noodles/api-lib/utils';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
-
-import { TransformToArray, TransformToOptionalBoolean, TransformToOptionalInt } from '@/utils/transformers';
 
 import { PRODUCT_SORT_OPENAPI, type ProductSort } from './products.filters';
 

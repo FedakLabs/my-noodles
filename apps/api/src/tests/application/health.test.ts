@@ -1,13 +1,12 @@
 import type { Server } from 'node:http';
 
-import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
 import { type INestApplication, ServiceUnavailableException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
 import request from 'supertest';
 
 import { HealthController, HealthService } from '@/application/health';
-import { config } from '@/config';
+import { NestWinstonModule } from '@/infrastructure/logging';
 import { LoggingModule } from '@/infrastructure/logging';
 
 import { jest } from '../jest-globals';
@@ -20,7 +19,7 @@ describe('health (e2e)', () => {
     assertDependenciesReady = jest.fn().mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
-      imports: [WinstonModule.forRoot(createWinstonModuleOptions(config)), LoggingModule],
+      imports: [WinstonModule.forRoot(NestWinstonModule.options), LoggingModule],
       controllers: [HealthController],
       providers: [{ provide: HealthService, useValue: { assertDependenciesReady } }],
     }).compile();

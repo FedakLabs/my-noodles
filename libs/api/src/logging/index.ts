@@ -13,4 +13,4 @@ export {
   resolveHttpRoute,
   resolveXRealIp,
 } from './manifest-log';
-export { createWinstonModuleOptions, type WinstonLoggingConfig } from './winston';
+export { WinstonLoggerFactory, type WinstonLoggingConfig } from './winston';

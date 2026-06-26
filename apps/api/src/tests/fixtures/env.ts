@@ -1,5 +1,3 @@
-import type { ConfigEnvironment } from '@my-noodles/api-lib/config';
-
 export const validEnv = {
   PORT: '3001',
   NODE_ENV: 'local',
@@ -12,7 +10,9 @@ export const validEnv = {
   SHUTDOWN_TIMEOUT_MS: '30000',
   APP_NAME: 'my-noodles-api',
   APP_VERSION: 'dev',
-} as const satisfies ConfigEnvironment;
+  TELEGRAM_BOT_TOKEN: 'test-bot-token',
+  TELEGRAM_CHAT_ID: '123456789',
+} as const;
 
 export const validOtelEnv = {
   ...validEnv,

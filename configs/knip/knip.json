@@ -57,7 +57,6 @@
         "src/infrastructure/services/Telegram/telegram.dto.ts": ["types"],
         "src/tests/fixtures/env.ts": ["exports"],
         "src/tests/jest-globals.ts": ["exports"],
-        "src/utils/locale-query.ts": ["exports"],
         "src/utils/transformers/index.ts": ["exports"]
       },
       "ignoreDependencies": [
@@ -115,13 +114,21 @@
       "ignoreDependencies": ["@tanstack/react-query"]
     },
     "libs/api": {
-      "entry": ["src/index.ts"],
+      "entry": [
+        "src/index.ts",
+        "src/config/index.ts",
+        "src/context/index.ts",
+        "src/pagination/index.ts",
+        "src/persistence/index.ts",
+        "src/external-api/index.ts",
+        "src/logging/index.ts",
+        "src/otel/index.ts",
+        "src/utils/index.ts",
+        "src/middlewares/index.ts"
+      ],
       "project": ["src/**/*.ts"],
       "ignore": [
-        "src/config/index.ts",
-        "src/external-api/logger.ts",
-        "src/logging/index.ts",
-        "src/middlewares/index.ts"
+        "src/external-api/logger.ts"
       ],
       "ignoreIssues": {
         "src/config/config.ts": ["exports"],

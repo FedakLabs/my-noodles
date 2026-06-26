@@ -1,9 +1,10 @@
-import { createWinstonModuleOptions } from '@my-noodles/api-lib/logging';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
+
+import { NestWinstonModule } from '@/infrastructure/logging';
 
 import { CollectionsModule } from './application/collections';
 import { CountriesModule } from './application/countries';
@@ -17,7 +18,7 @@ import { prepareDataSource } from './infrastructure/persistence';
 
 @Module({
   imports: [
-    WinstonModule.forRoot(createWinstonModuleOptions(config)),
+    WinstonModule.forRoot(NestWinstonModule.options),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     TypeOrmModule.forRoot({
       ...prepareDataSource(config),

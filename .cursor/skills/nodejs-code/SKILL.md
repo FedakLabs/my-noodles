@@ -11,6 +11,8 @@ You are implementing **`apps/api`**: NestJS 11, TypeORM, PostgreSQL, class-valid
 
 Consult [references/common-patterns.md](./references/common-patterns.md) and [references/code-style-guide.md](./references/code-style-guide.md) before writing code.
 
+**Paradigm:** OOP-first — services, adapters, clients, and bootstrap wiring are **classes**. Reserve standalone functions for pure stateless utilities (e.g. `slugify`, `parseBoolean`).
+
 ## Your Goal
 
 1. Identify affected feature module(s) and layers (controller → service → repository/client)

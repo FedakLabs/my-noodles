@@ -1,12 +1,6 @@
 import 'reflect-metadata';
 
-import { resolve } from 'node:path';
-
-import { loadAppEnv } from '@my-noodles/api-lib/config';
-
 import { validEnv } from './fixtures/env';
-
-loadAppEnv(resolve(__dirname, '../..'));
 
 for (const [key, value] of Object.entries(validEnv)) {
   if (process.env[key] === undefined) {

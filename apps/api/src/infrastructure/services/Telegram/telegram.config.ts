@@ -1,21 +1,26 @@
-import { readConfigEnvironment } from '@my-noodles/api-lib/config';
+import { IsDefined, IsString, MinLength } from 'class-validator';
+
+import { config } from '@/config';
 
 export const TELEGRAM_API_ORIGIN = 'https://api.telegram.org';
 
-export type TelegramConfig = {
-  botToken: string;
-  chatId: string;
-};
+export class TelegramConfig {
+  @IsDefined()
+  @IsString()
+  @MinLength(1)
+  botToken!: string;
 
-export const telegramConfig: TelegramConfig = {
-  botToken: readConfigEnvironment(process.env).TELEGRAM_BOT_TOKEN ?? '',
-  chatId: readConfigEnvironment(process.env).TELEGRAM_CHAT_ID ?? '',
-};
-
-export function resolveTelegramBaseUrl(config: TelegramConfig): string {
-  return config.botToken ? `${TELEGRAM_API_ORIGIN}/bot${config.botToken}` : TELEGRAM_API_ORIGIN;
+  @IsDefined()
+  @IsString()
+  @MinLength(1)
+  chatId!: string;
 }
 
-export function isTelegramConfigured(config: TelegramConfig): boolean {
-  return Boolean(config.botToken && config.chatId);
-}
+export const telegramConfig = config.validate(
+  TelegramConfig,
+  {
+    botToken: process.env.TELEGRAM_BOT_TOKEN,
+    chatId: process.env.TELEGRAM_CHAT_ID,
+  },
+  'Telegram configuration',
+);

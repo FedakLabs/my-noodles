@@ -62,12 +62,12 @@ Configured in `apps/api/tsconfig.json`: `@/*` → `src/*` (same idea as `apps/we
 
 **Do not** reach into another module’s internal files when that module exposes a barrel — import the folder so the module boundary stays explicit and refactors stay local.
 
-**NestJS modules:** when importing a `*Module` (or bootstrap helpers such as `createWinstonModuleOptions`, `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
+**NestJS modules:** when importing a `*Module` (or bootstrap adapters such as `NestWinstonModule`, `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
 
 ```ts
 // app.module.ts — feature + infra modules via barrels
 import { OrdersModule } from './application/orders';
-import { createWinstonModuleOptions, LoggingModule } from './infrastructure/logging';
+import { LoggingModule, NestWinstonModule } from './infrastructure/logging';
 import { prepareDataSource } from './infrastructure/persistence';
 
 // application/orders/orders.module.ts — optional integration module via barrel
@@ -108,16 +108,53 @@ import { OrdersService } from './orders.service';
   - `ProductNotFoundException`
 - No separate authenticated controller variants unless the product adds auth.
 
+### Paradigm: classes first
+
+We work in an **OOP-first** style aligned with NestJS, TypeORM, and class-validator.
+
+| Use a **class** | Use a **function** |
+| --------------- | ------------------ |
+| Services, controllers, modules, entities, DTOs, filters, interceptors | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`) |
+| Bootstrap/adapters that compose dependencies (e.g. Nest Winston wiring) | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
+| External API clients (`ExternalApi` subclasses) | One-off validators reused across DTOs when a decorator factory is enough |
+| Factories that hold config and expose methods (`WinstonLoggerFactory`, `NestWinstonModule`) | |
+
+**Default to a class** with static getters when wiring is app-global (e.g. `NestWinstonModule.options`, `NestWinstonModule.logger`).
+
+```ts
+// infrastructure/logging/winston.ts — Nest adapter over api-lib factory
+export class NestWinstonModule {
+  private static readonly moduleOptionsValue = NestWinstonModule.buildOptions();
+  private static readonly loggerValue = WinstonModule.createLogger(NestWinstonModule.moduleOptionsValue);
+
+  static get options(): WinstonModuleOptions {
+    return NestWinstonModule.moduleOptionsValue;
+  }
+
+  static get logger(): ReturnType<typeof WinstonModule.createLogger> {
+    return NestWinstonModule.loggerValue;
+  }
+}
+
+// index.ts
+const logger = NestWinstonModule.logger;
+
+// app.module.ts
+WinstonModule.forRoot(NestWinstonModule.options);
+```
+
+Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/api/src/utils/` when they have no state and no framework coupling.
+
 ### Barrel `index.ts`
 
 Every **module folder** (feature in `application/`, subsystem in `infrastructure/`) should have an `index.ts` that re-exports its **public** symbols. Other code imports from the barrel, not from deep files — this scopes imports to the module and hides internal layout.
 
-The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap wiring (`createWinstonModuleOptions`, middleware, filters). Keep helpers used only inside the folder unexported.
+The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap adapters (`NestWinstonModule`, middleware, filters). Keep helpers used only inside the folder unexported.
 
 ```ts
 // infrastructure/logging/index.ts
 export { LoggingModule } from './logging.module';
-export { createWinstonModuleOptions } from './winston';
+export { NestWinstonModule } from './winston';
 export { clientBaggageMiddleware, ManifestHttpExceptionFilter } from './…';
 
 // infrastructure/persistence/index.ts
@@ -133,7 +170,7 @@ export * from './order.entity';
 Consumers:
 
 ```ts
-import { LoggingModule, createWinstonModuleOptions } from '@/infrastructure/logging';
+import { LoggingModule, NestWinstonModule } from '@/infrastructure/logging';
 import { OrdersModule } from '@/application/orders';
 import { TimestampEntity } from '@/infrastructure/persistence';
 ```
@@ -756,6 +793,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 | `console.log` for diagnostics                                    | Nest `Logger` / Winston                               |
 | God `AppModule` providers                                        | Feature `*.module.ts` per domain                      |
 | Copy-paste validator                                             | Add to `utils/validators/` and reuse                  |
+| Standalone factory function for stateful/bootstrap wiring          | Class with constructor + method (e.g. `NestWinstonModule`) |
 | Deep `../../infrastructure/…` cross-layer imports              | `@/infrastructure/…` (or `@/config`, `@/application/…`) |
 | Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging` |
 

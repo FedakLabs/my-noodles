@@ -1,7 +1,7 @@
-import type { PaginationMeta, PaginationQuery } from '@my-noodles/api-lib/pagination';
 import { IsInt, Max, Min } from 'class-validator';
 
-import { TransformToInt } from '@/utils/transformers';
+import type { PaginationMeta, PaginationQuery } from '../pagination';
+import { TransformToInt } from './transformers';
 
 export class PaginationQueryDto implements PaginationQuery {
   @TransformToInt()

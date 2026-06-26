@@ -1,12 +1,12 @@
 import type { Server } from 'node:http';
 
-import { type INestApplication, type ModuleMetadata, ValidationPipe } from '@nestjs/common';
+import { type INestApplication, type ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 
 import { API_GLOBAL_PREFIX } from '@/configs/api';
 import { localeMiddleware } from '@/infrastructure/i18n';
-import { VALIDATION_PIPE_OPTIONS } from '@/utils/validation-pipe-options';
+import { validationPipe } from '@/utils/validation-pipe';
 
 export async function createApiTestApp(metadata: ModuleMetadata): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule(metadata).compile();
@@ -15,7 +15,7 @@ export async function createApiTestApp(metadata: ModuleMetadata): Promise<INestA
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
   app.use(cookieParser());
   app.use(localeMiddleware);
-  app.useGlobalPipes(new ValidationPipe(VALIDATION_PIPE_OPTIONS));
+  app.useGlobalPipes(validationPipe);
 
   await app.init();
   return app;

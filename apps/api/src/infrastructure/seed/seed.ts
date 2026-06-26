@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import { slugify } from '@my-noodles/api-lib/utils';
 import { type DataSource, type Repository } from 'typeorm';
 
 import { Brand } from '@/application/brands';
@@ -11,7 +12,6 @@ import { Product } from '@/application/products';
 import { config } from '@/config';
 import { createAppDataSource } from '@/infrastructure/persistence';
 import { DEFAULT_CURRENCY } from '@/utils/currency.config';
-import { slugify } from '@/utils/slugify';
 
 import { buildFeedCommentSeeds } from './feed-seed-data';
 import {

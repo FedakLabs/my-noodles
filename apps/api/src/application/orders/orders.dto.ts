@@ -1,3 +1,4 @@
+import { TransformToInt } from '@my-noodles/api-lib/utils';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -13,8 +14,6 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-
-import { TransformToInt } from '@/utils/transformers';
 
 import { DeliveryMethod, DeliveryProvider, IsDeliveryMethod, IsDeliveryProvider } from './order-delivery.dto';
 

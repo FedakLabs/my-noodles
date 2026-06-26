@@ -19,6 +19,24 @@ function normalizeBooleanInput(value: unknown): string | undefined {
   return undefined;
 }
 
+/** Coerce env/query scalars to boolean; unknown or missing values use `defaultValue`. */
+export function parseBoolean(value: unknown, defaultValue = false): boolean {
+  const normalized = normalizeBooleanInput(value);
+  if (normalized === undefined) {
+    return defaultValue;
+  }
+
+  if (TRUTHY_VALUES.has(normalized)) {
+    return true;
+  }
+
+  if (FALSY_VALUES.has(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}
+
 /** Optional boolean — returns `undefined` when absent or unrecognized. */
 function parseOptionalBoolean(value: unknown): boolean | undefined {
   const normalized = normalizeBooleanInput(value);

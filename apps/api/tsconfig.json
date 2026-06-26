@@ -15,6 +15,6 @@
     "types": ["node", "jest"],
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "../../libs/api/src/types/env.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

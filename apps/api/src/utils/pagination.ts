@@ -1,1 +1,1 @@
-export { PaginatedMetaDto, PaginationQueryDto } from './pagination.dto';
+export { PaginatedMetaDto, PaginationQueryDto } from '@my-noodles/api-lib/utils';
