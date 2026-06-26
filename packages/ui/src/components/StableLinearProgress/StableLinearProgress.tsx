@@ -1,12 +1,13 @@
 'use client';
 
-import LinearProgress from '@mui/material/LinearProgress';
+import LinearProgress, { type LinearProgressProps } from '@mui/material/LinearProgress';
 
 export type StableLinearProgressProps = {
   active: boolean;
   transitionMs?: number;
   transitionEasing?: string;
   height?: number;
+  color?: LinearProgressProps['color'];
   'aria-label'?: string;
 };
 
@@ -18,10 +19,12 @@ export function StableLinearProgress({
   transitionMs = 250,
   transitionEasing = 'cubic-bezier(0.4, 0, 0.2, 1)',
   height = 2,
+  color = 'inherit',
   'aria-label': ariaLabel,
 }: StableLinearProgressProps) {
   return (
     <LinearProgress
+      color={color}
       aria-hidden={!active}
       aria-label={active ? ariaLabel : undefined}
       sx={{

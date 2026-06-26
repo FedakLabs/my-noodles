@@ -3,19 +3,23 @@
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { MediaGallery, type MediaGalleryHandle } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 
 import type { FeedItemDto } from '@/api/feed';
-import { feedCardSurfaceSx } from '@/components/feed/feed-chrome';
+import { FeedActionRail, type FeedCardControlsProps } from '@/components/feed/action-rail/feed-action-rail';
+import { feedCardSurfaceSx, feedSubtleChipSx } from '@/components/feed/feed-chrome';
+import { feedGalleryCarouselOptions } from '@/components/feed/feed-gallery-carousel-options';
 import { useCurrency } from '@/hooks/currency';
 import type { FeedTagDimension } from '@/hooks/feed';
 
 import { FeedCardActionBar } from './feed-card-action-bar';
 import { FeedCardDetails } from './feed-card-details';
-import { feedGalleryCarouselOptions } from './feed-gallery-carousel';
+import { FeedCardInteractive } from './feed-card-interactive';
 import { toFeedMediaItems } from './feed-media';
 
 type FeedCardProps = {
@@ -25,6 +29,7 @@ type FeedCardProps = {
   onOpenDetails: () => void;
   onCloseDetails: () => void;
   mediaGalleryRef?: RefObject<MediaGalleryHandle | null>;
+  controls?: FeedCardControlsProps;
 };
 
 type HashtagChip = {
@@ -53,12 +58,17 @@ export function FeedCard({
   onOpenDetails,
   onCloseDetails,
   mediaGalleryRef,
+  controls,
 }: FeedCardProps) {
   const t = useTranslations('feed');
+  const theme = useTheme();
+  const isCompactFeed = useMediaQuery(theme.breakpoints.down('sm'));
   const { formatCurrency } = useCurrency();
 
   const mediaItems = toFeedMediaItems(item);
   const hashtags = buildHashtags(item);
+  const actionRail =
+    controls && !detailsOpen && isCompactFeed ? <FeedActionRail item={item} {...controls} /> : null;
 
   return (
     <Box
@@ -71,16 +81,19 @@ export function FeedCard({
         ...feedCardSurfaceSx,
       }}
     >
-      <Box sx={{ position: 'absolute', inset: 0 }}>
+      <Box data-feed-media-gallery sx={{ position: 'absolute', inset: 0 }}>
         <MediaGallery
           fill
           items={mediaItems}
           carouselOptions={feedGalleryCarouselOptions}
           slideTouchAction="pan-x"
+          progressSegments="top"
           mediaRef={mediaGalleryRef}
           labels={{
             gallery: t('media.gallery'),
             slide: (index, total) => t('media.slide', { index, total }),
+            previousSlide: t('media.previousSlide'),
+            nextSlide: t('media.nextSlide'),
             video: {
               play: t('media.playVideo'),
               pause: t('media.pauseVideo'),
@@ -110,37 +123,48 @@ export function FeedCard({
             : 'opacity 100ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0ms linear 0ms',
         }}
       >
-        <Stack spacing={1.25} sx={{ pointerEvents: detailsOpen ? 'none' : 'auto' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
-            {item.name ?? item.slug}
-          </Typography>
-          <Typography variant="subtitle1" sx={{ color: '#fff', fontWeight: 600 }}>
-            {formatCurrency(item.priceMinor, item.currency)}
-          </Typography>
+        <Stack
+          direction={actionRail ? 'row' : 'column'}
+          spacing={actionRail ? 1 : 1.25}
+          sx={{
+            alignItems: actionRail ? 'flex-end' : undefined,
+            width: '100%',
+          }}
+        >
+          <Stack spacing={1.25} sx={{ flex: actionRail ? 1 : undefined, minWidth: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: 'common.white', lineHeight: 1.2 }}>
+              {item.name ?? item.slug}
+            </Typography>
+            <Typography variant="subtitle1" sx={{ color: 'common.white', fontWeight: 600 }}>
+              {formatCurrency(item.priceMinor, item.currency)}
+            </Typography>
 
-          <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap' }}>
-            {hashtags.map((chip) => (
-              <Chip
-                key={`${chip.type}-${chip.slug}`}
-                label={`#${chip.label}`}
-                size="small"
-                onClick={() => onAddTag(chip.type, chip.slug, chip.label)}
-                sx={{
-                  color: '#fff',
-                  bgcolor: 'rgba(255,255,255,0.16)',
-                  backdropFilter: 'blur(4px)',
-                  fontWeight: 600,
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
-                }}
+            <FeedCardInteractive sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+              {hashtags.map((chip) => (
+                <Chip
+                  key={`${chip.type}-${chip.slug}`}
+                  label={`#${chip.label}`}
+                  size="small"
+                  onClick={() => onAddTag(chip.type, chip.slug, chip.label)}
+                  sx={{
+                    ...feedSubtleChipSx,
+                    backdropFilter: 'blur(4px)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
+                  }}
+                />
+              ))}
+            </FeedCardInteractive>
+
+            <FeedCardInteractive>
+              <FeedCardActionBar
+                item={item}
+                detailsOpen={detailsOpen}
+                onToggleDetails={detailsOpen ? onCloseDetails : onOpenDetails}
               />
-            ))}
+            </FeedCardInteractive>
           </Stack>
 
-          <FeedCardActionBar
-            item={item}
-            detailsOpen={detailsOpen}
-            onToggleDetails={detailsOpen ? onCloseDetails : onOpenDetails}
-          />
+          {actionRail ? <FeedCardInteractive>{actionRail}</FeedCardInteractive> : null}
         </Stack>
       </Box>
 

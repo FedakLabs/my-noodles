@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-import { CATALOG_VIEW_MODE_COOKIE } from '../src/components/catalog-view-mode';
-import { testIds } from '../src/shared/test-ids';
+import { CATALOG_VIEW_MODE_COOKIE } from '../src/components/catalog-view-mode/view-mode';
+import { testIds } from '../src/tests/test-ids';
 import { e2eLocale, uk } from './fixtures/uk-messages';
 
 test.describe('discovery funnel', () => {

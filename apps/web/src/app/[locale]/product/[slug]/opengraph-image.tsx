@@ -2,8 +2,8 @@ import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
 import { fetchProductDetail } from '@/api/products';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
-import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 import { formatCurrency } from '@/utils/format-currency';

@@ -2,10 +2,10 @@ import 'server-only';
 
 import { fetchCollections } from '@/api/collections';
 import { fetchProductsList } from '@/api/products';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
-import { runWithAppLocale } from '@/shared/app-locale/server';
 
 const SITEMAP_PRODUCT_PAGE_SIZE = 100;
 

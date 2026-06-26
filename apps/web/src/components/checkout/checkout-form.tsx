@@ -14,7 +14,7 @@ import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCartActions, useCartItems } from '@/hooks/cart';
 import { usePendingRouter } from '@/hooks/smooth';
 import { cartLineToGa4Item } from '@/shared/analytics';
-import { testIds } from '@/shared/test-ids';
+import { testIds } from '@/tests/test-ids';
 
 import { branchToWarehouseNumber, type CheckoutFormData, checkoutSchema } from './validation';
 

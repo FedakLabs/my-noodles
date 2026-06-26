@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 import {
+  BUSY_CHROME_TRANSITION_EASING,
+  BUSY_CHROME_TRANSITION_MS,
   SMOOTH_MIN_VISIBLE_MS,
   SMOOTH_SHOW_DELAY_MS,
-  SMOOTH_TRANSITION_EASING,
-  SMOOTH_TRANSITION_MS,
 } from './tokens';
 
 export type BusyAreaState = {
@@ -21,49 +21,66 @@ export type BusyAreaState = {
 export type BusyAreaTimingOptions = {
   /** Minimum time busy chrome stays up after `busy` becomes false. Navigation uses 0. */
   minVisibleMs?: number;
+  /** Delay before busy chrome mounts. Catalog refetch uses 0 for immediate scrim. */
+  showDelayMs?: number;
+  /** Opacity fade duration — defaults to soft chrome timing (dim/scrim). */
+  transitionMs?: number;
+  transitionEasing?: string;
 };
 
 export function useBusyAreaState(busy: boolean, options?: BusyAreaTimingOptions): BusyAreaState {
-  const showDelayMs = SMOOTH_SHOW_DELAY_MS;
-  const transitionMs = SMOOTH_TRANSITION_MS;
+  const showDelayMs = options?.showDelayMs ?? SMOOTH_SHOW_DELAY_MS;
+  const transitionMs = options?.transitionMs ?? BUSY_CHROME_TRANSITION_MS;
   const minVisibleMs = options?.minVisibleMs ?? SMOOTH_MIN_VISIBLE_MS;
-  const transitionEasing = SMOOTH_TRANSITION_EASING;
+  const transitionEasing = options?.transitionEasing ?? BUSY_CHROME_TRANSITION_EASING;
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
-  const mountedRef = useRef(false);
   const shownAtRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    mountedRef.current = mounted;
-  }, [mounted]);
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
 
   useEffect(() => {
     if (busy) {
-      if (mountedRef.current) {
+      if (mounted) {
+        let cancelled = false;
         const raf = window.requestAnimationFrame(() => {
+          if (cancelled || !busyRef.current) {
+            return;
+          }
           shownAtRef.current ??= Date.now();
           setActive(true);
         });
-        return () => window.cancelAnimationFrame(raf);
+        return () => {
+          cancelled = true;
+          window.cancelAnimationFrame(raf);
+        };
       }
 
+      let cancelled = false;
       let raf = 0;
       const enterTimer = window.setTimeout(() => {
+        if (cancelled || !busyRef.current) {
+          return;
+        }
         setMounted(true);
         raf = window.requestAnimationFrame(() => {
+          if (cancelled || !busyRef.current) {
+            return;
+          }
           shownAtRef.current = Date.now();
           setActive(true);
         });
       }, showDelayMs);
 
       return () => {
+        cancelled = true;
         window.clearTimeout(enterTimer);
         window.cancelAnimationFrame(raf);
       };
     }
 
-    if (!mountedRef.current) {
+    if (!mounted) {
       return undefined;
     }
 
@@ -81,7 +98,7 @@ export function useBusyAreaState(busy: boolean, options?: BusyAreaTimingOptions)
       window.clearTimeout(deactivateTimer);
       window.clearTimeout(exitTimer);
     };
-  }, [busy, showDelayMs, transitionMs, minVisibleMs]);
+  }, [busy, mounted, showDelayMs, transitionMs, minVisibleMs, transitionEasing]);
 
   return { mounted, active, transitionMs, transitionEasing };
 }

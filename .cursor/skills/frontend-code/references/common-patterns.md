@@ -46,7 +46,9 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 
 ### Mobile vs desktop layout split
 
-Shell layout (sidebar vs drawer, horizontal nav vs hamburger) uses semantic breakpoints **`mobile`** / **`desktop`** in `@my-noodles/theme` — both bound to **`DESKTOP_MIN_WIDTH`** (900px). Change that constant once to retune the split everywhere.
+Shell layout uses semantic breakpoints **`mobile`** / **`desktop`** in `@my-noodles/theme` — both bound to **`DESKTOP_MIN_WIDTH`** (900px). Change that constant once to retune the split everywhere.
+
+**Site header:** hamburger drawer navigation at **all** breakpoints (no separate desktop horizontal nav). Cart opens the slide-over panel — there is no `/cart` route.
 
 **JS (conditional render, mount one panel):**
 

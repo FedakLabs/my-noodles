@@ -12,10 +12,10 @@ import {
   isCatalogViewMode,
   parseCatalogViewMode,
 } from '@/components/catalog-view-mode';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
 import { CatalogScreen } from '@/screens/catalog';
 import { catalogSearchParamsCache, toCatalogInfiniteListParams } from '@/screens/catalog/search-params';
-import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';

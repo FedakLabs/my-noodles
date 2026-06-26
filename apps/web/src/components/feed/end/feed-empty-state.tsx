@@ -10,6 +10,7 @@ type FeedEmptyStateProps = {
   activeTags: FeedTagChip[];
   tagLabels: Record<string, string>;
   onRemoveTag: (chip: FeedTagChip) => void;
+  onOpenSaved: () => void;
   onReshuffle: () => void;
   reshuffling: boolean;
 };
@@ -18,6 +19,7 @@ export function FeedEmptyState({
   activeTags,
   tagLabels,
   onRemoveTag,
+  onOpenSaved,
   onReshuffle,
   reshuffling,
 }: FeedEmptyStateProps) {
@@ -37,6 +39,7 @@ export function FeedEmptyState({
         activeTags={activeTags}
         tagLabels={tagLabels}
         onRemoveTag={onRemoveTag}
+        onOpenSaved={onOpenSaved}
         onReshuffle={onReshuffle}
         reshuffling={reshuffling}
       />

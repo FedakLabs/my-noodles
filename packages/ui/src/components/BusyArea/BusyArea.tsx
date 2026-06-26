@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { BusyDim } from './BusyDim';
 import { BusyScrim } from './BusyScrim';
+import { BUSY_SCRIM_Z_INDEX } from './tokens';
 import { type BusyAreaState, type BusyAreaTimingOptions, useBusyAreaState } from './use-busy-area-state';
 
 export type BusyAreaProps = {
@@ -15,13 +16,12 @@ export type BusyAreaProps = {
   busy?: boolean;
   /** Shared timing from `useBusyAreaState` — avoids duplicate hooks in one screen. */
   timing?: BusyAreaState;
-  /** Gates dim + scrim visibility; defaults to timing `active`. Timing still runs. */
+  /** Gates dim + scrim; defaults to timing `active`. Timing still runs. */
   show?: boolean;
   /** Fade wrapped children (~65% opacity). Default `true`. */
   dim?: boolean;
-  /** Flat overlay on top; carries aria-busy. Default `true`. */
+  /** Invisible click shield on top + blocks children. Default `true`. No extra tint. */
   scrim?: boolean;
-  blockInteraction?: boolean;
   borderRadius?: number;
   position?: 'absolute' | 'fixed';
   top?: number | string;
@@ -40,35 +40,32 @@ function BusyAreaBody({
   show,
   dim = true,
   scrim = true,
-  blockInteraction = false,
   borderRadius = 1,
   position = 'absolute',
   top = 0,
-  zIndex = 1,
+  zIndex = BUSY_SCRIM_Z_INDEX,
   sx,
   resolvedTiming,
 }: BusyAreaBodyProps) {
   const { mounted, active, transitionMs, transitionEasing } = resolvedTiming;
   const chromeVisible = show ?? active;
   const dimActive = dim && chromeVisible;
-  const scrimVisible = scrim && chromeVisible;
+  const scrimActive = scrim && (mounted || chromeVisible);
 
   const regionSx: SxProps<Theme> = {
     position: 'relative',
-    ...(blockInteraction && {
-      pointerEvents: chromeVisible ? 'none' : 'auto',
+    ...(scrim && {
+      pointerEvents: scrimActive ? 'none' : 'auto',
     }),
   };
 
   const content = (
     <>
       {children}
-      {scrim && mounted ? (
+      {scrimActive ? (
         <BusyScrim
-          visible={scrimVisible}
+          blocking
           label={label}
-          transitionMs={transitionMs}
-          transitionEasing={transitionEasing}
           position={position}
           top={top}
           zIndex={zIndex}

@@ -39,10 +39,9 @@ function ToggleButton({ busy, onToggle, label }: { busy: boolean; onToggle: () =
 }
 
 const LAYER_DIAGRAM = `┌─────────────────────────────┐
-│  SCRIM (layer on top)       │  ← separate element, sits above content
-│  semi-transparent sheet     │
+│  SCRIM (invisible shield)   │  ← captures clicks; no tint
 ├─────────────────────────────┤
-│  CONTENT (dimmed)           │  ← same nodes, opacity reduced
+│  CONTENT (dimmed)           │  ← opacity fade on the wrapper
 │  product tiles, text…       │
 └─────────────────────────────┘`;
 
@@ -52,8 +51,7 @@ function ComparisonGuideIntro() {
       <Stack spacing={0.75}>
         <Typography variant="h6">Two different mechanisms</Typography>
         <Typography variant="body2" color="text.secondary">
-          When a region is busy, there are only two visual tricks — everything else is timing, layout, and
-          click blocking.
+          When a region is busy, configure visual fade (`dim`) and click blocking (`scrim`) independently.
         </Typography>
       </Stack>
 
@@ -94,26 +92,22 @@ function ComparisonGuideIntro() {
         <Stack spacing={0.5}>
           <Typography variant="subtitle2">Scrim</Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>What it is:</strong> A separate overlay on top — a flat tinted sheet (background at ~55%
-            alpha). Not blur.
+            <strong>What it is:</strong> An invisible click shield on top — no background tint.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>In code:</strong> internal <code>BusyScrim</code>, prop <code>scrim</code>, token{' '}
-            <code>BUSY_SCRIM_ALPHA</code>.
+            <strong>In code:</strong> internal <code>BusyScrim</code>, prop <code>scrim</code>.
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Effect:</strong> Content stays full opacity underneath; the sheet tints everything
-            uniformly. Carries <code>aria-busy</code> and captures pointer events when visible — tiles are not
-            clickable through it.
+            <strong>Effect:</strong> Content keeps its opacity; pointer events are blocked. Carries{' '}
+            <code>aria-busy</code> on the shield.
           </Typography>
         </Stack>
 
         <Stack spacing={0.5}>
           <Typography variant="subtitle2">Why both dim + scrim together?</Typography>
           <Typography variant="body2" color="text.secondary">
-            On the catalog grid we stack them: <strong>dim</strong> — content feels inactive;{' '}
-            <strong>scrim</strong> — uniform paused read + a11y + interaction surface. Alone they read
-            similarly at a glance; together they are slightly stronger.
+            On the catalog grid: <strong>dim</strong> — faded “searching” look; <strong>scrim</strong> —
+            product tiles and links cannot be clicked during refetch.
           </Typography>
         </Stack>
       </Stack>
@@ -199,12 +193,12 @@ export const ComparisonGuide: Story = {
 
           <ComparisonDemoPanel
             title="scrim only"
-            subtitle="<BusyArea scrim dim={false} /> — overlay on top"
+            subtitle="<BusyArea scrim dim={false} /> — click shield only"
             lastClick={scrimClick}
             whatToLookFor={[
-              'Flat tint sheet over tiles (not blur).',
-              'Content keeps full opacity under the sheet.',
-              'Scrim blocks clicks + aria-busy when visible.',
+              'No opacity fade — tiles stay full strength.',
+              'Invisible layer blocks all clicks.',
+              'aria-busy on the shield while busy.',
             ]}
           >
             <BusyArea timing={timing} scrim dim={false} label={args.label ?? 'Loading…'}>
@@ -217,9 +211,9 @@ export const ComparisonGuide: Story = {
             subtitle="<BusyArea /> — catalog grid"
             lastClick={bothClick}
             whatToLookFor={[
-              'Both layers — region feels paused.',
-              'Fade plus uniform tint — strongest signal.',
-              'Scrim blocks clicks; add blockInteraction for forms.',
+              'Dim fade + invisible click shield.',
+              'Default catalog refetch pattern.',
+              'Tiles not clickable while busy.',
             ]}
           >
             <BusyArea timing={timing} label={args.label ?? 'Loading…'}>
@@ -253,37 +247,55 @@ export const ToolbarDim: Story = {
   },
 };
 
-export const NavigationScrim: Story = {
-  name: 'Navigation — scrim only',
-  tags: ['!autodocs'],
+export const NavigationProgressBar: Story = {
+  name: 'Navigation — progress bar only',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Global route changes in apps/web use a primary progress bar below the app header — not a scrim. Scrim remains for in-page busy regions (catalog grid, filters).',
+      },
+    },
+  },
   render: (args) => {
     const [busy, setBusy] = useState(false);
     const theme = useTheme();
     const timing = useBusyAreaState(busy, { minVisibleMs: 0 });
     const toolbarHeight = theme.mixins.toolbar.minHeight;
+    const progressVisible = busy || timing.mounted;
 
     return (
       <Stack spacing={2} sx={{ maxWidth: 480 }}>
         <ToggleButton busy={busy} onToggle={() => setBusy((v) => !v)} label="Simulate navigation" />
-        <Box sx={{ height: toolbarHeight, borderRadius: 1, bgcolor: 'action.selected', mb: 1 }} />
-        <BusyArea
-          timing={timing}
-          scrim
-          dim={false}
-          position="fixed"
-          top={toolbarHeight}
-          borderRadius={0}
-          label={args.label ?? 'Loading…'}
+        <Box
+          sx={{
+            height: toolbarHeight,
+            borderRadius: 1,
+            bgcolor: 'action.selected',
+            display: 'flex',
+            alignItems: 'flex-end',
+          }}
         >
-          <DemoProductGrid count={4} />
-        </BusyArea>
+          <StableLinearProgress
+            active={progressVisible}
+            height={3}
+            color="primary"
+            transitionMs={timing.transitionMs}
+            transitionEasing={timing.transitionEasing}
+            aria-label={args.label ?? 'Loading…'}
+          />
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          Fixed at the header/content seam — visible reassurance during navigation without blocking the page.
+        </Typography>
+        <DemoProductGrid count={4} />
       </Stack>
     );
   },
 };
 
 export const FilterPanel: Story = {
-  name: 'Filters — blockInteraction',
+  name: 'Filters — dim + scrim',
   tags: ['!autodocs'],
   render: (args) => {
     const [busy, setBusy] = useState(false);
@@ -291,7 +303,7 @@ export const FilterPanel: Story = {
     return (
       <Stack spacing={2} sx={{ maxWidth: 320 }}>
         <ToggleButton busy={busy} onToggle={() => setBusy((v) => !v)} />
-        <BusyArea busy={busy} blockInteraction label={args.label ?? 'Loading…'} borderRadius={1.5}>
+        <BusyArea busy={busy} label={args.label ?? 'Loading…'} borderRadius={1.5}>
           <DemoFilterPanel />
         </BusyArea>
       </Stack>
@@ -304,8 +316,8 @@ export const CatalogRefetchStack: Story = {
   render: (args) => {
     const [busy, setBusy] = useState(false);
     const [hasProducts, setHasProducts] = useState(true);
-    const timing = useBusyAreaState(busy);
-    const showGrid = timing.active && hasProducts;
+    const timing = useBusyAreaState(busy, { minVisibleMs: 0, showDelayMs: 0 });
+    const showGrid = busy && hasProducts;
 
     return (
       <Stack spacing={2} sx={{ maxWidth: 520 }}>

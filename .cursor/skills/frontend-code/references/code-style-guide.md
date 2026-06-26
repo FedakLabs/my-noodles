@@ -198,6 +198,7 @@ export default function CatalogPage(props: PageProps) {
 - Cyrillic fonts: **Unbounded** (display), **Manrope** (body) via `@my-noodles/theme/fonts.css`
 - Extract generic composed UI to **`packages/ui`** when reusable across frontend apps (`StableLinearProgress`, `DiscoveryCard`, …)
 - Product/collection surfaces: CSS variables from `resolveSkin()` — do not hardcode brand/country accent colors in screens
+- **Immersive / feature chrome:** when a surface needs colors that are not part of the global theme (e.g. white copy on a full-bleed video reel), prefer MUI palette keys (`common.white`, `alpha(theme.palette.common.black, …)`) and feature-scoped constants in a local `*-chrome.ts`. Raw hex/rgba in `sx` is a **last resort** for effects the theme cannot express (e.g. a one-off like accent on dark media).
 - **Icons:** `@my-noodles/ui/icons/[name].svg` + `iconStyle({ size, color })` on `style` — not `width`/`height` props or wrapper `color`
 
 ---
@@ -234,8 +235,8 @@ apps/web/src/
 - Co-locate `*.test.tsx` with source
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
 - **`packages/api-clients`** = `@hey-api/openapi-ts` fetch SDK; **`apps/web/src/api`** = React Query layer
-- **`api/clients.ts`** — side-effect `setupApiClients(API_URL)`; import from `app/providers.tsx` + root layout
-- **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`. **Zod-first:** use schema validation, `.transform()`, and `.pipe()` for coercion and normalization; custom parse helpers only as a last resort.
+- **`api/clients.ts`** — side-effect `setupApiClients(env.NEXT_PUBLIC_API_URL)`; import from `app/providers.tsx` + root layout
+- **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, exported as typed **`env`**. No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`. **Zod-first:** use schema validation, `.transform()`, and `.pipe()` for coercion and normalization; custom parse helpers only as a last resort.
 - **`shared/urls.ts`** — external off-origin links (`TELEGRAM_SUPPORT_URL`, …). In-app routes → `@/i18n/navigation`; SEO path builders → `shared/seo/urls`.
 - **Test configs** — shared presets in `configs/vitest` (`createBaseVitestConfig`) and `configs/jest` (`createJestConfig`); each app/package keeps a thin config file with project-specific overrides (alias, include globs, env stubs, …).
 - **`hooks/locale/`** — `useAppLocale()` (Zustand); `LocaleSync` binds route locale; client interceptor reads store; SSR uses `runWithAppLocale`
@@ -292,7 +293,7 @@ Three layers — pick the lightest tool that proves the behavior:
 
 ### `data-testid` policy
 
-- Centralize in **`shared/test-ids.ts`** — one source for components and `e2e/*.spec.ts`
+- Centralize in **`src/tests/test-ids.ts`** — one source for components and `e2e/*.spec.ts`
 - Name by **action + domain**, not visual copy: `catalog-add-to-cart--{slug}`, `checkout-submit`
 - Add a testId only when role/label cannot uniquely target the element; never on typography or static headings
 
@@ -303,7 +304,7 @@ hooks/cart/~cart-store.test.ts          # unit — co-located, ~ prefix optional
 components/checkout/checkout-form.test.tsx
 e2e/funnel.spec.ts                      # Playwright smoke
 e2e/fixtures/uk-messages.ts             # i18n fixture for e2e
-src/shared/test-ids.ts                  # shared data-testid constants
+src/tests/test-ids.ts                  # shared data-testid constants
 ```
 
 ### Git hooks vs CI
@@ -330,11 +331,11 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | User-visible strings in JSX | `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json` |
 | `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
 | Business logic and layout mixed in `app/**/page.tsx` | Thin `page.tsx` → `screens/[feature]`; routing shell stays in `app/` |
-| Inline defaults for `NEXT_PUBLIC_*` or scattered env parsing (`process.env` outside `env.ts`) | One Zod schema in `shared/env.ts`; import named exports (`API_URL`, `SITE_URL`, …); values in `.env.local` (see `.env.example`) |
+| Inline defaults for `NEXT_PUBLIC_*` or scattered env parsing (`process.env` outside `env.ts`) | One Zod schema in `shared/env.ts`; import `env` (`env.NEXT_PUBLIC_SITE_URL`, …); values in `.env.local` (see `.env.example`) |
 | Post-parse string cleanup on env exports (`replace`, `trim`, … outside the schema) | Zod `.transform()` / `.pipe()` on the field in `shared/env.ts` — same pattern as forms and DTO validation |
 | Hardcoded external `https://…` in screens/components | Named exports in `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
 | Comments that narrate obvious code or section banners | Self-explanatory names and structure; comments only for non-obvious business logic or maintainer warnings (see [Comments](#comments)) |
-| Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; local `sx` only for one-off layout |
+| Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; feature chrome files for immersive UIs; raw hex only as last resort (see [Design & Theme](#design--theme)) |
 | Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
 | Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
 | `loading.tsx` or Suspense fallbacks on home / catalog / product / collection | Async `page.tsx` with awaited prefetch; client loading in `screens/` + `components/` only |

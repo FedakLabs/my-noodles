@@ -22,7 +22,7 @@ import { useProductDetail } from '@/api/products';
 import { useCartActions } from '@/hooks/cart';
 import { useCurrency } from '@/hooks/currency';
 import { Link } from '@/i18n/navigation';
-import { testIds } from '@/shared/test-ids';
+import { testIds } from '@/tests/test-ids';
 
 import { productCardPreviewAnchor } from './product-card-preview-anchor';
 import { ProductCardPreviewDetailsEmpty } from './product-card-preview-details-empty';

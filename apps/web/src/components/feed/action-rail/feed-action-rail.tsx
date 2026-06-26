@@ -17,8 +17,9 @@ import { CommentIcon, HeartIcon, TagIcon } from './feed-icons';
 import { RailButton } from './feed-rail-button';
 
 const CART_ATTENTION_MS = 2_800;
+const RAIL_ICON_SIZE = 30;
 
-type FeedActionRailProps = {
+export type FeedActionRailProps = {
   item: FeedItemDto;
   onToggleLike: () => void;
   onOpenComments: () => void;
@@ -28,6 +29,8 @@ type FeedActionRailProps = {
   onRemoveTag: (chip: FeedTagChip) => void;
   onClearTags: () => void;
 };
+
+export type FeedCardControlsProps = Omit<FeedActionRailProps, 'item'>;
 
 export function FeedActionRail({
   item,
@@ -84,63 +87,66 @@ export function FeedActionRail({
   );
 
   return (
-    <Stack
-      sx={{
-        alignItems: 'center',
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        height: '100%',
-        justifyContent: 'space-between',
-        // Mobile: overlaid on the card's right edge. Desktop: just outside the card, attached to it.
-        right: { xs: 8, sm: -50 },
-        pt: { xs: 2, sm: 1.5 },
-        pb: { xs: 13, sm: 1.5 },
-        zIndex: 3,
-      }}
-    >
-      <CartRailButton
-        label={t('actions.cart')}
-        caption={cartCount > 0 ? String(cartCount) : undefined}
-        highlighted={cartHighlighted}
-        bumpKey={cartBumpKey}
-        onClick={openPanel}
-      />
+    <>
+      <Stack
+        spacing={0.75}
+        sx={{
+          flexDirection: 'column',
+          alignItems: 'center',
+          flexShrink: 0,
+          justifyContent: 'flex-end',
+        }}
+      >
+        <CartRailButton
+          label={t('actions.cart')}
+          caption={cartCount > 0 ? String(cartCount) : undefined}
+          highlighted={cartHighlighted}
+          bumpKey={cartBumpKey}
+          iconSize={RAIL_ICON_SIZE}
+          compact
+          onClick={openPanel}
+        />
 
-      <Stack spacing={2} sx={{ alignItems: 'center' }}>
         <RailButton
           label={item.liked ? t('actions.liked') : t('actions.like')}
           active={item.liked}
+          compact
           onClick={onToggleLike}
         >
-          <HeartIcon filled={item.liked} />
+          <HeartIcon filled={item.liked} size={RAIL_ICON_SIZE} />
         </RailButton>
 
         <RailButton
           label={t('actions.comments')}
           caption={item.commentCount > 0 ? String(item.commentCount) : undefined}
+          compact
           onClick={onOpenComments}
         >
-          <CommentIcon />
+          <CommentIcon size={RAIL_ICON_SIZE} />
         </RailButton>
 
-        <Stack spacing={0.25} sx={{ alignItems: 'center', color: '#fff' }}>
-          <ProductShareMenu productName={item.name ?? item.slug} productSlug={item.slug} />
+        <Stack spacing={0.25} sx={{ alignItems: 'center', color: 'common.white' }}>
+          <ProductShareMenu
+            productName={item.name ?? item.slug}
+            productSlug={item.slug}
+            iconSize={RAIL_ICON_SIZE}
+          />
         </Stack>
 
         <RailButton
           label={t('tags.label')}
           caption={activeTags.length > 0 ? String(activeTags.length) : undefined}
+          compact
           onClick={(event) => setTagsAnchor(event.currentTarget)}
           aria-controls={tagsOpen ? tagsMenuId : undefined}
           aria-haspopup="menu"
           aria-expanded={tagsOpen ? true : undefined}
         >
-          <TagIcon />
+          <TagIcon size={RAIL_ICON_SIZE} />
         </RailButton>
 
-        <RailButton label={t('actions.viewLiked')} onClick={onOpenLiked}>
-          <HeartIcon filled />
+        <RailButton label={t('actions.viewLiked')} compact onClick={onOpenLiked}>
+          <HeartIcon filled size={RAIL_ICON_SIZE} />
         </RailButton>
       </Stack>
 
@@ -176,6 +182,6 @@ export function FeedActionRail({
           </MenuItem>
         ) : null}
       </Menu>
-    </Stack>
+    </>
   );
 }

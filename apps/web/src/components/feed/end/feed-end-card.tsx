@@ -11,6 +11,7 @@ type FeedEndCardProps = {
   activeTags: Parameters<typeof FeedEndContent>[0]['activeTags'];
   tagLabels: Record<string, string>;
   onRemoveTag: Parameters<typeof FeedEndContent>[0]['onRemoveTag'];
+  onOpenSaved: () => void;
   onReshuffle: () => void;
   reshuffling: boolean;
 };

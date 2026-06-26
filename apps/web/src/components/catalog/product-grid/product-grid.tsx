@@ -12,6 +12,7 @@ import {
   BusyArea,
   type BusyAreaState,
   iconStyle,
+  resolveSmoothMotionTokens,
   StableLinearProgress,
   useBusyAreaState,
 } from '@my-noodles/ui';
@@ -90,6 +91,7 @@ function ProductGridToolbar({
   timing: BusyAreaState;
 }) {
   const t = useTranslations('catalog');
+  const progressMotion = resolveSmoothMotionTokens();
   const showSort = sort != null && onSortChange != null;
   const showPageNav = pagination != null;
   const showPageStatus = showPageNav;
@@ -153,8 +155,8 @@ function ProductGridToolbar({
 
       <StableLinearProgress
         active={progressActive}
-        transitionMs={timing.transitionMs}
-        transitionEasing={timing.transitionEasing}
+        transitionMs={progressMotion.transitionMs}
+        transitionEasing={progressMotion.transitionEasing}
         aria-label={progressLabel}
       />
     </Stack>
@@ -180,11 +182,11 @@ export function ProductGrid({
   const isInitialLoad = Boolean(isPending && products.length === 0);
   const isRefetching = Boolean(isFetching && !isPending);
   const paginationBusy = Boolean(isFetching);
-  const timing = useBusyAreaState(isRefetching);
-  const refreshActive = timing.active;
+  const catalogBusyTiming = { minVisibleMs: 0, showDelayMs: 0 } as const;
+  const timing = useBusyAreaState(isRefetching, catalogBusyTiming);
+  const showGridBusyOverlay = isRefetching && products.length > 0;
   const hasStatusData = totalCount != null;
-  const showSearchingText = refreshActive && !hasStatusData;
-  const showGridBusy = refreshActive && products.length > 0;
+  const showSearchingText = isRefetching && !hasStatusData;
   const showToolbar = showResultsCount || (sort != null && onSortChange != null) || pagination != null;
   const gridColumns = useCatalogGridColumns();
 
@@ -229,13 +231,13 @@ export function ProductGrid({
           statusText={statusText}
           searchingText={searchingText}
           showSearchingText={showSearchingText}
-          isBusy={refreshActive}
+          isBusy={isRefetching}
           sort={sort}
           onSortChange={onSortChange}
           pagination={pagination}
           onOpenFilters={onOpenFilters}
           hasFiltersApplied={hasFiltersApplied}
-          progressActive={refreshActive}
+          progressActive={isRefetching}
           progressLabel={searchingText}
           timing={timing}
         />
@@ -244,7 +246,7 @@ export function ProductGrid({
       {products.length === 0 ? (
         <CatalogEmptyState />
       ) : (
-        <BusyArea timing={timing} show={showGridBusy} label={searchingText}>
+        <BusyArea timing={timing} show={showGridBusyOverlay} label={searchingText}>
           <Grid container spacing={2}>
             {products.map((product, index) => (
               <Grid key={product.id} size={{ xs: 6, sm: 4, md: 4 }} sx={{ minWidth: 0, display: 'flex' }}>

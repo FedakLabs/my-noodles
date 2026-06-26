@@ -1,9 +1,11 @@
 export { BusyArea, type BusyAreaProps } from './BusyArea';
 export {
+  BUSY_CHROME_TRANSITION_EASING,
+  BUSY_CHROME_TRANSITION_MS,
   BUSY_CONTENT_DIM_OPACITY,
-  BUSY_SCRIM_ALPHA,
+  BUSY_SCRIM_Z_INDEX,
   busyContentDimTransition,
-  busyScrimTransition,
+  resolveBusyChromeMotionTokens,
   resolveSmoothMotionTokens,
   SMOOTH_MIN_VISIBLE_MS,
   SMOOTH_SHOW_DELAY_MS,

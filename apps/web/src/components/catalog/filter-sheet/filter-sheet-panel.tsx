@@ -181,8 +181,9 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
     >
       <BusyArea
         busy={productFacetsIsRefetching}
+        show={productFacetsIsRefetching}
         label={t('searching')}
-        blockInteraction
+        timingOptions={{ minVisibleMs: 0, showDelayMs: 0 }}
         borderRadius={isSidebar ? theme.borderRadius.discovery : 0}
         sx={isSidebar ? { minWidth: 0 } : { flex: 1, minHeight: 0, minWidth: 0 }}
       >

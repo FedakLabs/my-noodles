@@ -59,6 +59,15 @@ export const Default: Story = {
 };
 
 export const NavigationTiming: Story = {
+  name: 'Navigation bar',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Prominent primary bar for global navigation in apps/web — fixed below the app header. Shows immediately on link click; fades out when the route settles.',
+      },
+    },
+  },
   render: (args) => {
     const [active, setActive] = useState(false);
     const tokens = resolveSmoothMotionTokens();
@@ -75,11 +84,13 @@ export const NavigationTiming: Story = {
         </Button>
         <ProgressDemo>
           <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-            Same motion tokens as BusyArea — fixed below app bar in NavigationBusyOverlay
+            NavigationBusyOverlay — primary color, 3px height, below app bar (immersive routes: top 0)
           </Typography>
           <StableLinearProgress
             {...args}
             active={active}
+            height={3}
+            color="primary"
             transitionMs={tokens.transitionMs}
             transitionEasing={tokens.transitionEasing}
             aria-label="Loading page"
@@ -121,5 +132,5 @@ export const CatalogToolbar: Story = {
 };
 
 export const CustomHeight: Story = {
-  args: { height: 4, active: true },
+  args: { height: 3, color: 'primary', active: true },
 };

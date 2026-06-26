@@ -19,16 +19,27 @@ type CartRailButtonProps = {
   caption?: string;
   highlighted: boolean;
   bumpKey: number;
+  iconSize?: number;
+  compact?: boolean;
   onClick: () => void;
 };
 
-export function CartRailButton({ label, caption, highlighted, bumpKey, onClick }: CartRailButtonProps) {
+export function CartRailButton({
+  label,
+  caption,
+  highlighted,
+  bumpKey,
+  iconSize = 26,
+  compact = false,
+  onClick,
+}: CartRailButtonProps) {
   return (
     <Stack spacing={0.25} sx={{ alignItems: 'center', ...cartBumpKeyframes }}>
       <IconButton
         aria-label={label}
+        size="medium"
         onClick={onClick}
-        sx={{ color: '#fff', '&:hover': { bgcolor: 'rgba(255,255,255,0.14)' } }}
+        sx={{ color: '#fff', p: compact ? 0.75 : 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.14)' } }}
       >
         <Stack
           key={bumpKey > 0 ? `cart-bump-${bumpKey}` : 'cart'}
@@ -41,7 +52,7 @@ export function CartRailButton({ label, caption, highlighted, bumpKey, onClick }
           <CartIcon
             aria-hidden
             style={{
-              ...iconStyle({ size: 26, color: highlighted ? CART_HIGHLIGHT : '#fff' }),
+              ...iconStyle({ size: iconSize, color: highlighted ? CART_HIGHLIGHT : '#fff' }),
               transition: 'color 0.65s ease',
             }}
           />

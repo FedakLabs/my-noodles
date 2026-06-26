@@ -5,7 +5,14 @@ import type useEmblaCarousel from 'embla-carousel-react';
 import type { CSSProperties } from 'react';
 import { lazy, type Ref, Suspense, useCallback, useImperativeHandle, useState } from 'react';
 
-import { Carousel, CarouselContent, CarouselDots, CarouselSlide, galleryCarouselOptions } from '../Carousel';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselDots,
+  CarouselProgressSegments,
+  CarouselSlide,
+  galleryCarouselOptions,
+} from '../Carousel';
 import { useCarouselContext } from '../Carousel/carousel-context';
 import { MediaGalleryImage } from './MediaGalleryImage';
 import { MediaGalleryPlaceholder } from './MediaGalleryPlaceholder';
@@ -19,6 +26,8 @@ const MediaGalleryVideo = lazy(() =>
 export type MediaGalleryLabels = {
   gallery: string;
   slide: (index: number, total: number) => string;
+  previousSlide: string;
+  nextSlide: string;
   video: MediaGalleryVideoLabels;
 };
 
@@ -37,6 +46,8 @@ export type MediaGalleryProps = {
   carouselOptions?: CarouselOptions;
   /** Touch-action on the slide track — feed reels use `pan-x` so vertical swipes stay on the reel. */
   slideTouchAction?: CSSProperties['touchAction'];
+  /** Stories-style progress bars — `top` hides dot pagination. */
+  progressSegments?: 'top';
   /** Imperative control for keyboard / programmatic slide changes. */
   mediaRef?: Ref<MediaGalleryHandle>;
 };
@@ -44,6 +55,8 @@ export type MediaGalleryProps = {
 const defaultLabels: MediaGalleryLabels = {
   gallery: 'Media gallery',
   slide: (index, total) => `Slide ${index + 1} of ${total}`,
+  previousSlide: 'Previous slide',
+  nextSlide: 'Next slide',
   video: {
     play: 'Play video',
     pause: 'Pause video',
@@ -90,6 +103,7 @@ export function MediaGallery({
   fill = false,
   carouselOptions,
   slideTouchAction,
+  progressSegments,
   mediaRef,
 }: MediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -121,6 +135,15 @@ export function MediaGallery({
       ariaLabel={resolvedLabels.gallery}
       options={resolvedCarouselOptions}
       onSelect={handleSelect}
+      storyNav={
+        progressSegments === 'top'
+          ? {
+              count: items.length,
+              previousLabel: resolvedLabels.previousSlide,
+              nextLabel: resolvedLabels.nextSlide,
+            }
+          : undefined
+      }
       sx={frameSx}
     >
       <MediaGalleryControls mediaRef={mediaRef} />
@@ -153,7 +176,11 @@ export function MediaGallery({
         })}
       </CarouselContent>
 
-      <CarouselDots count={items.length} slideLabel={resolvedLabels.slide} />
+      {progressSegments === 'top' ? (
+        <CarouselProgressSegments count={items.length} slideLabel={resolvedLabels.slide} />
+      ) : (
+        <CarouselDots count={items.length} slideLabel={resolvedLabels.slide} />
+      )}
     </Carousel>
   );
 }

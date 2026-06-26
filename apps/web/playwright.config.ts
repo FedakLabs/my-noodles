@@ -3,6 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 const mockApiUrl = 'http://127.0.0.1:3001';
 const webUrl = 'http://localhost:3000';
 
+// Playwright loads test files in this Node process — not only the Next webServer child.
+process.env.NEXT_PUBLIC_API_URL ??= mockApiUrl;
+process.env.NEXT_PUBLIC_SITE_URL ??= webUrl;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,

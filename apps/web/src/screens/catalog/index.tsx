@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { CatalogFeedFab } from '@/components/catalog/catalog-feed-fab';
 import { FilterChips } from '@/components/catalog/filter-chips/filter-chips';
 import { FilterSheet } from '@/components/catalog/filter-sheet/filter-sheet';
 import { type CatalogViewMode, CatalogViewModeProvider, useViewMode } from '@/components/catalog-view-mode';
@@ -61,7 +62,7 @@ function CatalogScreenContent() {
           sx={{
             display: { mobile: 'flex', desktop: 'grid' },
             flexDirection: { mobile: 'column' },
-            gridTemplateColumns: { desktop: 'minmax(240px, 320px) 1fr' },
+            gridTemplateColumns: { desktop: 'minmax(200px, 260px) 1fr' },
             gap: 3,
             alignItems: 'start',
           }}
@@ -77,6 +78,8 @@ function CatalogScreenContent() {
           </Stack>
         </Box>
       </Stack>
+
+      <CatalogFeedFab />
     </PageContainer>
   );
 }

@@ -6,9 +6,9 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { AnalyticsHead } from '@/components/analytics/analytics-head';
 import { ConsentBanner } from '@/components/analytics/consent-banner';
 import { AppShell } from '@/components/layout/app-shell';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
-import { runWithAppLocale } from '@/shared/app-locale/server';
-import { SITE_URL } from '@/shared/env';
+import { env } from '@/shared/env';
 import type { LocalePageProps } from '@/shared/page-props';
 import {
   buildHreflangAlternates,
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Pick<LocaleLayoutProps, 'para
   const alternateLocales = routing.locales.filter((loc) => loc !== locale).map(openGraphLocale);
 
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
     title: {
       default: siteName,
       template: `%s | ${siteName}`,

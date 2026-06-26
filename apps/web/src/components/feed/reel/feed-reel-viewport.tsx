@@ -1,25 +1,20 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import type { MediaGalleryHandle } from '@my-noodles/ui';
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 import type { FeedItemDto } from '@/api/feed';
-import { FeedActionRail } from '@/components/feed/action-rail/feed-action-rail';
+import { FeedActionRail, type FeedCardControlsProps } from '@/components/feed/action-rail/feed-action-rail';
 import { FeedCard } from '@/components/feed/card/feed-card';
 import { FeedCardSkeleton } from '@/components/feed/card/feed-card-skeleton';
 import { FeedEndCard } from '@/components/feed/end/feed-end-card';
+import { feedOutsideRailSx, feedReelItemSx, feedReelViewportGestureSx } from '@/components/feed/feed-chrome';
 import type { FeedTagChip } from '@/hooks/feed';
 
 import { type FeedSwipeDirection, useFeedSwipe } from './use-feed-swipe';
-
-const reelCardSx = {
-  position: 'relative',
-  height: { xs: '100dvh', sm: 'min(calc(100dvh - 40px), 880px)' },
-  width: { xs: '100vw', sm: 'auto' },
-  aspectRatio: { sm: '9 / 16' },
-  maxWidth: { sm: 480 },
-} as const;
 
 const slideLayerSx = {
   position: 'absolute',
@@ -86,6 +81,8 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
     },
     ref,
   ) {
+    const theme = useTheme();
+    const isWideFeed = useMediaQuery(theme.breakpoints.up('sm'));
     const viewportRef = useRef<HTMLDivElement>(null);
     const mediaGalleryRef = useRef<MediaGalleryHandle>(null);
     const [slideHeight, setSlideHeight] = useState(0);
@@ -118,6 +115,13 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
       canGoPrevious,
       onNext,
       onPrevious,
+      onHorizontalCommit: (direction) => {
+        if (direction === 'next') {
+          mediaGalleryRef.current?.scrollNext();
+          return;
+        }
+        mediaGalleryRef.current?.scrollPrevious();
+      },
     });
 
     useImperativeHandle(
@@ -138,17 +142,32 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
     const layerTransition = { transition: swipe.transition };
     const onLayerTransitionEnd = swipe.handleTransitionEnd;
 
+    const cardControls: FeedCardControlsProps = {
+      onToggleLike,
+      onOpenComments,
+      onOpenLiked,
+      activeTags,
+      tagLabels,
+      onRemoveTag,
+      onClearTags,
+    };
+
+    const showOutsideRail = isWideFeed && currentItem != null && !detailsOpen;
+
     return (
-      <Box sx={reelCardSx}>
+      <Box sx={feedReelItemSx}>
         <Box
           ref={viewportRef}
           data-feed-reel-viewport
           sx={{
             position: 'absolute',
             inset: 0,
+            minWidth: 0,
+            minHeight: 0,
+            height: '100%',
             overflow: 'hidden',
             borderRadius: 'inherit',
-            touchAction: 'none',
+            ...feedReelViewportGestureSx,
             cursor: swipe.isDragging ? 'grabbing' : 'grab',
           }}
           {...swipe.pointerHandlers}
@@ -198,6 +217,7 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
                   activeTags={activeTags}
                   tagLabels={tagLabels}
                   onRemoveTag={onRemoveTag}
+                  onOpenSaved={onOpenLiked}
                   onReshuffle={onReshuffle}
                   reshuffling={reshuffling}
                 />
@@ -223,6 +243,7 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
                 activeTags={activeTags}
                 tagLabels={tagLabels}
                 onRemoveTag={onRemoveTag}
+                onOpenSaved={onOpenLiked}
                 onReshuffle={onReshuffle}
                 reshuffling={reshuffling}
               />
@@ -235,22 +256,16 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
                 onOpenDetails={onOpenDetails}
                 onCloseDetails={onCloseDetails}
                 mediaGalleryRef={mediaGalleryRef}
+                controls={cardControls}
               />
             ) : null}
           </Box>
         </Box>
 
-        {currentItem ? (
-          <FeedActionRail
-            item={currentItem}
-            onToggleLike={onToggleLike}
-            onOpenComments={onOpenComments}
-            onOpenLiked={onOpenLiked}
-            activeTags={activeTags}
-            tagLabels={tagLabels}
-            onRemoveTag={onRemoveTag}
-            onClearTags={onClearTags}
-          />
+        {showOutsideRail ? (
+          <Box sx={feedOutsideRailSx}>
+            <FeedActionRail item={currentItem} {...cardControls} />
+          </Box>
         ) : null}
       </Box>
     );

@@ -6,7 +6,7 @@ import {
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
 
-import { withAppLocaleKey } from '@/shared/app-locale';
+import { withAppLocaleKey } from '@/i18n/app-locale';
 
 const collectionsQueryKeyRoot = ['collections'] as const;
 

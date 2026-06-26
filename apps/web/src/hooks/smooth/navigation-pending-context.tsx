@@ -1,6 +1,11 @@
 'use client';
 
-import { type BusyAreaState, useBusyAreaState } from '@my-noodles/ui';
+import {
+  type BusyAreaState,
+  SMOOTH_TRANSITION_EASING,
+  SMOOTH_TRANSITION_MS,
+  useBusyAreaState,
+} from '@my-noodles/ui';
 import {
   createContext,
   type ReactNode,
@@ -13,6 +18,7 @@ import {
 } from 'react';
 
 import { usePathname } from '@/i18n/navigation';
+import { pathnameFromUrl } from '@/i18n/pathname-from-url';
 
 type NavigationPendingActions = {
   registerTransitionPending: (pending: boolean) => void;
@@ -20,13 +26,12 @@ type NavigationPendingActions = {
 
 const NavigationPendingActionsContext = createContext<NavigationPendingActions | null>(null);
 const NavigationSmoothContext = createContext<BusyAreaState | null>(null);
+const NavigationRawPendingContext = createContext(false);
 
-/** Safety net so an anchor click that never resolves to a new pathname (query-only/aborted) can't wedge the overlay. */
 const LINK_PENDING_TIMEOUT_MS = 5_000;
-/** Ignore click events that follow a drag/pan gesture (e.g. Embla carousel over linked cards). */
 const LINK_CLICK_DRAG_THRESHOLD_PX = 8;
 
-function isInAppNavigationAnchor(anchor: HTMLAnchorElement): boolean {
+function isInAppNavigationAnchor(anchor: HTMLAnchorElement, currentPathname: string): boolean {
   const href = anchor.getAttribute('href');
   if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
     return false;
@@ -41,8 +46,10 @@ function isInAppNavigationAnchor(anchor: HTMLAnchorElement): boolean {
     return false;
   }
 
+  const destinationPathname = pathnameFromUrl(url);
+
   return !(
-    url.pathname === window.location.pathname &&
+    destinationPathname === currentPathname &&
     url.search === window.location.search &&
     url.hash === window.location.hash
   );
@@ -59,8 +66,6 @@ export function NavigationPendingProvider({ children }: NavigationPendingProvide
   const transitionPendingCountRef = useRef(0);
   const [transitionPending, setTransitionPending] = useState(false);
 
-  // Navigation resolved (route changed): clear the pending marker during render rather than in an
-  // effect. This also prevents a stale origin from spuriously re-triggering on browser back/forward.
   if (pathname !== trackedPathname) {
     setTrackedPathname(pathname);
     if (linkOriginPathname !== null) {
@@ -75,8 +80,6 @@ export function NavigationPendingProvider({ children }: NavigationPendingProvide
 
   const linkPending = linkOriginPathname !== null && linkOriginPathname === pathname;
 
-  // Safety net for navigations that never change the pathname (query-only/aborted) so the
-  // blocking overlay can never wedge. The timeout callback keeps setState out of the effect body.
   useEffect(() => {
     if (linkOriginPathname === null) {
       return undefined;
@@ -136,7 +139,13 @@ export function NavigationPendingProvider({ children }: NavigationPendingProvide
       }
 
       const anchor = target.closest('a[href]');
-      if (!(anchor instanceof HTMLAnchorElement) || !isInAppNavigationAnchor(anchor)) {
+      if (!(anchor instanceof HTMLAnchorElement) || !isInAppNavigationAnchor(anchor, pathname)) {
+        resetPointerTracking();
+        return;
+      }
+
+      const destinationPathname = pathnameFromUrl(new URL(anchor.href, window.location.href));
+      if (destinationPathname === pathname) {
         resetPointerTracking();
         return;
       }
@@ -159,13 +168,19 @@ export function NavigationPendingProvider({ children }: NavigationPendingProvide
   }, [pathname]);
 
   const rawPending = linkPending || transitionPending;
-  const smoothBusy = useBusyAreaState(rawPending, { minVisibleMs: 0 });
+  const smoothBusy = useBusyAreaState(rawPending, {
+    minVisibleMs: 0,
+    transitionMs: SMOOTH_TRANSITION_MS,
+    transitionEasing: SMOOTH_TRANSITION_EASING,
+  });
 
   const actions = useMemo(() => ({ registerTransitionPending }), [registerTransitionPending]);
 
   return (
     <NavigationPendingActionsContext.Provider value={actions}>
-      <NavigationSmoothContext.Provider value={smoothBusy}>{children}</NavigationSmoothContext.Provider>
+      <NavigationRawPendingContext.Provider value={rawPending}>
+        <NavigationSmoothContext.Provider value={smoothBusy}>{children}</NavigationSmoothContext.Provider>
+      </NavigationRawPendingContext.Provider>
     </NavigationPendingActionsContext.Provider>
   );
 }
@@ -183,6 +198,15 @@ export function useNavigationSmoothBusy(): BusyAreaState {
   const context = useContext(NavigationSmoothContext);
   if (!context) {
     throw new Error('useNavigationSmoothBusy must be used within NavigationPendingProvider');
+  }
+
+  return context;
+}
+
+export function useNavigationRawPending(): boolean {
+  const context = useContext(NavigationRawPendingContext);
+  if (context === null) {
+    throw new Error('useNavigationRawPending must be used within NavigationPendingProvider');
   }
 
   return context;

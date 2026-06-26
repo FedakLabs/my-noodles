@@ -1,4 +1,4 @@
-import { type Messages, ukMessages } from '../../messages';
+import { type Messages, ukMessages } from '../../src/i18n/messages';
 
 /** Canonical locale fixture for Playwright smoke tests — import keys, not inline copy. */
 export const uk = ukMessages satisfies Messages;

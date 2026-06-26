@@ -11,15 +11,34 @@ type SiteLogoProps = {
   label: string;
   markSize?: number;
   flexGrow?: boolean;
+  showWordmark?: boolean | { mobile: boolean; desktop: boolean };
+  onNavigate?: () => void;
 };
 
-export function SiteLogo({ label, markSize = 32, flexGrow = true }: SiteLogoProps) {
+export function SiteLogo({
+  label,
+  markSize = 32,
+  flexGrow = true,
+  showWordmark = true,
+  onNavigate,
+}: SiteLogoProps) {
+  const wordmarkDisplay =
+    showWordmark === true
+      ? undefined
+      : showWordmark === false
+        ? 'none'
+        : {
+            mobile: showWordmark.mobile ? 'inline' : 'none',
+            desktop: showWordmark.desktop ? 'inline' : 'none',
+          };
+
   return (
     <Stack
       component={Link}
       href="/"
       direction="row"
       spacing={1}
+      onClick={onNavigate}
       sx={{
         alignItems: 'center',
         color: 'inherit',
@@ -37,6 +56,7 @@ export function SiteLogo({ label, markSize = 32, flexGrow = true }: SiteLogoProp
           fontWeight: 700,
           letterSpacing: '-0.01em',
           minWidth: 0,
+          display: wordmarkDisplay,
         }}
       >
         {label}

@@ -60,6 +60,18 @@ function setAxisLockAttribute(node: HTMLElement | null, lock: AxisLock | null) {
   }
 }
 
+function setPointerTrackingAttribute(node: HTMLElement | null, tracking: boolean) {
+  if (!node) {
+    return;
+  }
+
+  if (tracking) {
+    node.setAttribute('data-feed-pointer-tracking', '');
+  } else {
+    node.removeAttribute('data-feed-pointer-tracking');
+  }
+}
+
 export type FeedSwipeDirection = 'next' | 'previous';
 
 type UseFeedSwipeOptions = {
@@ -69,6 +81,7 @@ type UseFeedSwipeOptions = {
   canGoPrevious: boolean;
   onNext: () => void;
   onPrevious: () => void;
+  onHorizontalCommit: (direction: FeedSwipeDirection) => void;
 };
 
 export function useFeedSwipe({
@@ -78,6 +91,7 @@ export function useFeedSwipe({
   canGoPrevious,
   onNext,
   onPrevious,
+  onHorizontalCommit,
 }: UseFeedSwipeOptions) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isPointerTracking, setIsPointerTracking] = useState(false);
@@ -106,6 +120,7 @@ export function useFeedSwipe({
     axisLockRef.current = null;
     activePointerIdRef.current = null;
     setAxisLockAttribute(containerRef.current, null);
+    setPointerTrackingAttribute(containerRef.current, false);
     setIsPointerTracking(false);
     setIsVerticalDragging(false);
   }, [containerRef]);
@@ -176,6 +191,10 @@ export function useFeedSwipe({
     }
 
     const handleWheel = (event: WheelEvent) => {
+      if (node.getAttribute('data-feed-axis-lock') === 'horizontal') {
+        return;
+      }
+
       if (Math.abs(event.deltaY) < 8 || isCommitting || isVerticalDragging) {
         return;
       }
@@ -210,7 +229,7 @@ export function useFeedSwipe({
     return absDy > absDx ? 'vertical' : 'horizontal';
   }, []);
 
-  const handlePointerDown = useCallback(
+  const handlePointerDownCapture = useCallback(
     (event: PointerEvent<HTMLElement>) => {
       if (event.button !== 0 || isCommitting) {
         return;
@@ -223,6 +242,7 @@ export function useFeedSwipe({
       pointerStartYRef.current = event.clientY;
       axisLockRef.current = null;
       setAxisLockAttribute(containerRef.current, null);
+      setPointerTrackingAttribute(containerRef.current, true);
       activePointerIdRef.current = event.pointerId;
       setIsPointerTracking(true);
       setDragOffset(0);
@@ -230,7 +250,7 @@ export function useFeedSwipe({
     [containerRef, isCommitting],
   );
 
-  const handlePointerMove = useCallback(
+  const handlePointerMoveCapture = useCallback(
     (event: PointerEvent<HTMLElement>) => {
       if (
         !isPointerTracking ||
@@ -252,17 +272,24 @@ export function useFeedSwipe({
 
         axisLockRef.current = lock;
         setAxisLockAttribute(containerRef.current, lock);
+        setPointerTrackingAttribute(containerRef.current, false);
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.setPointerCapture(event.pointerId);
 
         if (lock === 'horizontal') {
-          resetPointerGesture();
           return;
         }
 
         setIsVerticalDragging(true);
-        event.currentTarget.setPointerCapture(event.pointerId);
+        setDragOffset(dy);
+        return;
       }
 
-      if (axisLockRef.current !== 'vertical') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (axisLockRef.current === 'horizontal') {
         return;
       }
 
@@ -280,15 +307,7 @@ export function useFeedSwipe({
 
       setDragOffset(offset);
     },
-    [
-      canGoNext,
-      canGoPrevious,
-      containerRef,
-      isPointerTracking,
-      resetPointerGesture,
-      resolveAxisLock,
-      slideHeight,
-    ],
+    [canGoNext, canGoPrevious, containerRef, isPointerTracking, resolveAxisLock, slideHeight],
   );
 
   const finishPointer = useCallback(
@@ -302,14 +321,24 @@ export function useFeedSwipe({
       }
 
       const lock = axisLockRef.current;
-      const offset =
-        pointerStartYRef.current === null ? dragOffset : event.clientY - pointerStartYRef.current;
+      const startX = pointerStartXRef.current;
+      const startY = pointerStartYRef.current;
       resetPointerGesture();
+
+      if (lock === 'horizontal') {
+        const dx = startX === null ? 0 : event.clientX - startX;
+        if (Math.abs(dx) >= SWIPE_THRESHOLD_PX) {
+          onHorizontalCommit(dx < 0 ? 'next' : 'previous');
+        }
+        return;
+      }
 
       if (lock !== 'vertical') {
         setDragOffset(0);
         return;
       }
+
+      const offset = startY === null ? dragOffset : event.clientY - startY;
 
       if (Math.abs(offset) >= SWIPE_THRESHOLD_PX) {
         commitNav(offset < 0 ? 'next' : 'previous');
@@ -318,7 +347,7 @@ export function useFeedSwipe({
 
       setDragOffset(0);
     },
-    [commitNav, dragOffset, resetPointerGesture],
+    [commitNav, dragOffset, onHorizontalCommit, resetPointerGesture],
   );
 
   const transition =
@@ -347,8 +376,8 @@ export function useFeedSwipe({
       previous: `translate3d(0, ${-slideHeight + dragOffset}px, 0)`,
     },
     pointerHandlers: {
-      onPointerDown: handlePointerDown,
-      onPointerMove: handlePointerMove,
+      onPointerDownCapture: handlePointerDownCapture,
+      onPointerMoveCapture: handlePointerMoveCapture,
       onPointerUp: finishPointer,
       onPointerCancel: finishPointer,
     },

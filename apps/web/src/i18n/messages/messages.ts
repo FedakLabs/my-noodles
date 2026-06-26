@@ -1,4 +1,4 @@
-import type { AppLocale } from '../src/i18n/routing';
+import type { AppLocale } from '../routing';
 import analyticsEn from './analytics/en.json';
 import analyticsUk from './analytics/uk.json';
 import cartEn from './cart/en.json';

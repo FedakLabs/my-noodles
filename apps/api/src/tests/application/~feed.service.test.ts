@@ -30,7 +30,6 @@ describe('FeedService', () => {
   let recordView: jest.Mock;
   let getViewedProductIds: jest.Mock;
   let getLikedProducts: jest.Mock;
-  let getCategoryDwell: jest.Mock;
   let countForProduct: jest.Mock;
   let service: FeedService;
 
@@ -41,7 +40,6 @@ describe('FeedService', () => {
     recordView = jest.fn().mockResolvedValue(undefined);
     getViewedProductIds = jest.fn().mockResolvedValue([]);
     getLikedProducts = jest.fn().mockResolvedValue([]);
-    getCategoryDwell = jest.fn().mockResolvedValue(new Map());
     countForProduct = jest.fn().mockResolvedValue(2);
 
     const productsRepository = { find: productsFind } as unknown as Repository<Product>;
@@ -49,14 +47,13 @@ describe('FeedService', () => {
       recordView,
       getViewedProductIds,
       getLikedProducts,
-      getCategoryDwell,
     } as unknown as FeedSessionService;
     const commentsService = { countForProduct } as unknown as FeedCommentsService;
 
     service = new FeedService(productsRepository, sessionService, commentsService);
   });
 
-  it('records the previous product view with dwell + filter context before scoring', async () => {
+  it('records the previous product view with dwell + filter context before picking next', async () => {
     await LocaleContext.run('uk', () =>
       service.next(session, {
         previousProduct: { id: 'previous-1', viewTime: 4_200 },
@@ -108,37 +105,38 @@ describe('FeedService', () => {
     expect(recordView).not.toHaveBeenCalled();
   });
 
-  it('requests candidates in stable sortWeight order before scoring', async () => {
+  it('returns the first candidate in stable sortWeight order', async () => {
     await LocaleContext.run('uk', () => service.next(session, {}));
 
     expect(productsFind).toHaveBeenCalledWith(
       expect.objectContaining({
         order: { sortWeight: 'DESC', createdAt: 'DESC' },
+        take: 1,
       }),
     );
   });
 
-  it('boosts products in liked categories when scoring the next item', async () => {
-    const affinityPick = makeProduct({
-      id: 'affinity-pick',
-      slug: 'affinity-pick',
-      sortWeight: 5,
-      category: {
-        slug: 'noodles',
-        name: new LocalizedString({ uk: 'Локшина', en: 'Noodles' }),
-      } as Product['category'],
-    });
-    const heavier = makeProduct({
-      id: 'heavier',
-      slug: 'heavier',
+  it('picks the highest sortWeight product without affinity scoring', async () => {
+    const topPick = makeProduct({
+      id: 'top-pick',
+      slug: 'top-pick',
       sortWeight: 70,
       category: {
         slug: 'drinks',
         name: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
       } as Product['category'],
     });
+    const lowerPick = makeProduct({
+      id: 'lower-pick',
+      slug: 'lower-pick',
+      sortWeight: 5,
+      category: {
+        slug: 'noodles',
+        name: new LocalizedString({ uk: 'Локшина', en: 'Noodles' }),
+      } as Product['category'],
+    });
 
-    productsFind.mockResolvedValue([heavier, affinityPick]);
+    productsFind.mockResolvedValue([topPick]);
     getLikedProducts.mockResolvedValue([
       makeProduct({
         category: {
@@ -148,11 +146,9 @@ describe('FeedService', () => {
       }),
     ]);
 
-    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
-
     const result = await LocaleContext.run('uk', () => service.next(session, {}));
 
-    expect(result.item?.id).toBe('affinity-pick');
-    randomSpy.mockRestore();
+    expect(result.item?.id).toBe('top-pick');
+    expect(lowerPick.id).not.toBe(result.item?.id);
   });
 });

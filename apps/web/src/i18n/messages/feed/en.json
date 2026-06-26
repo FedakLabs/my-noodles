@@ -48,14 +48,18 @@
   "end": {
     "title": "You have reached the end",
     "tagsHint": "Try removing some tags to widen the search space.",
-    "body": "Try again for a fresh pass, or head to the catalog for a more focused search.",
+    "body": "Try again for a fresh pass, browse the catalog, or check what you saved — maybe something will bump nicely into your cart.",
     "tryAgain": "Try again",
     "tryingAgain": "Loading…",
-    "browseCatalog": "Go to catalog"
+    "browseCatalog": "Go to catalog",
+    "viewSaved": "Saved",
+    "viewCart": "View cart"
   },
   "media": {
     "gallery": "Product gallery",
     "slide": "Slide {index} of {total}",
+    "previousSlide": "Previous photo",
+    "nextSlide": "Next photo",
     "playVideo": "Play video",
     "pauseVideo": "Pause video",
     "muteVideo": "Mute video",

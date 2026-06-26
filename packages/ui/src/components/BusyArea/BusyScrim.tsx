@@ -1,15 +1,13 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import { alpha } from '@mui/material/styles';
 
-import { BUSY_SCRIM_ALPHA, busyScrimTransition } from './tokens';
+import { BUSY_SCRIM_Z_INDEX } from './tokens';
 
 export type BusyScrimProps = {
-  visible: boolean;
+  /** When true, the invisible layer captures pointer events. */
+  blocking: boolean;
   label: string;
-  transitionMs: number;
-  transitionEasing: string;
   position?: 'absolute' | 'fixed';
   /** Top offset (e.g. header height) when positioned over the full viewport. */
   top?: number | string;
@@ -17,36 +15,32 @@ export type BusyScrimProps = {
   borderRadius?: number;
 };
 
-/** Flat scrim overlay — internal; use `scrim` on BusyArea instead. */
+/** Invisible click shield — internal; use `scrim` on BusyArea instead. */
 export function BusyScrim({
-  visible,
+  blocking,
   label,
-  transitionMs,
-  transitionEasing,
   position = 'absolute',
   top = 0,
-  zIndex = 1,
+  zIndex = BUSY_SCRIM_Z_INDEX,
   borderRadius = 1,
 }: BusyScrimProps) {
   return (
     <Box
       role="status"
       aria-live="polite"
-      aria-busy={visible}
-      aria-label={visible ? label : undefined}
-      sx={(theme) => ({
+      aria-busy={blocking}
+      aria-label={blocking ? label : undefined}
+      sx={{
         position,
         top,
         left: 0,
         right: 0,
         bottom: 0,
         zIndex,
-        pointerEvents: visible ? 'auto' : 'none',
-        opacity: visible ? 1 : 0,
-        transition: busyScrimTransition(transitionMs, transitionEasing),
-        bgcolor: alpha(theme.palette.background.default, BUSY_SCRIM_ALPHA),
+        pointerEvents: blocking ? 'auto' : 'none',
+        bgcolor: 'transparent',
         borderRadius,
-      })}
+      }}
     />
   );
 }

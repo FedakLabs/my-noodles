@@ -1,15 +1,11 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 import { cardShadow } from '@my-noodles/theme';
 import { iconStyle } from '@my-noodles/ui';
 import GlobeIcon from '@my-noodles/ui/icons/globe.svg';
@@ -20,18 +16,16 @@ import { useSwitchLocale } from '@/hooks/locale';
 import type { AppLocale } from '@/i18n/routing';
 
 type LanguageSwitcherProps = {
-  variant?: 'header' | 'drawer';
   onSwitched?: () => void;
   sx?: SxProps<Theme>;
 };
 
-export function LanguageSwitcher({ variant = 'header', onSwitched, sx }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ onSwitched, sx }: LanguageSwitcherProps) {
   const t = useTranslations('common.language');
   const menuId = useId();
   const { switchLocale, options, locale } = useSwitchLocale();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = anchorEl != null;
-  const isDrawer = variant === 'drawer';
 
   const openMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -55,11 +49,11 @@ export function LanguageSwitcher({ variant = 'header', onSwitched, sx }: Languag
       onClose={closeMenu}
       anchorOrigin={{
         vertical: 'bottom',
-        horizontal: isDrawer ? 'left' : 'right',
+        horizontal: 'left',
       }}
       transformOrigin={{
         vertical: 'top',
-        horizontal: isDrawer ? 'left' : 'right',
+        horizontal: 'left',
       }}
       slotProps={{
         paper: {
@@ -94,48 +88,34 @@ export function LanguageSwitcher({ variant = 'header', onSwitched, sx }: Languag
     </Menu>
   );
 
-  if (isDrawer) {
-    return (
-      <>
-        <ListItemButton
-          onClick={openMenu}
-          aria-label={t('switchTo')}
-          aria-controls={open ? menuId : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? true : undefined}
-          sx={sx}
-        >
-          <ListItemIcon sx={{ minWidth: 40 }}>
-            <GlobeIcon aria-hidden style={iconStyle({ size: 22, color: 'inherit' })} />
-          </ListItemIcon>
-          <ListItemText primary={t('label')} />
-        </ListItemButton>
-        {menu}
-      </>
-    );
-  }
-
   return (
-    <Box sx={sx}>
-      <Button
-        variant="text"
-        color="inherit"
-        size="small"
+    <>
+      <ListItemButton
         onClick={openMenu}
         aria-label={t('switchTo')}
         aria-controls={open ? menuId : undefined}
         aria-haspopup="true"
         aria-expanded={open ? true : undefined}
-        sx={{ minWidth: 'auto', px: 1 }}
+        sx={{
+          flex: '0 0 auto',
+          alignSelf: 'stretch',
+          justifyContent: 'flex-start',
+          px: 2,
+          py: 1.5,
+          ...sx,
+        }}
       >
-        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'inherit' }}>
-          <GlobeIcon aria-hidden style={iconStyle({ size: 18, color: 'inherit' })} />
-          <Typography variant="body2" component="span">
-            {t('label')}
-          </Typography>
-        </Stack>
-      </Button>
+        <ListItemIcon
+          sx={{
+            minWidth: 40,
+            justifyContent: 'center',
+          }}
+        >
+          <GlobeIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+        </ListItemIcon>
+        <ListItemText primary={t('label')} />
+      </ListItemButton>
       {menu}
-    </Box>
+    </>
   );
 }

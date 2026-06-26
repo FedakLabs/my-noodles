@@ -15,6 +15,7 @@ import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
 import { useFeedComments } from '@/api/feed';
+import { feedCommentsPanelLayoutSx } from '@/components/feed/feed-chrome';
 
 import { feedAvatarColor, feedAvatarInitial } from './feed-avatar';
 import { FeedCommentsSkeleton } from './feed-comments-skeleton';
@@ -102,14 +103,9 @@ export function FeedCommentsPanel({ open, productId, onClose }: FeedCommentsPane
     return (
       <Box
         sx={{
-          display: open ? 'block' : 'none',
-          width: { desktop: 300, lg: 'min(42%, 460px)' },
-          flexShrink: 0,
-          height: '100%',
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          borderLeft: 1,
-          borderColor: 'divider',
+          ...feedCommentsPanelLayoutSx,
+          display: open ? 'flex' : 'none',
+          flexDirection: 'column',
         }}
       >
         <CommentsContent key={productId ?? 'none'} productId={productId} onClose={onClose} />

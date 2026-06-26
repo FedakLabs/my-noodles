@@ -9,13 +9,13 @@ import {
 import { requestData } from '@my-noodles/web-lib/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 
+import { withAppLocaleKey } from '@/i18n/app-locale';
 import type {
   CatalogFacetsParams,
   CatalogInfiniteListParams,
   CatalogSearchParams,
 } from '@/screens/catalog/search-params';
 import { toCatalogInfiniteListParams } from '@/screens/catalog/search-params';
-import { withAppLocaleKey } from '@/shared/app-locale';
 
 import { searchParamsToFacetsQuery, searchParamsToListQuery } from './utils';
 

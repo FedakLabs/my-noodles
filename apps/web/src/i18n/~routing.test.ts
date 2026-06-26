@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { messageCatalogs, messageNamespaces } from '../../messages';
+import { messageCatalogs, messageNamespaces } from './messages';
 import { routing } from './routing';
 
 function collectMessageKeys(value: unknown, prefix = ''): string[] {

@@ -1,10 +1,10 @@
 import type { MetadataRoute } from 'next';
 
 import { routing } from '@/i18n/routing';
-import { SITE_URL } from '@/shared/env';
+import { env } from '@/shared/env';
 import { absoluteUrl, localePath } from '@/shared/seo';
 
-const NON_INDEXABLE_PATHS = ['/cart', '/checkout', '/checkout/success'] as const;
+const NON_INDEXABLE_PATHS = ['/checkout', '/checkout/success'] as const;
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
       ),
     },
     sitemap: absoluteUrl('/sitemap.xml'),
-    host: SITE_URL,
+    host: env.NEXT_PUBLIC_SITE_URL,
   };
 }

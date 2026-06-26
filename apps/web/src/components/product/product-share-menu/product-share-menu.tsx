@@ -44,9 +44,10 @@ const SOCIAL_SHARE_OPTIONS: ShareOption[] = [
 type ProductShareMenuProps = {
   productName: string;
   productSlug: string;
+  iconSize?: number;
 };
 
-export function ProductShareMenu({ productName, productSlug }: ProductShareMenuProps) {
+export function ProductShareMenu({ productName, productSlug, iconSize = 20 }: ProductShareMenuProps) {
   const t = useTranslations('product');
   const locale = useAppLocale();
   const menuId = useId();
@@ -111,7 +112,7 @@ export function ProductShareMenu({ productName, productSlug }: ProductShareMenuP
         onClick={(event) => setAnchorEl(event.currentTarget)}
         sx={{ color: open ? 'primary.main' : 'inherit', p: 0.25, flexShrink: 0 }}
       >
-        <ShareIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+        <ShareIcon aria-hidden style={iconStyle({ size: iconSize, color: 'inherit' })} />
       </IconButton>
 
       <Menu

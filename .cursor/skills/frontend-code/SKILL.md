@@ -53,7 +53,7 @@ utils/         # formatCurrency, helpers
 shared/        # env.ts (all env vars), urls.ts (external links), ISR, page props, query-client + hydrate
 ```
 
-**Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, parsed once, named exports (`API_URL`, `SITE_URL`, …). Never parse `process.env` elsewhere. **Zod-first:** use validation, `.transform()`, and `.pipe()` for normalization; ad-hoc parse helpers only when Zod cannot express the rule cleanly (same principle as forms and DTO boundaries).
+**Env:** all `NEXT_PUBLIC_*` (and future client env) live in **`shared/env.ts`** only — one Zod schema, parsed once, exported as a typed **`env`** object (`env.NEXT_PUBLIC_API_URL`, `env.NEXT_PUBLIC_SITE_URL`, …). Never parse `process.env` elsewhere. **Zod-first:** use validation, `.transform()`, and `.pipe()` for normalization; ad-hoc parse helpers only when Zod cannot express the rule cleanly (same principle as forms and DTO boundaries).
 
 **External URLs:** off-origin links in **`shared/urls.ts`** — see [common-patterns.md § External URLs](./references/common-patterns.md#11-external-urls). In-app paths use `@/i18n/navigation`; SEO path helpers use `shared/seo/urls`.
 

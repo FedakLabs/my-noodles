@@ -77,9 +77,17 @@ export const Gallery: Story = {
   render: (props) => {
     const { size, iconColor } = props as IconGalleryControls;
     return (
-      <Stack sx={{ gap: 3, direction: 'row', flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 3,
+          alignItems: 'flex-start',
+        }}
+      >
         {iconCatalog.map(({ name, Icon }) => (
-          <Stack key={name} spacing={1} sx={{ alignItems: 'center', width: 96 }}>
+          <Stack key={name} spacing={1} sx={{ alignItems: 'center', width: 96, flexShrink: 0 }}>
             <Box
               sx={{
                 alignItems: 'center',
@@ -93,10 +101,12 @@ export const Gallery: Story = {
             >
               <IconPreview Icon={Icon} size={size} iconColor={iconColor} />
             </Box>
-            <Typography variant="caption">{name}</Typography>
+            <Typography variant="caption" sx={{ textAlign: 'center', wordBreak: 'break-word' }}>
+              {name}
+            </Typography>
           </Stack>
         ))}
-      </Stack>
+      </Box>
     );
   },
 };

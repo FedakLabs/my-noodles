@@ -123,22 +123,6 @@ export class FeedSessionService {
     return [...new Set(views.map((view) => view.productId))];
   }
 
-  /** Total dwell per category slug — a soft attention signal for ranking the next item. */
-  async getCategoryDwell(sessionId: string): Promise<Map<string, number>> {
-    const rows = await this.viewsRepository
-      .createQueryBuilder('view')
-      .innerJoin('view.product', 'product')
-      .innerJoin('product.category', 'category')
-      .select('category.slug', 'slug')
-      .addSelect('SUM(view.dwell_ms)', 'dwell')
-      .where('view.session_id = :sessionId', { sessionId })
-      .andWhere('view.deleted_at IS NULL')
-      .groupBy('category.slug')
-      .getRawMany<{ slug: string; dwell: string }>();
-
-    return new Map(rows.map((row) => [row.slug, Number(row.dwell)]));
-  }
-
   private async productExists(productId: string): Promise<boolean> {
     const product = await this.productsRepository.findOne({
       where: { id: productId },

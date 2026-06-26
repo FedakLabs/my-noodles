@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
-import { SITE_URL } from '@/shared/env';
+import { env } from '@/shared/env';
 
 export function localePath(locale: AppLocale, pathname = '/'): string {
   const normalized = pathname.startsWith('/') ? pathname : `/${pathname}`;
@@ -15,7 +15,7 @@ export function localePath(locale: AppLocale, pathname = '/'): string {
 export function absoluteUrl(path: string): string {
   const normalized = path.startsWith('/') ? path : `/${path}`;
 
-  return `${SITE_URL}${normalized}`;
+  return `${env.NEXT_PUBLIC_SITE_URL}${normalized}`;
 }
 
 export function buildHreflangAlternates(pathname = '/'): Record<string, string> {

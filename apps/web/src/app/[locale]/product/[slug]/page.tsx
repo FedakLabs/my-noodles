@@ -6,9 +6,9 @@ import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 
 import { fetchProductDetail, productsQueryKeys } from '@/api/products';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
 import { ProductScreen } from '@/screens/product';
-import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata, buildProductJsonLd, JsonLdScript } from '@/shared/seo';

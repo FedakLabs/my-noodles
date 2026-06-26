@@ -6,10 +6,10 @@ import { setRequestLocale } from 'next-intl/server';
 
 import { collectionsQueryKeys, fetchCollectionDetail } from '@/api/collections';
 import { fetchProductsList, productsQueryKeys } from '@/api/products';
+import { runWithAppLocale } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 import { CollectionScreen } from '@/screens/collections';
-import { runWithAppLocale } from '@/shared/app-locale/server';
 import type { LocaleSlugPageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
