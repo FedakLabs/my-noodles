@@ -2,152 +2,322 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
+import { PhoneInput } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
+import { useEffect, useMemo, useRef } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import { useCreateOrder } from '@/api/orders';
+import type { CheckoutDetailDto } from '@/api/checkouts';
+import { useSubmitCheckout, useUpdateCheckoutDelivery, useUpdateCheckoutReceiver } from '@/api/checkouts';
+import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
+import { CheckoutDeliveryFields } from '@/components/checkout/checkout-delivery-fields';
+import { CheckoutFormSection } from '@/components/checkout/checkout-form-section';
+import { checkoutToFormValues, formValuesToSubmitCheckout } from '@/components/checkout/checkout-form-values';
+import { CheckoutHoldTimer } from '@/components/checkout/checkout-hold-timer';
+import { CheckoutOrderCard } from '@/components/checkout/checkout-order-card';
+import { CheckoutOrderItemsList } from '@/components/checkout/checkout-order-items-list';
+import { CheckoutOrderSidebar } from '@/components/checkout/checkout-order-sidebar';
+import { CheckoutOrderSummary } from '@/components/checkout/checkout-order-summary';
 import { useAnalyticsActions } from '@/hooks/analytics';
-import { useCartActions, useCartItems } from '@/hooks/cart';
+import { useCheckoutSessionState } from '@/hooks/checkout';
+import { useViewport } from '@/hooks/layout';
 import { usePendingRouter } from '@/hooks/smooth';
 import { cartLineToGa4Item } from '@/shared/analytics';
 import { testIds } from '@/tests/test-ids';
 
-import { branchToWarehouseNumber, type CheckoutFormData, checkoutSchema } from './validation';
+import {
+  type CheckoutFormData,
+  type CheckoutReceiverField,
+  createCheckoutSchemas,
+  isCheckoutFormValid,
+  isCheckoutReceiverComplete,
+  toValidDeliveryPatch,
+  toValidReceiverFieldPatch,
+} from './validation';
 
-export function CheckoutForm() {
+type CheckoutFormProps = {
+  checkoutId: string;
+  checkout: CheckoutDetailDto;
+  onHoldExpired: () => void;
+};
+
+export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFormProps) {
   const t = useTranslations('checkout');
+  const tItems = useTranslations('checkout.items');
+  const { isDesktop } = useViewport();
   const router = usePendingRouter();
-  const items = useCartItems();
-  const { clear } = useCartActions();
+  const { updateCheckoutReceiver } = useUpdateCheckoutReceiver(checkoutId);
+  const { updateCheckoutDelivery, updateCheckoutDeliveryIsPending } = useUpdateCheckoutDelivery(checkoutId);
+  const { submitCheckout, submitCheckoutIsPending, submitCheckoutIsError, submitCheckoutError } =
+    useSubmitCheckout(checkoutId);
+  const session = useCheckoutSessionState({
+    checkoutId,
+    error: submitCheckoutIsError ? submitCheckoutError : undefined,
+  });
   const { trackPurchase } = useAnalyticsActions();
-  const { createOrderAsync, createOrderIsPending, createOrderIsError } = useCreateOrder();
+
+  const { receiverSchema, deliverySchema, checkoutSchema } = useMemo(
+    () => createCheckoutSchemas(t('validation.invalidPhone')),
+    [t],
+  );
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
-      customerName: '',
+      firstName: '',
+      lastName: '',
       phone: '',
-      city: '',
-      branch: '',
-      company: '',
+      method: DeliveryMethod.WAREHOUSE,
+      provider: DeliveryProvider.NOVA_POSHTA,
+      cityName: '',
+      cityRef: '',
+      warehouseRef: '',
+      warehouseName: '',
+      warehouseNumber: '',
+      street: '',
+      building: '',
+      apartment: '',
+      notes: '',
     },
   });
 
-  const submitOrder = (data: CheckoutFormData) => {
-    if (items.length === 0) {
+  const watchedValues = useWatch({ control: form.control });
+  const firstName = useWatch({ control: form.control, name: 'firstName' });
+  const lastName = useWatch({ control: form.control, name: 'lastName' });
+  const phone = useWatch({ control: form.control, name: 'phone' });
+  const canSubmitForm = useMemo(
+    () => isCheckoutFormValid(form.getValues(), checkoutSchema),
+    [checkoutSchema, form, watchedValues],
+  );
+  const receiverComplete = isCheckoutReceiverComplete({ firstName, lastName, phone }, receiverSchema);
+  const hydratedCheckoutIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (hydratedCheckoutIdRef.current === checkoutId) {
       return;
     }
 
-    void createOrderAsync({
-      customerName: data.customerName,
-      phone: data.phone,
-      company: data.company,
-      delivery: {
-        provider: DeliveryProvider.NOVA_POSHTA,
-        method: DeliveryMethod.WAREHOUSE,
-        city: data.city,
-        warehouseNumber: branchToWarehouseNumber(data.branch),
-        warehouseName: data.branch,
+    hydratedCheckoutIdRef.current = checkoutId;
+    form.reset(checkoutToFormValues(checkout));
+    void form.trigger();
+  }, [checkoutId, checkout, form]);
+
+  const autosaveReceiverField = (field: CheckoutReceiverField) => {
+    const values = form.getValues();
+    const patch = toValidReceiverFieldPatch(field, values, receiverSchema);
+
+    if (!patch) {
+      return;
+    }
+
+    updateCheckoutReceiver(patch);
+  };
+
+  const autosaveDelivery = (override?: Partial<CheckoutFormData>) => {
+    const values = { ...form.getValues(), ...override };
+    const patch = toValidDeliveryPatch(values, deliverySchema);
+
+    if (!patch) {
+      return;
+    }
+
+    updateCheckoutDelivery(patch);
+  };
+
+  const submitOrder = (data: CheckoutFormData) => {
+    if (!checkout.items.length) {
+      return;
+    }
+
+    submitCheckout(formValuesToSubmitCheckout(data), {
+      onSuccess: (order) => {
+        trackPurchase({
+          transactionId: order.id,
+          valueMinor: order.totalMinor,
+          currency: order.currency,
+          items: checkout.items.map((item) =>
+            cartLineToGa4Item({
+              slug: item.productId,
+              title: item.title,
+              priceMinor: item.priceMinor,
+              qty: item.qty,
+            }),
+          ),
+        });
+        router.push('/checkout/success');
       },
-      items: items.map((item) => ({ productId: item.productId, qty: item.qty })),
-    }).then((order) => {
-      trackPurchase({
-        transactionId: order.id,
-        valueMinor: order.totalMinor,
-        currency: order.currency,
-        items: items.map((item) => cartLineToGa4Item(item)),
-      });
-      clear();
-      router.push('/checkout/success');
     });
   };
+
+  const onSubmit = form.handleSubmit(submitOrder);
+
+  if (session.isExpired) {
+    return <CheckoutCancelledState title={t('inactive.title')} description={session.expiredDescription} />;
+  }
+
+  if (session.isNotInProgress) {
+    return <Alert severity="error">{session.submitErrorMessage}</Alert>;
+  }
+
+  const submitButton = (
+    <Button
+      type="submit"
+      variant="contained"
+      fullWidth
+      data-testid={testIds.checkout.submit}
+      disabled={submitCheckoutIsPending || !checkout.items.length || !canSubmitForm}
+      aria-busy={submitCheckoutIsPending}
+      startIcon={
+        submitCheckoutIsPending ? <CircularProgress size={22} color="inherit" aria-hidden /> : undefined
+      }
+    >
+      {t('submit')}
+    </Button>
+  );
+
+  const formFields = (
+    <Stack spacing={3}>
+      {session.showSubmitErrorAlert ? <Alert severity="error">{session.submitErrorMessage}</Alert> : null}
+
+      <CheckoutFormSection step={1} title={t('sections.receiver')}>
+        <Stack direction="row" spacing={1.5} sx={{ width: '100%', alignItems: 'flex-start' }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              name="lastName"
+              control={form.control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="large"
+                  label={t('fields.lastName')}
+                  fullWidth
+                  onBlur={() => {
+                    field.onBlur();
+                    autosaveReceiverField('lastName');
+                  }}
+                />
+              )}
+            />
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              name="firstName"
+              control={form.control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="large"
+                  label={t('fields.firstName')}
+                  fullWidth
+                  onBlur={() => {
+                    field.onBlur();
+                    autosaveReceiverField('firstName');
+                  }}
+                />
+              )}
+            />
+          </Box>
+        </Stack>
+
+        <Controller
+          name="phone"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <PhoneInput
+              value={field.value}
+              onChange={field.onChange}
+              size="large"
+              label={t('fields.phone')}
+              fullWidth
+              error={Boolean(fieldState.error)}
+              helperText={fieldState.error?.message}
+              onBlur={() => {
+                field.onBlur();
+                autosaveReceiverField('phone');
+              }}
+            />
+          )}
+        />
+      </CheckoutFormSection>
+
+      <CheckoutFormSection
+        step={2}
+        title={t('sections.delivery')}
+        locked={!receiverComplete}
+        lockedHint={t('sections.deliveryLocked')}
+      >
+        <CheckoutDeliveryFields
+          key={checkoutId}
+          control={form.control}
+          setValue={form.setValue}
+          onDeliverySave={autosaveDelivery}
+          deliveryEstimate={checkout.deliveryEstimate}
+          deliveryEstimateIsPending={updateCheckoutDeliveryIsPending}
+          enabled={receiverComplete}
+        />
+      </CheckoutFormSection>
+    </Stack>
+  );
+
+  const mobileOrderItems = (
+    <CheckoutOrderCard aria-label={tItems('title')}>
+      <CheckoutOrderItemsList checkout={checkout} />
+    </CheckoutOrderCard>
+  );
+
+  const mobileOrderSummary = (
+    <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
+      <CheckoutOrderSummary
+        checkout={checkout}
+        deliveryEstimate={checkout.deliveryEstimate}
+        footer={submitButton}
+      />
+    </CheckoutOrderCard>
+  );
+
+  const mainColumn = (
+    <Stack spacing={2} sx={{ minWidth: 0 }}>
+      {checkout.expiresAt ? (
+        <CheckoutHoldTimer expiresAt={checkout.expiresAt} onExpired={onHoldExpired} />
+      ) : null}
+
+      {!isDesktop ? mobileOrderItems : null}
+
+      {formFields}
+
+      {!isDesktop ? mobileOrderSummary : null}
+    </Stack>
+  );
 
   return (
     <Stack
       component="form"
       spacing={2}
       onSubmit={(event) => {
-        void form.handleSubmit(submitOrder)(event);
+        void onSubmit(event);
       }}
     >
-      {createOrderIsError ? <Alert severity="error">{t('error')}</Alert> : null}
-
-      <Controller
-        name="customerName"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label={t('fields.name')}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            fullWidth
-          />
-        )}
-      />
-
-      <Controller
-        name="phone"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label={t('fields.phone')}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            fullWidth
-          />
-        )}
-      />
-
-      <Controller
-        name="city"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label={t('fields.city')}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            fullWidth
-          />
-        )}
-      />
-
-      <Controller
-        name="branch"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <TextField
-            {...field}
-            label={t('fields.branch')}
-            error={Boolean(fieldState.error)}
-            helperText={fieldState.error?.message}
-            fullWidth
-          />
-        )}
-      />
-
-      <TextField
-        {...form.register('company')}
-        label={t('fields.company')}
-        sx={{ display: 'none' }}
-        tabIndex={-1}
-        autoComplete="off"
-      />
-
-      <Button
-        type="submit"
-        variant="contained"
-        data-testid={testIds.checkout.submit}
-        disabled={createOrderIsPending || items.length === 0}
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 3,
+          alignItems: 'start',
+          gridTemplateColumns: isDesktop ? '2fr 1fr' : '1fr',
+        }}
       >
-        {t('submit')}
-      </Button>
+        {mainColumn}
+
+        {isDesktop ? <CheckoutOrderSidebar checkout={checkout} footer={submitButton} sticky /> : null}
+      </Box>
     </Stack>
   );
 }

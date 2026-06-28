@@ -11,7 +11,9 @@ export function useLikeFeedProduct() {
   return formatUseMutation(
     useMutation({
       mutationFn: likeFeedProduct,
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() }),
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() });
+      },
     }),
     'likeFeed',
   );
@@ -23,7 +25,9 @@ export function useUnlikeFeedProduct() {
   return formatUseMutation(
     useMutation({
       mutationFn: unlikeFeedProduct,
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() }),
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() });
+      },
     }),
     'unlikeFeed',
   );

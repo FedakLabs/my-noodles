@@ -6,8 +6,6 @@ export * from './feed.service';
 export * from './feed.types';
 export * from './feed-comments.service';
 export * from './feed-product-comment.entity';
-export * from './feed-session.cookie';
-export * from './feed-session.entity';
 export * from './feed-session.service';
 export * from './feed-session-like.entity';
 export * from './feed-session-view.entity';

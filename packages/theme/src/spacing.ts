@@ -1,4 +1,4 @@
-import type { CustomSpacing, ModalWidths } from './types';
+import type { CustomModalWidths, CustomSpacing } from '../types/theme.d.ts';
 
 export const customSpacing: CustomSpacing = {
   gap: {
@@ -15,7 +15,7 @@ export const customSpacing: CustomSpacing = {
   },
 };
 
-export const modalWidths: ModalWidths = {
+export const modalWidths: CustomModalWidths = {
   sm: 400,
   md: 560,
   lg: 720,

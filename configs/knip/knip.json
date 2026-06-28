@@ -51,10 +51,19 @@
         "src/application/products/products.dto.ts": ["types"],
         "src/infrastructure/i18n/index.ts": ["exports", "types"],
         "src/infrastructure/i18n/localized-string.ts": ["exports"],
+        "src/infrastructure/exceptions/index.ts": ["exports"],
+        "src/infrastructure/exceptions/http.exceptions.ts": ["exports"],
         "src/infrastructure/seed/index.ts": ["exports", "types"],
-        "src/infrastructure/services/Telegram/index.ts": ["exports", "types"],
-        "src/infrastructure/services/Telegram/telegram.config.ts": ["exports"],
-        "src/infrastructure/services/Telegram/telegram.dto.ts": ["types"],
+        "src/infrastructure/external-apis/telegram/index.ts": ["exports", "types"],
+        "src/infrastructure/external-apis/telegram/telegram.config.ts": ["exports"],
+        "src/infrastructure/external-apis/telegram/telegram.dto.ts": ["types"],
+        "src/infrastructure/external-apis/meest/index.ts": ["exports"],
+        "src/infrastructure/external-apis/meest/meest.config.ts": ["exports"],
+        "src/infrastructure/external-apis/nova-poshta/index.ts": ["exports", "types"],
+        "src/infrastructure/external-apis/nova-poshta/nova-poshta.api.ts": ["types"],
+        "src/infrastructure/external-apis/nova-poshta/nova-poshta.config.ts": ["exports"],
+        "src/infrastructure/external-apis/ukrposhta/index.ts": ["exports"],
+        "src/infrastructure/external-apis/ukrposhta/ukrposhta.config.ts": ["exports"],
         "src/tests/fixtures/env.ts": ["exports"],
         "src/tests/jest-globals.ts": ["exports"],
         "src/utils/transformers/index.ts": ["exports"]
@@ -63,7 +72,6 @@
         "@nestjs/swagger",
         "@nestjs/throttler",
         "@nestjs/typeorm",
-        "nest-winston",
         "pg",
         "typeorm",
         "winston",
@@ -109,9 +117,9 @@
       "ignore": ["src/**/generated/**"]
     },
     "libs/web": {
-      "entry": ["src/index.ts"],
+      "entry": ["src/index.ts", "src/hooks/index.ts"],
       "project": ["src/**/*.ts"],
-      "ignoreDependencies": ["@tanstack/react-query"]
+      "ignoreDependencies": ["@tanstack/react-query", "react"]
     },
     "libs/api": {
       "entry": [
@@ -121,6 +129,7 @@
         "src/pagination/index.ts",
         "src/persistence/index.ts",
         "src/external-api/index.ts",
+        "src/exceptions/index.ts",
         "src/logging/index.ts",
         "src/otel/index.ts",
         "src/utils/index.ts",

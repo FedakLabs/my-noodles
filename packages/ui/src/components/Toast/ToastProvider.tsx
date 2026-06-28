@@ -11,10 +11,13 @@ export function ToastProvider() {
       <GlobalStyles styles={toastGlobalStyles} />
       <Toaster
         position="bottom-right"
-        expand={false}
+        expand
         richColors={false}
         closeButton
         offset={16}
+        gap={10}
+        visibleToasts={5}
+        style={{ zIndex: 1400 }}
         toastOptions={{
           classNames: {
             toast: 'noodles-toast',

@@ -9,6 +9,7 @@ import {
   DEFAULT_PRODUCT_SORT,
   productListRelations,
 } from '../products/products.filters';
+import type { VisitorSession } from '../visitor/visitor-session.entity';
 import type {
   FeedFiltersDto,
   FeedItemDto,
@@ -18,7 +19,6 @@ import type {
 } from './feed.dto';
 import type { FeedFilterSnapshot } from './feed.types';
 import { FeedCommentsService } from './feed-comments.service';
-import { FeedSession } from './feed-session.entity';
 import { FeedSessionService } from './feed-session.service';
 
 @Injectable()
@@ -30,11 +30,11 @@ export class FeedService {
     private readonly commentsService: FeedCommentsService,
   ) {}
 
-  async next(session: FeedSession, dto: FeedNextDto): Promise<FeedNextResponseDto> {
+  async next(visitor: VisitorSession, dto: FeedNextDto): Promise<FeedNextResponseDto> {
     const filters: FeedFiltersDto = dto.filters ?? {};
 
     if (dto.previousProduct) {
-      await this.sessionService.recordView(session.id, {
+      await this.sessionService.recordView(visitor.id, {
         productId: dto.previousProduct.id,
         dwellMs: dto.previousProduct.viewTime,
         filters: toFilterSnapshot(filters),
@@ -42,8 +42,8 @@ export class FeedService {
     }
 
     const [viewedIds, likedProducts] = await Promise.all([
-      this.sessionService.getViewedProductIds(session.id),
-      this.sessionService.getLikedProducts(session.id),
+      this.sessionService.getViewedProductIds(visitor.id),
+      this.sessionService.getLikedProducts(visitor.id),
     ]);
 
     const where = buildProductWhere(filters);
@@ -68,8 +68,8 @@ export class FeedService {
     return { item: this.toItem(next, likedIds.has(next.id), commentCount), exhausted: false };
   }
 
-  async getLikedItems(session: FeedSession): Promise<FeedLikedItemDto[]> {
-    const products = await this.sessionService.getLikedProducts(session.id);
+  async getLikedItems(visitor: VisitorSession): Promise<FeedLikedItemDto[]> {
+    const products = await this.sessionService.getLikedProducts(visitor.id);
 
     return products.map((product) => ({
       id: product.id,

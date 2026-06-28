@@ -1,5 +1,3 @@
-import winston from 'winston';
-
 import { WinstonLoggerFactory } from './winston';
 
 describe('WinstonLoggerFactory', () => {
@@ -10,7 +8,7 @@ describe('WinstonLoggerFactory', () => {
       otel: { enabled: false },
     });
 
-    expect(factory.createTransports(winston.format.simple())).toHaveLength(1);
+    expect(factory.createTransports()).toHaveLength(1);
   });
 
   it('uses console and OTEL transports when OTEL is enabled locally', () => {
@@ -24,7 +22,7 @@ describe('WinstonLoggerFactory', () => {
       },
     });
 
-    expect(factory.createTransports(winston.format.simple())).toHaveLength(2);
+    expect(factory.createTransports()).toHaveLength(2);
   });
 
   it('uses OTEL transport only when OTEL is enabled outside local', () => {
@@ -38,6 +36,19 @@ describe('WinstonLoggerFactory', () => {
       },
     });
 
-    expect(factory.createTransports(winston.format.simple())).toHaveLength(1);
+    expect(factory.createTransports()).toHaveLength(1);
+  });
+
+  it('creates a winston logger with info level', () => {
+    const factory = new WinstonLoggerFactory({
+      appName: 'my-noodles-api',
+      nodeEnv: 'local',
+      otel: { enabled: false },
+    });
+
+    const logger = factory.createLogger();
+
+    expect(logger.level).toBe('info');
+    expect(logger.transports).toHaveLength(1);
   });
 });

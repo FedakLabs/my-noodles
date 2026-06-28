@@ -39,7 +39,7 @@ pnpm nx run api:migration:run
 
 ## Repo layout
 
-See `docs/mvp-plan.md` — `apps/api/src/application/[feature]/`, `infrastructure/migrations/`, `infrastructure/services/Telegram/client/`.
+See `docs/mvp-plan.md` — `apps/api/src/application/[feature]/`, `infrastructure/migrations/`, `infrastructure/external-apis/telegram/`.
 
 **Preconditions:** `application/`, `infrastructure/`, `app.module.ts` exist. Public storefront — no auth guards unless explicitly requested.
 

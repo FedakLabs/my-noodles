@@ -5,7 +5,7 @@ type UseClearViewModeResetOptions = {
   clearViewModeReset: () => void;
   productsIsBusy: boolean;
   itemCount: number;
-  isLoadFailed: boolean;
+  isError: boolean;
 };
 
 export function useClearViewModeReset({
@@ -13,15 +13,15 @@ export function useClearViewModeReset({
   clearViewModeReset,
   productsIsBusy,
   itemCount,
-  isLoadFailed,
+  isError,
 }: UseClearViewModeResetOptions) {
   useEffect(() => {
     if (!isViewModeResetting) {
       return;
     }
 
-    if (!productsIsBusy && (itemCount > 0 || isLoadFailed)) {
+    if (!productsIsBusy && (itemCount > 0 || isError)) {
       clearViewModeReset();
     }
-  }, [clearViewModeReset, isLoadFailed, isViewModeResetting, itemCount, productsIsBusy]);
+  }, [clearViewModeReset, isError, isViewModeResetting, itemCount, productsIsBusy]);
 }

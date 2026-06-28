@@ -27,8 +27,11 @@ export class OrderDelivery extends TimestampEntity {
   @Column({ type: 'text' })
   method!: DeliveryMethod;
 
-  @Column({ type: 'text' })
-  city!: string;
+  @Column({ type: 'text', nullable: true })
+  city!: string | null;
+
+  @Column({ name: 'city_ref', type: 'text', nullable: true })
+  cityRef!: string | null;
 
   @Column({ name: 'warehouse_number', type: 'text', nullable: true })
   warehouseNumber!: string | null;
@@ -50,4 +53,16 @@ export class OrderDelivery extends TimestampEntity {
 
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
+
+  @Column({ name: 'estimated_delivery_at', type: 'timestamptz', nullable: true })
+  estimatedDeliveryAt!: Date | null;
+
+  @Column({ name: 'estimated_days_min', type: 'int', nullable: true })
+  estimatedDaysMin!: number | null;
+
+  @Column({ name: 'estimated_days_max', type: 'int', nullable: true })
+  estimatedDaysMax!: number | null;
+
+  @Column({ name: 'shipping_cost_minor', type: 'int', nullable: true })
+  shippingCostMinor!: number | null;
 }

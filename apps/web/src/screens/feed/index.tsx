@@ -59,8 +59,8 @@ export function FeedScreen() {
 
   const panels = useFeedPanels();
 
-  const { likeFeedAsync } = useLikeFeedProduct();
-  const { unlikeFeedAsync } = useUnlikeFeedProduct();
+  const { likeFeed } = useLikeFeedProduct();
+  const { unlikeFeed } = useUnlikeFeedProduct();
 
   const activeTags = flattenFeedTags(filters);
 
@@ -110,9 +110,13 @@ export function FeedScreen() {
     const productId = currentItem.id;
     setItemLiked(productId, nextLiked);
 
-    const action = nextLiked ? likeFeedAsync : unlikeFeedAsync;
-    void action(productId).catch(() => setItemLiked(productId, !nextLiked));
-  }, [currentItem, likeFeedAsync, setItemLiked, unlikeFeedAsync]);
+    const rollback = () => setItemLiked(productId, !nextLiked);
+    if (nextLiked) {
+      likeFeed(productId, { onError: rollback });
+    } else {
+      unlikeFeed(productId, { onError: rollback });
+    }
+  }, [currentItem, likeFeed, setItemLiked, unlikeFeed]);
 
   const handleRemoveTag = useCallback((chip: FeedTagChip) => removeTag(chip.type, chip.value), [removeTag]);
 

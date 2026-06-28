@@ -1,7 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
+import { HttpStatus } from '@my-noodles/api-lib/exceptions';
 
-export class FeedProductNotFoundException extends NotFoundException {
+import { AppException } from '@/infrastructure/exceptions';
+
+export class FeedProductNotFoundException extends AppException<{ productId: string }> {
   constructor(productId: string) {
-    super({ message: 'Product not found', productId });
+    super(HttpStatus.NOT_FOUND, 'feed_product_not_found', 'Product not found', { productId });
   }
 }

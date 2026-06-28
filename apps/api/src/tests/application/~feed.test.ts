@@ -2,18 +2,19 @@ import { type INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 
+import { CartItem } from '@/application/cart/cart-item.entity';
 import {
-  FEED_SESSION_COOKIE,
   FeedCommentsService,
   FeedController,
   FeedProductComment,
   FeedService,
-  FeedSession,
   FeedSessionLike,
   FeedSessionService,
   FeedSessionView,
 } from '@/application/feed';
+import { Order } from '@/application/orders/order.entity';
 import { Product } from '@/application/products/product.entity';
+import { VISITOR_SESSION_COOKIE, VisitorSession, VisitorSessionService } from '@/application/visitor';
 
 import { sampleProduct, sampleProductId } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
@@ -21,9 +22,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '../
 
 describe('feed (e2e)', () => {
   let app: INestApplication;
-  let sessionsFindOne: jest.Mock;
-  let sessionsSave: jest.Mock;
-  let sessionsCreate: jest.Mock;
+  let visitorsFindOne: jest.Mock;
+  let visitorsSave: jest.Mock;
+  let visitorsCreate: jest.Mock;
+  let viewsDelete: jest.Mock;
   let productsFind: jest.Mock;
   let productsFindOne: jest.Mock;
   let commentsFind: jest.Mock;
@@ -46,12 +48,13 @@ describe('feed (e2e)', () => {
     getRawMany: jest.Mock;
   };
 
-  const sessionId = '22222222-2222-4222-8222-222222222222';
+  const visitorId = '22222222-2222-4222-8222-222222222222';
 
   beforeAll(async () => {
-    sessionsFindOne = jest.fn();
-    sessionsSave = jest.fn((entity: FeedSession) => Promise.resolve(entity));
-    sessionsCreate = jest.fn((entity: Partial<FeedSession>) => entity);
+    visitorsFindOne = jest.fn();
+    visitorsSave = jest.fn((entity: VisitorSession) => Promise.resolve(entity));
+    visitorsCreate = jest.fn((entity: Partial<VisitorSession>) => entity);
+    viewsDelete = jest.fn().mockResolvedValue({ affected: 0 });
     productsFind = jest.fn().mockResolvedValue([sampleProduct]);
     productsFindOne = jest.fn().mockResolvedValue({ id: sampleProductId });
     commentsFind = jest.fn().mockResolvedValue([]);
@@ -80,12 +83,13 @@ describe('feed (e2e)', () => {
         FeedService,
         FeedSessionService,
         FeedCommentsService,
+        VisitorSessionService,
         {
-          provide: getRepositoryToken(FeedSession),
+          provide: getRepositoryToken(VisitorSession),
           useValue: {
-            findOne: sessionsFindOne,
-            save: sessionsSave,
-            create: sessionsCreate,
+            findOne: visitorsFindOne,
+            save: visitorsSave,
+            create: visitorsCreate,
           },
         },
         {
@@ -105,6 +109,7 @@ describe('feed (e2e)', () => {
             findOne: viewsFindOne,
             save: viewsSave,
             create: viewsCreate,
+            delete: viewsDelete,
             createQueryBuilder: jest.fn().mockReturnValue(viewsQueryBuilder),
           },
         },
@@ -119,6 +124,14 @@ describe('feed (e2e)', () => {
             findOne: productsFindOne,
           },
         },
+        {
+          provide: getRepositoryToken(CartItem),
+          useValue: { delete: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(Order),
+          useValue: { findOne: jest.fn(), save: jest.fn() },
+        },
       ],
     });
   });
@@ -131,16 +144,16 @@ describe('feed (e2e)', () => {
     jest.clearAllMocks();
     productsFind.mockResolvedValue([sampleProduct]);
     productsFindOne.mockResolvedValue({ id: sampleProductId });
-    sessionsSave.mockImplementation((entity: FeedSession) => {
+    visitorsSave.mockImplementation((entity: VisitorSession) => {
       if (!entity.id) {
-        entity.id = sessionId;
+        entity.id = visitorId;
       }
       return Promise.resolve(entity);
     });
-    sessionsCreate.mockImplementation((entity: Partial<FeedSession>) => entity);
+    visitorsCreate.mockImplementation((entity: Partial<VisitorSession>) => entity);
   });
 
-  it('POST /api/feed/next mints a feed session cookie when none is present', async () => {
+  it('POST /api/feed/next mints a visitor cookie when none is present', async () => {
     const server = apiHttpServer(app);
 
     const response = await request(server)
@@ -153,23 +166,23 @@ describe('feed (e2e)', () => {
     const setCookie = response.headers['set-cookie'] as string[] | undefined;
 
     expect(body.item?.id).toBe(sampleProductId);
-    expect(setCookie?.some((entry) => entry.startsWith(`${FEED_SESSION_COOKIE}=`))).toBe(true);
+    expect(setCookie?.some((entry) => entry.startsWith(`${VISITOR_SESSION_COOKIE}=`))).toBe(true);
   });
 
-  it('POST /api/feed/next resumes an existing session from the cookie', async () => {
+  it('POST /api/feed/next resumes an existing visitor from the cookie', async () => {
     const future = new Date(Date.now() + 60_000);
-    sessionsFindOne.mockResolvedValue({ id: sessionId, expiresAt: future });
+    visitorsFindOne.mockResolvedValue({ id: visitorId, feedExpiresAt: future, cartExpiresAt: future });
     const server = apiHttpServer(app);
 
     await request(server)
       .post('/api/feed/next')
       .set('x-app-locale', 'uk')
-      .set('Cookie', `${FEED_SESSION_COOKIE}=${sessionId}`)
+      .set('Cookie', `${VISITOR_SESSION_COOKIE}=${visitorId}`)
       .send({})
       .expect(201);
 
-    expect(sessionsFindOne).toHaveBeenCalledWith({ where: { id: sessionId } });
-    expect(sessionsSave).toHaveBeenCalled();
+    expect(visitorsFindOne).toHaveBeenCalledWith({ where: { id: visitorId } });
+    expect(visitorsSave).toHaveBeenCalled();
   });
 
   it('POST /api/feed/next validates previousProduct id as a UUID', async () => {
@@ -190,13 +203,13 @@ describe('feed (e2e)', () => {
 
   it('POST /api/feed/products/:productId/like returns liked state for a valid product', async () => {
     const future = new Date(Date.now() + 60_000);
-    sessionsFindOne.mockResolvedValue({ id: sessionId, expiresAt: future });
+    visitorsFindOne.mockResolvedValue({ id: visitorId, feedExpiresAt: future, cartExpiresAt: future });
     const server = apiHttpServer(app);
 
     const response = await request(server)
       .post(`/api/feed/products/${sampleProductId}/like`)
       .set('x-app-locale', 'uk')
-      .set('Cookie', `${FEED_SESSION_COOKIE}=${sessionId}`)
+      .set('Cookie', `${VISITOR_SESSION_COOKIE}=${visitorId}`)
       .expect(201);
 
     expect(response.body).toEqual({ liked: true });

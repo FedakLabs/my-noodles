@@ -1,5 +1,5 @@
+import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import type { INestApplication } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DataSource } from 'typeorm';
 
 import { jest } from '../jest-globals';
@@ -10,7 +10,7 @@ export type MockNestAppOptions = {
 };
 
 export function createMockNestApp(options?: MockNestAppOptions): INestApplication {
-  const logger = { log: jest.fn(), error: jest.fn() };
+  const logger = { info: jest.fn(), error: jest.fn() };
   const close = options?.close ?? jest.fn().mockResolvedValue(undefined);
   const dataSource = options?.dataSource ?? {
     isInitialized: true,
@@ -20,7 +20,7 @@ export function createMockNestApp(options?: MockNestAppOptions): INestApplicatio
   return {
     close,
     get: jest.fn((token: unknown) => {
-      if (token === WINSTON_MODULE_NEST_PROVIDER) {
+      if (token === APP_LOGGER) {
         return logger;
       }
 

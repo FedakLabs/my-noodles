@@ -4,12 +4,12 @@ import type { Preview } from '@storybook/react-vite';
 
 import '@my-noodles/theme/fonts.css';
 import '@my-noodles/theme/fonts.local.css';
-import { theme } from '@my-noodles/theme';
+import { MyNoodlesTheme } from '@my-noodles/theme';
 
 const preview: Preview = {
   decorators: [
     (Story) => (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={MyNoodlesTheme}>
         <CssBaseline />
         <Story />
       </ThemeProvider>

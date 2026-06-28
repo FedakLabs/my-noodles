@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 
-import type { BorderRadiusTokens } from './types';
+import type { CustomBorderRadius } from '../types/theme.d.ts';
 
-export const borderRadius: BorderRadiusTokens = {
+export const borderRadius: CustomBorderRadius = {
   none: 0,
   utility: 12,
   discovery: 20,
@@ -15,7 +15,7 @@ export type EdgeAnchor = 'left' | 'right' | 'bottom' | 'top';
 /** Bottom/top sheets: rounded on the edge away from the viewport. Left/right sidebars: fully square. */
 export function edgeAnchoredBorderRadius(
   anchor: EdgeAnchor,
-  radius: BorderRadiusTokens = borderRadius,
+  radius: CustomBorderRadius = borderRadius,
 ): Pick<
   CSSProperties,
   'borderTopLeftRadius' | 'borderTopRightRadius' | 'borderBottomLeftRadius' | 'borderBottomRightRadius'

@@ -17,8 +17,7 @@ type CollectionScreenProps = {
 
 export function CollectionScreen({ slug }: CollectionScreenProps) {
   const t = useTranslations('collections');
-  const { collection, collectionIsInitialLoad, collectionIsLoadFailed, collectionIsEmpty } =
-    useCollectionDetail(slug);
+  const { collection, collectionIsInitialLoad, collectionIsError } = useCollectionDetail(slug);
   const { products, productsIsInitialLoad } = useProductsList({
     ...DEFAULT_CATALOG_FILTER_PARAMS,
     page: 1,
@@ -46,7 +45,7 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
     );
   }
 
-  if (collectionIsLoadFailed) {
+  if (collectionIsError) {
     return (
       <PageContainer>
         <Typography color="error">{t('error')}</Typography>
@@ -54,18 +53,10 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
     );
   }
 
-  if (collectionIsEmpty) {
-    return (
-      <PageContainer>
-        <Typography color="text.secondary">{t('empty')}</Typography>
-      </PageContainer>
-    );
-  }
-
   if (!collection) {
     return (
       <PageContainer>
-        <Typography color="text.secondary">{t('loading')}</Typography>
+        <Typography color="text.secondary">{t('empty')}</Typography>
       </PageContainer>
     );
   }

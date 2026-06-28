@@ -5,6 +5,8 @@ import type { Request, Response } from 'express';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
+import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
+import type { VisitorSession } from '../visitor/visitor-session.entity';
 import {
   FeedCommentDto,
   FeedLikedItemDto,
@@ -14,8 +16,6 @@ import {
 } from './feed.dto';
 import { FeedService } from './feed.service';
 import { FeedCommentsService } from './feed-comments.service';
-import { readFeedSessionId, writeFeedSessionCookie } from './feed-session.cookie';
-import type { FeedSession } from './feed-session.entity';
 import { FeedSessionService } from './feed-session.service';
 
 @ApiTags('Feed')
@@ -23,6 +23,7 @@ import { FeedSessionService } from './feed-session.service';
 export class FeedController extends LocalizedStorefrontController {
   constructor(
     @Inject(FeedService) private readonly feedService: FeedService,
+    @Inject(VisitorSessionService) private readonly visitorService: VisitorSessionService,
     @Inject(FeedSessionService) private readonly sessionService: FeedSessionService,
     @Inject(FeedCommentsService) private readonly commentsService: FeedCommentsService,
   ) {
@@ -37,9 +38,9 @@ export class FeedController extends LocalizedStorefrontController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<FeedNextResponseDto> {
-    const session = await this.resolveSession(req, res, { reshuffle: dto.reshuffle });
+    const visitor = await this.resolveVisitorForFeed(req, res, { reshuffle: dto.reshuffle });
 
-    return this.feedService.next(session, dto.reshuffle ? { filters: dto.filters } : dto);
+    return this.feedService.next(visitor, dto.reshuffle ? { filters: dto.filters } : dto);
   }
 
   @Post('products/:productId/like')
@@ -51,8 +52,8 @@ export class FeedController extends LocalizedStorefrontController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<FeedLikeStateDto> {
-    const session = await this.resolveSession(req, res);
-    await this.sessionService.like(session.id, productId);
+    const visitor = await this.resolveVisitorForFeed(req, res);
+    await this.sessionService.like(visitor.id, productId);
     return { liked: true };
   }
 
@@ -64,8 +65,8 @@ export class FeedController extends LocalizedStorefrontController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<FeedLikeStateDto> {
-    const session = await this.resolveSession(req, res);
-    await this.sessionService.unlike(session.id, productId);
+    const visitor = await this.resolveVisitorForFeed(req, res);
+    await this.sessionService.unlike(visitor.id, productId);
     return { liked: false };
   }
 
@@ -79,19 +80,23 @@ export class FeedController extends LocalizedStorefrontController {
   @Get('likes')
   @ApiOperation({ summary: 'List products liked in the current feed session' })
   async likes(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<FeedLikedItemDto[]> {
-    const session = await this.resolveSession(req, res);
-    return this.feedService.getLikedItems(session);
+    const visitor = await this.resolveVisitorForFeed(req, res);
+    return this.feedService.getLikedItems(visitor);
   }
 
-  private async resolveSession(
+  private async resolveVisitorForFeed(
     req: Request,
     res: Response,
     options?: { reshuffle?: boolean },
-  ): Promise<FeedSession> {
-    const session = options?.reshuffle
-      ? await this.sessionService.createFreshSession()
-      : await this.sessionService.resolveOrCreateSession(readFeedSessionId(req));
-    writeFeedSessionCookie(res, session.id);
-    return session;
+  ): Promise<VisitorSession> {
+    let visitor = await this.visitorService.resolve(readVisitorSessionId(req));
+
+    if (options?.reshuffle) {
+      await this.visitorService.resetFeedViews(visitor.id);
+    }
+
+    visitor = await this.visitorService.resolveForFeed(visitor);
+    writeVisitorSessionCookie(res, visitor.id);
+    return visitor;
   }
 }

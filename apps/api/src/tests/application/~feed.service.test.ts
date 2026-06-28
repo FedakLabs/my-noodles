@@ -1,8 +1,8 @@
 import type { Repository } from 'typeorm';
 
-import type { FeedSession } from '@/application/feed';
 import { type FeedCommentsService, FeedService, type FeedSessionService } from '@/application/feed';
 import type { Product } from '@/application/products';
+import type { VisitorSession } from '@/application/visitor/visitor-session.entity';
 import { LocaleContext, LocalizedString } from '@/infrastructure/i18n';
 
 import { jest } from '../jest-globals';
@@ -33,7 +33,7 @@ describe('FeedService', () => {
   let countForProduct: jest.Mock;
   let service: FeedService;
 
-  const session = { id: 'session-1' } as FeedSession;
+  const visitor = { id: 'session-1' } as VisitorSession;
 
   beforeEach(() => {
     productsFind = jest.fn().mockResolvedValue([makeProduct()]);
@@ -55,7 +55,7 @@ describe('FeedService', () => {
 
   it('records the previous product view with dwell + filter context before picking next', async () => {
     await LocaleContext.run('uk', () =>
-      service.next(session, {
+      service.next(visitor, {
         previousProduct: { id: 'previous-1', viewTime: 4_200 },
         filters: { category: ['noodles'] },
       }),
@@ -71,7 +71,7 @@ describe('FeedService', () => {
   it('excludes already-viewed products and hard-filters by the body filters', async () => {
     getViewedProductIds.mockResolvedValue(['seen-1', 'seen-2']);
 
-    await LocaleContext.run('uk', () => service.next(session, { filters: { country: ['south-korea'] } }));
+    await LocaleContext.run('uk', () => service.next(visitor, { filters: { country: ['south-korea'] } }));
 
     const calls = productsFind.mock.calls as Array<[{ where?: Record<string, unknown> }]>;
     const where = calls[0]?.[0]?.where ?? {};
@@ -82,7 +82,7 @@ describe('FeedService', () => {
   it('returns an exhausted response when no candidates remain', async () => {
     productsFind.mockResolvedValue([]);
 
-    const result = await LocaleContext.run('uk', () => service.next(session, {}));
+    const result = await LocaleContext.run('uk', () => service.next(visitor, {}));
 
     expect(result).toEqual({ item: null, exhausted: true });
   });
@@ -90,7 +90,7 @@ describe('FeedService', () => {
   it('maps a localized item and marks it liked when the session liked it', async () => {
     getLikedProducts.mockResolvedValue([makeProduct({ id: 'product-1' })]);
 
-    const result = await LocaleContext.run('en', () => service.next(session, {}));
+    const result = await LocaleContext.run('en', () => service.next(visitor, {}));
 
     expect(result.exhausted).toBe(false);
     expect(result.item?.name).toBe('Fire Ramen');
@@ -100,13 +100,13 @@ describe('FeedService', () => {
   });
 
   it('does not record a view when there is no previous product', async () => {
-    await LocaleContext.run('uk', () => service.next(session, {}));
+    await LocaleContext.run('uk', () => service.next(visitor, {}));
 
     expect(recordView).not.toHaveBeenCalled();
   });
 
   it('returns the first candidate in stable sortWeight order', async () => {
-    await LocaleContext.run('uk', () => service.next(session, {}));
+    await LocaleContext.run('uk', () => service.next(visitor, {}));
 
     expect(productsFind).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -146,7 +146,7 @@ describe('FeedService', () => {
       }),
     ]);
 
-    const result = await LocaleContext.run('uk', () => service.next(session, {}));
+    const result = await LocaleContext.run('uk', () => service.next(visitor, {}));
 
     expect(result.item?.id).toBe('top-pick');
     expect(lowerPick.id).not.toBe(result.item?.id);

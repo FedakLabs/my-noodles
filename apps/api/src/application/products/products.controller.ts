@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
@@ -33,7 +33,6 @@ export class ProductsController extends LocalizedStorefrontController {
 
   @Get(':slug')
   @ApiOperation({ summary: 'Get product by slug' })
-  @ApiNotFoundResponse({ description: 'Product not found' })
   getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
     return this.productsService.getBySlug(slug);
   }

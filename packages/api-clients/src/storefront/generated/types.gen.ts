@@ -42,6 +42,13 @@ export const ProductSort = {
 
 export type ProductSort = typeof ProductSort[keyof typeof ProductSort];
 
+export type PaginationMetaDto = {
+    total: number;
+    currentTotal: number;
+    page: number;
+    limit: number;
+};
+
 export type BrandRefDto = {
     slug: string;
     name: string;
@@ -73,22 +80,9 @@ export type ProductSummaryDto = {
     category: CategoryRefDto;
 };
 
-export type PaginationMetaDto = {
-    /**
-     * Total items matching the query across all pages.
-     */
-    total: number;
-    /**
-     * Number of items returned on the current page.
-     */
-    currentTotal: number;
-    page: number;
-    limit: number;
-};
-
 export type PaginatedProductsDto = {
-    items: Array<ProductSummaryDto>;
     meta: PaginationMetaDto;
+    items: Array<ProductSummaryDto>;
 };
 
 export type ProductFlavorDto = {
@@ -157,14 +151,114 @@ export const DeliveryProvider = {
 
 export type DeliveryProvider = typeof DeliveryProvider[keyof typeof DeliveryProvider];
 
+export type DeliveryProviderDto = {
+    id: DeliveryProvider;
+    label: string;
+};
+
+export type DeliveryCityDto = {
+    ref: string;
+    name: string;
+};
+
+export type DeliveryWarehouseDto = {
+    ref: string;
+    number: string;
+    name: string;
+    address?: string;
+};
+
+export type CheckoutStartDto = {
+    id: string;
+    orderId: string;
+    createdAt: string;
+    status: string;
+    totalMinor: number;
+    currency: string;
+};
+
+export const CheckoutStatus = {
+    IN_PROGRESS: 'in_progress',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled'
+} as const;
+
+export type CheckoutStatus = typeof CheckoutStatus[keyof typeof CheckoutStatus];
+
+export type CheckoutSummaryDto = {
+    id: string;
+    orderId: string;
+    updatedAt: string;
+    expiresAt: string | null;
+    status: string;
+    itemCount: number;
+    totalMinor: number;
+    currency: string;
+};
+
+export type CheckoutsListDto = {
+    items: Array<CheckoutSummaryDto>;
+};
+
+export type OrderDeliveryEstimateDto = {
+    estimatedDeliveryAt: string;
+    estimatedDaysMin: number;
+    estimatedDaysMax: number;
+    shippingCostMinor: number;
+};
+
+export type OrderItemDto = {
+    productId: string;
+    title: string;
+    priceMinor: number;
+    qty: number;
+};
+
+export type OrderDeliveryResponseDto = {
+    provider: 'nova-poshta' | 'ukrposhta' | 'meest';
+    method: 'warehouse' | 'courier';
+    city: string | null;
+    cityRef?: string | null;
+    warehouseNumber?: string | null;
+    warehouseName?: string | null;
+    warehouseRef?: string | null;
+    street?: string | null;
+    building?: string | null;
+    apartment?: string | null;
+    notes?: string | null;
+};
+
+export type CheckoutDetailDto = {
+    id: string;
+    orderId: string;
+    deliveryEstimate: OrderDeliveryEstimateDto | null;
+    createdAt: string;
+    expiresAt: string | null;
+    status: string;
+    totalMinor: number;
+    currency: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    items: Array<OrderItemDto>;
+    delivery: OrderDeliveryResponseDto | null;
+};
+
+export type UpdateCheckoutReceiverDto = {
+    phone?: string;
+    firstName?: string;
+    lastName?: string;
+};
+
 export const DeliveryMethod = { WAREHOUSE: 'warehouse', COURIER: 'courier' } as const;
 
 export type DeliveryMethod = typeof DeliveryMethod[keyof typeof DeliveryMethod];
 
-export type CreateOrderDeliveryDto = {
-    provider: DeliveryProvider;
-    method: DeliveryMethod;
-    city: string;
+export type UpdateCheckoutDeliveryDto = {
+    provider?: DeliveryProvider;
+    method?: DeliveryMethod;
+    city?: string;
+    cityRef?: string;
     warehouseNumber?: string;
     warehouseName?: string;
     warehouseRef?: string;
@@ -174,17 +268,25 @@ export type CreateOrderDeliveryDto = {
     notes?: string;
 };
 
-export type CreateOrderItemDto = {
-    productId: string;
-    qty: number;
+export type CreateOrderDeliveryDto = {
+    provider: DeliveryProvider;
+    method: DeliveryMethod;
+    city: string;
+    cityRef?: string;
+    warehouseNumber?: string;
+    warehouseName?: string;
+    warehouseRef?: string;
+    street?: string;
+    building?: string;
+    apartment?: string;
+    notes?: string;
 };
 
-export type CreateOrderDto = {
-    customerName: string;
+export type SubmitCheckoutDto = {
     phone: string;
+    firstName: string;
+    lastName: string;
     delivery: CreateOrderDeliveryDto;
-    items: Array<CreateOrderItemDto>;
-    company?: string;
 };
 
 export type OrderResponseDto = {
@@ -193,6 +295,40 @@ export type OrderResponseDto = {
     status: string;
     totalMinor: number;
     currency: string;
+};
+
+export type CartItemDto = {
+    productId: string;
+    slug: string;
+    title: string;
+    priceMinor: number;
+    currency: string;
+    imageUrl?: string;
+    qty: number;
+};
+
+export type CartResponseDto = {
+    items: Array<CartItemDto>;
+    totalMinor: number;
+    itemCount: number;
+    currency: string;
+};
+
+export type AddCartItemDto = {
+    qty?: number;
+    productId: string;
+};
+
+export type SetCartItemQtyDto = {
+    qty: number;
+};
+
+export const OrderCancelledReason = { CUSTOMER_REQUEST: 'customer_request', OUT_OF_STOCK: 'out_of_stock' } as const;
+
+export type OrderCancelledReason = typeof OrderCancelledReason[keyof typeof OrderCancelledReason];
+
+export type CancelOrderDto = {
+    reason: OrderCancelledReason;
 };
 
 export type FeedPreviousProductDto = {
@@ -342,10 +478,10 @@ export type ProductsControllerListData = {
         'x-app-locale'?: 'uk' | 'en';
     };
     path?: never;
-    query: {
+    query?: {
+        page?: number;
+        limit?: number;
         sort?: ProductSort;
-        page: number;
-        limit: number;
         category?: Array<string>;
         country?: Array<string>;
         brand?: Array<string>;
@@ -377,13 +513,6 @@ export type ProductsControllerGetBySlugData = {
     };
     query?: never;
     url: '/api/products/{slug}';
-};
-
-export type ProductsControllerGetBySlugErrors = {
-    /**
-     * Product not found
-     */
-    404: unknown;
 };
 
 export type ProductsControllerGetBySlugResponses = {
@@ -458,29 +587,333 @@ export type CountriesControllerListResponses = {
 
 export type CountriesControllerListResponse = CountriesControllerListResponses[keyof CountriesControllerListResponses];
 
-export type OrdersControllerCreateData = {
-    body: CreateOrderDto;
+export type DeliveryControllerListProvidersData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/api/orders';
+    url: '/api/delivery/providers';
 };
 
-export type OrdersControllerCreateErrors = {
+export type DeliveryControllerListProvidersResponses = {
+    200: Array<DeliveryProviderDto>;
+};
+
+export type DeliveryControllerListProvidersResponse = DeliveryControllerListProvidersResponses[keyof DeliveryControllerListProvidersResponses];
+
+export type DeliveryControllerSearchCitiesData = {
+    body?: never;
+    path?: never;
+    query: {
+        provider: DeliveryProvider;
+        q?: string;
+    };
+    url: '/api/delivery/cities';
+};
+
+export type DeliveryControllerSearchCitiesResponses = {
+    200: Array<DeliveryCityDto>;
+};
+
+export type DeliveryControllerSearchCitiesResponse = DeliveryControllerSearchCitiesResponses[keyof DeliveryControllerSearchCitiesResponses];
+
+export type DeliveryControllerSearchWarehousesData = {
+    body?: never;
+    path?: never;
+    query: {
+        provider: DeliveryProvider;
+        cityRef: string;
+        q?: string;
+    };
+    url: '/api/delivery/warehouses';
+};
+
+export type DeliveryControllerSearchWarehousesResponses = {
+    200: Array<DeliveryWarehouseDto>;
+};
+
+export type DeliveryControllerSearchWarehousesResponse = DeliveryControllerSearchWarehousesResponses[keyof DeliveryControllerSearchWarehousesResponses];
+
+export type CheckoutsControllerListCheckoutsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        status?: CheckoutStatus;
+    };
+    url: '/api/checkouts';
+};
+
+export type CheckoutsControllerListCheckoutsResponses = {
+    200: CheckoutsListDto;
+};
+
+export type CheckoutsControllerListCheckoutsResponse = CheckoutsControllerListCheckoutsResponses[keyof CheckoutsControllerListCheckoutsResponses];
+
+export type CheckoutsControllerStartCheckoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/checkouts';
+};
+
+export type CheckoutsControllerStartCheckoutErrors = {
     /**
-     * Validation error or honeypot triggered
+     * Cart is empty
      */
     400: unknown;
     /**
-     * One or more products not found
+     * Inventory changed since cart was loaded
+     */
+    409: unknown;
+};
+
+export type CheckoutsControllerStartCheckoutResponses = {
+    201: CheckoutStartDto;
+};
+
+export type CheckoutsControllerStartCheckoutResponse = CheckoutsControllerStartCheckoutResponses[keyof CheckoutsControllerStartCheckoutResponses];
+
+export type CheckoutsControllerCancelCheckoutData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/checkouts/{id}';
+};
+
+export type CheckoutsControllerCancelCheckoutErrors = {
+    /**
+     * Checkout not found
      */
     404: unknown;
 };
 
-export type OrdersControllerCreateResponses = {
+export type CheckoutsControllerCancelCheckoutResponses = {
+    200: CheckoutDetailDto;
+};
+
+export type CheckoutsControllerCancelCheckoutResponse = CheckoutsControllerCancelCheckoutResponses[keyof CheckoutsControllerCancelCheckoutResponses];
+
+export type CheckoutsControllerGetCheckoutData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/checkouts/{id}';
+};
+
+export type CheckoutsControllerGetCheckoutErrors = {
+    /**
+     * Checkout not found
+     */
+    404: unknown;
+    /**
+     * Checkout expired or no longer in progress
+     */
+    409: unknown;
+};
+
+export type CheckoutsControllerGetCheckoutResponses = {
+    200: CheckoutDetailDto;
+};
+
+export type CheckoutsControllerGetCheckoutResponse = CheckoutsControllerGetCheckoutResponses[keyof CheckoutsControllerGetCheckoutResponses];
+
+export type CheckoutsControllerUpdateCheckoutReceiverData = {
+    body: UpdateCheckoutReceiverDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/checkouts/{id}/receiver';
+};
+
+export type CheckoutsControllerUpdateCheckoutReceiverErrors = {
+    /**
+     * Checkout not found
+     */
+    404: unknown;
+};
+
+export type CheckoutsControllerUpdateCheckoutReceiverResponses = {
+    200: CheckoutDetailDto;
+};
+
+export type CheckoutsControllerUpdateCheckoutReceiverResponse = CheckoutsControllerUpdateCheckoutReceiverResponses[keyof CheckoutsControllerUpdateCheckoutReceiverResponses];
+
+export type CheckoutsControllerUpdateCheckoutDeliveryData = {
+    body: UpdateCheckoutDeliveryDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/checkouts/{id}/delivery';
+};
+
+export type CheckoutsControllerUpdateCheckoutDeliveryErrors = {
+    /**
+     * Checkout not found
+     */
+    404: unknown;
+};
+
+export type CheckoutsControllerUpdateCheckoutDeliveryResponses = {
+    200: CheckoutDetailDto;
+};
+
+export type CheckoutsControllerUpdateCheckoutDeliveryResponse = CheckoutsControllerUpdateCheckoutDeliveryResponses[keyof CheckoutsControllerUpdateCheckoutDeliveryResponses];
+
+export type CheckoutsControllerSubmitCheckoutData = {
+    body: SubmitCheckoutDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/checkouts/{id}/submit';
+};
+
+export type CheckoutsControllerSubmitCheckoutErrors = {
+    /**
+     * Checkout not found
+     */
+    404: unknown;
+    /**
+     * Checkout is not active or expired
+     */
+    409: unknown;
+};
+
+export type CheckoutsControllerSubmitCheckoutResponses = {
     201: OrderResponseDto;
 };
 
-export type OrdersControllerCreateResponse = OrdersControllerCreateResponses[keyof OrdersControllerCreateResponses];
+export type CheckoutsControllerSubmitCheckoutResponse = CheckoutsControllerSubmitCheckoutResponses[keyof CheckoutsControllerSubmitCheckoutResponses];
+
+export type CartControllerClearCartData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/cart';
+};
+
+export type CartControllerClearCartResponses = {
+    200: CartResponseDto;
+};
+
+export type CartControllerClearCartResponse = CartControllerClearCartResponses[keyof CartControllerClearCartResponses];
+
+export type CartControllerGetCartData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/cart';
+};
+
+export type CartControllerGetCartResponses = {
+    200: CartResponseDto;
+};
+
+export type CartControllerGetCartResponse = CartControllerGetCartResponses[keyof CartControllerGetCartResponses];
+
+export type CartControllerAddItemData = {
+    body: AddCartItemDto;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/cart/items';
+};
+
+export type CartControllerAddItemResponses = {
+    201: CartResponseDto;
+};
+
+export type CartControllerAddItemResponse = CartControllerAddItemResponses[keyof CartControllerAddItemResponses];
+
+export type CartControllerRemoveItemData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/cart/items/{productId}';
+};
+
+export type CartControllerRemoveItemResponses = {
+    200: CartResponseDto;
+};
+
+export type CartControllerRemoveItemResponse = CartControllerRemoveItemResponses[keyof CartControllerRemoveItemResponses];
+
+export type CartControllerSetItemQtyData = {
+    body: SetCartItemQtyDto;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path: {
+        productId: string;
+    };
+    query?: never;
+    url: '/api/cart/items/{productId}';
+};
+
+export type CartControllerSetItemQtyResponses = {
+    200: CartResponseDto;
+};
+
+export type CartControllerSetItemQtyResponse = CartControllerSetItemQtyResponses[keyof CartControllerSetItemQtyResponses];
+
+export type OrdersControllerCancelOrderData = {
+    body: CancelOrderDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/orders/{id}/cancel';
+};
+
+export type OrdersControllerCancelOrderErrors = {
+    /**
+     * Order not found
+     */
+    404: unknown;
+    /**
+     * Draft or terminal order cannot be cancelled
+     */
+    409: unknown;
+};
+
+export type OrdersControllerCancelOrderResponses = {
+    200: OrderResponseDto;
+};
+
+export type OrdersControllerCancelOrderResponse = OrdersControllerCancelOrderResponses[keyof OrdersControllerCancelOrderResponses];
 
 export type FeedControllerNextData = {
     body: FeedNextDto;

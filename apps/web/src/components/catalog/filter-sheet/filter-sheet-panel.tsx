@@ -38,7 +38,7 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
   const {
     productFacets,
     productFacetsIsInitialLoad,
-    productFacetsIsLoadFailed,
+    productFacetsIsError,
     productFacetsIsBusy,
     productFacetsIsRefetching,
     productFacetsRefetch,
@@ -86,7 +86,7 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
 
   const panelBody = productFacetsIsInitialLoad ? (
     <FilterSheetSkeleton />
-  ) : productFacetsIsLoadFailed ? (
+  ) : productFacetsIsError ? (
     <Stack spacing={2} sx={{ py: 1 }}>
       <Typography variant="body2" color="error">
         {t('error')}

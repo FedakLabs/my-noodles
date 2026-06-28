@@ -30,7 +30,7 @@ export function CatalogInfiniteGrid({
     products,
     productsTotal,
     productsIsInitialLoad,
-    productsIsLoadFailed,
+    productsIsError,
     productsIsRefetching,
     productsIsBusy,
     productsHasNextPage,
@@ -49,7 +49,7 @@ export function CatalogInfiniteGrid({
     clearViewModeReset,
     productsIsBusy,
     itemCount: displayItems.length,
-    isLoadFailed: productsIsLoadFailed,
+    isError: productsIsError,
   });
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function CatalogInfiniteGrid({
   }, [infiniteListParams]);
 
   useEffect(() => {
-    if (showSkeleton || productsIsLoadFailed) {
+    if (showSkeleton || productsIsError) {
       return;
     }
 
@@ -80,11 +80,11 @@ export function CatalogInfiniteGrid({
     const infinitePage = Math.ceil(itemsVisible / params.limit);
     trackCatalogLoadMore(infinitePage, itemsVisible);
     previousCountRef.current = itemsVisible;
-  }, [displayItems.length, params.limit, productsIsLoadFailed, showSkeleton]);
+  }, [displayItems.length, params.limit, productsIsError, showSkeleton]);
 
-  useViewItemList('catalog', listTitle, displayItems, !showSkeleton && !productsIsLoadFailed, viewMode);
+  useViewItemList('catalog', listTitle, displayItems, !showSkeleton && !productsIsError, viewMode);
 
-  if (productsIsLoadFailed) {
+  if (productsIsError) {
     return <Typography color="error">{t('error')}</Typography>;
   }
 

@@ -1,7 +1,9 @@
 'use client';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -9,10 +11,14 @@ import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
-import { useCartActions, useCartItems, useCartTotalMinor } from '@/hooks/cart';
+import { useCartQuery } from '@/api/cart';
+import { useInProgressCheckouts, useStartCheckout } from '@/api/checkouts';
+import { type CartLine, useCartActions, useCartItems, useCartTotalMinor } from '@/hooks/cart';
+import { resolveCartErrorMessage } from '@/hooks/cart/cart-error-messages';
 import { useCurrency } from '@/hooks/currency';
-import { Link } from '@/i18n/navigation';
+import { usePendingRouter } from '@/hooks/smooth';
 
+import { CartCheckoutRow } from './cart-checkout-row';
 import { CartEmptyState } from './cart-empty-state';
 
 type CartPanelProps = {
@@ -24,7 +30,41 @@ export function CartPanel({ onClose }: CartPanelProps) {
   const { formatCurrency } = useCurrency();
   const items = useCartItems();
   const totalMinor = useCartTotalMinor();
-  const { setQuantity, removeItem, beginCheckout } = useCartActions();
+  const { checkouts: inProgressCheckouts } = useInProgressCheckouts();
+  const { cart } = useCartQuery();
+  const {
+    setQuantity,
+    removeItem,
+    clearCart,
+    clearCartIsPending,
+    beginCheckout,
+    isUpdatingProduct,
+    isRemovingProduct,
+  } = useCartActions();
+  const {
+    startCheckout,
+    startCheckoutIsPending,
+    startCheckoutIsError,
+    startCheckoutError,
+    startCheckoutReset,
+  } = useStartCheckout();
+  const router = usePendingRouter();
+
+  const currency = items[0]?.currency ?? cart?.currency ?? 'UAH';
+
+  const checkoutErrorMessage = startCheckoutIsError
+    ? resolveCartErrorMessage(t, startCheckoutError, 'checkoutError')
+    : undefined;
+
+  const handleStartCheckout = () => {
+    startCheckoutReset();
+    startCheckout(undefined, {
+      onSuccess: (checkout) => {
+        beginCheckout();
+        router.push(`/checkout/${checkout.id}`);
+      },
+    });
+  };
 
   return (
     <Stack sx={{ height: '100%', minHeight: 0 }}>
@@ -47,60 +87,30 @@ export function CartPanel({ onClose }: CartPanelProps) {
       </Stack>
 
       <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column' }}>
+        {inProgressCheckouts.length > 0 ? (
+          <Stack spacing={0}>
+            {inProgressCheckouts.map((checkout) => (
+              <CartCheckoutRow key={checkout.id} checkout={checkout} onClose={onClose} />
+            ))}
+          </Stack>
+        ) : null}
+
         {items.length === 0 ? (
           <CartEmptyState onClose={onClose} />
         ) : (
           <Stack spacing={1.5}>
             {items.map((item) => (
-              <Stack
+              <CartLineRow
                 key={item.productId}
-                direction="row"
-                spacing={2}
-                sx={{
-                  alignItems: 'center',
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: 'background.paper',
-                  boxShadow: 1,
-                }}
-              >
-                {item.imageUrl ? (
-                  <Box
-                    component="img"
-                    src={item.imageUrl}
-                    alt={item.title}
-                    sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 1, flexShrink: 0 }}
-                  />
-                ) : null}
-                <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="subtitle2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {formatCurrency(item.priceMinor, item.currency)}
-                  </Typography>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                    <IconButton
-                      size="small"
-                      aria-label={t('decrease')}
-                      onClick={() => setQuantity(item.productId, item.qty - 1)}
-                    >
-                      −
-                    </IconButton>
-                    <Typography variant="body2">{item.qty}</Typography>
-                    <IconButton
-                      size="small"
-                      aria-label={t('increase')}
-                      onClick={() => setQuantity(item.productId, item.qty + 1)}
-                    >
-                      +
-                    </IconButton>
-                  </Stack>
-                </Stack>
-                <Button size="small" onClick={() => removeItem(item.productId)}>
-                  {t('remove')}
-                </Button>
-              </Stack>
+                item={item}
+                isUpdating={isUpdatingProduct(item.productId)}
+                isRemoving={isRemovingProduct(item.productId)}
+                onDecrease={() => setQuantity(item.productId, item.qty - 1, item)}
+                onIncrease={() => setQuantity(item.productId, item.qty + 1, item)}
+                onRemove={() => removeItem(item.productId, item)}
+                formatCurrency={formatCurrency}
+                t={t}
+              />
             ))}
           </Stack>
         )}
@@ -118,23 +128,131 @@ export function CartPanel({ onClose }: CartPanelProps) {
           }}
         >
           <Typography variant="subtitle1">
-            {t('total')}: {formatCurrency(totalMinor, items[0]?.currency)}
+            {t('total')}: {formatCurrency(totalMinor, currency)}
           </Typography>
+          {startCheckoutIsError ? <Alert severity="error">{checkoutErrorMessage}</Alert> : null}
+          <Stack direction="row" spacing={1.5}>
+            <Button variant="outlined" fullWidth onClick={onClose}>
+              {t('continueBrowsing')}
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              disabled={clearCartIsPending}
+              aria-busy={clearCartIsPending}
+              startIcon={
+                clearCartIsPending ? <CircularProgress size={20} color="inherit" aria-hidden /> : undefined
+              }
+              onClick={() => clearCart()}
+            >
+              {t('clearCart')}
+            </Button>
+          </Stack>
           <Button
-            component={Link}
-            href={'/checkout'}
             variant="contained"
             size="large"
             fullWidth
-            onClick={() => beginCheckout()}
+            disabled={startCheckoutIsPending}
+            aria-busy={startCheckoutIsPending}
+            startIcon={
+              startCheckoutIsPending ? <CircularProgress size={22} color="inherit" aria-hidden /> : undefined
+            }
+            onClick={handleStartCheckout}
           >
-            {t('checkout')}
-          </Button>
-          <Button variant="outlined" fullWidth onClick={onClose}>
-            {t('continueBrowsing')}
+            {inProgressCheckouts.length > 0 ? t('inProgress.addToCheckout') : t('checkout')}
           </Button>
         </Stack>
       ) : null}
+    </Stack>
+  );
+}
+
+type CartLineRowProps = {
+  item: CartLine;
+  isUpdating: boolean;
+  isRemoving: boolean;
+  onDecrease: () => void;
+  onIncrease: () => void;
+  onRemove: () => void;
+  formatCurrency: (amount: number, currency: string) => string;
+  t: ReturnType<typeof useTranslations<'cart'>>;
+};
+
+function CartLineRow({
+  item,
+  isUpdating,
+  isRemoving,
+  onDecrease,
+  onIncrease,
+  onRemove,
+  formatCurrency,
+  t,
+}: CartLineRowProps) {
+  const lineBusy = isUpdating || isRemoving;
+
+  return (
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{
+        alignItems: 'center',
+        p: 1.5,
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        boxShadow: 1,
+      }}
+    >
+      {item.imageUrl ? (
+        <Box
+          component="img"
+          src={item.imageUrl}
+          alt={item.title}
+          sx={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 1, flexShrink: 0 }}
+        />
+      ) : null}
+      <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+        <Typography variant="subtitle2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {item.title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {formatCurrency(item.priceMinor, item.currency)}
+        </Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <IconButton
+            size="small"
+            aria-label={t('decrease')}
+            aria-busy={isUpdating}
+            disabled={lineBusy}
+            onClick={onDecrease}
+            sx={{ width: 28, height: 28 }}
+          >
+            {isUpdating ? <CircularProgress size={16} color="inherit" aria-hidden /> : '−'}
+          </IconButton>
+          <Typography variant="body2" sx={{ minWidth: 16, textAlign: 'center' }}>
+            {item.qty}
+          </Typography>
+          <IconButton
+            size="small"
+            aria-label={t('increase')}
+            aria-busy={isUpdating}
+            disabled={lineBusy}
+            onClick={onIncrease}
+            sx={{ width: 28, height: 28 }}
+          >
+            {isUpdating ? <CircularProgress size={16} color="inherit" aria-hidden /> : '+'}
+          </IconButton>
+        </Stack>
+      </Stack>
+      <Button
+        size="small"
+        disabled={lineBusy}
+        aria-busy={isRemoving}
+        startIcon={isRemoving ? <CircularProgress size={16} color="inherit" aria-hidden /> : undefined}
+        onClick={onRemove}
+      >
+        {t('remove')}
+      </Button>
     </Stack>
   );
 }

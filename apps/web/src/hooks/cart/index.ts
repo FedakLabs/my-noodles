@@ -1,4 +1,4 @@
-export type { CartLine } from './cart-store';
+export type { CartLine } from './use-cart';
 export {
   useCartActions,
   useCartItemCount,

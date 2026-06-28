@@ -1,5 +1,3 @@
-import './mui-augmentation';
-
 import type { Components } from '@mui/material/styles';
 
 import { baseColors, colors } from './palette';
@@ -98,6 +96,14 @@ export const components: Components = {
         '& .MuiOutlinedInput-notchedOutline': {
           borderColor: colors.border.subtle,
         },
+        '& .MuiOutlinedInput-notchedOutline legend > span': {
+          display: 'inline-block',
+          maxWidth: '100%',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          paddingInline: '4px',
+        },
         '&:hover .MuiOutlinedInput-notchedOutline': {
           borderColor: colors.border.strong,
         },
@@ -107,13 +113,95 @@ export const components: Components = {
         },
       },
       input: {
-        minHeight: 44,
+        boxSizing: 'border-box',
+      },
+    },
+    variants: [
+      {
+        props: { size: 'small' },
+        style: {
+          minHeight: 40,
+          fontSize: '0.875rem',
+          '& .MuiOutlinedInput-input': {
+            padding: '8px 12px',
+          },
+        },
+      },
+      {
+        props: { size: 'medium' },
+        style: {
+          minHeight: 48,
+          fontSize: '1rem',
+          '& .MuiOutlinedInput-input': {
+            padding: '12px 14px',
+          },
+        },
+      },
+      {
+        props: { size: 'large' },
+        style: {
+          minHeight: 56,
+          fontSize: '1.0625rem',
+          '& .MuiOutlinedInput-input': {
+            padding: '16px 14px',
+          },
+        },
+      },
+    ],
+  },
+  MuiInputLabel: {
+    styleOverrides: {
+      root: {
+        transition:
+          'color 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1), top 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        '&.MuiInputLabel-outlined:not(.MuiInputLabel-shrink)': {
+          transform: 'translate(14px, -50%)',
+          transformOrigin: 'left center',
+        },
+        '&.MuiInputLabel-outlined.MuiInputLabel-shrink': {
+          transformOrigin: 'left top',
+          maxWidth: 'calc(100% - 24px)',
+        },
+      },
+    },
+    variants: [
+      {
+        props: { size: 'small' },
+        style: {
+          '&.MuiInputLabel-outlined:not(.MuiInputLabel-shrink)': {
+            top: 20,
+          },
+        },
+      },
+      {
+        props: { size: 'medium' },
+        style: {
+          '&.MuiInputLabel-outlined:not(.MuiInputLabel-shrink)': {
+            top: 24,
+          },
+        },
+      },
+      {
+        props: { size: 'large' },
+        style: {
+          '&.MuiInputLabel-outlined:not(.MuiInputLabel-shrink)': {
+            top: 28,
+          },
+        },
+      },
+    ],
+  },
+  MuiFormControl: {
+    styleOverrides: {
+      root: {
+        verticalAlign: 'top',
       },
     },
   },
   MuiTextField: {
     defaultProps: {
       variant: 'outlined',
+      size: 'medium',
     },
   },
   MuiAppBar: {

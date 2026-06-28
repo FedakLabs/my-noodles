@@ -19,6 +19,10 @@ export function formatOrderDelivery(
     | 'building'
     | 'apartment'
     | 'notes'
+    | 'estimatedDeliveryAt'
+    | 'estimatedDaysMin'
+    | 'estimatedDaysMax'
+    | 'shippingCostMinor'
   >,
 ): string {
   const provider = PROVIDER_LABELS[delivery.provider];
@@ -43,6 +47,19 @@ export function formatOrderDelivery(
 
   if (delivery.notes) {
     lines.push(delivery.notes);
+  }
+
+  if (delivery.estimatedDeliveryAt) {
+    const dateLabel = delivery.estimatedDeliveryAt.toLocaleDateString('uk-UA');
+    const daysLabel =
+      delivery.estimatedDaysMin != null && delivery.estimatedDaysMax != null
+        ? ` (${delivery.estimatedDaysMin}–${delivery.estimatedDaysMax} дн.)`
+        : '';
+    lines.push(`Орієнтовна доставка: ${dateLabel}${daysLabel}`);
+  }
+
+  if (delivery.shippingCostMinor != null) {
+    lines.push(`Вартість доставки: ${(delivery.shippingCostMinor / 100).toFixed(2)} грн`);
   }
 
   return lines.join('\n');

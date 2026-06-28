@@ -1,6 +1,6 @@
 import type { PaletteOptions } from '@mui/material/styles';
 
-import type { Colors } from './types';
+import type { CustomColors } from '../types/theme.d.ts';
 
 /** Raw hex — never use in components; Storybook dev reference only. */
 export const baseColors = {
@@ -27,7 +27,7 @@ export const baseColors = {
   violet: '#9D4EDD',
 } as const;
 
-export const colors: Colors = {
+export const colors: CustomColors = {
   text: {
     primary: baseColors.warmGray900,
     secondary: baseColors.warmGray600,

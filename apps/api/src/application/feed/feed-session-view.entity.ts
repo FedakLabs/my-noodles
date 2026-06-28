@@ -3,8 +3,8 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Product } from '../products/product.entity';
+import { VisitorSession } from '../visitor/visitor-session.entity';
 import type { FeedFilterSnapshot } from './feed.types';
-import { FeedSession } from './feed-session.entity';
 
 /**
  * Per-view engagement record. Doubles as the exclusion/dedup source for `POST /feed/next`
@@ -15,16 +15,16 @@ export class FeedSessionView extends TimestampEntity {
   @UuidV7PrimaryColumn()
   id!: string;
 
-  @Column({ name: 'session_id', type: 'uuid' })
-  sessionId!: string;
+  @Column({ name: 'visitor_session_id', type: 'uuid' })
+  visitorSessionId!: string;
 
-  @ManyToOne(() => FeedSession, (session) => session.views, {
+  @ManyToOne(() => VisitorSession, (session) => session.views, {
     nullable: false,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'session_id' })
-  session!: FeedSession;
+  @JoinColumn({ name: 'visitor_session_id' })
+  visitorSession!: VisitorSession;
 
   @Column({ name: 'product_id', type: 'uuid' })
   productId!: string;

@@ -1,7 +1,7 @@
+import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import type { ExecutionContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { Request, Response } from 'express';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { of } from 'rxjs';
 
 import { HttpAccessLogInterceptor } from '@/infrastructure/logging';
@@ -13,7 +13,7 @@ describe('HttpAccessLogInterceptor', () => {
     const logger = { info: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
-      providers: [HttpAccessLogInterceptor, { provide: WINSTON_MODULE_PROVIDER, useValue: logger }],
+      providers: [HttpAccessLogInterceptor, { provide: APP_LOGGER, useValue: logger }],
     }).compile();
 
     const interceptor = moduleRef.get(HttpAccessLogInterceptor);

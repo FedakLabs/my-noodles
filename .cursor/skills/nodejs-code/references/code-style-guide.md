@@ -62,16 +62,16 @@ Configured in `apps/api/tsconfig.json`: `@/*` → `src/*` (same idea as `apps/we
 
 **Do not** reach into another module’s internal files when that module exposes a barrel — import the folder so the module boundary stays explicit and refactors stay local.
 
-**NestJS modules:** when importing a `*Module` (or bootstrap adapters such as `NestWinstonModule`, `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
+**NestJS modules:** when importing a `*Module` (e.g. `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
 
 ```ts
 // app.module.ts — feature + infra modules via barrels
 import { OrdersModule } from './application/orders';
-import { LoggingModule, NestWinstonModule } from './infrastructure/logging';
+import { LoggingModule } from './infrastructure/logging';
 import { prepareDataSource } from './infrastructure/persistence';
 
-// application/orders/orders.module.ts — optional integration module via barrel
-import { TelegramModule } from '@/infrastructure/services/Telegram';
+// application/checkouts/checkouts.module.ts — integration module via barrel
+import { TelegramModule } from '@/infrastructure/external-apis/telegram';
 
 // application/orders/orders.module.ts — internals stay relative
 import { Product } from '../products/product.entity';
@@ -117,30 +117,31 @@ We work in an **OOP-first** style aligned with NestJS, TypeORM, and class-valida
 | Services, controllers, modules, entities, DTOs, filters, interceptors | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`) |
 | Bootstrap/adapters that compose dependencies (e.g. Nest Winston wiring) | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
 | External API clients (`ExternalApi` subclasses) | One-off validators reused across DTOs when a decorator factory is enough |
-| Factories that hold config and expose methods (`WinstonLoggerFactory`, `NestWinstonModule`) | |
+| Factories that hold config and expose methods (`WinstonLoggerFactory`) | |
 
-**Default to a class** with static getters when wiring is app-global (e.g. `NestWinstonModule.options`, `NestWinstonModule.logger`).
+**Winston logger:** `@my-noodles/api-lib/logging` owns `WinstonLoggerFactory` and the `APP_LOGGER` injection token. `LoggingModule` is `@Global()` and registers one Winston instance.
 
 ```ts
-// infrastructure/logging/winston.ts — Nest adapter over api-lib factory
-export class NestWinstonModule {
-  private static readonly moduleOptionsValue = NestWinstonModule.buildOptions();
-  private static readonly loggerValue = WinstonModule.createLogger(NestWinstonModule.moduleOptionsValue);
+// infrastructure/logging/logging.module.ts
+@Global()
+@Module({
+  providers: [
+    {
+      provide: APP_LOGGER,
+      useFactory: () =>
+        new WinstonLoggerFactory({ appName, nodeEnv, otel }).createLogger(),
+    },
+  ],
+  exports: [APP_LOGGER],
+})
+export class LoggingModule {}
 
-  static get options(): WinstonModuleOptions {
-    return NestWinstonModule.moduleOptionsValue;
-  }
+// index.ts — same instance from DI
+const app = await NestFactory.create(AppModule);
+const logger = app.get<Logger>(APP_LOGGER);
 
-  static get logger(): ReturnType<typeof WinstonModule.createLogger> {
-    return NestWinstonModule.loggerValue;
-  }
-}
-
-// index.ts
-const logger = NestWinstonModule.logger;
-
-// app.module.ts
-WinstonModule.forRoot(NestWinstonModule.options);
+// feature / infra code
+constructor(@Inject(APP_LOGGER) private readonly logger: Logger) {}
 ```
 
 Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/api/src/utils/` when they have no state and no framework coupling.
@@ -149,13 +150,12 @@ Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/ap
 
 Every **module folder** (feature in `application/`, subsystem in `infrastructure/`) should have an `index.ts` that re-exports its **public** symbols. Other code imports from the barrel, not from deep files — this scopes imports to the module and hides internal layout.
 
-The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap adapters (`NestWinstonModule`, middleware, filters). Keep helpers used only inside the folder unexported.
+The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap adapters (middleware, filters). Keep helpers used only inside the folder unexported.
 
 ```ts
 // infrastructure/logging/index.ts
 export { LoggingModule } from './logging.module';
-export { NestWinstonModule } from './winston';
-export { clientBaggageMiddleware, ManifestHttpExceptionFilter } from './…';
+export { HttpExceptionLogFilter } from './http-exception-log.filter';
 
 // infrastructure/persistence/index.ts
 export { createAppDataSource, prepareDataSource } from './data-source';
@@ -170,7 +170,7 @@ export * from './order.entity';
 Consumers:
 
 ```ts
-import { LoggingModule, NestWinstonModule } from '@/infrastructure/logging';
+import { LoggingModule } from '@/infrastructure/logging';
 import { OrdersModule } from '@/application/orders';
 import { TimestampEntity } from '@/infrastructure/persistence';
 ```
@@ -227,7 +227,8 @@ export class OrdersController {
 ### Repositories / clients
 
 - TypeORM `Repository<Entity>` — IO only.
-- External clients: `@Injectable()` classes in `infrastructure/services/<Name>/client/`.
+- External API classes: `@Injectable()` `*Api` in `infrastructure/external-apis/<provider>/<provider>.api.ts`.
+- Optional domain helpers in the same folder: `@Injectable()` `*Service` in `infrastructure/external-apis/<provider>/<provider>.service.ts`.
 
 ---
 
@@ -650,34 +651,35 @@ Register via a small `*Module`; inject the service from feature services that or
 
 ### OpenAPI-generated third-party clients
 
-When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/services/<ServiceName>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** (same toolchain as `packages/api-clients`):
+When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/external-apis/<provider>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** (same toolchain as `packages/api-clients`):
 
 ```text
-infrastructure/services/merchant-email/
+infrastructure/external-apis/merchant-email/
 ├── generated/              # @hey-api/openapi-ts output — read-only, regen from upstream spec
-├── client/
-│   ├── <service>.config.ts # basePath / auth from env
-│   ├── <service>.client.ts # extends ExternalApi; wraps generated SDK on shared axios
-│   └── index.ts
-└── index.ts                # public barrel — export client + typed models consumers need
+├── merchant-email.config.ts
+├── merchant-email.api.ts   # *Api extends ExternalApi; wraps generated SDK on shared axios
+├── merchant-email.service.ts  # optional — mapping/formatting when needed
+├── merchant-email.module.ts   # exports *Service (or *Api if no service layer)
+└── index.ts
 ```
 
 ```ts
-// client/acme.client.ts — domain methods call generated @hey-api SDK functions; extend ExternalApi for OTEL + logging
+// merchant-email.api.ts — upstream-shaped methods; extend ExternalApi for OTEL + logging
 @Injectable()
-export class AcmeApiClient extends ExternalApi {
+export class MerchantEmailApi extends ExternalApi {
   protected getBaseUrl(): string {
-    return acmeServiceConfig.basePath;
+    return merchantEmailConfig.basePath;
   }
 
-  async notifyOrderCreated(payload: NotifyPayload): Promise<void> {
+  async sendRaw(payload: NotifyPayload): Promise<void> {
     await acmeControllerNotifyCreated({ body: payload, baseUrl: this.getBaseUrl() });
   }
 }
 ```
 
 - **`generated/`** — never hand-edit; regenerate with `@hey-api/openapi-ts` when the upstream OpenAPI spec changes.
-- **`client/`** — thin Nest provider: config, `ExternalApi` subclass, domain-friendly methods if needed.
+- **`*Api`** — thin Nest provider: config, `ExternalApi` subclass, upstream-shaped methods.
+- **`*Service` (optional)** — same provider folder; injects `*Api`; exposes domain-friendly methods to feature modules/adapters.
 - Distinct from **`packages/api-clients`** — that package is **our** storefront fetch client for the web app (`@hey-api/client-fetch`), not inbound third-party integrations.
 
 ### Rules
@@ -724,12 +726,16 @@ if (config.otel.enabled) {
 - OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js`.
 - `instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
 - **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
-- **Logging**: Winston via `nest-winston` as Nest logger; structured fields, no PII (no raw phones in logs).
-- Feature code: inject `Logger` (`new Logger(OrdersService.name)`) or use Winston adapter from Nest.
+- **Logging**: raw `winston` via `@my-noodles/api-lib/logging` — one instance from `LoggingModule` (`APP_LOGGER` token).
+- Bootstrap: `app.get<Logger>(APP_LOGGER)` for startup logs.
+- Feature / infrastructure code: inject `@Inject(APP_LOGGER) private readonly logger: Logger`.
 
 ```ts
-this.logger.log({ msg: 'order.created', orderId, totalMinor });
+this.logger.info({ msg: 'order.created', orderId, totalMinor });
+this.logger.error({ msg: 'order.notify.failed', orderId, error: err.message });
 ```
+
+Do not use `new Logger()` or a second Winston instance — inject `APP_LOGGER` instead.
 
 Do not import OTel SDK directly in feature modules — use bootstrap instrumentation + logger correlation.
 
@@ -781,7 +787,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 | Business logic in controller                                     | Move to service                                       |
 | `@InjectRepository` in controller                                | Service only                                          |
 | `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, … |
-| Raw `fetch`/`axios` in controller/service without a client class | `ExternalApi` subclass in `application/<integration>/` or `infrastructure/services/<service>/client/` |
+| Raw `fetch`/`axios` in controller/service without a client class | `ExternalApi` subclass (`*Api`) in `infrastructure/external-apis/<provider>/`; optional `*Service` in the same folder |
 | Response DTO that mirrors the entity one-to-one                   | Return entity (or pick columns); DTO only when shape genuinely differs |
 | DTO field without class-validator                                | Add validators                                        |
 | Schema change without migration                                  | Generate migration; keep `synchronize: false`         |
@@ -793,7 +799,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 | `console.log` for diagnostics                                    | Nest `Logger` / Winston                               |
 | God `AppModule` providers                                        | Feature `*.module.ts` per domain                      |
 | Copy-paste validator                                             | Add to `utils/validators/` and reuse                  |
-| Standalone factory function for stateful/bootstrap wiring          | Class with constructor + method (e.g. `NestWinstonModule`) |
+| Standalone factory function for stateful/bootstrap wiring          | Class with constructor + method (e.g. `WinstonLoggerFactory`) |
 | Deep `../../infrastructure/…` cross-layer imports              | `@/infrastructure/…` (or `@/config`, `@/application/…`) |
 | Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging` |
 

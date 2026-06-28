@@ -1,7 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
+import { HttpStatus } from '@my-noodles/api-lib/exceptions';
 
-export class CollectionNotFoundException extends NotFoundException {
+import { AppException } from '@/infrastructure/exceptions';
+
+export class CollectionNotFoundException extends AppException<{ slug: string }> {
   constructor(slug: string) {
-    super({ message: 'Collection not found', slug });
+    super(HttpStatus.NOT_FOUND, 'collection_not_found', 'Collection not found', { slug });
   }
 }

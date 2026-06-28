@@ -65,7 +65,7 @@ application/orders/
 export class OrdersModule {}
 ```
 
-Import integration modules from their **barrel** (`@/application/acme-notification` or `@/infrastructure/services/Acme`) — not deep paths like `acme.module`.
+Import integration modules from their **barrel** (`@/application/acme-notification` or `@/infrastructure/external-apis/acme`) — not deep paths like `acme.module`.
 
 Register feature modules in `AppModule.imports` from each domain barrel (`./application/orders`), not `orders.module`.
 
@@ -98,38 +98,29 @@ Both `up` and `down`. Test run → revert → run.
 
 Outbound HTTP from this API — **not** `packages/api-clients` (that package is the web app calling **our** API).
 
-Two shapes; pick based on whether the upstream publishes OpenAPI:
-
-**Hand-written** — simple REST, webhooks, bot APIs:
+**API layer** — hand-written or OpenAPI-generated HTTP clients live under `infrastructure/external-apis/<provider>/`:
 
 ```text
-application/<integration>/
-├── <integration>.config.ts   # env → typed config
-├── <integration>.service.ts  # extends ExternalApi
-├── <integration>.module.ts
-└── index.ts                  # public barrel
-```
-
-**OpenAPI-generated** — third-party HTTP API with a spec (prefer **`@hey-api/openapi-ts`** for codegen; wire through `ExternalApi` + axios in Nest):
-
-```text
-infrastructure/services/<ServiceName>/
-├── generated/                # read-only; regen via @hey-api/openapi-ts from upstream spec
-├── client/
-│   ├── <service>.config.ts
-│   ├── <service>.client.ts   # extends ExternalApi; wraps generated SDK calls
-│   └── index.ts
+infrastructure/external-apis/<provider>/
+├── <provider>.config.ts      # env → base URL, auth
+├── <provider>.api.ts         # *Api class extends ExternalApi; raw upstream calls
+├── <provider>.service.ts     # optional *Service — mapping/formatting (same folder)
+├── <provider>.module.ts      # *Module exports *Service (or *Api)
+├── generated/                # optional; @hey-api/openapi-ts output — read-only
 └── index.ts
 ```
+
+Example: `TelegramApi.sendMessage()` + `TelegramService.sendOrderNotification()` both in `external-apis/telegram/`. Nova Poshta: `NovaPoshtaApi` + `NovaPoshtaService` in `external-apis/nova-poshta/`.
 
 **Storefront client (web → our API)** lives in **`packages/api-clients`**, not under `apps/api`. Nest only exposes Swagger; generation is configured in `packages/api-clients/openapi-ts.config.ts` with live input `http://localhost:3001/api/docs-json`.
 
 Setup checklist:
 
-1. **Config** — secrets and base URL from env in `<integration>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
-2. **Client/service** — extend `ExternalApi`; implement `getBaseUrl()`; expose domain-friendly methods (no business orchestration in the client).
-3. **Module** — small `*Module` exporting the client; import it in the feature module that orchestrates the flow.
-4. **Feature service** — call the client after the primary persistence path; **catch and log** outbound failures when the user-facing operation must still succeed (e.g. notification after order save).
+1. **Config** — secrets and base URL from env in `<provider>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
+2. **Api class** — extend `ExternalApi`; implement `getBaseUrl()`; expose upstream-shaped methods (no business orchestration).
+3. **Service (optional)** — same provider folder; inject `*Api`; add formatting/mapping when adapters or feature services need a friendlier surface.
+4. **Module** — small `*Module`; import in the feature module that orchestrates the flow.
+5. **Feature service** — call the service (or api) after the primary persistence path; **catch and log** outbound failures when the user-facing operation must still succeed (e.g. notification after order save).
 
 ```ts
 @Injectable()
@@ -225,13 +216,13 @@ For joins or custom QB tweaks, use `new PaginationHelper(repo, pagination).execu
 
 Locale is resolved per request by `localeMiddleware` (`x-app-locale` header → `Accept-Language` → default). Supported values come from `SUPPORTED_LOCALES` in `locale.config.ts`.
 
-**OpenAPI** — document the optional header with `@AppLocaleHeader()` on storefront controllers:
+**Swagger** — document the optional header with `@SwaggerAppLocaleHeader()` on storefront controllers (or extend `LocalizedStorefrontController`):
 
 ```ts
-import { AppLocaleHeader } from '@/utils/app-locale-header.decorator';
+import { SwaggerAppLocaleHeader } from '@/utils/swagger';
 
 @ApiTags('Products')
-@AppLocaleHeader()
+@SwaggerAppLocaleHeader()
 @Controller('products')
 export class ProductsController { /* … */ }
 ```

@@ -1,6 +1,7 @@
 'use client';
 
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
@@ -25,7 +26,8 @@ type FeedCardActionBarProps = {
 
 export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: FeedCardActionBarProps) {
   const t = useTranslations('feed');
-  const { addItem } = useCartActions();
+  const { addItem, isAddingProduct } = useCartActions();
+  const isAdding = isAddingProduct(item.id);
 
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'stretch', ...sx }}>
@@ -80,8 +82,15 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
         </Button>
         <Button
           variant="contained"
-          disabled={!item.inStock}
-          startIcon={<CartIcon aria-hidden style={actionIconSx} />}
+          disabled={!item.inStock || isAdding}
+          aria-busy={isAdding}
+          startIcon={
+            isAdding ? (
+              <CircularProgress size={18} color="inherit" aria-hidden />
+            ) : (
+              <CartIcon aria-hidden style={actionIconSx} />
+            )
+          }
           onClick={() =>
             addItem({
               productId: item.id,
@@ -98,6 +107,18 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
             borderRadius: 0,
             px: 1.5,
             boxShadow: 'none',
+            ...(isAdding && {
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              opacity: 1,
+            }),
+            '&.Mui-disabled': isAdding
+              ? {
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  opacity: 1,
+                }
+              : undefined,
           }}
         >
           {item.inStock ? t('details.add') : t('details.outOfStock')}

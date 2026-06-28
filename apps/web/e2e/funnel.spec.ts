@@ -26,14 +26,21 @@ test.describe('discovery funnel', () => {
     await expect(page.getByRole('heading', { name: uk.cart.title, exact: true })).toBeVisible();
     await expect(page.getByRole('dialog').getByText('Pocky Matcha')).toBeVisible();
 
-    await page.getByRole('link', { name: uk.cart.checkout }).click();
-    await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout$`));
+    await page.getByRole('button', { name: uk.cart.checkout }).click();
+    await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/[^/]+$`));
     await expect(page.getByRole('heading', { name: uk.checkout.title })).toBeVisible();
 
-    await page.getByLabel(uk.checkout.fields.name).fill('Andrii');
+    await page.getByLabel(uk.checkout.fields.lastName).fill('Fedak');
+    await page.getByLabel(uk.checkout.fields.firstName).fill('Andrii');
     await page.getByLabel(uk.checkout.fields.phone).fill('+380501112233');
-    await page.getByLabel(uk.checkout.fields.city).fill('Київ');
-    await page.getByLabel(uk.checkout.fields.branch).fill('Відділення №1');
+
+    await page.getByLabel(uk.checkout.fields.city).fill('Ки');
+    await page.getByRole('option', { name: 'Київ' }).click();
+
+    await page.getByLabel(uk.checkout.fields.branch).click();
+    await page.getByRole('option', { name: /Відділення №1/ }).click();
+
+    await expect(page.getByText(/Орієнтовна доставка/)).toBeVisible();
 
     await page.getByTestId(testIds.checkout.submit).click();
 

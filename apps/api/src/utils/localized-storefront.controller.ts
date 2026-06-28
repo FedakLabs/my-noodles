@@ -1,5 +1,5 @@
-import { AppLocaleHeader } from './app-locale-header.decorator';
+import { SwaggerAppLocaleHeader } from '@/utils/swagger';
 
 /** Storefront controllers that document optional `x-app-locale` for localized responses. */
-@AppLocaleHeader()
+@SwaggerAppLocaleHeader()
 export abstract class LocalizedStorefrontController {}

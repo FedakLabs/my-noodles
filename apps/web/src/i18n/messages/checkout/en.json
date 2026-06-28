@@ -2,16 +2,74 @@
   "title": "Checkout",
   "submit": "Place order",
   "error": "Could not place order. Please try again.",
+  "items": {
+    "title": "Your order",
+    "lineQty": "×{qty}",
+    "total": "Total",
+    "products": "Products",
+    "shipping": "Delivery",
+    "grandTotal": "Total",
+    "summaryTitle": "Summary",
+    "expandList": "Show {count} more",
+    "collapseList": "Show less"
+  },
   "fields": {
-    "name": "Name",
+    "firstName": "First name",
+    "lastName": "Last name",
     "phone": "Phone",
+    "provider": "Delivery service",
+    "method": "Delivery type",
     "city": "City",
-    "branch": "Nova Poshta branch",
-    "company": "Company"
+    "branch": "Pickup point",
+    "street": "Street",
+    "building": "Building",
+    "apartment": "Apartment",
+    "notes": "Delivery notes"
+  },
+  "validation": {
+    "invalidPhone": "Enter a valid phone number"
+  },
+  "sections": {
+    "receiver": "Recipient",
+    "delivery": "Delivery",
+    "deliveryLocked": "Add your last name, first name, and phone first — then choose delivery"
+  },
+  "delivery": {
+    "cityHint": "Start typing to search cities",
+    "branchHint": "Choose a branch or parcel locker",
+    "branchDisabled": "Select a city first",
+    "methods": {
+      "warehouse": "Pickup point or parcel locker",
+      "courier": "Courier to address"
+    },
+    "estimatePending": "Choose city and pickup point to see delivery timing",
+    "estimatePendingCourier": "Choose city and enter street and building to see delivery timing",
+    "estimateLabel": "Estimated delivery",
+    "estimateCalculating": "Working out timing and cost — just a few seconds",
+    "estimateDateLabel": "Date:",
+    "estimateTermLabel": "Timeline:",
+    "estimateTerm": "{daysMin}–{daysMax} business days from dispatch"
   },
   "success": {
     "title": "Thank you!",
     "description": "We received your order and will confirm shortly.",
     "backToCatalog": "Back to catalog"
-  }
+  },
+  "cancelled": {
+    "title": "This checkout was cancelled",
+    "description": "This order is no longer active. Start fresh from the catalog or your cart.",
+    "backToCatalog": "Back to catalog"
+  },
+  "loading": "Loading checkout…",
+  "hold": {
+    "remaining": "Complete checkout by {deadline} — {remaining} left.",
+    "expired": "This checkout expired. Go to the <catalog>catalog</catalog> to start a new order."
+  },
+  "inventoryChanged": "Some items are no longer available. Update your cart and try again.",
+  "inactive": {
+    "title": "This checkout is no longer active",
+    "description": "Pick something from the catalog, add it to your cart, and start a new checkout when you're ready."
+  },
+  "draftExpired": "This checkout expired. Go to the <catalog>catalog</catalog> to start a new order.",
+  "submitInventoryChanged": "Order details changed because stock updated. Review the order below and continue when ready."
 }

@@ -1,7 +1,6 @@
 import type { ThemeOptions } from '@mui/material/styles';
 
 import { fontCssVariableReference } from './fonts';
-import type {} from './types';
 
 export const fontFamilies = {
   display: fontCssVariableReference('display'),

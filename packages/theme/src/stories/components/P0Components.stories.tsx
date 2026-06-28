@@ -77,12 +77,13 @@ function P0Components() {
         </Stack>
       </Section>
 
-      <Section title="TextField — outlined">
-        <Stack spacing={2}>
-          <TextField label="Місто" placeholder="Київ" fullWidth />
-          <TextField label="Телефон" defaultValue="+380 67 123 4567" fullWidth />
-          <TextField label="Помилка" error helperText="Вкажіть відділення" fullWidth />
-          <TextField label="Disabled" disabled defaultValue="Недоступно" fullWidth />
+      <Section title="TextField — small / medium / large (vertically centered label)">
+        <Stack spacing={1}>
+          <TextField label="Small" size="small" fullWidth />
+          <TextField label="Medium" size="medium" fullWidth />
+          <TextField label="Large" size="large" fullWidth />
+          <TextField label="Зі значенням" size="large" defaultValue="Київ" fullWidth />
+          <TextField label="Disabled" size="large" disabled fullWidth />
         </Stack>
       </Section>
 

@@ -1,3 +1,4 @@
+export { APP_LOGGER } from './app-logger.token';
 export { HttpAccessLog, type HttpAccessLogResource } from './http-access-log';
 export { HttpExceptionLog } from './http-exception-log';
 export {

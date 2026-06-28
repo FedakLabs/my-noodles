@@ -1,3 +1,4 @@
+export type { CustomBorderRadius, CustomColors, CustomModalWidths, CustomSpacing } from '../types/theme.d.ts';
 export { breakpoints, DESKTOP_MIN_WIDTH, layoutDisplay } from './breakpoints';
 export { components } from './components';
 export type { FontRole } from './fonts';
@@ -7,6 +8,5 @@ export { cardShadow, discoveryWash, sheetShadow, skinCardGradient } from './shad
 export type { EdgeAnchor } from './shape';
 export { borderRadius, edgeAnchoredBorderRadius } from './shape';
 export { customSpacing, modalWidths, spacingUnit } from './spacing';
-export { createTheme, createThemeFromMui, theme } from './theme';
-export type { BorderRadiusTokens, Colors, CustomSpacing, ModalWidths } from './types';
+export { MyNoodlesTheme } from './theme';
 export { fontFamilies, typography } from './typography';

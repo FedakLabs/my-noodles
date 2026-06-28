@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Colors } from '@my-noodles/theme';
+import type { CustomColors } from '@my-noodles/theme';
 import type { FC, SVGProps } from 'react';
 
 import CartIcon from '../icons/cart.svg';
@@ -16,7 +16,7 @@ type IconCatalogEntry = {
   Icon: FC<SVGProps<SVGSVGElement>>;
 };
 
-type IconColorToken = keyof Colors['icon'];
+type IconColorToken = keyof CustomColors['icon'];
 
 type IconGalleryControls = {
   size: number;

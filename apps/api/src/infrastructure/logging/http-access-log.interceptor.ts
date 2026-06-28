@@ -1,4 +1,4 @@
-import { HttpAccessLog } from '@my-noodles/api-lib/logging';
+import { APP_LOGGER, HttpAccessLog } from '@my-noodles/api-lib/logging';
 import {
   type CallHandler,
   type ExecutionContext,
@@ -7,7 +7,6 @@ import {
   type NestInterceptor,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { type Observable, tap } from 'rxjs';
 import type { Logger } from 'winston';
 
@@ -17,7 +16,7 @@ import { config } from '@/config';
 export class HttpAccessLogInterceptor implements NestInterceptor {
   private readonly accessLog: HttpAccessLog;
 
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+  constructor(@Inject(APP_LOGGER) logger: Logger) {
     this.accessLog = new HttpAccessLog(logger, {
       appName: config.appName,
       appVersion: config.appVersion,

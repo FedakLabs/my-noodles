@@ -1,6 +1,7 @@
-import type { INestApplication, LoggerService } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { APP_LOGGER } from '@my-noodles/api-lib/logging';
+import type { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import type { Logger } from 'winston';
 
 import { config } from '@/config';
 
@@ -19,11 +20,11 @@ async function shutdownResources(
   dataSource: DataSource | undefined,
   signal: NodeJS.Signals,
 ): Promise<void> {
-  const logger = app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER);
+  const logger = app.get<Logger>(APP_LOGGER);
 
   await closeDatabase(dataSource);
 
-  logger.log?.({ msg: 'shutdown.resources.complete', signal });
+  logger.info({ msg: 'shutdown.resources.complete', signal });
 }
 
 export async function gracefulShutdown(app: INestApplication, signal: NodeJS.Signals): Promise<void> {
@@ -33,13 +34,13 @@ export async function gracefulShutdown(app: INestApplication, signal: NodeJS.Sig
 
   isShuttingDown = true;
 
-  const logger = app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER);
-  logger.log?.({ msg: 'shutdown.start', signal });
+  const logger = app.get<Logger>(APP_LOGGER);
+  logger.info({ msg: 'shutdown.start', signal });
 
   const dataSource = app.get<DataSource>(DataSource, { strict: false });
 
   const forceExitTimer = setTimeout(() => {
-    logger.error?.({
+    logger.error({
       msg: 'shutdown.timeout',
       signal,
       timeoutMs: config.shutdownTimeoutMs,
@@ -51,11 +52,11 @@ export async function gracefulShutdown(app: INestApplication, signal: NodeJS.Sig
     await app.close();
     await shutdownResources(app, dataSource, signal);
     clearTimeout(forceExitTimer);
-    logger.log?.({ msg: 'shutdown.complete', signal });
+    logger.info({ msg: 'shutdown.complete', signal });
     process.exit(0);
   } catch (error) {
     clearTimeout(forceExitTimer);
-    logger.error?.({ msg: 'shutdown.error', signal, error });
+    logger.error({ msg: 'shutdown.error', signal, error });
     process.exit(1);
   }
 }

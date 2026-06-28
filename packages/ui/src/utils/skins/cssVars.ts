@@ -1,4 +1,4 @@
-import type { Colors } from '@my-noodles/theme';
+import type { CustomColors } from '@my-noodles/theme';
 import { colors as baseThemeColors } from '@my-noodles/theme';
 
 import type { SkinDefinition } from './types';
@@ -53,7 +53,7 @@ export function hashSlugToSkinDefinition(slug: string): SkinDefinition {
   };
 }
 
-export function colorsToCssVars(colorTokens: Colors): Record<string, string> {
+export function colorsToCssVars(colorTokens: CustomColors): Record<string, string> {
   return {
     '--colors-text-primary': colorTokens.text.primary,
     '--colors-text-secondary': colorTokens.text.secondary,

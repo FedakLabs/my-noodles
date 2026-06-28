@@ -1,7 +1,7 @@
-import { ServiceUnavailableException } from '@nestjs/common';
 import { type DataSource } from 'typeorm';
 
 import { HealthService } from '@/application/health';
+import { ServiceUnavailableException } from '@/infrastructure/exceptions';
 
 import { jest } from '../jest-globals';
 

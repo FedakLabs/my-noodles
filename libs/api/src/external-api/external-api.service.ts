@@ -9,6 +9,11 @@ import axios, {
 import type { Logger } from 'winston';
 
 import { ExternalApiException } from './external-api.exceptions';
+import {
+  extractRpcMethodFromBody,
+  formatExternalApiLogTarget,
+  resolveExternalApiRequestUrl,
+} from './external-api.utils';
 
 const tracer = trace.getTracer('my-noodles/external-api');
 
@@ -56,10 +61,11 @@ export abstract class ExternalApi {
       config: AxiosRequestConfig<D>,
     ): Promise<R> => {
       const startTime = performance.now();
+      const requestUrl = resolveExternalApiRequestUrl(config, this.getBaseUrl());
       const span = tracer.startSpan('http.client', {
         attributes: {
           'http.method': config.method?.toUpperCase() ?? 'GET',
-          'http.url': `${config.baseURL ?? ''}${config.url ?? ''}`,
+          'http.url': requestUrl,
         },
       });
 
@@ -72,9 +78,12 @@ export abstract class ExternalApi {
             'http.status_code': response.status,
           });
 
-          this.logger.info(`${serviceName}::${response.config.method}::${response.config.url}`, {
-            http: this.buildHttpMetadata({ config: response.config, execTimeMs, response }),
-          });
+          this.logger.info(
+            `${serviceName}::${response.config.method?.toUpperCase() ?? 'GET'}::${formatExternalApiLogTarget(response.config, this.getBaseUrl())}`,
+            {
+              http: this.buildHttpMetadata({ config: response.config, execTimeMs, response }),
+            },
+          );
 
           return response as R;
         });
@@ -84,13 +93,16 @@ export abstract class ExternalApi {
 
         span.recordException(error instanceof Error ? error : new Error(String(error)));
 
-        this.logger.error(`${serviceName}::${axiosConfig?.method}::${axiosConfig?.url}::error`, {
-          http: this.buildHttpMetadata({
-            config: axiosConfig,
-            execTimeMs,
-            response: axios.isAxiosError(error) ? error.response : undefined,
-          }),
-        });
+        this.logger.error(
+          `${serviceName}::${axiosConfig?.method?.toUpperCase() ?? 'GET'}::${formatExternalApiLogTarget(axiosConfig, this.getBaseUrl())}::error`,
+          {
+            http: this.buildHttpMetadata({
+              config: axiosConfig,
+              execTimeMs,
+              response: axios.isAxiosError(error) ? error.response : undefined,
+            }),
+          },
+        );
 
         if (axios.isAxiosError(error)) {
           throw new ExternalApiException(error.message, error.response?.status, error.response?.data);
@@ -109,12 +121,14 @@ export abstract class ExternalApi {
     response?: AxiosResponse;
   }) {
     const { config, execTimeMs, response } = params;
+    const fallbackBaseUrl = this.getBaseUrl();
+    const rpcMethod = extractRpcMethodFromBody(config?.data);
 
     return {
       requestType: 'outgoing' as const,
       method: config?.method?.toUpperCase() ?? 'GET',
-      url: config?.baseURL ? `${config.baseURL}${config.url ?? ''}` : (config?.url ?? ''),
-      urlPattern: config?.url ?? '-',
+      url: resolveExternalApiRequestUrl(config, fallbackBaseUrl),
+      urlPattern: config?.url && config.url.length > 0 ? config.url : (rpcMethod ?? '-'),
       queryParams: safeJsonStringify(config?.params),
       requestBody: safeJsonStringify(config?.data),
       responseStatus: response?.status,

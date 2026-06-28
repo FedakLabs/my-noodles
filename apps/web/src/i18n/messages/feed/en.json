@@ -30,10 +30,12 @@
   },
   "likedList": {
     "title": "Saved",
-    "notice": "Great picks! Add what you love to the cart while it's still on your mind — saved items quietly drop off after a quiet spell, so your feed can keep surprising you with fresh finds.",
     "empty": "You haven't liked anything yet.",
     "remove": "Remove",
     "addToCart": "Add to cart",
+    "addedToCart": "{name} added to cart",
+    "addToCartFailed": "Could not add to cart. Please try again.",
+    "removeFailed": "Could not remove from saved. Please try again.",
     "close": "Close"
   },
   "details": {

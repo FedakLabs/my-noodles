@@ -9,6 +9,9 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./types": {
+      "types": "./types/theme.d.ts"
+    },
     "./fonts.css": "./src/fonts.css",
     "./fonts.local.css": "./src/fonts.local.css",
     "./fonts": {

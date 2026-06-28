@@ -17,6 +17,8 @@ export type CatalogViewModeContextValue = {
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
   setViewMode: (mode: CatalogViewMode) => void;
+  /** Intro flow — menu stays open until the customer picks a browse style. */
+  requiresExplicitSelection: boolean;
 };
 
 const CatalogViewModeContext = createContext<CatalogViewModeContextValue | null>(null);
@@ -36,7 +38,8 @@ export function CatalogViewModeProvider({
   const { params, setParams } = useCatalogSearchParams();
   const [viewMode, setViewModeState] = useState(initialViewMode);
   const [isViewModeResetting, setIsViewModeResetting] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(() => !hasViewModePreference);
+  const [menuOpen, setMenuOpenState] = useState(() => !hasViewModePreference);
+  const [hasSavedPreference, setHasSavedPreference] = useState(hasViewModePreference);
 
   useEffect(() => {
     trackCatalogBrowseMode(initialViewMode, hasViewModePreference ? 'saved' : 'default');
@@ -46,25 +49,34 @@ export function CatalogViewModeProvider({
     setIsViewModeResetting(false);
   }, []);
 
+  const persistViewModePreference = useCallback((mode: CatalogViewMode) => {
+    writeCatalogViewModeCookie(mode);
+    setHasSavedPreference(true);
+  }, []);
+
+  const setMenuOpen = useCallback((open: boolean) => {
+    setMenuOpenState(open);
+  }, []);
+
   const setViewMode = useCallback(
     (nextViewMode: CatalogViewMode) => {
+      persistViewModePreference(nextViewMode);
+      setMenuOpen(false);
+
       if (nextViewMode === viewMode) {
-        setMenuOpen(false);
         return;
       }
 
-      writeCatalogViewModeCookie(nextViewMode);
       removeCatalogProductsListQueries(queryClient);
       setIsViewModeResetting(true);
       setViewModeState(nextViewMode);
-      setMenuOpen(false);
       trackCatalogBrowseMode(nextViewMode, 'menu');
 
       if (params.page !== 1) {
         void setParams({ page: 1 });
       }
     },
-    [params, queryClient, setParams, viewMode],
+    [params, persistViewModePreference, queryClient, setMenuOpen, setParams, viewMode],
   );
 
   const value = useMemo(
@@ -76,8 +88,17 @@ export function CatalogViewModeProvider({
       menuOpen,
       setMenuOpen,
       setViewMode,
+      requiresExplicitSelection: !hasSavedPreference,
     }),
-    [viewMode, isViewModeResetting, clearViewModeReset, menuOpen, setViewMode],
+    [
+      viewMode,
+      isViewModeResetting,
+      clearViewModeReset,
+      menuOpen,
+      setMenuOpen,
+      setViewMode,
+      hasSavedPreference,
+    ],
   );
 
   return <CatalogViewModeContext.Provider value={value}>{children}</CatalogViewModeContext.Provider>;

@@ -140,6 +140,20 @@ export function feedSubtleChipSx(theme: Theme) {
     color: 'common.white',
     bgcolor: alpha(theme.palette.common.white, 0.16),
     fontWeight: 600,
+    '& .MuiChip-deleteIcon': {
+      color: alpha(theme.palette.common.white, 0.92),
+      bgcolor: alpha(theme.palette.common.black, 0.42),
+      borderRadius: '50%',
+      fontSize: 16,
+      margin: '0 2px 0 -2px',
+      transition: theme.transitions.create(['background-color', 'color'], {
+        duration: theme.transitions.duration.shorter,
+      }),
+      '&:hover': {
+        color: theme.palette.common.white,
+        bgcolor: alpha(theme.palette.common.black, 0.62),
+      },
+    },
   };
 }
 

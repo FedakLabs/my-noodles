@@ -1,9 +1,11 @@
+import { HttpStatus } from '@my-noodles/api-lib/exceptions';
 import type { ArgumentsHost } from '@nestjs/common';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { type HttpAdapterHost } from '@nestjs/core';
 import type { Request } from 'express';
 import type { Logger } from 'winston';
 
+import { AppException } from '@/infrastructure/exceptions';
 import { HttpExceptionLogFilter } from '@/infrastructure/logging';
 
 import { jest } from '../jest-globals';
@@ -62,7 +64,62 @@ describe('HttpExceptionLogFilter', () => {
     expect(logger.info).not.toHaveBeenCalled();
   });
 
-  it('logs HttpException 4xx as manifest INFO records', () => {
+  it('logs AppException 4xx as manifest INFO records', () => {
+    const logger = { info: jest.fn(), error: jest.fn() };
+    const reply = jest.fn();
+    const filter = new HttpExceptionLogFilter(
+      {
+        httpAdapter: {
+          reply,
+          isHeadersSent: () => false,
+        },
+      } as unknown as HttpAdapterHost,
+      logger as unknown as Logger,
+    );
+
+    filter.catch(
+      new AppException(HttpStatus.NOT_FOUND, 'not_found', 'Not found'),
+      createHost(createRequest(performance.now() - 3)),
+    );
+
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'severity.text': 'INFO',
+        body: 'GET /api/health 404',
+        attributes: expect.objectContaining({
+          'attributes.http.responseStatus': '404',
+        }) as Record<string, string>,
+      }),
+    );
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  it('responds with ServiceUnavailableException for unhandled errors', () => {
+    const logger = { info: jest.fn(), error: jest.fn() };
+    const reply = jest.fn();
+    const filter = new HttpExceptionLogFilter(
+      {
+        httpAdapter: {
+          reply,
+          isHeadersSent: () => false,
+        },
+      } as unknown as HttpAdapterHost,
+      logger as unknown as Logger,
+    );
+
+    filter.catch(new Error('test'), createHost(createRequest(performance.now() - 2)));
+
+    expect(reply).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        identifier: 'service_unavailable',
+        message: 'Internal server error',
+      }),
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+  });
+
+  it('passes Nest HttpException through without wrapping', () => {
     const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
     const filter = new HttpExceptionLogFilter(
@@ -77,18 +134,13 @@ describe('HttpExceptionLogFilter', () => {
 
     filter.catch(
       new HttpException('Not found', HttpStatus.NOT_FOUND),
-      createHost(createRequest(performance.now() - 3)),
+      createHost(createRequest(performance.now() - 2)),
     );
 
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.objectContaining({
-        'severity.text': 'INFO',
-        body: 'GET /api/health 404',
-        attributes: expect.objectContaining({
-          'attributes.http.responseStatus': '404',
-        }) as Record<string, string>,
-      }),
+    expect(reply).toHaveBeenCalledWith(
+      undefined,
+      { message: 'Not found', statusCode: HttpStatus.NOT_FOUND },
+      HttpStatus.NOT_FOUND,
     );
-    expect(logger.error).not.toHaveBeenCalled();
   });
 });

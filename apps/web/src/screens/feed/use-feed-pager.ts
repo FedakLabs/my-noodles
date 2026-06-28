@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { type FeedItemDto, fetchFeedNext } from '@/api/feed';
-import { useFeedTagsStore } from '@/hooks/feed';
+import { type FeedFilters, useFeedTagsStore } from '@/hooks/feed';
+
+function getFeedFilters(): FeedFilters {
+  return useFeedTagsStore.getState().filters;
+}
+
+function clearFeedTags(): void {
+  useFeedTagsStore.getState().clear();
+}
 
 export type FeedPager = {
   items: FeedItemDto[];
@@ -50,6 +58,8 @@ export function useFeedPager(): FeedPager {
   const activeSinceRef = useRef<number | null>(null);
   const navLockRef = useRef(0);
   const fetchGenerationRef = useRef(0);
+  /** Reshuffle/retry clear tags synchronously; skip the filter-change reload they would trigger. */
+  const skipFilterReloadRef = useRef(false);
 
   const markActive = useCallback(() => {
     activeSinceRef.current = Date.now();
@@ -71,7 +81,7 @@ export function useFeedPager(): FeedPager {
             id: leavingItem.id,
             viewTime: dwellSince(activeSinceRef.current),
           },
-          filters,
+          filters: getFeedFilters(),
         });
 
         if (generation !== fetchGenerationRef.current) {
@@ -98,7 +108,7 @@ export function useFeedPager(): FeedPager {
         }
       }
     },
-    [dwellSince, filters, markActive],
+    [dwellSince, markActive],
   );
 
   const reloadFromScratch = useCallback(() => {
@@ -114,7 +124,7 @@ export function useFeedPager(): FeedPager {
 
     void (async () => {
       try {
-        const response = await fetchFeedNext({ filters });
+        const response = await fetchFeedNext({ filters: getFeedFilters() });
         if (cancelled || generation !== fetchGenerationRef.current) {
           return;
         }
@@ -137,12 +147,16 @@ export function useFeedPager(): FeedPager {
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, []);
 
   const filtersKey = JSON.stringify(filters);
   useEffect(() => {
+    if (skipFilterReloadRef.current) {
+      skipFilterReloadRef.current = false;
+      return;
+    }
     // Filter changes must reset the in-memory pager before fetching the next item.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional buffer reset on filter change
+
     return reloadFromScratch();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by serialized filters only
   }, [filtersKey]);
@@ -193,6 +207,9 @@ export function useFeedPager(): FeedPager {
   }, []);
 
   const reshuffle = useCallback(() => {
+    skipFilterReloadRef.current = true;
+    clearFeedTags();
+
     const generation = ++fetchGenerationRef.current;
     setReshuffling(true);
     setLoading(true);
@@ -201,7 +218,7 @@ export function useFeedPager(): FeedPager {
 
     void (async () => {
       try {
-        const response = await fetchFeedNext({ filters, reshuffle: true });
+        const response = await fetchFeedNext({ filters: getFeedFilters(), reshuffle: true });
 
         if (generation !== fetchGenerationRef.current) {
           return;
@@ -223,9 +240,11 @@ export function useFeedPager(): FeedPager {
         }
       }
     })();
-  }, [filters, markActive]);
+  }, [markActive]);
 
   const retry = useCallback(() => {
+    skipFilterReloadRef.current = true;
+    clearFeedTags();
     reloadFromScratch();
   }, [reloadFromScratch]);
 

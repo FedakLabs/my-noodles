@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import type { ReactNode } from 'react';
 
+import { CartBootstrap } from '@/components/cart/cart-bootstrap';
 import { CartPanelHost } from '@/components/cart/cart-panel-host';
 import { NavigationBusyOverlay } from '@/components/navigation/navigation-busy-overlay';
 import { NavigationPendingProvider } from '@/hooks/smooth';
@@ -33,6 +34,7 @@ export function AppShell({ children }: AppShellProps) {
         <NavigationBusyOverlay topOffset={immersive ? 0 : SITE_HEADER_HEIGHT}>
           {children}
         </NavigationBusyOverlay>
+        <CartBootstrap />
         <CartPanelHost />
       </Box>
     </NavigationPendingProvider>

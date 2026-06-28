@@ -6,7 +6,7 @@ import '@/api/register-app-locale.client';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
-import { theme } from '@my-noodles/theme';
+import { MyNoodlesTheme } from '@my-noodles/theme';
 import { ToastProvider } from '@my-noodles/ui';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -28,7 +28,7 @@ export function Providers({ children, locale }: ProvidersProps) {
   return (
     <NuqsAdapter>
       <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={MyNoodlesTheme}>
           <CssBaseline />
           <ToastProvider />
           <QueryClientProvider client={queryClient}>

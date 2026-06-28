@@ -6,12 +6,12 @@ export const toastGlobalStyles = {
   '[data-sonner-toaster]': {
     fontFamily: fontFamilyFallback('body'),
     '--width': '356px',
+    zIndex: 1400,
   },
-  [`${bottomRightToaster} [data-sonner-toast]`]: {
+  // Slide the front toast in/out from the right — do not override --y for all mounted toasts
+  // or the stack collapses and only the newest toast stays visible.
+  [`${bottomRightToaster} [data-sonner-toast][data-front="true"]:not([data-mounted="true"])`]: {
     '--y': 'translateX(calc(100% + 16px))',
-  },
-  [`${bottomRightToaster} [data-sonner-toast][data-mounted="true"]`]: {
-    '--y': 'translateX(0)',
   },
   [`${bottomRightToaster} [data-sonner-toast][data-mounted="true"][data-expanded="true"]`]: {
     '--y': 'translateY(calc(var(--lift) * var(--offset)))',
@@ -22,7 +22,7 @@ export const toastGlobalStyles = {
     },
   [`${bottomRightToaster} [data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="false"]`]:
     {
-      '--y': 'translateX(40%)',
+      '--y': 'translateY(40%)',
     },
   '[data-sonner-toast].noodles-toast': {
     alignItems: 'center',

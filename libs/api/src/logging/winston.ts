@@ -12,7 +12,14 @@ export type WinstonLoggingConfig = Readonly<{
 export class WinstonLoggerFactory {
   constructor(private readonly config: WinstonLoggingConfig) {}
 
-  createTransports(consoleFormat: winston.Logform.Format): winston.transport[] {
+  createLogger(): winston.Logger {
+    return winston.createLogger({
+      level: 'info',
+      transports: this.createTransports(),
+    });
+  }
+
+  createTransports(): winston.transport[] {
     const useConsole = !this.config.otel.enabled || this.config.nodeEnv === 'local';
     const transports: winston.transport[] = [];
 
@@ -23,12 +30,36 @@ export class WinstonLoggerFactory {
     if (useConsole) {
       transports.push(
         new winston.transports.Console({
-          format: winston.format.combine(winston.format.timestamp(), winston.format.ms(), consoleFormat),
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.ms(),
+            this.createConsoleFormat(),
+          ),
         }),
       );
     }
 
     return transports;
+  }
+
+  private createConsoleFormat(): winston.Logform.Format {
+    if (this.config.nodeEnv === 'prod') {
+      return winston.format.json();
+    }
+
+    return winston.format.printf((info) => {
+      const { level, timestamp, ms, message, ...meta } = info;
+      const record =
+        typeof message === 'object' && message !== null
+          ? { ...(message as Record<string, unknown>), ...meta }
+          : message
+            ? { msg: message, ...meta }
+            : meta;
+
+      const msSuffix = typeof ms === 'string' ? ` ${ms}` : '';
+
+      return `${String(timestamp)} ${String(level)}${msSuffix}: ${JSON.stringify(record)}`;
+    });
   }
 
   private createOtelTransport(): winston.transport {

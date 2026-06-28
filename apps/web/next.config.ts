@@ -14,7 +14,7 @@ const svgrLoader = {
 };
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@my-noodles/theme', '@my-noodles/web-lib', '@my-noodles/ui'],
+  transpilePackages: ['@my-noodles/theme', '@my-noodles/web-lib', '@my-noodles/ui', 'mui-tel-input'],
   turbopack: {
     rules: {
       '*.svg': {

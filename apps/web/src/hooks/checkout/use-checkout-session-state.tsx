@@ -1,0 +1,56 @@
+'use client';
+
+import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect } from 'react';
+
+import { cartQueryKeys } from '@/api/cart';
+import { checkoutsQueryKeys } from '@/api/checkouts';
+import { Link } from '@/i18n/navigation';
+import { type ApiErrorCode, getApiErrorCode } from '@/shared/api-error';
+
+type UseCheckoutSessionStateOptions = {
+  checkoutId: string;
+  error?: unknown;
+};
+
+export function useCheckoutSessionState({ checkoutId, error }: UseCheckoutSessionStateOptions) {
+  const queryClient = useQueryClient();
+  const t = useTranslations('checkout');
+
+  const errorCode: ApiErrorCode | undefined = error ? getApiErrorCode(error) : undefined;
+  const isExpired = errorCode === 'checkout_expired';
+  const isNotInProgress = errorCode === 'checkout_not_in_progress';
+  const isInventoryChanged = errorCode === 'order_inventory_changed';
+  const showSubmitErrorAlert = Boolean(error) && !isExpired && !isNotInProgress;
+
+  const submitErrorMessage = isInventoryChanged ? t('submitInventoryChanged') : t('error');
+
+  const expiredDescription = t.rich('draftExpired', {
+    catalog: (chunks) => <Link href="/catalog">{chunks}</Link>,
+  });
+
+  useEffect(() => {
+    if (isExpired) {
+      void queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+    }
+  }, [isExpired, queryClient]);
+
+  const onHoldExpired = useCallback(() => {
+    void Promise.all([
+      queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
+      queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
+    ]);
+  }, [checkoutId, queryClient]);
+
+  return {
+    errorCode,
+    isExpired,
+    isNotInProgress,
+    isInventoryChanged,
+    showSubmitErrorAlert,
+    submitErrorMessage,
+    expiredDescription,
+    onHoldExpired,
+  };
+}

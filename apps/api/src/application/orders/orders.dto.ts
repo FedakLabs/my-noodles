@@ -1,30 +1,118 @@
-import { TransformToInt } from '@my-noodles/api-lib/utils';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MaxLength,
-  Min,
-  ValidateIf,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
+import { IsOrderCancelledReason, OrderCancelledReason } from './order-cancelled-reason';
 import { DeliveryMethod, DeliveryProvider, IsDeliveryMethod, IsDeliveryProvider } from './order-delivery.dto';
 
-export class CreateOrderItemDto {
-  @IsUUID()
+export class OrderItemDto {
+  @ApiProperty({ type: String, format: 'uuid' })
   productId!: string;
 
-  @TransformToInt()
-  @IsInt()
-  @Min(1)
+  title!: string;
+
+  priceMinor!: number;
+
   qty!: number;
+}
+
+export class OrderDeliveryResponseDto {
+  provider!: DeliveryProvider;
+
+  method!: DeliveryMethod;
+
+  city!: string | null;
+
+  cityRef?: string | null;
+
+  warehouseNumber?: string | null;
+
+  warehouseName?: string | null;
+
+  warehouseRef?: string | null;
+
+  street?: string | null;
+
+  building?: string | null;
+
+  apartment?: string | null;
+
+  notes?: string | null;
+}
+
+export class OrderResponseDto {
+  @ApiProperty({ type: String, format: 'uuid' })
+  id!: string;
+
+  status!: string;
+
+  totalMinor!: number;
+
+  currency!: string;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  createdAt!: string;
+}
+
+export class UpdateOrderDeliveryDto {
+  @IsOptional()
+  @IsDeliveryProvider()
+  provider?: DeliveryProvider;
+
+  @IsOptional()
+  @IsDeliveryMethod()
+  method?: DeliveryMethod;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  cityRef?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  warehouseNumber?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  warehouseName?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  warehouseRef?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  street?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  building?: string;
+
+  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Courier)
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  apartment?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  notes?: string;
 }
 
 export class CreateOrderDeliveryDto {
@@ -42,6 +130,12 @@ export class CreateOrderDeliveryDto {
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80)
+  cityRef?: string;
+
+  @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
+  @IsString()
+  @IsNotEmpty()
   @MaxLength(20)
   warehouseNumber?: string;
 
@@ -52,8 +146,8 @@ export class CreateOrderDeliveryDto {
   warehouseName?: string;
 
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(80)
   warehouseRef?: string;
 
@@ -81,43 +175,7 @@ export class CreateOrderDeliveryDto {
   notes?: string;
 }
 
-export class CreateOrderDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  customerName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(30)
-  phone!: string;
-
-  @ValidateNested()
-  @Type(() => CreateOrderDeliveryDto)
-  delivery!: CreateOrderDeliveryDto;
-
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemDto)
-  items!: CreateOrderItemDto[];
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(0)
-  company?: string;
-}
-
-export class OrderResponseDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  id!: string;
-
-  status!: string;
-
-  totalMinor!: number;
-
-  currency!: string;
-
-  @ApiProperty({ type: String, format: 'date-time' })
-  createdAt!: string;
+export class CancelOrderDto {
+  @IsOrderCancelledReason()
+  reason!: OrderCancelledReason;
 }

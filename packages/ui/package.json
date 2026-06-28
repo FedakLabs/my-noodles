@@ -9,7 +9,10 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./icons/*.svg": "./src/icons/*.svg"
+    "./icons/*.svg": "./src/icons/*.svg",
+    "./types": {
+      "types": "./types/svg.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json",
@@ -25,6 +28,8 @@
   "dependencies": {
     "@my-noodles/theme": "workspace:*",
     "embla-carousel-react": "^8.6.0",
+    "libphonenumber-js": "^1.13.7",
+    "mui-tel-input": "^11.0.0",
     "sonner": "^2.0.7"
   },
   "peerDependencies": {

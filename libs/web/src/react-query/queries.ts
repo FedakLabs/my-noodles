@@ -136,7 +136,7 @@ export function formatUseQuery<TData, TError, EntityName extends string>(
   ]
 > &
   RenameMultiple<QueryViewState, QueryViewStateKeyMap<EntityName>> {
-  const viewState = deriveQueryViewState(data, isPending, isFetching, isError);
+  const viewState = deriveQueryViewState(data, isPending, isFetching);
 
   return {
     ...query,
@@ -149,8 +149,6 @@ export function formatUseQuery<TData, TError, EntityName extends string>(
     [`${entityName}Error`]: error,
     [`${entityName}Refetch`]: refetch,
     [`${entityName}IsInitialLoad`]: viewState.isInitialLoad,
-    [`${entityName}IsLoadFailed`]: viewState.isLoadFailed,
-    [`${entityName}IsEmpty`]: viewState.isEmpty,
     [`${entityName}IsBusy`]: viewState.isBusy,
   } as RenameMultiple<
     UseQueryResult<TData, TError>,
@@ -223,7 +221,7 @@ export function formatUseInfiniteQuery<
     hasNextPage,
   } = query;
 
-  const viewState = deriveQueryViewState(data, isPending, isFetching, isError);
+  const viewState = deriveQueryViewState(data, isPending, isFetching);
 
   return {
     [entityName]: data?.pages.flatMap((page) => page.items) ?? [],
@@ -238,8 +236,6 @@ export function formatUseInfiniteQuery<
     [`${entityName}HasNextPage`]: hasNextPage ?? false,
     [`${entityName}Total`]: readPagePaginatedTotal(data?.pages[0]),
     [`${entityName}IsInitialLoad`]: viewState.isInitialLoad,
-    [`${entityName}IsLoadFailed`]: viewState.isLoadFailed,
-    [`${entityName}IsEmpty`]: viewState.isEmpty,
     [`${entityName}IsBusy`]: viewState.isBusy,
   } as FormattedInfiniteQueryResult<TItem, TError, EntityName>;
 }

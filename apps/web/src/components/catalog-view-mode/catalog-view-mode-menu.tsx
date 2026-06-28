@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
+import type { MenuProps } from '@mui/material/Menu';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
@@ -55,7 +56,13 @@ type CatalogViewModeMenuProps = {
 
 export function CatalogViewModeMenu({ disabled }: CatalogViewModeMenuProps) {
   const t = useTranslations('catalog.filters');
-  const { viewMode, setViewMode, menuOpen: contextMenuOpen, setMenuOpen } = useViewMode();
+  const {
+    viewMode,
+    setViewMode,
+    menuOpen: contextMenuOpen,
+    setMenuOpen,
+    requiresExplicitSelection,
+  } = useViewMode();
   const menuId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -78,9 +85,16 @@ export function CatalogViewModeMenu({ disabled }: CatalogViewModeMenuProps) {
     }
   }, [contextMenuOpen]);
 
-  const handleClose = () => {
+  const dismissMenu = () => {
     setAnchorEl(null);
     setMenuOpen(false);
+  };
+
+  const handleClose: MenuProps['onClose'] = (_event, reason) => {
+    if (requiresExplicitSelection && (reason === 'backdropClick' || reason === 'escapeKeyDown')) {
+      return;
+    }
+    dismissMenu();
   };
 
   return (
@@ -156,7 +170,6 @@ export function CatalogViewModeMenu({ disabled }: CatalogViewModeMenuProps) {
               selected={selected}
               onClick={() => {
                 setViewMode(option.value);
-                handleClose();
               }}
               sx={{
                 alignItems: 'flex-start',

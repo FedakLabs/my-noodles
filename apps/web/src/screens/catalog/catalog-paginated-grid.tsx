@@ -29,7 +29,7 @@ export function CatalogPaginatedGrid({
   const {
     products: paginatedProducts,
     productsIsInitialLoad,
-    productsIsLoadFailed,
+    productsIsError,
     productsIsRefetching,
     productsIsBusy,
     productsIsFetching,
@@ -50,7 +50,7 @@ export function CatalogPaginatedGrid({
     clearViewModeReset,
     productsIsBusy,
     itemCount: displayItems.length,
-    isLoadFailed: productsIsLoadFailed,
+    isError: productsIsError,
   });
 
   useEffect(() => {
@@ -75,9 +75,9 @@ export function CatalogPaginatedGrid({
     void setParams({ page: nextPage });
   };
 
-  useViewItemList('catalog', listTitle, displayItems, !showSkeleton && !productsIsLoadFailed, viewMode);
+  useViewItemList('catalog', listTitle, displayItems, !showSkeleton && !productsIsError, viewMode);
 
-  if (productsIsLoadFailed) {
+  if (productsIsError) {
     return <Typography color="error">{t('error')}</Typography>;
   }
 

@@ -2,6 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
@@ -49,7 +50,7 @@ export function ProductCard({
   const t = useTranslations('catalog');
   const tProduct = useTranslations('product');
   const { formatCurrency } = useCurrency();
-  const { addItem } = useCartActions();
+  const { addItem, isAddingProduct } = useCartActions();
   const skin = resolveSkin({
     brand: product.brand?.slug,
     country: product.country.code,
@@ -175,6 +176,8 @@ export function ProductCard({
     [t, tProduct],
   );
 
+  const isAdding = isAddingProduct(product.id);
+
   const quickActions = (
     <DiscoveryCard.Actions
       actions={[
@@ -184,7 +187,8 @@ export function ProductCard({
           color="inherit"
           size="small"
           sx={[labelQuickActionSx, discoveryCardGroupedDetailsButtonSx]}
-          disabled={!product.inStock}
+          disabled={!product.inStock || isAdding}
+          aria-busy={isAdding}
           aria-label={isPreview ? undefined : product.inStock ? t('addToCart') : t('outOfStock')}
           data-testid={testIds.catalog.addToCart(product.slug)}
           onClick={(event) => {
@@ -193,7 +197,11 @@ export function ProductCard({
           }}
         >
           <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
-            <CartIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+            {isAdding ? (
+              <CircularProgress size={20} color="inherit" aria-hidden />
+            ) : (
+              <CartIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+            )}
             <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
               {product.inStock ? t('addShort') : t('outOfStock')}
             </DiscoveryCard.Collapse>

@@ -1,4 +1,4 @@
-export const CATALOG_VIEW_MODE_COOKIE = 'my-noodles-catalog-view-mode';
+export const CATALOG_VIEW_MODE_COOKIE = 'catalog-view-mode';
 
 export const DEFAULT_CATALOG_VIEW_MODE = 'infinite' as const;
 

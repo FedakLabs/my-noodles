@@ -43,7 +43,7 @@ export function useProductsList(filters: ProductListFilters) {
 
 **Add a comment only when:**
 
-- Non-obvious **business rules** that are easy to misread (e.g. honeypot field, consent edge case, “why not the obvious fix”)
+- Non-obvious **business rules** that are easy to misread (e.g. consent edge case, “why not the obvious fix”)
 - A **warning** for future maintainers (ordering constraint, intentional deviation from a library default)
 
 **Avoid:**
@@ -72,8 +72,118 @@ Same bar as `AGENTS.md`: comments are the exception, not the baseline.
 ### Server data → TanStack Query
 
 - Hooks in `apps/web/src/api/[feature]/`
-- Hierarchical **query-key factories**
+- Hierarchical **query-key factories** in `[feature].ts` (e.g. `productsQueryKeys`)
+- **Mutation-key factories** in the same file when a mutation needs a stable `mutationKey` (e.g. concurrent adds + `useMutationState`, cross-component pending UI) — e.g. `cartMutationKeys.addItem()`. Do not scatter magic strings; omit `mutationKey` when the default anonymous mutation is enough.
 - Server Components: prefetch with the same keys → `HydrationBoundary`
+
+### Mutations → prefer `mutate`
+
+Follow [TanStack Query mutations guidance](https://tanstack.com/query/latest/docs/framework/react/guides/mutations): use **`mutate`** for almost all writes. Put **shared** cache invalidation and analytics in the hook’s `useMutation({ onSuccess })`. Pass **per-call** `onSuccess` / `onError` only for **single in-flight** writes (one click at a time).
+
+```tsx
+// ✅ fire-and-forget write + local feedback (one add at a time)
+addCartItem(payload, {
+  onSuccess: () => showToast.success(t('addedToCart', { name: payload.title })),
+  onError: () => showToast.error(t('addFailed')),
+});
+
+// ✅ optimistic UI + rollback on failure
+setItemLiked(productId, true);
+likeFeed(productId, { onError: () => setItemLiked(productId, false) });
+
+// ✅ navigate after success — still mutate when only one draft is created
+createDraftOrder(undefined, {
+  onSuccess: (order) => router.push(`/checkout/${order.id}`),
+});
+```
+
+**Two callback layers — they behave differently:**
+
+| Callback | Runs when | Concurrent adds |
+| --- | --- | --- |
+| `useMutation({ onSuccess })` | Every successful mutation | ✅ once per completed request (`variables` identifies the item) |
+| `mutate(vars, { onSuccess })` | Only for the **latest** `mutate()` call’s observer | ❌ overlapping calls drop earlier per-call callbacks |
+
+Hook-level `onSuccess` is correct for shared logic (invalidate, analytics). **Do not** rely on per-call `mutate` callbacks when the user can trigger overlapping writes (e.g. rapid add-to-cart in Saved list) — only the last callback is retained.
+
+**`mutateAsync`** — use when you need a **Promise per call**:
+
+- Multi-step async composition (`await stepA(); await stepB();`)
+- **Per-item UI after each concurrent mutation** (toast, row state) — `await addCartItemAsync(payload)` in the click handler
+- `Promise.all(items.map((item) => mutation.mutateAsync(item)))` for batch flows
+
+```tsx
+// ✅ concurrent adds — one toast per completed item
+const handleAddToCart = async (product: Product) => {
+  try {
+    await addCartItemAsync({ ...line, suppressPanelOpen: true });
+    showToast.success(t('addedToCart', { name: product.name }));
+  } catch {
+    showToast.error(t('addFailed'));
+  }
+};
+
+// ✅ shared per-item logic belongs in useMutation — runs for every success
+useMutation({
+  onSuccess: async (_cart, variables) => {
+    await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+    trackAddToCart(variables, variables.qty ?? 1);
+  },
+});
+```
+
+```tsx
+// ❌ per-call mutate callbacks with overlapping requests — only the last toast fires
+items.forEach((item) => {
+  addCartItem(item, { onSuccess: () => toast(item.title) });
+});
+
+// ❌ mutateAsync + void / .then when mutate + single-flight callbacks suffice
+void addCartItemAsync(payload);
+void createDraftOrderAsync().then((order) => router.push(`/checkout/${order.id}`));
+```
+
+### Mutations → invalidate, don’t manually patch cache
+
+After a mutation, **prefer `queryClient.invalidateQueries({ queryKey })`** so every subscriber refetches through its own `queryFn`. That keeps a single source of truth for response shape and avoids drift when DTOs or hooks change.
+
+**Await invalidation in `onSuccess` / `onError`.** TanStack Query accepts async lifecycle callbacks — while they run, the mutation stays **`pending`**, so spinners on the triggering control stay visible until refetch settles and dependent UI can read fresh data.
+
+```tsx
+// ✅ default — await so isPending covers mutation + refetch
+onSuccess: async () => {
+  await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+},
+
+// ✅ multiple keys — await all refetches before mutation settles
+onSuccess: async () => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
+    queryClient.invalidateQueries({ queryKey: ordersQueryKeys.checkout(orderId) }),
+  ]);
+},
+
+// ✅ mutation response still available for side effects after cache is fresh
+onSuccess: async (cart, variables) => {
+  await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+  openPanelIfFirstAdd(cart.itemCount === variables.qty);
+},
+```
+
+```tsx
+// ❌ fire-and-forget — mutation settles before refetch; spinner clears too early
+onSuccess: () => {
+  void queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+},
+```
+
+**`setQueryData`** — rare exceptions only:
+
+- Optimistic updates with explicit rollback in `onError`
+- Internal cache orchestration (e.g. merging paginated catalog pages in `resolvePaginatedProductsPage`) where no mutation owns the shape
+- Updating a query **you do not own** and cannot invalidate (external / third-party hook) — document why
+
+Do **not** mirror mutation responses into cache with `setQueryData` when invalidation would work — it duplicates shape knowledge and becomes hard to maintain.
 
 ### URL state → nuqs
 
@@ -257,7 +367,7 @@ import { useCartActions } from '@/hooks/cart/use-cart';
 import { fetchProductsList } from '@/api/products/products';
 ```
 
-- **`index.ts` exports** — hooks, server fetchers, query-key factories, shared types
+- **`index.ts` exports** — hooks, server fetchers, query-key factories, mutation-key factories (when used), shared types
 - **Keep internal** — `*.hooks.ts` vs `*.ts` split, Zustand store instances, `utils.ts` helpers (unless explicitly part of the public API)
 - **Cross-module** — always import via `@/api/[feature]` or `@/hooks/[feature]`, not sibling files
 - Optional umbrella `@/api` re-exports all domains; prefer **feature barrel** when only one domain is needed (clearer boundaries, better tree-shaking intent)
@@ -337,7 +447,12 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | Comments that narrate obvious code or section banners | Self-explanatory names and structure; comments only for non-obvious business logic or maintainer warnings (see [Comments](#comments)) |
 | Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; feature chrome files for immersive UIs; raw hex only as last resort (see [Design & Theme](#design--theme)) |
 | Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
+| Inline `mutationKey` string tuples in hooks or screens | `[feature]MutationKeys` in `api/[feature]/[feature].ts`, imported via `@/api/[feature]` |
+| `setQueryData` in mutation `onSuccess` to mirror API responses | `invalidateQueries` with the smallest relevant key set; use mutation `data` only for side effects (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
+| `void invalidateQueries(...)` in mutation lifecycle callbacks | `async onSuccess` / `onError` + `await invalidateQueries(...)` so `isPending` covers refetch (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
 | Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
+| Per-call `mutate` callbacks for concurrent writes (rapid multi-add) | Hook-level `onSuccess` for shared logic; `mutateAsync` + `await` per click for per-item toasts (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
+| `mutateAsync` for fire-and-forget writes or `.then()` shims | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) |
 | `loading.tsx` or Suspense fallbacks on home / catalog / product / collection | Async `page.tsx` with awaited prefetch; client loading in `screens/` + `components/` only |
 | Global fixed loading indicator for route-local refetch | Contextual feedback near updating content (toolbar + grid veil, filter panel dim) |
 | `{condition && <LinearProgress />}` — mount/unmount shifts layout | `@my-noodles/ui` `StableLinearProgress` — reserved slot, `opacity` + `visibility` |
@@ -357,5 +472,7 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 - [ ] Theme tokens, not raw hex
 - [ ] No narrating comments — only non-obvious business logic or warnings
 - [ ] Tests co-located; selectors follow [Testing](#testing) priority
+- [ ] Mutations use `mutate` + callbacks; `mutateAsync` only for real async composition
+- [ ] Mutation cache sync uses `await invalidateQueries` in async `onSuccess` / `onError`; no `setQueryData` mirroring API responses unless documented exception
 - [ ] `pnpm nx run web:validate` passes
 - [ ] Indexable routes: no `loading.tsx`, no Suspense around server prefetch in `page.tsx`

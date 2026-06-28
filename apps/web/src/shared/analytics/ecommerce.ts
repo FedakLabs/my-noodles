@@ -1,6 +1,6 @@
 import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
 
-import type { CartLine } from '@/hooks/cart/cart-store';
+import type { CartLine } from '@/hooks/cart';
 
 import type { Ga4Item } from './types';
 

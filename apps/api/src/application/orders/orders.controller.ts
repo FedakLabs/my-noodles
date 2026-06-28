@@ -1,9 +1,14 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Inject, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  ApiConflictResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
-import { CreateOrderDto, OrderResponseDto } from './orders.dto';
-import { HoneypotTriggeredException } from './orders.exceptions';
+import { CancelOrderDto, OrderResponseDto } from './orders.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -11,16 +16,16 @@ import { OrdersService } from './orders.service';
 export class OrdersController {
   constructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}
 
-  @Post()
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Create a new order' })
-  @ApiBadRequestResponse({ description: 'Validation error or honeypot triggered' })
-  @ApiNotFoundResponse({ description: 'One or more products not found' })
-  create(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
-    if (dto.company) {
-      throw new HoneypotTriggeredException();
-    }
-
-    return this.ordersService.create(dto);
+  @Post(':id/cancel')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Manager cancel — restore stock on submitted orders (new+)' })
+  @ApiOkResponse({ type: OrderResponseDto })
+  @ApiNotFoundResponse({ description: 'Order not found' })
+  @ApiConflictResponse({ description: 'Draft or terminal order cannot be cancelled' })
+  async cancelOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelOrderDto,
+  ): Promise<OrderResponseDto> {
+    return this.ordersService.cancelSubmittedOrder(id, dto.reason);
   }
 }

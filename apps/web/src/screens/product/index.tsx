@@ -2,6 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { MediaGallery, resolveSkin, skinVarsToStyle } from '@my-noodles/ui';
@@ -22,15 +23,15 @@ type ProductScreenProps = {
 export function ProductScreen({ slug }: ProductScreenProps) {
   const t = useTranslations('product');
   const { formatCurrency } = useCurrency();
-  const { addItem } = useCartActions();
-  const { product, productIsInitialLoad, productIsLoadFailed, productIsEmpty } = useProductDetail(slug);
+  const { addItem, isAddingProduct } = useCartActions();
+  const { product, productIsInitialLoad, productIsError } = useProductDetail(slug);
 
-  useViewItem(product, Boolean(product) && !productIsInitialLoad && !productIsLoadFailed);
+  useViewItem(product, Boolean(product) && !productIsInitialLoad && !productIsError);
   useViewItemList(
     `product-alternatives:${slug}`,
     t('alternatives'),
     product?.alternatives,
-    Boolean(product?.alternatives.length) && !productIsInitialLoad && !productIsLoadFailed,
+    Boolean(product?.alternatives.length) && !productIsInitialLoad && !productIsError,
   );
 
   if (productIsInitialLoad) {
@@ -41,7 +42,7 @@ export function ProductScreen({ slug }: ProductScreenProps) {
     );
   }
 
-  if (productIsLoadFailed) {
+  if (productIsError) {
     return (
       <PageContainer>
         <Typography color="error">{t('error')}</Typography>
@@ -49,18 +50,10 @@ export function ProductScreen({ slug }: ProductScreenProps) {
     );
   }
 
-  if (productIsEmpty) {
-    return (
-      <PageContainer>
-        <Typography color="text.secondary">{t('empty')}</Typography>
-      </PageContainer>
-    );
-  }
-
   if (!product) {
     return (
       <PageContainer>
-        <Typography color="text.secondary">{t('loading')}</Typography>
+        <Typography color="text.secondary">{t('empty')}</Typography>
       </PageContainer>
     );
   }
@@ -136,7 +129,13 @@ export function ProductScreen({ slug }: ProductScreenProps) {
             <Button
               variant="contained"
               size="large"
-              disabled={!product.inStock}
+              disabled={!product.inStock || isAddingProduct(product.id)}
+              aria-busy={isAddingProduct(product.id)}
+              startIcon={
+                isAddingProduct(product.id) ? (
+                  <CircularProgress size={22} color="inherit" aria-hidden />
+                ) : undefined
+              }
               onClick={() => {
                 const productId = product.id;
                 addItem({

@@ -166,15 +166,17 @@ apps/api/src/
 │       └── [sub-feature]/               # e.g. products filters on products.controller
 ├── infrastructure/
 │   ├── migrations/           # TypeORM migrations
-│   └── services/
-│       └── Telegram/
-│           └── client/       # hand-written Bot API wrapper (sendOrderNotification)
+│   └── external-apis/        # outbound HTTP clients (*Api + optional *Service per provider)
+│       ├── telegram/         # TelegramApi + TelegramService (order notifications)
+│       ├── nova-poshta/      # NovaPoshtaApi + NovaPoshtaService
+│       ├── meest/            # MeestApi + MeestService (public geo/branches API)
+│       └── ukrposhta/        # UkrposhtaApi + UkrposhtaService (address classifier)
 └── utils/                    # pure helpers (+ ~*.test.ts)
 ```
 
 - Controllers = HTTP + validation only; services = logic. Storefront is public, so controllers are public (the `.controller.public.ts` variant is reserved for if/when auth is added).
 - `GET /products/filters` on `ProductsController` implements catalog filter preview.
-- Telegram lives in `infrastructure/services/Telegram/client/` (hand-written Bot API), called by `OrdersService`. `infrastructure/services/<Service>/generated/` is reserved for any _third-party_ OpenAPI client (distinct from `packages/api-clients`, which is OUR API's client for the web app).
+- Telegram and delivery providers live in `infrastructure/external-apis/<provider>/`: `*Api` for HTTP transport, `*Service` when response mapping or formatting is needed (e.g. `TelegramService`, `NovaPoshtaService`). `generated/` under each provider is reserved for _third-party_ OpenAPI clients (distinct from `packages/api-clients`, which is OUR API's client for the web app).
 - Jest `testMatch` includes the tilde pattern (`**/~*.test.ts`); ESLint/knip configured to recognize it.
 
 ## Design system: `packages/theme`

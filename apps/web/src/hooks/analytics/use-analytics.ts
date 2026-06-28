@@ -3,7 +3,7 @@
 import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
 import { useEffect, useRef } from 'react';
 
-import type { CartLine } from '@/hooks/cart/cart-store';
+import type { CartLine } from '@/hooks/cart';
 import type { CatalogBrowseMode, PurchasePayload } from '@/shared/analytics';
 import {
   trackBeginCheckout,

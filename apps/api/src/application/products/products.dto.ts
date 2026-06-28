@@ -1,12 +1,15 @@
 import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 
-import { PaginatedMetaDto, PaginationQueryDto } from '@/utils/pagination';
+import { PaginatedMetaSwaggerDto, PaginationQuerySwaggerDto } from '@/utils/swagger';
 
 import { ProductFilterQueryDto, ProductListFilterQueryDto } from './products.filter-query.dto';
 
 export type { ProductFacetFilters, ProductFilters } from './products.filter-query.dto';
 
-export class ListProductsQueryDto extends IntersectionType(PaginationQueryDto, ProductListFilterQueryDto) {}
+export class ListProductsQueryDto extends IntersectionType(
+  PaginationQuerySwaggerDto,
+  ProductListFilterQueryDto,
+) {}
 
 export { ProductFilterQueryDto as ProductFacetsQueryDto };
 
@@ -58,7 +61,8 @@ export class ProductSummaryDto {
   category!: CategoryRefDto;
 }
 
-export class PaginatedProductsDto extends PaginatedMetaDto {
+export class PaginatedProductsDto extends PaginatedMetaSwaggerDto {
+  @ApiProperty({ type: [ProductSummaryDto] })
   items!: ProductSummaryDto[];
 }
 

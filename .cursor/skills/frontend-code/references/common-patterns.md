@@ -135,7 +135,6 @@ export const checkoutSchema = z.object({
   phone: z.string().trim().min(1),
   city: z.string().trim().min(1),
   branch: z.string().trim().min(1),
-  company: z.string().max(0).optional(), // honeypot — must stay empty
 });
 
 export type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -154,7 +153,7 @@ export function CheckoutForm() {
   const t = useTranslations('checkout');
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { customerName: '', phone: '', city: '', branch: '', company: '' },
+    defaultValues: { customerName: '', phone: '', city: '', branch: '' },
   });
 
   const { createOrder, createOrderIsPending } = useCreateOrder();
@@ -175,7 +174,7 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 **Location:** `apps/web/src/api/[feature]/` — import from **`@/api/[feature]`** (the module `index.ts`), not from `*.hooks.ts` / `*.ts` directly.
 
-- **`[feature].ts`** — query-key factories + async fetchers (importable from Server Components for prefetch)
+- **`[feature].ts`** — query-key factories + optional mutation-key factories + async fetchers (importable from Server Components for prefetch)
 - **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
 
 Uses **`packages/api-clients`** via one-time init in `api/clients.ts` (`setupApiClients(API_URL)` from `shared/env.ts`; imported from `app/providers.tsx` and root layout). All env vars — including `SITE_URL` for SEO — come from `shared/env.ts` only (normalized in the Zod schema, e.g. trailing slash stripped via `.transform()`).
@@ -216,6 +215,52 @@ export const productsQueryKeys = {
 export async function fetchProductsList(params: CatalogSearchParams): Promise<PaginatedProductsDto> {
   return requestData(productsControllerList({ query: searchParamsToListQuery(params) }));
 }
+```
+
+```ts
+// cart.ts — mutation keys only when needed (e.g. useMutationState for concurrent in-flight adds)
+export const cartMutationKeys = {
+  all: ['cart'] as const,
+  addItem: () => ['cart', 'addItem'] as const,
+};
+```
+
+```ts
+// cart.hooks.ts — mutation key + invalidate + concurrent pending tracking
+export function useAddCartItem() {
+  const mutation = useMutation({
+    mutationKey: cartMutationKeys.addItem(),
+    mutationFn: ({ productId, qty = 1 }: CartLineInput) => addCartItem({ productId, qty }),
+    onSuccess: async (cart, variables) => {
+      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      openPanelIfFirstAdd(cart.itemCount === variables.qty);
+    },
+  });
+
+  const addCartItemPendingProductIds = useMutationState({
+    filters: { mutationKey: cartMutationKeys.addItem(), status: 'pending' },
+    select: (entry) => (entry.state.variables as CartLineInput | undefined)?.productId,
+  }).filter((id): id is string => id != null);
+
+  return {
+    ...formatUseMutation(mutation, 'addCartItem'),
+    addCartItemIsAddingProduct: (productId) => addCartItemPendingProductIds.includes(productId),
+  };
+}
+```
+
+```tsx
+// feed-liked-list.tsx — mutateAsync for per-item toast when adds can overlap
+const { addCartItemAsync, addCartItemIsAddingProduct } = useAddCartItem();
+
+const handleAddToCart = async (product: FeedLike) => {
+  try {
+    await addCartItemAsync({ ...line, suppressPanelOpen: true });
+    showToast.success(t('addedToCart', { name: product.name }));
+  } catch {
+    showToast.error(t('addFailed'));
+  }
+};
 ```
 
 ```ts
@@ -281,7 +326,9 @@ For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfi
 - **Server prefetch / fetchers** wrap work in `runWithAppLocale(locale, …)` — AsyncLocalStorage feeds the same interceptor on SSR
 - Use generated enums (`ProductSort`, `DeliveryProvider`, …) — do not hand-roll constants in `api-clients`
 - Catalog **facets preview** and product **list** use **separate keys** (facets = `CatalogFilterParams`, no page/limit; list = full `CatalogSearchParams`)
-- Mutations invalidate the smallest relevant key set
+- Mutations **invalidate** the smallest relevant key set — prefer `invalidateQueries` over `setQueryData` so subscribers refetch via their `queryFn` (pub/sub). **`await invalidateQueries` in async `onSuccess` / `onError`** so the mutation stays pending until refetch completes and action spinners don’t clear early. Use mutation response data after await for side effects (analytics, navigation, panel open). Reserve `setQueryData` for optimistic updates, internal cache merges, or rare cross-query patches you cannot invalidate (see [code-style-guide § Mutations → invalidate](./code-style-guide.md#mutations--invalidate-dont-manually-patch-cache))
+- **`mutationKey`** — only when you need to observe or filter mutations (`useMutationState`, devtools). Define in `[feature]MutationKeys` next to query keys; colocate `useMutationState` in the hook that owns the mutation (e.g. `addCartItemIsAddingProduct`) — not in random screens
+- **Prefer `mutate`** for single-flight writes; **per-call `mutate` callbacks** only when one request is in flight at a time. For **concurrent** writes with per-item UI (toasts, row spinners), use hook-level `onSuccess` for shared logic + **`mutateAsync` + `await`** per click, or hook-level `onSuccess` with `variables` (see [code-style-guide § Mutations](./code-style-guide.md#mutations--prefer-mutate))
 - Server Component prefetch: same `queryKey` + `queryFn` → dehydrate into `HydrationBoundary` (initial load / hard refresh only — not on every client filter change)
 - `utils.ts` = map search params → generated `*Data['query']` inside fetchers; not exported unless needed
 - Do **not** call generated SDK functions from screens/components — go through `apps/web/src/api`
