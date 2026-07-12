@@ -1,6 +1,4 @@
-# Frontend Code Style Guide (my-noodles)
-
-Conventions for `apps/web`. When unsure, grep the nearest analogous module. Architecture: `docs/mvp-plan.md`.
+# Frontend Code Style Guide
 
 ---
 
@@ -13,6 +11,7 @@ Conventions for `apps/web`. When unsure, grep the nearest analogous module. Arch
 - [Performance](#performance)
 - [Design & Theme](#design--theme)
 - [File Organization](#file-organization)
+- [Testing](#testing)
 - [Anti-Patterns](#anti-patterns)
 
 ---
@@ -49,19 +48,14 @@ export function useProductsList(filters: ProductListFilters) {
 **Avoid:**
 
 - Restating what the code already says (`// increment counter`)
-- File/section banners (`// — Support & contact —`) — use naming (`TELEGRAM_SUPPORT_URL`) and blank lines between groups
 - Commented-out placeholders for future work — add the export when needed
 - Architecture essays in source files — that belongs in `docs/` or skill references, not next to every module
-
-Same bar as `AGENTS.md`: comments are the exception, not the baseline.
 
 ---
 
 ## Component Patterns
 
 - Functional components + hooks
-- **`'use client'`** only when needed (interactivity, RQ, nuqs, Zustand, browser APIs)
-- Route **`page.tsx`** stays thin — delegate to `screens/[feature]`
 - Pass-through `...props` to root when building reusable pieces
 - Composition over deep prop drilling — context only when already established in the feature
 
@@ -78,7 +72,7 @@ Same bar as `AGENTS.md`: comments are the exception, not the baseline.
 
 ### Mutations → prefer `mutate`
 
-Follow [TanStack Query mutations guidance](https://tanstack.com/query/latest/docs/framework/react/guides/mutations): use **`mutate`** for almost all writes. Put **shared** cache invalidation and analytics in the hook’s `useMutation({ onSuccess })`. Pass **per-call** `onSuccess` / `onError` only for **single in-flight** writes (one click at a time).
+Follow TanStack Query mutations guidance: use **`mutate`** for almost all writes. Put **shared** cache invalidation and analytics in the hook’s `useMutation({ onSuccess })`. Pass **per-call** `onSuccess` / `onError` only for **single in-flight** writes (one click at a time).
 
 ```tsx
 // ✅ fire-and-forget write + local feedback (one add at a time)
@@ -90,58 +84,29 @@ addCartItem(payload, {
 // ✅ optimistic UI + rollback on failure
 setItemLiked(productId, true);
 likeFeed(productId, { onError: () => setItemLiked(productId, false) });
-
-// ✅ navigate after success — still mutate when only one draft is created
-createDraftOrder(undefined, {
-  onSuccess: (order) => router.push(`/checkout/${order.id}`),
-});
 ```
 
 **Two callback layers — they behave differently:**
 
-| Callback | Runs when | Concurrent adds |
-| --- | --- | --- |
-| `useMutation({ onSuccess })` | Every successful mutation | ✅ once per completed request (`variables` identifies the item) |
-| `mutate(vars, { onSuccess })` | Only for the **latest** `mutate()` call’s observer | ❌ overlapping calls drop earlier per-call callbacks |
+| Callback                      | Runs when                                           | Concurrent `mutate()` calls                                                                                                                                              |
+| ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `useMutation({ onSuccess })`  | Every successful mutation                           | ✅ Runs once for **each** successful mutation. You can inspect `variables` to know which request completed.                                                               |
+| `mutate(vars, { onSuccess })` | The callback attached to a specific `mutate()` call | ⚠️ If multiple `mutate()` calls overlap on the **same mutation instance**, only the **latest** per-call callbacks are guaranteed to fire. Earlier ones are unsubscribed. |
 
-Hook-level `onSuccess` is correct for shared logic (invalidate, analytics). **Do not** rely on per-call `mutate` callbacks when the user can trigger overlapping writes (e.g. rapid add-to-cart in Saved list) — only the last callback is retained.
+Every call to `mutate()` creates a new mutation observer. When you call `mutate()` again on the same mutation object before the previous one finishes, React Query removes the previous observer and attaches the new one. The hook-level callbacks belong to the mutation itself, so they execute for every mutation result. The per-call callbacks belong to the observer, so replacing the observer means earlier callbacks are discarded.
 
-**`mutateAsync`** — use when you need a **Promise per call**:
+### If you need every callback
 
-- Multi-step async composition (`await stepA(); await stepB();`)
-- **Per-item UI after each concurrent mutation** (toast, row state) — `await addCartItemAsync(payload)` in the click handler
-- `Promise.all(items.map((item) => mutation.mutateAsync(item)))` for batch flows
+There are three common approaches:
 
-```tsx
-// ✅ concurrent adds — one toast per completed item
-const handleAddToCart = async (product: Product) => {
-  try {
-    await addCartItemAsync({ ...line, suppressPanelOpen: true });
-    showToast.success(t('addedToCart', { name: product.name }));
-  } catch {
-    showToast.error(t('addFailed'));
-  }
-};
+* Put the logic in `useMutation({ onSuccess })` (recommended for shared behavior).
+* Use `mutateAsync()` and `await` each call:
 
-// ✅ shared per-item logic belongs in useMutation — runs for every success
-useMutation({
-  onSuccess: async (_cart, variables) => {
-    await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
-    trackAddToCart(variables, variables.qty ?? 1);
-  },
-});
-```
-
-```tsx
-// ❌ per-call mutate callbacks with overlapping requests — only the last toast fires
-items.forEach((item) => {
-  addCartItem(item, { onSuccess: () => toast(item.title) });
-});
-
-// ❌ mutateAsync + void / .then when mutate + single-flight callbacks suffice
-void addCartItemAsync(payload);
-void createDraftOrderAsync().then((order) => router.push(`/checkout/${order.id}`));
-```
+  ```tsx
+  await mutation.mutateAsync(item1);
+  await mutation.mutateAsync(item2);
+  ```
+* Create separate mutation instances if each operation needs its own independent lifecycle.
 
 ### Mutations → invalidate, don’t manually patch cache
 
@@ -180,7 +145,7 @@ onSuccess: () => {
 **`setQueryData`** — rare exceptions only:
 
 - Optimistic updates with explicit rollback in `onError`
-- Internal cache orchestration (e.g. merging paginated catalog pages in `resolvePaginatedProductsPage`) where no mutation owns the shape
+- Internal cache orchestration
 - Updating a query **you do not own** and cannot invalidate (external / third-party hook) — document why
 
 Do **not** mirror mutation responses into cache with `setQueryData` when invalidation would work — it duplicates shape knowledge and becomes hard to maintain.
@@ -197,35 +162,22 @@ screens/[feature]/search-params/
   index.ts     # public barrel
 ```
 
-- **Server:** `catalogSearchParamsCache.parse(searchParams)` in `page.tsx` for initial prefetch only
-- **Client:** `useCatalogSearchParams()` from the barrel — **do not** pass `{ shallow: false }` unless a Server Component must re-render on every URL change (catalog does not; TanStack Query refetches client-side)
-- **No mappers in search-params/** — map to API query shapes inside `api/[feature]/` fetchers (`utils.ts`), which accept search-param types directly
+- **Server:** `catalogSearchParamsCache.parse(searchParams)` for initial prefetch only
+- **Client:** `useCatalogSearchParams()` for client side query params usage
+- **No mappers in search-params/** — map to API query shape inside `api/[feature]/` fetchers right before sending to api, operate with domain structure across application - to api expecting shape before send
 
 ```ts
 export function useCatalogSearchParams() {
   const [params, setParams] = useQueryStates(catalogSearchParamsParsers);
-  // default shallow: true — instant URL sync, no server round-trip per filter change
 }
 ```
 
-### Client-only → Zustand
+### Compound component client-side logic/flow → Zustand
 
-Use Zustand for **ephemeral client state** that is not server data and should not live in the URL — e.g. cart lines, drawer open/closed, cross-page UI preferences.
-
-**When to pick something else:**
-
-| Need | Use |
-| --- | --- |
-| API / cacheable data | TanStack Query (`apps/web/src/api/`) |
-| Shareable or bookmarkable filters, sort, pagination | nuqs (`screens/[feature]/search-params/`) |
-| Shared UI state within one screen (deep prop drilling) | React Context — Provider + access hook ([common-patterns §8](./common-patterns.md#8-feature-scoped-react-context)) |
-| Scoped to one subtree | Local `useState` / component state |
-
-**Conventions:**
+If the logic is more then CRUD that react-query hooks is enough for, abstract the functionality behind hooks/components with usage of Zustand store
 
 - Stores live in `hooks/[feature]/` — **`cart-store.ts`** (Zustand instance, internal) + **`use-*.ts`** (selector/action hooks) + **`index.ts`** barrel. Screens import `@/hooks/cart`, never the raw store.
 - **Persist only what the customer expects across sessions** (`persist` + `partialize`). Ephemeral UI (`panelOpen`, suppression flags, draft toggles) stays in memory — not localStorage.
-- **`version` + `migrate`:** bump on shape changes; migrate returns a clean slate instead of patching unknown fields.
 - **Actions as store methods;** expose thin hooks for components (`useCartActions`, `useCartItems`) rather than `useCartStore` in screens.
 - Do not mirror server entities — RQ owns fetched data; the store holds IDs, quantities, and UI-only fields.
 - Reference implementation: `hooks/cart/` (persisted lines + ephemeral panel state).
@@ -243,13 +195,11 @@ Every network-backed surface covers the **full lifecycle**:
 | **Refetching** | `isFetching && !isPending` | Keep stale content visible; soft feedback nearby (see [common-patterns — Initial load vs refetch](./common-patterns.md#initial-load-vs-refetch)) |
 
 ```tsx
-if (isPending && !data) return <Skeleton />;
-if (isError && !data) return <ErrorState onRetry={refetch} />;
+if (isPending) return <Skeleton />;
+if (isError) return <ErrorState onRetry={refetch} />;
 if (!items.length) return <EmptyState />;
 return <Content isRefetching={isFetching && !isPending} />;
 ```
-
-While **refetching with stale data** (filter preview, sort change): dim the existing UI and disable interaction — do not remount the panel or fall back to skeleton.
 
 ---
 
@@ -257,59 +207,18 @@ While **refetching with stale data** (filter preview, sort change): dim the exis
 
 - ISR/`revalidate` for catalog and product pages per mvp-plan
 - RQ caching — don't refetch on every render
-- `next/image` for product photos (remote URLs from API)
-- Catalog refetch smoothness: `useSmoothBusyState` + grid veil (`ProductGridRefreshVeil`) — debounced in/out overlay while stale data stays visible
 - Optimize only when measured — no premature `memo` everywhere
-
-### Loading UI vs SEO (indexable routes)
-
-**SEO-sensitive routes** — home, catalog, product detail, collection landing — must ship **real content in the initial HTML** (product names, links, copy). Crawlers and “View Page Source” should not see route-level skeleton markup.
-
-| Mechanism | SEO-sensitive routes | Non-SEO routes (cart, checkout, …) |
-| --- | --- | --- |
-| **`loading.tsx`** | **Do not add** | OK for client-nav polish |
-| **`<Suspense fallback={…}>`** around async prefetch in `page.tsx` | **Do not use** — streams skeleton into the document | OK when the route is not indexed |
-| **`page.tsx` data loading** | `async` page — `await` prefetch, then return `QueryHydrate` + screen | Same or lighter |
-| **Loading UX after hydration** | Client screens/components — RQ `isPending` / `isFetching`, inline skeletons, contextual refetch overlays (`ProductGrid`, `FilterSheet`) | Same pattern |
-
-```tsx
-// ✅ indexable catalog page — full HTML, no route skeleton
-export default async function CatalogPage({ params, searchParams }: PageProps) {
-  await prefetchCatalogQueries(/* … */);
-  return (
-    <QueryHydrate state={dehydrate(queryClient)}>
-      <CatalogScreen />
-    </QueryHydrate>
-  );
-}
-
-// ❌ indexable page — skeleton can appear in streamed / navigated HTML
-export default function CatalogPage(props: PageProps) {
-  return (
-    <Suspense fallback={<CatalogLoadingFallback />}>
-      <CatalogPageContent {...props} />
-    </Suspense>
-  );
-}
-```
-
-**Post-hydration loading** belongs in the component that owns the data — grid veil, filter skeletons, inline progress — not route-level `loading.tsx` or global floating indicators.
-
-**SSR + React Query:** `getQueryClient()` must return the **same server instance** for `Providers` and `page.tsx` prefetch (`React.cache` in `shared/query-client/`). Otherwise prefetched catalog data never reaches SSR of client hooks and indexable HTML shows skeletons instead of product cards. Use **`formatUseQuery`** view-state flags (`*IsInitialLoad`, `*IsLoadFailed`, `*IsEmpty`, `*IsRefetching`, `*IsBusy`) instead of hand-rolling `isPending && !data` everywhere — see [Remote data lifecycle](./common-patterns.md#remote-data-lifecycle-loading--error--empty) for screen branching and i18n.
 
 ---
 
 ## Design & Theme
 
 - **`packages/theme`** — bare tokens and MUI component defaults (`theme.colors.*`, spacing, typography)
-- **`packages/ui`** — composed components, icons (`iconStyle` + per-file SVGR imports), skin engine (`resolveSkin` from `@my-noodles/ui`)
-- Import **`theme`** from `@my-noodles/theme`; shared UI from `@my-noodles/ui`
+- **`packages/ui`** — composed components, icons
 - Extend look-and-feel in **`packages/theme/src/components.ts`** (MUI `styleOverrides` / `variants`) so apps reuse defaults instead of repeating `sx`
-- Cyrillic fonts: **Unbounded** (display), **Manrope** (body) via `@my-noodles/theme/fonts.css`
+- Cyrillic fonts: **Unbounded** (display), **Manrope** (body) via `packages/theme/fonts.css`
 - Extract generic composed UI to **`packages/ui`** when reusable across frontend apps (`StableLinearProgress`, `DiscoveryCard`, …)
-- Product/collection surfaces: CSS variables from `resolveSkin()` — do not hardcode brand/country accent colors in screens
 - **Immersive / feature chrome:** when a surface needs colors that are not part of the global theme (e.g. white copy on a full-bleed video reel), prefer MUI palette keys (`common.white`, `alpha(theme.palette.common.black, …)`) and feature-scoped constants in a local `*-chrome.ts`. Raw hex/rgba in `sx` is a **last resort** for effects the theme cannot express (e.g. a one-off like accent on dark media).
-- **Icons:** `@my-noodles/ui/icons/[name].svg` + `iconStyle({ size, color })` on `style` — not `width`/`height` props or wrapper `color`
 
 ---
 
@@ -317,10 +226,6 @@ export default function CatalogPage(props: PageProps) {
 
 ```text
 apps/web/src/
-├── app/[locale]/           # routes only
-│   ├── layout.tsx
-│   ├── providers.tsx
-│   └── catalog/page.tsx    # → screens/catalog
 ├── screens/[feature]/
 │   ├── index.tsx
 │   └── search-params/      # parsers.ts, types.ts, hooks.ts, index.ts
@@ -344,16 +249,12 @@ apps/web/src/
 - Layer by technical concern, group by feature inside each folder
 - Co-locate `*.test.tsx` with source
 - i18n messages in per-locale JSON (path per next-intl setup — verify in repo)
-- **`packages/api-clients`** = `@hey-api/openapi-ts` fetch SDK; **`apps/web/src/api`** = React Query layer
-- **`api/clients.ts`** — side-effect `setupApiClients(env.NEXT_PUBLIC_API_URL)`; import from `app/providers.tsx` + root layout
 - **`shared/env.ts`** — **single source of truth** for all storefront env vars: one Zod schema, parsed once, exported as typed **`env`**. No separate `process.env` reads or env helper files elsewhere. Copy `apps/web/.env.example` → `.env.local`. **Zod-first:** use schema validation, `.transform()`, and `.pipe()` for coercion and normalization; custom parse helpers only as a last resort.
 - **`shared/urls.ts`** — external off-origin links (`TELEGRAM_SUPPORT_URL`, …). In-app routes → `@/i18n/navigation`; SEO path builders → `shared/seo/urls`.
-- **Test configs** — shared presets in `configs/vitest` (`createBaseVitestConfig`) and `configs/jest` (`createJestConfig`); each app/package keeps a thin config file with project-specific overrides (alias, include globs, env stubs, …).
-- **`hooks/locale/`** — `useAppLocale()` (Zustand); `LocaleSync` binds route locale; client interceptor reads store; SSR uses `runWithAppLocale`
 
-### Module barrels (same idea as backend domains)
+### Module barrels
 
-Each **`api/[feature]/`** and **`hooks/[feature]/`** folder is a **module**. The **`index.ts`** is the only public surface — it re-exports what other layers may use (hooks, fetchers, query keys, types). Implementation files stay internal.
+Each **`[layer]/[feature]/`** folder is a **module**. The **`index.ts`** is the only public surface — it re-exports what other layers may use (hooks, fetchers, components, etc). Implementation files stay internal.
 
 ```ts
 // ✅ screens, components, app pages
@@ -367,11 +268,6 @@ import { useCartActions } from '@/hooks/cart/use-cart';
 import { fetchProductsList } from '@/api/products/products';
 ```
 
-- **`index.ts` exports** — hooks, server fetchers, query-key factories, mutation-key factories (when used), shared types
-- **Keep internal** — `*.hooks.ts` vs `*.ts` split, Zustand store instances, `utils.ts` helpers (unless explicitly part of the public API)
-- **Cross-module** — always import via `@/api/[feature]` or `@/hooks/[feature]`, not sibling files
-- Optional umbrella `@/api` re-exports all domains; prefer **feature barrel** when only one domain is needed (clearer boundaries, better tree-shaking intent)
-
 ---
 
 ## Testing
@@ -384,46 +280,45 @@ Three layers — pick the lightest tool that proves the behavior:
 | **Component / integration** | Vitest + Testing Library | Yes | **`getByRole` → `getByLabel` → `getByText`** (non-i18n data only) |
 | **E2E smoke** | Playwright (`apps/web/e2e/`) | Yes | Roles/labels + **i18n fixtures** + URL/state; **`data-testid` sparingly** |
 
+Only valuable use cases that provide value to business should be covered by tests, which overhead with test files and supporting tests will worth the hustle.
+Simple utility functions that will be anyway be tested under some test case should not have saperate test file to not pollute codebase with overgranuality and overwhelming file structure.
+
+Write tests only for business valuable flows and functionality, that app will be suffering if that crucial part of application wont be working properly (if you are in doubt - before writing tests ask for clarification of your assumption of importance)
+
+No need for each simple function and change to immediately create a test file with pile of test cases covering simple functionality. Make under test a complete group of business valuable part of application, which correct functioning is priority and thus time spent on writing and covering it by tests will give a benefit in a stability:
+business value of functionality stability > time spent on covering it by tests + complication of codebase due to more code
+
 ### Selector priority (component + e2e)
 
 1. **`getByRole`** + accessible name — buttons, links, headings, dialogs
-2. **`getByLabel`** — form fields (checkout, filters)
-3. **URL / store / API state** — `/checkout/success`, cart count, mocked responses
-4. **`getByTestId`** — only when role/label is ambiguous (e.g. repeated catalog cards) or the action must stay stable across copy changes
+2. **`getByTestId`** — only when role/label is ambiguous (e.g. repeated catalog cards) or the action must stay stable across copy changes
+3. **`getByLabel`** — form fields (checkout, filters)
+4. **URL / store / API state** — `/checkout/success`, cart count, mocked responses
 5. **Avoid** hardcoded UI copy in specs and **`getByText` for primary actions**
-
-**Do not** replace roles/labels with testIds everywhere — testIds skip the accessibility contract customers and assistive tech rely on.
-
-### i18n in tests
-
-- **Production UI:** `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json`
-- **Playwright:** import `e2e/fixtures/uk-messages.ts` (wraps `messages/uk.json`) — reference **`uk.catalog.addToCart`**, not inline `'У кошик'`
-- **Vitest component tests:** mock `next-intl` or pass labels as props; assert behavior, not marketing headlines
-- **API/mock data** (product names, slugs) — stable strings from fixtures, not translation files
 
 ### `data-testid` policy
 
-- Centralize in **`src/tests/test-ids.ts`** — one source for components and `e2e/*.spec.ts`
 - Name by **action + domain**, not visual copy: `catalog-add-to-cart--{slug}`, `checkout-submit`
 - Add a testId only when role/label cannot uniquely target the element; never on typography or static headings
+
+
+Use test-ids hardcoded as magic strings in component.This is fine those will be a guardrail to keep components in tact with tests. No need to keep test ids in separate variables file. It will just additional file to reference and overcomplicate imports in files.
+
+A good default is:
+
+Prefer getByRole, getByLabelText, getByText, etc. Use data-testid only when needed.
+When you do use data-testid, inline the string in both the component and the test. Treat the test ID as part of the component's public testing contract rather than an implementation detail.
+
+For most applications, duplicated test ID strings are a reasonable trade-off because they make tests more effective at detecting unintended changes.
+
 
 ### File layout
 
 ```text
-hooks/cart/~cart-store.test.ts          # unit — co-located, ~ prefix optional
+hooks/cart/cart-store.test.ts          # unit — co-located, ~ prefix optional
 components/checkout/checkout-form.test.tsx
 e2e/funnel.spec.ts                      # Playwright smoke
-e2e/fixtures/uk-messages.ts             # i18n fixture for e2e
-src/tests/test-ids.ts                  # shared data-testid constants
 ```
-
-### Git hooks vs CI
-
-- **pre-commit** — `nx affected -t validate --uncommitted` (format, lint --fix, type-check, unit tests, knip)
-- **CI** — staged jobs: format/lint/types/knip → unit → e2e (see `.github/workflows/ci.yml`)
-
-Run locally: `pnpm nx run web:validate` (inner loop); full gate matches CI targets.
-
 ---
 
 ## Anti-Patterns
@@ -434,45 +329,15 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | --- | --- |
 | Raw generated SDK calls / `fetch` inside screens or components | Server-safe fetchers + query keys in `api/[feature]/[feature].ts`; client hooks in `*.hooks.ts` |
 | Deep imports into module internals (`@/api/orders/orders.hooks`, `@/hooks/cart/use-cart`) | Module barrel only: `@/api/orders`, `@/hooks/cart` (see [Module barrels](#module-barrels-same-idea-as-backend-domains)) |
-| Duplicating OpenAPI shapes as `*ViewModel` / hand-rolled DTOs | Types from `@my-noodles/api-clients/storefront`; local `types.ts` only for query-input/filter shapes |
-| `useState` for catalog filters, sort, or pagination | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI; prefetch once in `page.tsx` |
-| Mappers from search params in `screens/` | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept `CatalogSearchParams` / `CatalogFilterParams` |
-| Passing `locale` through every screen into hooks | `useAppLocale()` inside `*.hooks.ts` for query keys; fetchers locale-free — interceptor + ALS/header |
-| User-visible strings in JSX | `useTranslations` / `getTranslations`; messages in `apps/web/messages/{locale}.json` |
-| `'use client'` on routes, layouts, or presentational wrappers by default | Server Components first; client boundary only for interactivity, RQ, nuqs, Zustand, or browser APIs |
-| Business logic and layout mixed in `app/**/page.tsx` | Thin `page.tsx` → `screens/[feature]`; routing shell stays in `app/` |
-| Inline defaults for `NEXT_PUBLIC_*` or scattered env parsing (`process.env` outside `env.ts`) | One Zod schema in `shared/env.ts`; import `env` (`env.NEXT_PUBLIC_SITE_URL`, …); values in `.env.local` (see `.env.example`) |
-| Post-parse string cleanup on env exports (`replace`, `trim`, … outside the schema) | Zod `.transform()` / `.pipe()` on the field in `shared/env.ts` — same pattern as forms and DTO validation |
+| `useState` for catalog filters, sort, or pagination | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI |
+| Mappers from search params in `screens/` | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept search-params/query-params structure directly |
+| User-visible strings in JSX | Define keys in translation framework to their values, so no magic strings would be present in codebase |
 | Hardcoded external `https://…` in screens/components | Named exports in `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
-| Comments that narrate obvious code or section banners | Self-explanatory names and structure; comments only for non-obvious business logic or maintainer warnings (see [Comments](#comments)) |
 | Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; feature chrome files for immersive UIs; raw hex only as last resort (see [Design & Theme](#design--theme)) |
-| Query keys missing filter/locale/pagination inputs | Hierarchical key factories (`productsQueryKeys.list(filters)`) matching prefetch and hook |
-| Inline `mutationKey` string tuples in hooks or screens | `[feature]MutationKeys` in `api/[feature]/[feature].ts`, imported via `@/api/[feature]` |
+| Query/mutation keys missing query/mutation inputs | Hierarchical key factories (`products(Query|Mutation)Keys.[action](...argrs)`) matching prefetch and hook |
 | `setQueryData` in mutation `onSuccess` to mirror API responses | `invalidateQueries` with the smallest relevant key set; use mutation `data` only for side effects (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
 | `void invalidateQueries(...)` in mutation lifecycle callbacks | `async onSuccess` / `onError` + `await invalidateQueries(...)` so `isPending` covers refetch (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
 | Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
-| Per-call `mutate` callbacks for concurrent writes (rapid multi-add) | Hook-level `onSuccess` for shared logic; `mutateAsync` + `await` per click for per-item toasts (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
-| `mutateAsync` for fire-and-forget writes or `.then()` shims | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) |
-| `loading.tsx` or Suspense fallbacks on home / catalog / product / collection | Async `page.tsx` with awaited prefetch; client loading in `screens/` + `components/` only |
+| `mutateAsync` for fire-and-forget writes or `.then()` shims | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
 | Global fixed loading indicator for route-local refetch | Contextual feedback near updating content (toolbar + grid veil, filter panel dim) |
-| `{condition && <LinearProgress />}` — mount/unmount shifts layout | `@my-noodles/ui` `StableLinearProgress` — reserved slot, `opacity` + `visibility` |
-| Premature `memo` / micro-optimizations | Measure first; ISR + RQ caching cover most cases |
-| Hardcoded locale strings in Playwright specs | `e2e/fixtures/uk-messages.ts` + `getByRole` / `getByLabel` |
-| `data-testid` on every element | Roles/labels first; testIds only via `shared/test-ids.ts` for ambiguous actions |
-| Testing marketing copy instead of behavior | Assert flow, URLs, form submission, cart state — not headline wording |
-
----
-
-## Quick checklist
-
-- [ ] Correct layer (`app` / `screen` / `component` / `api` / `hook`)
-- [ ] i18n for user-visible text
-- [ ] RQ keys include all filter/pagination inputs
-- [ ] Client boundary justified
-- [ ] Theme tokens, not raw hex
-- [ ] No narrating comments — only non-obvious business logic or warnings
-- [ ] Tests co-located; selectors follow [Testing](#testing) priority
-- [ ] Mutations use `mutate` + callbacks; `mutateAsync` only for real async composition
-- [ ] Mutation cache sync uses `await invalidateQueries` in async `onSuccess` / `onError`; no `setQueryData` mirroring API responses unless documented exception
-- [ ] `pnpm nx run web:validate` passes
-- [ ] Indexable routes: no `loading.tsx`, no Suspense around server prefetch in `page.tsx`
+| `data-testid` on every element | Roles/labels first; test ids for ambiguous actions |

@@ -1,10 +1,10 @@
 import { HttpStatus } from '@my-noodles/api-lib/exceptions';
 
-import { AppException } from '@/infrastructure/exceptions';
+import { AppException, NotFoundException } from '@/infrastructure/exceptions';
 
-export class CheckoutNotFoundException extends AppException<{ checkoutId: string }> {
+export class CheckoutNotFoundException extends NotFoundException {
   constructor(checkoutId: string) {
-    super(HttpStatus.NOT_FOUND, 'checkout_not_found', 'Checkout not found', { checkoutId });
+    super('checkout_not_found', 'Checkout not found', { checkoutId });
   }
 }
 

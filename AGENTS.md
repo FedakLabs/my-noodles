@@ -20,8 +20,6 @@ If the answer is not a clear **yes**, reconsider. The target feeling:
 
 Mobile-first, SEO-oriented food-import storefront. Behavioral data via a slick catalog, honest product cards, curated Collections, and cart → checkout. Ukrainian now, i18n-ready.
 
-**Technical plan:** [docs/mvp-plan.md](./docs/mvp-plan.md) — architecture, resolved decisions, pinned versions, and phased checklist. Follow it unless the user explicitly overrides.
-
 **Planned monorepo layout:**
 
 ```text

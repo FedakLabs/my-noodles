@@ -1,6 +1,4 @@
-# Backend Code Style Guide (NestJS + TypeORM)
-
-Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogous module and match its shape.
+# Nodejs Code Style Guide
 
 ---
 
@@ -20,38 +18,14 @@ Conventions for TypeScript in `apps/api`. When unsure, grep the nearest analogou
 12. [Logging, Tracing, Observability](#12-logging-tracing-observability)
 13. [Rate Limiting](#13-rate-limiting)
 14. [Tests](#14-tests)
-15. [Code Formatting](#15-code-formatting)
-16. [Anti-Patterns](#16-anti-patterns)
-17. [Quick Sanity Checklist](#17-quick-sanity-checklist)
+15. [Anti-Patterns](#15-anti-patterns)
+16. [Quick Sanity Checklist](#16-quick-sanity-checklist)
 
 ---
 
 ## 1. Language & TypeScript
 
-### Module system
-
-- `apps/api` is **CommonJS** (`"module": "CommonJS"` in tsconfig, no `"type": "module"` in `package.json`).
-- **No file extensions** in import paths — use `@/config`, `./orders.service`, `@/infrastructure/persistence`.
-- Barrel folders resolve via `index.ts` automatically — import the folder, not `/index` (e.g. `@/infrastructure/logging`, not `…/logging/index`).
-- Prefer `import type` for type-only imports.
-- Use `__dirname` for paths relative to the current module (e.g. `config.ts` root for entity/migration globs).
-- **ESM deferred** until NestJS v12+ native support — do not reintroduce `"type": "module"` or `.js` import suffixes without an explicit migration plan.
-
-### Strictness
-
-- Monorepo base enables `strict: true`, `noUncheckedIndexedAccess`, etc. No `any` without a comment justifying it.
-- Prefer `unknown` + narrowing over `any`.
-- Avoid `!` non-null assertions unless the value was just validated or loaded from a required DB column.
-- Use `readonly` on constructor-injected dependencies.
-
-### Decorators
-
-- NestJS, TypeORM, class-validator, and Swagger all use decorators — keep `emitDecoratorMetadata` enabled in tsconfig.
-- Follow decorator order used in neighbouring controllers (route decorators before param decorators).
-
 ### Path aliases (`@/*`)
-
-Configured in `apps/api/tsconfig.json`: `@/*` → `src/*` (same idea as `apps/web`).
 
 | Import from | Use |
 | ----------- | --- |
@@ -77,8 +51,6 @@ import { TelegramModule } from '@/infrastructure/external-apis/telegram';
 import { Product } from '../products/product.entity';
 import { OrdersService } from './orders.service';
 ```
-
-**Import order** (simple-import-sort): externals → same-module / sibling relative → `@/` cross-layer.
 
 ---
 
@@ -119,30 +91,6 @@ We work in an **OOP-first** style aligned with NestJS, TypeORM, and class-valida
 | External API clients (`ExternalApi` subclasses) | One-off validators reused across DTOs when a decorator factory is enough |
 | Factories that hold config and expose methods (`WinstonLoggerFactory`) | |
 
-**Winston logger:** `@my-noodles/api-lib/logging` owns `WinstonLoggerFactory` and the `APP_LOGGER` injection token. `LoggingModule` is `@Global()` and registers one Winston instance.
-
-```ts
-// infrastructure/logging/logging.module.ts
-@Global()
-@Module({
-  providers: [
-    {
-      provide: APP_LOGGER,
-      useFactory: () =>
-        new WinstonLoggerFactory({ appName, nodeEnv, otel }).createLogger(),
-    },
-  ],
-  exports: [APP_LOGGER],
-})
-export class LoggingModule {}
-
-// index.ts — same instance from DI
-const app = await NestFactory.create(AppModule);
-const logger = app.get<Logger>(APP_LOGGER);
-
-// feature / infra code
-constructor(@Inject(APP_LOGGER) private readonly logger: Logger) {}
-```
 
 Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/api/src/utils/` when they have no state and no framework coupling.
 
@@ -186,7 +134,12 @@ Nest runtime wiring still goes through `@Module({ imports: [...] })`; barrels ar
 Strict boundaries:
 
 ```text
-Controllers → Services → Repositories / External clients → Postgres / HTTP
+Controllers
+└─▶ Services
+    ├─▶ Repositories
+    │   └─▶ DB
+    └─▶ External Clients
+        └─▶ HTTP APIs
 ```
 
 ### Controllers
@@ -224,9 +177,12 @@ export class OrdersController {
 - Wrap external failures in domain exceptions.
 - Own transactions (`DataSource.transaction` or `EntityManager`).
 
-### Repositories / clients
+### Repositories
 
 - TypeORM `Repository<Entity>` — IO only.
+
+### Clients
+
 - External API classes: `@Injectable()` `*Api` in `infrastructure/external-apis/<provider>/<provider>.api.ts`.
 - Optional domain helpers in the same folder: `@Injectable()` `*Service` in `infrastructure/external-apis/<provider>/<provider>.service.ts`.
 
@@ -265,14 +221,6 @@ Register in `AppModule.imports`. Export providers other modules need.
 
 ## 5. HTTP & Controllers
 
-### Global setup (bootstrap)
-
-- `app.setGlobalPrefix('api')` — routes are `/api/...`, no versioning.
-- Global `ValidationPipe`: `whitelist: true`, `transform: true`, `forbidNonWhitelisted: true`.
-- Swagger at `/api/docs-json` via `@nestjs/swagger`.
-- Public API contract changes should be validated through the project commands, not by hand-maintaining OpenAPI metadata files.
-- Do **not** duplicate query params in separate `*.openapi.ts` files.
-
 ### Controller template
 
 ```ts
@@ -309,14 +257,14 @@ export class ProductsController {
 
 ### Domain exceptions
 
-Live in `<feature>.exceptions.ts`. Extend Nest HTTP exceptions:
+Live in `<feature>.exceptions.ts`. Extend base app exception but Nest compatible (so that next engine would catch it and handled correctly) src\infrastructure\exceptions\app.exceptions.ts:
 
 ```ts
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@/infrastructure/exceptions';
 
-export class ProductNotFoundException extends NotFoundException {
-  constructor(slug: string) {
-    super({ message: 'Product not found', slug });
+export class CheckoutNotFoundException extends NotFoundException {
+  constructor(checkoutId: string) {
+    super('checkout_not_found', 'Checkout not found', { checkoutId });
   }
 }
 ```
@@ -476,26 +424,6 @@ name: LocalizedString; // { uk: string; en?: string }
 
 Resolve in service layer by locale query param.
 
-### Relations & foreign keys
-
-- Explicit inverse sides; avoid eager loading unless every caller needs it.
-- **Every FK**: `onUpdate: 'CASCADE'` — keeps referential integrity when a parent PK changes.
-- **Never** `onDelete: 'CASCADE'` — avoids silent cascade wipes; use `onDelete: 'RESTRICT'` on all FKs (including optional ones such as `products.brand_id` — detach or reassign in app code before deleting a brand).
-- TypeORM `cascade: true` on `@OneToMany` / `@OneToOne` is **persist cascade** (save/load), not a DB `ON DELETE CASCADE` — use sparingly and only when children are always saved with the parent in the same transaction.
-- `@JoinTable` join / inverse join columns: set `onUpdate: 'CASCADE'` and `onDelete: 'RESTRICT'` on both sides in the **migration** (TypeORM `@JoinTable` metadata may not expose FK actions — keep DB constraints explicit in SQL).
-
-> **Why `RESTRICT` + soft-delete, not `CASCADE`.** Data is the asset that outlives the code: customers, orders, and the engagement signals we use for personalization can't be regenerated once lost. Applications _have_ bugs — a wrong `where`, a mis-scoped admin action, a bad script — and a hard `ON DELETE CASCADE` quietly turns one erroneous parent delete into a silent multi-table wipe with no restore point. `RESTRICT` makes the database refuse that delete, forcing deletion to be an _explicit, intentional_ app decision; pairing it with soft-delete (`deleted_at` via `softRemove` / `softDelete`) keeps the row recoverable and preserves the audit trail. It's the deliberate compromise standard in SRE/data-stewardship practice (e.g. Google's _SRE_ book on data integrity & defense-in-depth recovery): treat data as deleted for the app, but cheap to restore when — not if — something goes wrong. Note this is orthogonal to the FK action: soft-delete is an `UPDATE`, so it never triggers `ON DELETE` at all; `RESTRICT` only guards against accidental _hard_ deletes.
-
-```ts
-@ManyToOne(() => Country, (country) => country.products, {
-  nullable: false,
-  onUpdate: 'CASCADE',
-  onDelete: 'RESTRICT',
-})
-@JoinColumn({ name: 'country_id' })
-country!: Country;
-```
-
 ### Repository queries
 
 Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
@@ -508,34 +436,6 @@ Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 | In-memory aggregation on a bounded filtered set | Facet counts / min–max when result sets stay small enough to load in one query |
 | `createQueryBuilder` | Only when the above cannot express the query (e.g. complex SQL, window functions, bulk relation API in seed scripts) |
 
-Centralize reusable filter/sort builders next to the feature (e.g. `buildProductWhere()` in `products.filters.ts`) — **entity property names**, not raw SQL column strings.
-
-```ts
-import { Between, In, MoreThan, type FindOptionsWhere } from 'typeorm';
-
-export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
-  const where: FindOptionsWhere<Product> = {};
-
-  if (filters.category?.length) {
-    where.category = { slug: In(filters.category) };
-  }
-
-  if (filters.inStock === true) {
-    where.quantity = MoreThan(0);
-  }
-
-  return where;
-}
-
-const { items: rows, meta } = await PaginationHelper.paginate(this.productsRepository, filters, {
-  where: buildProductWhere(filters),
-  relations: { brand: true, country: true, category: true },
-  order: { sortWeight: 'DESC', createdAt: 'DESC' },
-});
-
-return { items: rows.map(toSummary), meta };
-```
-
 **Do not** scatter `'product.price_minor'` / `'category.slug'` strings in services — renames will not be caught by TypeScript.
 
 ---
@@ -544,10 +444,9 @@ return { items: rows.map(toSummary), meta };
 
 - **Never** rely on `synchronize: true` — `prepareDataSource()` sets `synchronize: false` always.
 - Migration classes in `src/infrastructure/migrations/*.ts` (CLI helpers live in `migrations/scripts/`).
+- **Never** rely on typeorm automatic migration generation, prepare migration by hand with thorough inspection of schema changes, indexes creation, etc
 - Implement **both** `up` and `down`.
 - Test locally: `pnpm nx run api:migration:run` → `pnpm nx run api:migration:revert` → run again.
-- **Initial schema:** one migration per domain scope, ordered by FK dependencies (e.g. `CreateCatalog` → `CreateOrders`). Later changes get their own timestamped migration files.
-- Data migrations: idempotent SQL (`ON CONFLICT DO NOTHING`, guarded `WHERE` clauses). Skip legacy backfills when the project has no production data yet.
 
 ### SQL style
 
@@ -557,6 +456,8 @@ return { items: rows.map(toSummary), meta };
 - **String columns:** use `TEXT` in PostgreSQL (same performance as `VARCHAR(n)`; avoid arbitrary length caps in SQL).
 - Name constraints explicitly: `{table}_pkey`, `{table}_{column}_key` (unique), `{child}_{parent}_fk` (foreign keys).
 - **No DB defaults for business/content fields** (`currency`, `flavor`, `status`, `sort_order`, empty arrays, placeholder JSON). Seed scripts and application code must supply intentional values. DB defaults are only for infrastructure: `uuidv7()` (PostgreSQL 18+), timestamp columns (`now()`).
+
+### Relations & foreign keys
 - **Foreign keys — default for every relationship:**
 
 ```sql
@@ -581,6 +482,24 @@ parent_id UUID NOT NULL
 
 ```sql
 CREATE INDEX idx_products_country_id ON products(country_id) WHERE deleted_at IS NULL;
+```
+
+- Explicit inverse sides; avoid eager loading unless every caller needs it.
+- **Every FK**: `onUpdate: 'CASCADE'` — keeps referential integrity when a parent PK changes.
+- **Never** `onDelete: 'CASCADE'` — avoids silent cascade wipes; use `onDelete: 'RESTRICT'` on all FKs (including optional ones such as `products.brand_id` — detach or reassign in app code before deleting a brand).
+- TypeORM `cascade: true` on `@OneToMany` / `@OneToOne` is **persist cascade** (save/load), not a DB `ON DELETE CASCADE` — use sparingly and only when children are always saved with the parent in the same transaction.
+- `@JoinTable` join / inverse join columns: set `onUpdate: 'CASCADE'` and `onDelete: 'RESTRICT'` on both sides in the **migration** (TypeORM `@JoinTable` metadata may not expose FK actions — keep DB constraints explicit in SQL).
+
+> **Why `RESTRICT` + soft-delete, not `CASCADE`.** Data is the asset that outlives the code: customers, orders, and the engagement signals we use for personalization can't be regenerated once lost. Applications _have_ bugs — a wrong `where`, a mis-scoped admin action, a bad script — and a hard `ON DELETE CASCADE` quietly turns one erroneous parent delete into a silent multi-table wipe with no restore point. `RESTRICT` makes the database refuse that delete, forcing deletion to be an _explicit, intentional_ app decision; pairing it with soft-delete (`deleted_at` via `softRemove` / `softDelete`) keeps the row recoverable and preserves the audit trail. It's the deliberate compromise standard in SRE/data-stewardship practice (e.g. Google's _SRE_ book on data integrity & defense-in-depth recovery): treat data as deleted for the app, but cheap to restore when — not if — something goes wrong. Note this is orthogonal to the FK action: soft-delete is an `UPDATE`, so it never triggers `ON DELETE` at all; `RESTRICT` only guards against accidental _hard_ deletes.
+
+```ts
+@ManyToOne(() => Country, (country) => country.products, {
+  nullable: false,
+  onUpdate: 'CASCADE',
+  onDelete: 'RESTRICT',
+})
+@JoinColumn({ name: 'country_id' })
+country!: Country;
 ```
 
 ### TypeScript migration template
@@ -757,10 +676,10 @@ On limit exceeded, Nest returns 429 — map to friendly message in exception fil
 
 ## 14. Tests
 
-- Naming: `~<feature>.test.ts`, co-located.
+- Naming: `<feature>.test.ts`, co-located.
 - **Unit**: `@nestjs/testing` `Test.createTestingModule` with mocked providers/repos.
 - **E2E**: supertest against bootstrapped app; `POST /api/orders`, `GET /api/products`, etc.
-- Jest `testMatch` includes `**/~*.test.ts`.
+- Jest `testMatch` includes `**/*.test.ts`.
 
 Cover: happy path, validation 400, not-found 404, external client failure behavior, throttling where relevant.
 
@@ -768,19 +687,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 
 ---
 
-## 15. Code Formatting
-
-- Root Prettier: 2 spaces, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
-- Import order (simple-import-sort via ESLint):
-  1. External packages (`@nestjs/*`, `typeorm`, `class-validator`, …)
-  2. Same-module / sibling-feature relative imports (`./`, `../products/…`)
-  3. Cross-layer aliases (`@/infrastructure/…`, `@/application/…`, `@/config`, …)
-- Path aliases — see [§ Path aliases](#path-aliases-).
-- ESLint: node/nest preset from `configs/eslint` — no inline disables without justification.
-
----
-
-## 16. Anti-Patterns
+## 15. Anti-Patterns
 
 | Anti-pattern                                                     | Do instead                                            |
 | ---------------------------------------------------------------- | ----------------------------------------------------- |
@@ -805,7 +712,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 
 ---
 
-## 17. Quick Sanity Checklist
+## 16. Quick Sanity Checklist
 
 Before declaring done:
 
