@@ -1,13 +1,14 @@
+import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { type DataSource, IsNull, Repository } from 'typeorm';
 
 import { TransactionalRepository } from '@/infrastructure/persistence';
-import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
+import { CartItem } from './cart-item.entity';
 import type { CartItemDto, CartResponseDto } from './cart.dto';
 import {
   CartItemNotFoundException,
@@ -15,7 +16,6 @@ import {
   CartProductNotFoundException,
   CartProductOutOfStockException,
 } from './cart.exceptions';
-import { CartItem } from './cart-item.entity';
 
 @Injectable()
 export class CartService extends TransactionalRepository {

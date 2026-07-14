@@ -1,10 +1,6 @@
 {
-  "extends": "../../configs/typescript/base.json",
+  "extends": "../../configs/typescript/react-library.json",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM"],
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "outDir": "./dist",
     "rootDir": ".",
     "noEmit": true

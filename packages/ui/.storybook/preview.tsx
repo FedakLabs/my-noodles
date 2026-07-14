@@ -1,10 +1,10 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import type { Preview } from '@storybook/react-vite';
+import { MyNoodlesTheme } from '@my-noodles/theme';
 
 import '@my-noodles/theme/fonts.css';
 import '@my-noodles/theme/fonts.local.css';
-import { MyNoodlesTheme } from '@my-noodles/theme';
+import type { Preview } from '@storybook/react-vite';
 
 const preview: Preview = {
   decorators: [

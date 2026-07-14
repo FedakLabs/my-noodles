@@ -1,6 +1,4 @@
-import { HttpStatus } from '@my-noodles/api-lib/exceptions';
-
-import { AppException } from '@/infrastructure/exceptions';
+import { AppException, HttpStatus } from '@my-noodles/api-lib/exceptions';
 
 import type { DeliveryProvider } from '../orders/order-delivery.dto';
 

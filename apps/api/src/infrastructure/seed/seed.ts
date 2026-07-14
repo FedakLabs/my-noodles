@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-
 import { slugify } from '@my-noodles/api-lib/utils';
+import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { type DataSource, type Repository } from 'typeorm';
 
 import { Brand } from '@/application/brands';
@@ -11,7 +11,6 @@ import { FeedProductComment } from '@/application/feed';
 import { Product } from '@/application/products';
 import { config } from '@/config';
 import { createAppDataSource } from '@/infrastructure/persistence';
-import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
 import { buildFeedCommentSeeds } from './feed-seed-data';
 import {

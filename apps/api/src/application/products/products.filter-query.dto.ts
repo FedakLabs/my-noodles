@@ -2,7 +2,7 @@ import {
   TransformToArray,
   TransformToOptionalBoolean,
   TransformToOptionalInt,
-} from '@my-noodles/api-lib/utils';
+} from '@my-noodles/api-lib/transformers';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 

@@ -29,7 +29,6 @@ import { useCheckoutSessionState } from '@/hooks/checkout';
 import { useViewport } from '@/hooks/layout';
 import { usePendingRouter } from '@/hooks/smooth';
 import { cartLineToGa4Item } from '@/shared/analytics';
-import { testIds } from '@/tests/test-ids';
 
 import {
   type CheckoutFormData,
@@ -172,7 +171,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
       type="submit"
       variant="contained"
       fullWidth
-      data-testid={testIds.checkout.submit}
+      data-testid="checkout-submit"
       disabled={submitCheckoutIsPending || !checkout.items.length || !canSubmitForm}
       aria-busy={submitCheckoutIsPending}
       startIcon={

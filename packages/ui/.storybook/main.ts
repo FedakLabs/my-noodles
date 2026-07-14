@@ -1,6 +1,7 @@
-import type { StorybookConfig } from '@storybook/react-vite';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+
+import type { StorybookConfig } from '@storybook/react-vite';
 import svgr from 'vite-plugin-svgr';
 
 function getAbsolutePath(value: string): string {

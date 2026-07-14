@@ -1,7 +1,6 @@
 import 'server-only';
-
-import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
+import { notFound } from 'next/navigation';
 
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';

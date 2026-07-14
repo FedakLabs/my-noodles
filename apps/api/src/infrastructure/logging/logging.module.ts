@@ -1,27 +1,28 @@
-import { APP_LOGGER, WinstonLoggerFactory } from '@my-noodles/api-lib/logging';
+import { APP_LOGGER, createAppLogger } from '@my-noodles/api-lib/logging';
 import { Global, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 import { config } from '@/config';
 
-import { HttpAccessLogInterceptor } from './http-access-log.interceptor';
+import { LoggingInterceptor } from './logging.interceptor';
+
+export const appLogger = createAppLogger({
+  appName: config.appName,
+  nodeEnv: config.nodeEnv,
+  otel: config.otel,
+});
 
 @Global()
 @Module({
   providers: [
     {
       provide: APP_LOGGER,
-      useFactory: () =>
-        new WinstonLoggerFactory({
-          appName: config.appName,
-          nodeEnv: config.nodeEnv,
-          otel: config.otel,
-        }).createLogger(),
+      useValue: appLogger,
     },
-    HttpAccessLogInterceptor,
+    LoggingInterceptor,
     {
       provide: APP_INTERCEPTOR,
-      useExisting: HttpAccessLogInterceptor,
+      useExisting: LoggingInterceptor,
     },
   ],
   exports: [APP_LOGGER],

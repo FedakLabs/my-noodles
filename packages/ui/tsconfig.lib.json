@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "noEmit": false,
     "declaration": true,
     "declarationMap": true,
@@ -10,5 +9,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "src/stories", "src/**/~*.test.ts"]
+  "exclude": ["node_modules", "dist", "src/stories", "src/**/*.{test,spec}.ts"]
 }

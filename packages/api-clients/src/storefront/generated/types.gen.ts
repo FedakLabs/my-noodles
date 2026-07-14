@@ -156,6 +156,10 @@ export type DeliveryProviderDto = {
     label: string;
 };
 
+export const DeliveryMethod = { WAREHOUSE: 'warehouse', COURIER: 'courier' } as const;
+
+export type DeliveryMethod = typeof DeliveryMethod[keyof typeof DeliveryMethod];
+
 export type DeliveryCityDto = {
     ref: string;
     name: string;
@@ -250,10 +254,6 @@ export type UpdateCheckoutReceiverDto = {
     lastName?: string;
 };
 
-export const DeliveryMethod = { WAREHOUSE: 'warehouse', COURIER: 'courier' } as const;
-
-export type DeliveryMethod = typeof DeliveryMethod[keyof typeof DeliveryMethod];
-
 export type UpdateCheckoutDeliveryDto = {
     provider?: DeliveryProvider;
     method?: DeliveryMethod;
@@ -272,7 +272,7 @@ export type CreateOrderDeliveryDto = {
     provider: DeliveryProvider;
     method: DeliveryMethod;
     city: string;
-    cityRef?: string;
+    cityRef: string;
     warehouseNumber?: string;
     warehouseName?: string;
     warehouseRef?: string;
@@ -605,6 +605,7 @@ export type DeliveryControllerSearchCitiesData = {
     path?: never;
     query: {
         provider: DeliveryProvider;
+        method: DeliveryMethod;
         q?: string;
     };
     url: '/api/delivery/cities';

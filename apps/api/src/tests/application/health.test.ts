@@ -1,12 +1,14 @@
 import type { Server } from 'node:http';
 
+import { ServiceUnavailableException } from '@my-noodles/api-lib/exceptions';
 import type { INestApplication } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 
 import { HealthController, HealthService } from '@/application/health';
-import { ServiceUnavailableException } from '@/infrastructure/exceptions';
-import { LoggingModule } from '@/infrastructure/logging';
+import { ExceptionsFilter } from '@/infrastructure/exceptions';
+import { appLogger, LoggingModule } from '@/infrastructure/logging';
 
 import { jest } from '../jest-globals';
 
@@ -25,6 +27,7 @@ describe('health (e2e)', () => {
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
+    app.useGlobalFilters(new ExceptionsFilter(app.get(HttpAdapterHost), appLogger));
     await app.init();
   });
 

@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-
 import { validEnv } from './fixtures/env';
 
 for (const [key, value] of Object.entries(validEnv)) {

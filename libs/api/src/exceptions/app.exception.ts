@@ -7,17 +7,17 @@ export type AppErrorBody<T = null> = Readonly<{
   payload: T;
 }>;
 
-/** Framework-agnostic API error — map to HTTP in the Nest adapter layer. */
-export class AppException<T = null> {
+/** Framework-agnostic API error — Nest maps and serializes via ExceptionsFilter. */
+export class AppException<T = null> extends Error {
   readonly status: HttpStatusCode;
   readonly identifier: string;
-  readonly message: string;
   readonly payload: T;
 
   constructor(status: HttpStatusCode, identifier: string, message: string, payload?: T) {
+    super(message);
+    this.name = new.target.name;
     this.status = status;
     this.identifier = identifier;
-    this.message = message;
     this.payload = (payload ?? null) as T;
   }
 

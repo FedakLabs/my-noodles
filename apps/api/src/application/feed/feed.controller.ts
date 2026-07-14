@@ -7,6 +7,8 @@ import { LocalizedStorefrontController } from '@/utils/localized-storefront.cont
 
 import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
+import { FeedCommentsService } from './feed-comments.service';
+import { FeedSessionService } from './feed-session.service';
 import {
   FeedCommentDto,
   FeedLikedItemDto,
@@ -15,8 +17,6 @@ import {
   FeedNextResponseDto,
 } from './feed.dto';
 import { FeedService } from './feed.service';
-import { FeedCommentsService } from './feed-comments.service';
-import { FeedSessionService } from './feed-session.service';
 
 @ApiTags('Feed')
 @Controller('feed')

@@ -1,9 +1,9 @@
 ---
 name: Delivery Service Architecture
-overview: "Гібридна архітектура: окремий `DeliveryModule` з factory-адаптерами для каталогу (міста/відділення) + обчислений `deliveryEstimate` у `GET /orders/:id`, коли в draft достатньо введених даних. Перший етап — абстракція + stub-адаптери, ETA без вартості."
+overview: 'Гібридна архітектура: окремий `DeliveryModule` з factory-адаптерами для каталогу (міста/відділення) + обчислений `deliveryEstimate` у `GET /orders/:id`, коли в draft достатньо введених даних. Перший етап — абстракція + stub-адаптери, ETA без вартості.'
 todos:
   - id: delivery-interface-factory
-    content: "Створити application/delivery: interface, factory, 3 stub-адаптери, DeliveryService"
+    content: 'Створити application/delivery: interface, factory, 3 stub-адаптери, DeliveryService'
     status: completed
   - id: delivery-controller
     content: GET /delivery/providers, /cities, /warehouses + DTOs/exceptions
@@ -18,7 +18,7 @@ todos:
     content: Unit/supertest tests; regenerate OpenAPI + api-clients
     status: completed
   - id: followup-frontend-checkout
-    content: "Frontend: provider picker, city/warehouse autocomplete, показ deliveryEstimate на checkout"
+    content: 'Frontend: provider picker, city/warehouse autocomplete, показ deliveryEstimate на checkout'
     status: completed
   - id: followup-nova-poshta-api
     content: Реальний Nova Poshta HTTP client в infrastructure/external-apis; adapter делегує NovaPoshtaService
@@ -30,7 +30,7 @@ todos:
     content: In-memory або Redis TTL cache для cities/warehouses (rate limits)
     status: completed
   - id: followup-eta-snapshot
-    content: "Migration: estimated_delivery_at на order_deliveries; snapshot на submit + Telegram/success"
+    content: 'Migration: estimated_delivery_at на order_deliveries; snapshot на submit + Telegram/success'
     status: completed
   - id: followup-shipping-cost
     content: shippingCostMinor + тарифна модель (коли буде scope)
@@ -42,10 +42,10 @@ isProject: false
 
 ## Рекомендація: гібрид (не «або-або»)
 
-| Що | Де в API | Чому |
-|----|----------|------|
-| **Каталог провайдера** (міста, відділення) | `GET /delivery/*` | Stateless lookup; не прив’язаний до order id; кешується окремо; UI викликає до/під час autosave |
-| **Розрахунок для поточного checkout** | `deliveryEstimate` у [`GET /orders/:id`](apps/api/src/application/orders/orders.controller.ts) | Залежить від збережених полів draft + `order_items` + `createdAt` (час відправки «якщо оформити зараз») |
+| Що                                         | Де в API                                                                                       | Чому                                                                                                    |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Каталог провайдера** (міста, відділення) | `GET /delivery/*`                                                                              | Stateless lookup; не прив’язаний до order id; кешується окремо; UI викликає до/під час autosave         |
+| **Розрахунок для поточного checkout**      | `deliveryEstimate` у [`GET /orders/:id`](apps/api/src/application/orders/orders.controller.ts) | Залежить від збережених полів draft + `order_items` + `createdAt` (час відправки «якщо оформити зараз») |
 
 **Чому не тільки `GET /orders/:id`:** списки міст/відділень — це окремий concern (autocomplete, pagination, provider-specific refs). Якщо зашити їх у orders resource, з’являться штучні маршрути на кшталт `GET /orders/:id/delivery/cities` — semantically гірше і важче кешувати.
 
@@ -124,6 +124,7 @@ interface DeliveryProviderAdapter {
 ```
 
 **Canonical types** (provider-agnostic):
+
 - `DeliveryCity`: `{ ref, name }`
 - `DeliveryWarehouse`: `{ ref, number, name, address? }`
 - `DeliveryEstimateInput`: `{ provider, method, cityRef?, cityName?, warehouseRef?, street?, building?, orderCreatedAt, itemCount }`
@@ -137,11 +138,11 @@ Factory резолвить адаптер за `DeliveryProvider` enum — бе�
 
 ### Delivery catalog (stateless)
 
-| Method | Route | Query | Response |
-|--------|-------|-------|----------|
-| `GET` | `/delivery/providers` | — | `[{ id, label }]` (3 провайдери) |
-| `GET` | `/delivery/cities` | `provider`, `q` (min 2 chars) | `DeliveryCity[]` |
-| `GET` | `/delivery/warehouses` | `provider`, `cityRef`, `q?` | `DeliveryWarehouse[]` |
+| Method | Route                  | Query                         | Response                         |
+| ------ | ---------------------- | ----------------------------- | -------------------------------- |
+| `GET`  | `/delivery/providers`  | —                             | `[{ id, label }]` (3 провайдери) |
+| `GET`  | `/delivery/cities`     | `provider`, `q` (min 2 chars) | `DeliveryCity[]`                 |
+| `GET`  | `/delivery/warehouses` | `provider`, `cityRef`, `q?`   | `DeliveryWarehouse[]`            |
 
 Throttling через існуючий global guard. Валідація query через DTO + `ValidationPipe`.
 
@@ -161,10 +162,10 @@ deliveryEstimate: {
 
 #### Умови достатності для estimate
 
-| Method | Required fields |
-|--------|-----------------|
+| Method      | Required fields                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------- |
 | `warehouse` | `provider`, `city` (або `cityRef` після інтеграції), `warehouseRef` **або** `warehouseNumber` |
-| `courier` | `provider`, `city`, `street`, `building` |
+| `courier`   | `provider`, `city`, `street`, `building`                                                      |
 
 Логіка в `DeliveryService.canEstimate(delivery)` + `DeliveryService.estimateFromOrder(order)`.
 
@@ -217,11 +218,11 @@ Frontend types з’являться в `packages/api-clients` автомати�
 
 ## Тести
 
-| Файл | Що покрити |
-|------|------------|
-| `~delivery.service.test.ts` | factory resolution, `canEstimate`, stub ETA formula |
-| `~delivery.controller.test.ts` | supertest cities/warehouses validation |
-| `~orders.service.test.ts` | `getCheckout` повертає `deliveryEstimate` / `null` |
+| Файл                           | Що покрити                                          |
+| ------------------------------ | --------------------------------------------------- |
+| `~delivery.service.test.ts`    | factory resolution, `canEstimate`, stub ETA formula |
+| `~delivery.controller.test.ts` | supertest cities/warehouses validation              |
+| `~orders.service.test.ts`      | `getCheckout` повертає `deliveryEstimate` / `null`  |
 
 Stub-адаптери — unit-testable без HTTP mocks.
 
@@ -231,14 +232,14 @@ Stub-адаптери — unit-testable без HTTP mocks.
 
 Цей етап закриває **backend API + stubs**. Після merge — окремі задачі:
 
-| ID | Задача | Залежить від |
-|----|--------|--------------|
-| `followup-frontend-checkout` | Provider picker, autocomplete міст/відділень через `GET /delivery/*`, показ `deliveryEstimate` | api-clients regen |
-| `followup-nova-poshta-api` | `infrastructure/external-apis/nova-poshta/` + env `NOVA_POSHTA_API_KEY` | delivery module merged |
-| `followup-meest-ukrposhta-api` | Реальні Meest / Ukrposhta adapters замість stub | nova-poshta pattern |
-| `followup-catalog-cache` | TTL cache для cities/warehouses | real API integration |
-| `followup-eta-snapshot` | Колонка `estimated_delivery_at` на `order_deliveries`, snapshot на submit | orders submit flow |
-| `followup-shipping-cost` | `shippingCostMinor` + оновлення total logic | тарифна модель (TBD) |
+| ID                             | Задача                                                                                         | Залежить від           |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------- |
+| `followup-frontend-checkout`   | Provider picker, autocomplete міст/відділень через `GET /delivery/*`, показ `deliveryEstimate` | api-clients regen      |
+| `followup-nova-poshta-api`     | `infrastructure/external-apis/nova-poshta/` + env `NOVA_POSHTA_API_KEY`                        | delivery module merged |
+| `followup-meest-ukrposhta-api` | Реальні Meest / Ukrposhta adapters замість stub                                                | nova-poshta pattern    |
+| `followup-catalog-cache`       | TTL cache для cities/warehouses                                                                | real API integration   |
+| `followup-eta-snapshot`        | Колонка `estimated_delivery_at` на `order_deliveries`, snapshot на submit                      | orders submit flow     |
+| `followup-shipping-cost`       | `shippingCostMinor` + оновлення total logic                                                    | тарифна модель (TBD)   |
 
 ---
 

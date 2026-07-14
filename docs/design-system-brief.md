@@ -42,13 +42,13 @@ Implementation target: `packages/theme` (MUI theme + skin engine) and Storybook 
 
 **Soft lift (B)** — trays on a counter, not floating SaaS cards.
 
-| Surface | Treatment |
-| --- | --- |
-| Product cards | `border.subtle` + one warm-tinted shadow tier (low blur, low opacity) |
-| Sticky CTAs / cart bar | Same tier or one step up — never dramatic drop shadow |
-| Bottom sheets / dialogs | Surface step + top border first; shadow only if needed vs backdrop |
-| Filter chips | No shadow; selected = fill color |
-| Skin gradients | Top ~20% of card only; card body stays flat white — no heavy shadow + gradient combo |
+| Surface                 | Treatment                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| Product cards           | `border.subtle` + one warm-tinted shadow tier (low blur, low opacity)                |
+| Sticky CTAs / cart bar  | Same tier or one step up — never dramatic drop shadow                                |
+| Bottom sheets / dialogs | Surface step + top border first; shadow only if needed vs backdrop                   |
+| Filter chips            | No shadow; selected = fill color                                                     |
+| Skin gradients          | Top ~20% of card only; card body stays flat white — no heavy shadow + gradient combo |
 
 ---
 
@@ -82,11 +82,11 @@ baseColors          # raw hex — never used in components
 
 **Split personality (C)**
 
-| Layer | Radius | Examples |
-| --- | --- | --- |
-| Discovery | **20px** | Product cards, collection tiles, hero blocks |
-| Action | **pill** (`9999px`) | Primary / secondary buttons |
-| Utility | **12px** | Filter chips, text fields, toggles, icon buttons |
+| Layer     | Radius              | Examples                                         |
+| --------- | ------------------- | ------------------------------------------------ |
+| Discovery | **20px**            | Product cards, collection tiles, hero blocks     |
+| Action    | **pill** (`9999px`) | Primary / secondary buttons                      |
+| Utility   | **12px**            | Filter chips, text fields, toggles, icon buttons |
 
 **Global rule:** never `none` (0px) on customer-facing surfaces.
 
@@ -98,13 +98,13 @@ Spacing: 8px base unit; gap/padding scales and `modalWidths` per mvp-plan.
 
 **Balanced discovery (B)** — Unbounded + Manrope, Cyrillic-ready, self-hosted via `next/font`.
 
-| Role | Font |
-| --- | --- |
-| H1, H2 | Unbounded |
-| Collection hero titles | Unbounded |
-| PDP product title | Unbounded |
-| Product names on **catalog cards** | Manrope semibold, 2-line clamp |
-| Prices, CTAs, buttons, chips, nav, filters, body | Manrope |
+| Role                                             | Font                           |
+| ------------------------------------------------ | ------------------------------ |
+| H1, H2                                           | Unbounded                      |
+| Collection hero titles                           | Unbounded                      |
+| PDP product title                                | Unbounded                      |
+| Product names on **catalog cards**               | Manrope semibold, 2-line clamp |
+| Prices, CTAs, buttons, chips, nav, filters, body | Manrope                        |
 
 ### Hard rules
 
@@ -136,14 +136,14 @@ Spacing: 8px base unit; gap/padding scales and `modalWidths` per mvp-plan.
 
 Base terracotta reference: ~hue **8°**, sat **~75%**, light **~55%** for `buttonFill.primary`.
 
-| Code | Mood | `bgHueBrand` | Main accent | Secondary (tags/watermarks only) | Gradient |
-| --- | --- | --- | --- | --- | --- |
-| **CN** | Lunar warmth, tea-house | 0° vermilion | Deeper vermilion | Gold `#D4A853` | Red → warm gold |
-| **KR** | K-pop clean neon pop | 320° magenta-rose | Rose `#E84A8A` | — | Rose → soft violet |
-| **TH** | Tropical fruit, temple | 38° mango-gold | Mango family | Teal `#2A9D8F` | Mango → teal |
-| **US** | Diner retro, bold pack | 355° cherry | Cherry family | Navy `#1E3A5F` | Cherry → navy fade |
-| **CA** | Maple cozy, outdoors | 28° maple-amber | Amber family | Pine `#2D6A4F` | Amber → green mist |
-| **TW** | Night market, bubble tea | 340° bubble-tea pink | Pink family | Jade `#40916C` | Pink → jade |
+| Code   | Mood                     | `bgHueBrand`         | Main accent      | Secondary (tags/watermarks only) | Gradient           |
+| ------ | ------------------------ | -------------------- | ---------------- | -------------------------------- | ------------------ |
+| **CN** | Lunar warmth, tea-house  | 0° vermilion         | Deeper vermilion | Gold `#D4A853`                   | Red → warm gold    |
+| **KR** | K-pop clean neon pop     | 320° magenta-rose    | Rose `#E84A8A`   | —                                | Rose → soft violet |
+| **TH** | Tropical fruit, temple   | 38° mango-gold       | Mango family     | Teal `#2A9D8F`                   | Mango → teal       |
+| **US** | Diner retro, bold pack   | 355° cherry          | Cherry family    | Navy `#1E3A5F`                   | Cherry → navy fade |
+| **CA** | Maple cozy, outdoors     | 28° maple-amber      | Amber family     | Pine `#2D6A4F`                   | Amber → green mist |
+| **TW** | Night market, bubble tea | 340° bubble-tea pink | Pink family      | Jade `#40916C`                   | Pink → jade        |
 
 ### Fallback (`hash(slug)`)
 
@@ -165,15 +165,15 @@ Light skin (MVP): CSS variable overrides on card/page root. Deep skin (future): 
 
 ### P0 — ship in Phase 2 (`components.ts`)
 
-| Component | Key overrides |
-| --- | --- |
-| **Button** | Pill, Manrope semibold, terracotta fill, no uppercase, `disableElevation` |
-| **IconButton** | Min 44px tap target, 12px radius |
-| **Chip** | 12px radius; selected = filled accent |
-| **TextField / OutlinedInput** | 12px radius, warm border, focus from `border.focus` |
-| **Paper / Card** | 20px radius, soft lift + `border.subtle` |
-| **Dialog + Drawer** | Top radius 20–24px, `surface.elevated`, border-first elevation |
-| **CssBaseline** | `surface.page`, Manrope default |
+| Component                     | Key overrides                                                             |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| **Button**                    | Pill, Manrope semibold, terracotta fill, no uppercase, `disableElevation` |
+| **IconButton**                | Min 44px tap target, 12px radius                                          |
+| **Chip**                      | 12px radius; selected = filled accent                                     |
+| **TextField / OutlinedInput** | 12px radius, warm border, focus from `border.focus`                       |
+| **Paper / Card**              | 20px radius, soft lift + `border.subtle`                                  |
+| **Dialog + Drawer**           | Top radius 20–24px, `surface.elevated`, border-first elevation            |
+| **CssBaseline**               | `surface.page`, Manrope default                                           |
 
 ### P1 — Phase 7 (with pages)
 

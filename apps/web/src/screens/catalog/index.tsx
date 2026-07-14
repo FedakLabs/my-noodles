@@ -7,10 +7,10 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { type CatalogViewMode, CatalogViewModeProvider, useViewMode } from '@/components/catalog-view-mode';
 import { CatalogFeedFab } from '@/components/catalog/catalog-feed-fab';
 import { FilterChips } from '@/components/catalog/filter-chips/filter-chips';
 import { FilterSheet } from '@/components/catalog/filter-sheet/filter-sheet';
-import { type CatalogViewMode, CatalogViewModeProvider, useViewMode } from '@/components/catalog-view-mode';
 import { PageContainer } from '@/components/layout/page-container';
 import { useCatalogSearchParams } from '@/screens/catalog/search-params';
 

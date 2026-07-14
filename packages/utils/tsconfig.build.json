@@ -1,0 +1,11 @@
+{
+  "extends": ["./tsconfig.json", "../../configs/typescript/node.json"],
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist/cjs",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,6 +1,7 @@
 # dependencies
 openapi.json
 node_modules/
+.pnpm-store/
 
 # build outputs
 dist/

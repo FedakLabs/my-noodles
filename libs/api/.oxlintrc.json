@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "plugins": ["typescript", "oxc", "import", "node"],
+  "env": {
+    "node": true,
+    "es2024": true
+  },
+  "ignorePatterns": ["jest.config.cjs"],
+  "rules": {
+    "typescript/consistent-type-imports": "off"
+  }
+}

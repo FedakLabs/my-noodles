@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MinLength } from 'class-validator';
 
-import { DeliveryProvider, IsDeliveryProvider } from '../orders/order-delivery.dto';
+import {
+  DeliveryMethod,
+  DeliveryProvider,
+  IsDeliveryMethod,
+  IsDeliveryProvider,
+} from '../orders/order-delivery.dto';
 import type { DeliveryCity, DeliveryWarehouse } from './delivery.types';
 
 export class DeliveryProviderDto {
@@ -30,6 +35,9 @@ export class DeliveryWarehouseDto implements DeliveryWarehouse {
 export class DeliveryCityQueryDto {
   @IsDeliveryProvider()
   provider!: DeliveryProvider;
+
+  @IsDeliveryMethod()
+  method!: DeliveryMethod;
 
   @IsOptional()
   @IsString()

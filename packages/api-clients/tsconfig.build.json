@@ -1,11 +1,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "bundler",
     "noEmit": false,
-    "emitDeclarationOnly": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "./dist"
+    "outDir": "./dist/cjs",
+    "rootDir": "."
   },
-  "exclude": ["node_modules", "dist", "src/**/generated/**/docs/**"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/generated/**/docs/**", "src/**/*.test.ts"]
 }

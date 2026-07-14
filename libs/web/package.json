@@ -14,36 +14,41 @@
       "import": "./src/context/index.ts",
       "default": "./src/context/index.ts"
     },
-    "./hooks": {
-      "types": "./src/hooks/index.ts",
-      "import": "./src/hooks/index.ts",
-      "default": "./src/hooks/index.ts"
+    "./hooks/deadline-countdown": {
+      "types": "./src/hooks/deadline-countdown/index.ts",
+      "import": "./src/hooks/deadline-countdown/index.ts",
+      "default": "./src/hooks/deadline-countdown/index.ts"
     },
     "./react-query": {
       "types": "./src/react-query/index.ts",
       "import": "./src/react-query/index.ts",
       "default": "./src/react-query/index.ts"
+    },
+    "./validators": {
+      "types": "./src/validators/index.ts",
+      "import": "./src/validators/index.ts",
+      "default": "./src/validators/index.ts"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
-    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
-    "lint": "eslint . --fix",
-    "lint-check": "eslint .",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --fix",
+    "lint-check": "oxlint",
     "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "libphonenumber-js": "^1.13.7"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@my-noodles/eslint-config": "workspace:*",
     "@tanstack/react-query": "5.101.0",
     "@types/node": "22.15.3",
     "@types/react": "^19.0.0",
-    "eslint": "10.5.0",
-    "eslint-config-prettier": "10.1.8",
     "react": "^19.0.0"
   }
 }

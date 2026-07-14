@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "plugins": ["typescript", "oxc", "import", "react", "nextjs", "jsx-a11y"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "settings": {
+    "next": {
+      "rootDir": "."
+    }
+  },
+  "ignorePatterns": [
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "next.config.ts",
+    "next-env.d.ts",
+    "e2e/mock-api.mjs"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@my-noodles/api-lib",
+            "message": "Web must not import api-scoped libs (@nx/enforce-module-boundaries replacement)."
+          }
+        ],
+        "patterns": [
+          {
+            "group": ["@my-noodles/api-lib/*", "**/apps/api/**", "**/libs/api/**"],
+            "message": "Web must not import api-scoped code (@nx/enforce-module-boundaries replacement)."
+          }
+        ]
+      }
+    ]
+  }
+}

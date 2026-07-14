@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type { DeliveryProvider } from '../orders/order-delivery.dto';
+import type { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { DeliveryCity, DeliveryWarehouse } from './delivery.types';
 
 type CacheEntry<T> = {
@@ -15,12 +15,12 @@ export class DeliveryCatalogCache {
   private readonly cities = new Map<string, CacheEntry<DeliveryCity[]>>();
   private readonly warehouses = new Map<string, CacheEntry<DeliveryWarehouse[]>>();
 
-  getCities(provider: DeliveryProvider, query: string): DeliveryCity[] | null {
-    return this.get(this.cities, this.citiesKey(provider, query));
+  getCities(provider: DeliveryProvider, method: DeliveryMethod, query: string): DeliveryCity[] | null {
+    return this.get(this.cities, this.citiesKey(provider, method, query));
   }
 
-  setCities(provider: DeliveryProvider, query: string, value: DeliveryCity[]): void {
-    this.set(this.cities, this.citiesKey(provider, query), value);
+  setCities(provider: DeliveryProvider, method: DeliveryMethod, query: string, value: DeliveryCity[]): void {
+    this.set(this.cities, this.citiesKey(provider, method, query), value);
   }
 
   getWarehouses(provider: DeliveryProvider, cityRef: string, query?: string): DeliveryWarehouse[] | null {
@@ -36,8 +36,8 @@ export class DeliveryCatalogCache {
     this.set(this.warehouses, this.warehousesKey(provider, cityRef, query), value);
   }
 
-  private citiesKey(provider: DeliveryProvider, query: string): string {
-    return `${provider}:cities:${query.trim().toLowerCase()}`;
+  private citiesKey(provider: DeliveryProvider, method: DeliveryMethod, query: string): string {
+    return `${provider}:${method}:cities:${query.trim().toLowerCase()}`;
   }
 
   private warehousesKey(provider: DeliveryProvider, cityRef: string, query?: string): string {

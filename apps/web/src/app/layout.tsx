@@ -4,7 +4,6 @@ import '@/i18n/global';
 import '@/shared/date';
 import '@/api/clients';
 import '@/api/register-app-locale.server';
-
 import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 

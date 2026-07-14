@@ -158,7 +158,7 @@ export function useFeedPager(): FeedPager {
     // Filter changes must reset the in-memory pager before fetching the next item.
 
     return reloadFromScratch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by serialized filters only
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- keyed by serialized filters only
   }, [filtersKey]);
 
   const goNext = useCallback(() => {

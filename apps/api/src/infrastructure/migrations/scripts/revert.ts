@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-
 import { config } from '@/config';
 import { createAppDataSource } from '@/infrastructure/persistence';
 

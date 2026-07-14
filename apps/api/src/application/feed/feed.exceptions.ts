@@ -1,6 +1,4 @@
-import { HttpStatus } from '@my-noodles/api-lib/exceptions';
-
-import { AppException } from '@/infrastructure/exceptions';
+import { AppException, HttpStatus } from '@my-noodles/api-lib/exceptions';
 
 export class FeedProductNotFoundException extends AppException<{ productId: string }> {
   constructor(productId: string) {

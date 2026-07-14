@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { InventoryService } from '../inventory/inventory.service';
-import { Order } from './order.entity';
 import { OrderCancelledReason } from './order-cancelled-reason';
 import { OrderStatus } from './order-status';
+import { Order } from './order.entity';
 import type { OrderResponseDto } from './orders.dto';
 import { OrderCancelNotAllowedException, OrderNotFoundException } from './orders.exceptions';
 

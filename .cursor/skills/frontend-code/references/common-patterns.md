@@ -32,7 +32,11 @@ When part of the UI can grow or shrink by a **large amount** — filter “show 
 import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 
-export function ExpandableBlock({ expanded, teaser, rest }: {
+export function ExpandableBlock({
+  expanded,
+  teaser,
+  rest,
+}: {
   expanded: boolean;
   teaser: React.ReactNode;
   rest: React.ReactNode;
@@ -128,7 +132,7 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 ### Types: generated DTOs first
 
-Use generated models from `packages/api-clients/*` in hooks, screens, and components. Since anyway api is already depended on external API it will be request, so creating some middle ground DTOs is an exhaustive overcomplication of use 
+Use generated models from `packages/api-clients/*` in hooks, screens, and components. Since anyway api is already depended on external API it will be request, so creating some middle ground DTOs is an exhaustive overcomplication of use
 
 **Query inputs use domain search-param types** — use nuqs inferent query params types down to API level. No need to duplicate and write some custom transformers domain query-params -> API query params. During call of api this is simply can be done by passing domain object to appropriate places in generated clients
 
@@ -201,15 +205,27 @@ For infinite catalog lists, use `pagePaginatedGetNextPageParam` + `formatUseInfi
 const { product, productIsInitialLoad, productIsLoadFailed, productIsEmpty } = useProductDetail(slug);
 
 if (productIsInitialLoad) {
-  return <PageContainer><Typography color="text.secondary">{t('loading')}</Typography></PageContainer>;
+  return (
+    <PageContainer>
+      <Typography color="text.secondary">{t('loading')}</Typography>
+    </PageContainer>
+  );
 }
 
 if (productIsLoadFailed) {
-  return <PageContainer><Typography color="error">{t('error')}</Typography></PageContainer>;
+  return (
+    <PageContainer>
+      <Typography color="error">{t('error')}</Typography>
+    </PageContainer>
+  );
 }
 
 if (productIsEmpty) {
-  return <PageContainer><Typography color="text.secondary">{t('empty')}</Typography></PageContainer>;
+  return (
+    <PageContainer>
+      <Typography color="text.secondary">{t('empty')}</Typography>
+    </PageContainer>
+  );
 }
 
 // product is defined — render the happy path
@@ -238,7 +254,7 @@ Distinguish **first fetch** from **background refetch** — different UX, same q
 const { products, productsIsInitialLoad, productsIsRefetching } = useProductsList(params);
 
 if (productsIsInitialLoad) return <ProductGridSkeleton />;
-// … render stale products; bind conditionally to productsIsRefetching in case need for showing some state on refetching 
+// … render stale products; bind conditionally to productsIsRefetching in case need for showing some state on refetching
 ```
 
 ---
@@ -297,7 +313,13 @@ search-params/
 ### parsers.ts (server-safe)
 
 ```ts
-import { createSearchParamsCache, parseAsArrayOf, parseAsInteger, parseAsString, parseAsBoolean } from 'nuqs/server';
+import {
+  createSearchParamsCache,
+  parseAsArrayOf,
+  parseAsInteger,
+  parseAsString,
+  parseAsBoolean,
+} from 'nuqs/server';
 
 export const catalogSearchParamsParsers = {
   category: parseAsArrayOf(parseAsString).withDefault([]),
@@ -361,18 +383,18 @@ Shared copy (buttons, errors, metadata) lives in **`common`** or **`metadata`** 
 
 Use Zustand when state is **client-only**, **not in the URL**, and **not server data**.
 
-| Need | Use |
-| --- | --- |
-| API responses, cache, refetch | TanStack Query |
-| Filters, sort, pagination the user may share or bookmark | nuqs |
-| Local to one component subtree | `useState` |
-| Complicated business logic with state and decisions to remember and build upon further functionality | Zustand |
+| Need                                                                                                 | Use            |
+| ---------------------------------------------------------------------------------------------------- | -------------- |
+| API responses, cache, refetch                                                                        | TanStack Query |
+| Filters, sort, pagination the user may share or bookmark                                             | nuqs           |
+| Local to one component subtree                                                                       | `useState`     |
+| Complicated business logic with state and decisions to remember and build upon further functionality | Zustand        |
 
 **Conventions:**
 
 - Store in `hooks/[feature]/` — **`*-store.ts`** (internal) + **`use-*.ts`** (public hooks) + **`index.ts`** barrel
 - **`persist` + `partialize`:** only customer-facing continuity. Ephemeral UI (`panelOpen`, suppression flags) stays in memory
-- **Actions on the store;** - entity hook i.e `useCartStore` that encapsulates all logic regarding cart would be used to make encapsulated functionality, but exposed handler to fulfill the use cases 
+- **Actions on the store;** - entity hook i.e `useCartStore` that encapsulates all logic regarding cart would be used to make encapsulated functionality, but exposed handler to fulfill the use cases
 - Do not duplicate server entities — store IDs, quantities, UI fields; RQ owns product details
 
 ---
@@ -383,13 +405,13 @@ When the same client state must reach **several siblings or nested components** 
 
 **Do not reach for context by default.** Prefer props for one or two levels. Use the right tool first:
 
-| Need | Use |
-| --- | --- |
-| Shareable filters, sort, pagination | nuqs ([§5](#5-url-search-params-nuqs)) |
-| Server data, cache, refetch | TanStack Query ([§3](#3-react-query-hooks)) |
-| Cross-route client state (cart, global drawers) | Zustand ([§7](#7-client-state-zustand)) |
-| Local to one component | `useState` |
-| Shared UI state within one screen subtree (deep prop drilling) | React Context + hook |
+| Need                                                           | Use                                         |
+| -------------------------------------------------------------- | ------------------------------------------- |
+| Shareable filters, sort, pagination                            | nuqs ([§5](#5-url-search-params-nuqs))      |
+| Server data, cache, refetch                                    | TanStack Query ([§3](#3-react-query-hooks)) |
+| Cross-route client state (cart, global drawers)                | Zustand ([§7](#7-client-state-zustand))     |
+| Local to one component                                         | `useState`                                  |
+| Shared UI state within one screen subtree (deep prop drilling) | React Context + hook                        |
 
 **When to add context:** you notice the same props (`viewMode`, `setViewMode`, `menuOpen`, …) threaded through a toolbar → grid → menu chain, or multiple distant components need the same handlers/state and intermediate components only forward them.
 
@@ -458,6 +480,7 @@ export function Screen(props: ScreenProps) {
   );
 }
 ```
+
 ---
 
 ## 9. Custom hook
@@ -472,11 +495,11 @@ Keep hooks focused; data fetching belongs in `api/`, not generic hooks.
 
 Off-origin links (Telegram, help center, hosted policies, payment portals) live in **`shared/urls.ts`**. Do not hardcode `https://…` in screens or components.
 
-| Kind | Where |
-| --- | --- |
-| External / third-party | `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
+| Kind                                 | Where                                                 |
+| ------------------------------------ | ----------------------------------------------------- |
+| External / third-party               | `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …)          |
 | Canonical / hreflang / sitemap paths | `shared/seo/urls.ts` — `localePath`, `absoluteUrl`, … |
-| API / site origins from env | `shared/env.ts` — `API_URL`, `SITE_URL`, … |
+| API / site origins from env          | `shared/env.ts` — `API_URL`, `SITE_URL`, …            |
 
 ```ts
 // shared/urls.ts
@@ -488,7 +511,7 @@ import { TELEGRAM_SUPPORT_URL } from '@/shared/urls';
 
 <Button component="a" href={TELEGRAM_SUPPORT_URL} target="_blank" rel="noopener noreferrer">
   {t('telegramCta', { handle: t('telegramHandle') })}
-</Button>
+</Button>;
 ```
 
 Use descriptive export names (`TELEGRAM_SUPPORT_URL`, `PRIVACY_POLICY_URL`)
@@ -526,7 +549,6 @@ For most applications, duplicated test ID strings are a reasonable trade-off bec
 Smoke tests live in `e2e/`
 
 ```ts
-
 import { e2eLocale } from './fixtures';
 
 await page.goto(`/${e2eLocale}/catalog`);

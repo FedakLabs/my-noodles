@@ -2,8 +2,8 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
 import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
-import type { Order } from './order.entity';
 import { DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
+import type { Order } from './order.entity';
 
 @Entity({ name: 'order_deliveries' })
 export class OrderDelivery extends TimestampEntity {

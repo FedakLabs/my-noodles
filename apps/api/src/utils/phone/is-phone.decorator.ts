@@ -1,7 +1,6 @@
+import { isValidPhone } from '@my-noodles/api-lib/validators';
 import { ApiProperty } from '@nestjs/swagger';
 import { registerDecorator, type ValidationArguments, type ValidationOptions } from 'class-validator';
-
-import { isValidPhone } from './phone';
 
 export function IsPhone(validationOptions?: ValidationOptions): PropertyDecorator {
   return (target, propertyKey) => {

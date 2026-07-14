@@ -1,8 +1,9 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.lib.json" },
-    { "path": "./tsconfig.storybook.json" },
-    { "path": "./tsconfig.spec.json" }
-  ]
+  "extends": "../../configs/typescript/react-library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "types/**/*.d.ts"]
 }

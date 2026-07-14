@@ -1,5 +1,4 @@
 import 'server-only';
-
 import { createContext } from '@my-noodles/web-lib/context';
 
 import type { AppLocale } from '@/i18n/routing';

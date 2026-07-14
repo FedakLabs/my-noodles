@@ -18,6 +18,15 @@ function isHttpStatusException(exception: unknown): exception is HttpStatusExcep
   );
 }
 
+function hasNumericStatus(exception: unknown): exception is { status: number } {
+  return (
+    typeof exception === 'object' &&
+    exception !== null &&
+    'status' in exception &&
+    typeof (exception as { status: unknown }).status === 'number'
+  );
+}
+
 /** Framework-agnostic manifest access logging for HTTP errors. */
 export class HttpExceptionLog {
   constructor(
@@ -28,6 +37,10 @@ export class HttpExceptionLog {
   resolveStatusCode(exception: unknown): number {
     if (isHttpStatusException(exception)) {
       return exception.getStatus();
+    }
+
+    if (hasNumericStatus(exception)) {
+      return exception.status;
     }
 
     return 500;

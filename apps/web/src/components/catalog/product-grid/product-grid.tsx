@@ -19,12 +19,12 @@ import {
 import FilterIcon from '@my-noodles/ui/icons/filter.svg';
 import { useTranslations } from 'next-intl';
 
+import { CatalogViewModeMenu } from '@/components/catalog-view-mode';
 import { CatalogEmptyState } from '@/components/catalog/catalog-empty-state';
 import { CatalogLoadMore } from '@/components/catalog/catalog-load-more';
 import { CatalogLoadMoreButton } from '@/components/catalog/catalog-load-more-button';
 import { CatalogPagination } from '@/components/catalog/catalog-pagination';
 import { CatalogSortMenu } from '@/components/catalog/catalog-sort-menu';
-import { CatalogViewModeMenu } from '@/components/catalog-view-mode';
 
 import { ProductCard } from '../product-card/product-card';
 import { useCatalogGridColumns } from '../product-card/use-catalog-grid-columns';

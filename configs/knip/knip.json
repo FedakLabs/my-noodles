@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreDependencies": ["eslint-config-prettier", "@commitlint/config-conventional"],
+  "ignoreDependencies": ["@commitlint/config-conventional"],
   "ignoreBinaries": [
     "api:generate",
     "build",
@@ -52,21 +52,17 @@
         "src/infrastructure/i18n/index.ts": ["exports", "types"],
         "src/infrastructure/i18n/localized-string.ts": ["exports"],
         "src/infrastructure/exceptions/index.ts": ["exports"],
-        "src/infrastructure/exceptions/http.exceptions.ts": ["exports"],
         "src/infrastructure/seed/index.ts": ["exports", "types"],
-        "src/infrastructure/external-apis/telegram/index.ts": ["exports", "types"],
-        "src/infrastructure/external-apis/telegram/telegram.config.ts": ["exports"],
-        "src/infrastructure/external-apis/telegram/telegram.dto.ts": ["types"],
-        "src/infrastructure/external-apis/meest/index.ts": ["exports"],
-        "src/infrastructure/external-apis/meest/meest.config.ts": ["exports"],
-        "src/infrastructure/external-apis/nova-poshta/index.ts": ["exports", "types"],
-        "src/infrastructure/external-apis/nova-poshta/nova-poshta.api.ts": ["types"],
-        "src/infrastructure/external-apis/nova-poshta/nova-poshta.config.ts": ["exports"],
-        "src/infrastructure/external-apis/ukrposhta/index.ts": ["exports"],
-        "src/infrastructure/external-apis/ukrposhta/ukrposhta.config.ts": ["exports"],
+        "src/application/telegram/index.ts": ["exports", "types"],
+        "src/application/telegram/telegram.config.ts": ["exports"],
+        "src/application/meest/index.ts": ["exports"],
+        "src/application/meest/meest.config.ts": ["exports"],
+        "src/application/nova-poshta/index.ts": ["exports", "types"],
+        "src/application/nova-poshta/nova-poshta.config.ts": ["exports"],
+        "src/application/ukrposhta/index.ts": ["exports"],
+        "src/application/ukrposhta/ukrposhta.config.ts": ["exports"],
         "src/tests/fixtures/env.ts": ["exports"],
-        "src/tests/jest-globals.ts": ["exports"],
-        "src/utils/transformers/index.ts": ["exports"]
+        "src/tests/jest-globals.ts": ["exports"]
       },
       "ignoreDependencies": [
         "@nestjs/swagger",
@@ -87,11 +83,7 @@
         "src/stories/**/*.stories.tsx",
         "src/stories/**/*.mdx"
       ],
-      "project": [
-        "src/**/*.{ts,tsx,mdx}",
-        ".storybook/**/*.{ts,tsx}",
-        "vitest.config.ts"
-      ],
+      "project": ["src/**/*.{ts,tsx,mdx}", ".storybook/**/*.{ts,tsx}", "vitest.config.ts"],
       "ignore": ["src/css.d.ts"],
       "ignoreIssues": {
         "src/index.ts": ["exports"],
@@ -112,12 +104,23 @@
       "ignoreDependencies": ["@emotion/react", "@emotion/styled", "@mui/material"]
     },
     "packages/api-clients": {
-      "entry": ["src/index.ts", "openapi-ts.config.ts"],
+      "entry": [
+        "src/index.ts",
+        "src/meest/index.ts",
+        "src/nova-poshta/index.ts",
+        "src/ukrposhta/index.ts",
+        "src/telegram/index.ts",
+        "openapi-ts.config.ts"
+      ],
       "project": ["src/**/*.ts", "openapi-ts.config.ts"],
       "ignore": ["src/**/generated/**"]
     },
+    "packages/utils": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
     "libs/web": {
-      "entry": ["src/index.ts", "src/hooks/index.ts"],
+      "entry": ["src/index.ts", "src/hooks/deadline-countdown/index.ts", "src/validators/index.ts"],
       "project": ["src/**/*.ts"],
       "ignoreDependencies": ["@tanstack/react-query", "react"]
     },
@@ -128,17 +131,17 @@
         "src/context/index.ts",
         "src/pagination/index.ts",
         "src/persistence/index.ts",
-        "src/external-api/index.ts",
+        "src/api-client/index.ts",
         "src/exceptions/index.ts",
         "src/logging/index.ts",
         "src/otel/index.ts",
         "src/utils/index.ts",
+        "src/transformers/index.ts",
+        "src/validators/index.ts",
         "src/middlewares/index.ts"
       ],
       "project": ["src/**/*.ts"],
-      "ignore": [
-        "src/external-api/logger.ts"
-      ],
+      "ignore": ["src/api-client/logger.ts"],
       "ignoreIssues": {
         "src/config/config.ts": ["exports"],
         "src/config/env.ts": ["exports"],

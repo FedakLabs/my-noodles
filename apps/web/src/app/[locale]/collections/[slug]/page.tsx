@@ -1,8 +1,8 @@
 import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { collectionsQueryKeys, fetchCollectionDetail } from '@/api/collections';
 import { fetchProductsList, productsQueryKeys } from '@/api/products';

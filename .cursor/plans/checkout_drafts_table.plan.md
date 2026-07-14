@@ -3,13 +3,13 @@ name: Checkouts table split
 overview: Introduce `checkouts` table wrapping the checkout process. Order is created early (`status=draft`) and referenced by checkout. Checkout drives hold expiry; on complete checkout→completed and order→new; on checkout exit order stays draft (only checkout→cancelled). order.cancelled is manager-only on new+.
 todos:
   - id: schema-migration
-    content: "Migration: checkouts table; order_items FK stays on orders(id); orders.status draft|new|cancelled|..."
+    content: 'Migration: checkouts table; order_items FK stays on orders(id); orders.status draft|new|cancelled|...'
     status: completed
   - id: entities-services
     content: Checkout entity + CheckoutService; create order(draft)+checkout(in_progress)+items; OrdersService submit completes checkout
     status: completed
   - id: inventory-hold
-    content: "sumReservedQty: order_items where checkout status=in_progress only (no time filter); cron releases stale holds"
+    content: 'sumReservedQty: order_items where checkout status=in_progress only (no time filter); cron releases stale holds'
     status: completed
   - id: checkout-lifecycle
     content: Cancel/expiry → checkout cancelled + reason; order stays draft. Cart idle does not affect checkouts.
@@ -39,10 +39,10 @@ Pre-submit exits and post-submit manager cancel must not share ambiguous invento
 
 Two layers:
 
-| Layer | Role |
-|-------|------|
-| **`orders`** | Order record — **`draft`** from checkout start until submit → **`new`** → fulfillment. **`cancelled` only after `new`** (manager). |
-| **`checkouts`** | Checkout session — **`order_id`**, **`status`**, **`cancelled_reason`**, expiry |
+| Layer           | Role                                                                                                                               |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **`orders`**    | Order record — **`draft`** from checkout start until submit → **`new`** → fulfillment. **`cancelled` only after `new`** (manager). |
+| **`checkouts`** | Checkout session — **`order_id`**, **`status`**, **`cancelled_reason`**, expiry                                                    |
 
 ```mermaid
 flowchart TD
@@ -78,10 +78,10 @@ flowchart TD
 
 ### Inventory invariant (clean)
 
-| `order.status` | Can `order.cancelled`? | Qty effect on exit |
-|----------------|--------------------------|-------------------|
-| `draft` | **No** — cancel checkout only | Hold released via checkout; no restore |
-| `new+` | **Yes** — manager cancel | `restoreOnCancel` |
+| `order.status` | Can `order.cancelled`?        | Qty effect on exit                     |
+| -------------- | ----------------------------- | -------------------------------------- |
+| `draft`        | **No** — cancel checkout only | Hold released via checkout; no restore |
+| `new+`         | **Yes** — manager cancel      | `restoreOnCancel`                      |
 
 No branching on cancel reason for stock logic. Status alone tells the story.
 
@@ -91,25 +91,25 @@ No branching on cancel reason for stock logic. Status alone tells the story.
 
 ### New: `checkouts`
 
-| Column | Notes |
-|--------|-------|
-| `id` | UUID v7 — checkout session id (primary API/URL id) |
-| `order_id` | FK → `orders(id)` UNIQUE — one checkout per order |
-| `visitor_session_id` | FK → visitor_sessions |
-| `status` | **`in_progress`** (default) \| **`completed`** \| **`cancelled`** |
-| `cancelled_reason` | Nullable; only when `status = cancelled` |
-| `completed_at` | Set when `status = completed` |
-| `created_at`, `updated_at`, `deleted_at` | Hold window from `created_at` |
+| Column                                   | Notes                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| `id`                                     | UUID v7 — checkout session id (primary API/URL id)                |
+| `order_id`                               | FK → `orders(id)` UNIQUE — one checkout per order                 |
+| `visitor_session_id`                     | FK → visitor_sessions                                             |
+| `status`                                 | **`in_progress`** (default) \| **`completed`** \| **`cancelled`** |
+| `cancelled_reason`                       | Nullable; only when `status = cancelled`                          |
+| `completed_at`                           | Set when `status = completed`                                     |
+| `created_at`, `updated_at`, `deleted_at` | Hold window from `created_at`                                     |
 
 No partial unique index on session — multiple `in_progress` checkouts per visitor are valid.
 
 ### Existing: `orders`
 
-| Column | Notes |
-|--------|-------|
-| `status` | **`draft`** → **`new`** → fulfillment → **`cancelled`** (manager only, never from draft) |
-| `cancelled_reason` | Set only on manager cancel (`new+`) |
-| `customer_name`, `phone`, etc. | Filled progressively during checkout |
+| Column                         | Notes                                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `status`                       | **`draft`** → **`new`** → fulfillment → **`cancelled`** (manager only, never from draft) |
+| `cancelled_reason`             | Set only on manager cancel (`new+`)                                                      |
+| `customer_name`, `phone`, etc. | Filled progressively during checkout                                                     |
 
 Fulfillment: `new` → `confirmed` → `arrived` → `completed` | `returned` | `archived`
 
@@ -139,12 +139,12 @@ export enum CheckoutCancelledReason {
 }
 
 export enum OrderStatus {
-  Draft = 'draft',           // incomplete — checkout not completed or checkout cancelled
+  Draft = 'draft', // incomplete — checkout not completed or checkout cancelled
   New = 'new',
   Confirmed = 'confirmed',
   Arrived = 'arrived',
   Completed = 'completed',
-  Cancelled = 'cancelled',   // manager only — never set while checkout was still draft
+  Cancelled = 'cancelled', // manager only — never set while checkout was still draft
   Returned = 'returned',
   Archived = 'archived',
 }
@@ -176,8 +176,9 @@ export function inProgressCheckoutWhere() {
 export const CHECKOUT_HOLD_MS = 15 * 60_000;
 
 export function isCheckoutExpired(checkout: Checkout, now = Date.now()): boolean {
-  return checkout.status === CheckoutStatus.InProgress
-    && checkout.createdAt.getTime() <= now - CHECKOUT_HOLD_MS;
+  return (
+    checkout.status === CheckoutStatus.InProgress && checkout.createdAt.getTime() <= now - CHECKOUT_HOLD_MS
+  );
 }
 
 export function checkoutExpiresAt(checkout: Checkout): string {
@@ -185,20 +186,20 @@ export function checkoutExpiresAt(checkout: Checkout): string {
 }
 ```
 
-| Where | Uses time filter? |
-|-------|-----------------|
-| `getAvailableQty` / cart reconcile | **No** — `in_progress` only |
-| Cron `expireStaleCheckouts` | **Yes** — `in_progress` + past hold |
-| `getCheckout` → `expiresAt` | **Yes** — computed for UI timer |
-| `submitCheckout` guard | **Yes** — reject if expired (lazy cancel) |
+| Where                              | Uses time filter?                         |
+| ---------------------------------- | ----------------------------------------- |
+| `getAvailableQty` / cart reconcile | **No** — `in_progress` only               |
+| Cron `expireStaleCheckouts`        | **Yes** — `in_progress` + past hold       |
+| `getCheckout` → `expiresAt`        | **Yes** — computed for UI timer           |
+| `submitCheckout` guard             | **Yes** — reject if expired (lazy cancel) |
 
-| Event | Checkout | Order | Hold |
-|-------|----------|-------|------|
-| Active | `in_progress` | `draft` | Counted in SUM |
-| User cancel | `cancelled` | `draft` | Released immediately |
-| Cron expiry | `cancelled` | `draft` | Released within ~10–20s |
-| Submit | `completed` | `new` | Released + deductOnSubmit |
-| Manager cancel | — | `cancelled` | restoreOnCancel |
+| Event          | Checkout      | Order       | Hold                      |
+| -------------- | ------------- | ----------- | ------------------------- |
+| Active         | `in_progress` | `draft`     | Counted in SUM            |
+| User cancel    | `cancelled`   | `draft`     | Released immediately      |
+| Cron expiry    | `cancelled`   | `draft`     | Released within ~10–20s   |
+| Submit         | `completed`   | `new`       | Released + deductOnSubmit |
+| Manager cancel | —             | `cancelled` | restoreOnCancel           |
 
 ---
 
@@ -206,21 +207,21 @@ export function checkoutExpiresAt(checkout: Checkout): string {
 
 ### `CheckoutService`
 
-| Method | Behavior |
-|--------|----------|
-| `startFromCart(visitorSessionId)` | Create order(`draft`) + checkout(`in_progress`) + items; clear cart. **Does not cancel other session checkouts.** |
-| `getCheckout(checkoutId, visitorSessionId)` | Return checkout + order; `expiresAt` for UI; lazy-reject if expired |
-| `updateCheckout(...)` | PATCH order fields while checkout active |
-| `cancelCheckout(checkoutId, reason)` | checkout → `cancelled` + reason; order stays `draft` |
-| `expireStaleCheckouts()` | Cron ~10s: stale `in_progress` (past CHECKOUT_HOLD_MS) → `cancelled` + `expired` |
+| Method                                      | Behavior                                                                                                          |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `startFromCart(visitorSessionId)`           | Create order(`draft`) + checkout(`in_progress`) + items; clear cart. **Does not cancel other session checkouts.** |
+| `getCheckout(checkoutId, visitorSessionId)` | Return checkout + order; `expiresAt` for UI; lazy-reject if expired                                               |
+| `updateCheckout(...)`                       | PATCH order fields while checkout active                                                                          |
+| `cancelCheckout(checkoutId, reason)`        | checkout → `cancelled` + reason; order stays `draft`                                                              |
+| `expireStaleCheckouts()`                    | Cron ~10s: stale `in_progress` (past CHECKOUT_HOLD_MS) → `cancelled` + `expired`                                  |
 
 Remove `cancelSessionCheckouts` and **`VisitorSessionService` must not cancel checkouts on cart idle** — delete current `cancelExpiredDrafts` coupling when migrating.
 
 ### `OrdersService`
 
-| Method | Behavior |
-|--------|----------|
-| `submitCheckout(...)` | checkout → `completed`; order → `new`; `deductOnSubmit`; Telegram |
+| Method                      | Behavior                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `submitCheckout(...)`       | checkout → `completed`; order → `new`; `deductOnSubmit`; Telegram                                      |
 | `cancelSubmittedOrder(...)` | **Future:** guard `order.status !== draft`; → `cancelled` + `OrderCancelledReason` + `restoreOnCancel` |
 
 **No `cancelOrder` on draft orders** — only `cancelCheckout`.
@@ -241,13 +242,13 @@ A visitor may have several `in_progress` checkouts simultaneously. Each:
 
 ## API routes
 
-| Current | New |
-|---------|-----|
-| `POST /orders/draft` | `POST /checkouts` |
-| `GET /orders/:id` | `GET /checkouts/:id` |
-| `PATCH /orders/:id` | `PATCH /checkouts/:id` |
-| `DELETE /orders/:id/cancel` | `DELETE /checkouts/:id` |
-| `POST /orders/:id/submit` | `POST /checkouts/:id/submit` |
+| Current                     | New                          |
+| --------------------------- | ---------------------------- |
+| `POST /orders/draft`        | `POST /checkouts`            |
+| `GET /orders/:id`           | `GET /checkouts/:id`         |
+| `PATCH /orders/:id`         | `PATCH /checkouts/:id`       |
+| `DELETE /orders/:id/cancel` | `DELETE /checkouts/:id`      |
+| `POST /orders/:id/submit`   | `POST /checkouts/:id/submit` |
 
 URL: `/checkout/[checkoutId]`. Response includes `checkoutId` + `orderId`.
 

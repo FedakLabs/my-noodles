@@ -13,7 +13,10 @@
     },
     "build": {
       "command": "pnpm build",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       },
@@ -21,7 +24,10 @@
     },
     "generate:openapi": {
       "command": "pnpm generate:openapi",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       },
@@ -41,28 +47,40 @@
     },
     "lint": {
       "command": "pnpm lint",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       }
     },
     "test": {
       "command": "pnpm test",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "dependsOn": [
+        { "projects": "api-lib", "target": "build" },
+        { "projects": "utils", "target": "build" }
+      ],
       "options": {
         "cwd": "apps/api"
       }

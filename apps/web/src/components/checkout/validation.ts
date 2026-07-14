@@ -4,7 +4,7 @@ import {
   DeliveryProvider,
   type UpdateCheckoutDeliveryDto,
 } from '@my-noodles/api-clients/storefront';
-import { isValidPhone } from '@my-noodles/ui';
+import { isValidPhone } from '@my-noodles/web-lib/validators';
 import { z } from 'zod';
 
 export function createReceiverSchema(invalidPhoneMessage: string) {

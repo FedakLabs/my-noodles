@@ -1,11 +1,11 @@
 'use client';
 
-import { registerAppLocaleProvider } from '@my-noodles/api-clients/storefront';
-
 import { useLocaleStore } from '@/hooks/locale';
 import { registerQueryKeyLocaleProvider } from '@/i18n/app-locale/resolve-query-key-locale';
 
+import { storefrontApi } from './clients';
+
 const resolveClientAppLocale = () => useLocaleStore.getState().locale;
 
-registerAppLocaleProvider(resolveClientAppLocale);
+storefrontApi.registerAppLocaleProvider(resolveClientAppLocale);
 registerQueryKeyLocaleProvider(resolveClientAppLocale);

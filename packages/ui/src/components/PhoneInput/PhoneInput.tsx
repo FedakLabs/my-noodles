@@ -1,8 +1,7 @@
 'use client';
 
+import { formatPhoneToE164 } from '@my-noodles/web-lib/validators';
 import { MuiTelInput, type MuiTelInputProps } from 'mui-tel-input';
-
-import { formatPhoneToE164 } from './phone-format';
 
 export type PhoneInputProps = Omit<MuiTelInputProps, 'onChange' | 'value' | 'forceCallingCode'> & {
   value: string;

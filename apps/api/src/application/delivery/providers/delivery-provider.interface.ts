@@ -1,4 +1,4 @@
-import type { DeliveryProvider } from '../../orders/order-delivery.dto';
+import type { DeliveryMethod, DeliveryProvider } from '../../orders/order-delivery.dto';
 import type {
   DeliveryCity,
   DeliveryEstimate,
@@ -9,9 +9,7 @@ import type {
 export interface DeliveryProviderAdapter {
   readonly provider: DeliveryProvider;
 
-  searchCities(query: string): Promise<DeliveryCity[]>;
-
-  listPopularCities(): Promise<DeliveryCity[]>;
+  searchCities(query: string, method: DeliveryMethod): Promise<DeliveryCity[]>;
 
   searchWarehouses(cityRef: string, query?: string): Promise<DeliveryWarehouse[]>;
 

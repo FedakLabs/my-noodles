@@ -2,22 +2,24 @@ import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Logger } from 'winston';
 
-import type { Order } from '../orders/order.entity';
+import { LocalizedString } from '@/infrastructure/i18n';
+
 import { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { OrderDelivery } from '../orders/order-delivery.entity';
+import type { Order } from '../orders/order.entity';
+import { DeliveryCatalogCache } from './delivery-catalog.cache';
 import type {
   DeliveryAddressSnapshot,
   DeliveryCity,
   DeliveryEstimate,
   DeliveryWarehouse,
 } from './delivery.types';
-import { DeliveryCatalogCache } from './delivery-catalog.cache';
 import { DeliveryProviderFactory } from './providers/delivery-provider.factory';
 
-const PROVIDER_LABELS: Record<DeliveryProvider, string> = {
-  [DeliveryProvider.NovaPoshta]: 'Нова Пошта',
-  [DeliveryProvider.Ukrposhta]: 'Укрпошта',
-  [DeliveryProvider.Meest]: 'Meest',
+const PROVIDER_LABELS: Record<DeliveryProvider, LocalizedString> = {
+  [DeliveryProvider.NovaPoshta]: new LocalizedString({ uk: 'Нова Пошта', en: 'Nova Poshta' }),
+  [DeliveryProvider.Ukrposhta]: new LocalizedString({ uk: 'Укрпошта', en: 'Ukrposhta' }),
+  [DeliveryProvider.Meest]: new LocalizedString({ uk: 'Meest', en: 'Meest' }),
 };
 
 @Injectable()
@@ -29,27 +31,33 @@ export class DeliveryService {
   ) {}
 
   listProviders(): { id: DeliveryProvider; label: string }[] {
-    return this.providerFactory.list().map((adapter) => ({
-      id: adapter.provider,
-      label: PROVIDER_LABELS[adapter.provider],
-    }));
+    return this.providerFactory.list().map((adapter) => {
+      const labels = PROVIDER_LABELS[adapter.provider];
+
+      return {
+        id: adapter.provider,
+        label: (labels.localized ?? labels.uk) as string,
+      };
+    });
   }
 
-  async searchCities(provider: DeliveryProvider, query = ''): Promise<DeliveryCity[]> {
+  async searchCities(
+    provider: DeliveryProvider,
+    query = '',
+    method: DeliveryMethod,
+  ): Promise<DeliveryCity[]> {
     const normalizedQuery = query.trim();
-    const cacheQuery = normalizedQuery.length >= 2 ? normalizedQuery : '__popular__';
+    if (normalizedQuery.length < 2) {
+      return [];
+    }
 
-    const cached = this.catalogCache.getCities(provider, cacheQuery);
+    const cached = this.catalogCache.getCities(provider, method, normalizedQuery);
     if (cached) {
       return cached;
     }
 
-    const cities =
-      normalizedQuery.length >= 2
-        ? await this.providerFactory.get(provider).searchCities(normalizedQuery)
-        : await this.providerFactory.get(provider).listPopularCities();
-
-    this.catalogCache.setCities(provider, cacheQuery, cities);
+    const cities = await this.providerFactory.get(provider).searchCities(normalizedQuery, method);
+    this.catalogCache.setCities(provider, method, normalizedQuery, cities);
     return cities;
   }
 

@@ -1,7 +1,7 @@
 import type { ProductDetailDto } from '@my-noodles/api-clients/storefront';
+import { minorToMajor } from '@my-noodles/utils';
 
 import type { AppLocale } from '@/i18n/routing';
-import { minorToMajor } from '@/utils/format-currency';
 
 import { absoluteUrl, localePath } from './urls';
 

@@ -1,8 +1,8 @@
 import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { sendGTMEvent } from '@next/third-parties/google';
 
 import type { CartLine } from '@/hooks/cart';
-import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
 import { isAnalyticsAllowed } from './consent';
 import { cartLineToGa4Item, priceMinorToMajor, productToGa4Item, sumItemsValueMinor } from './ecommerce';

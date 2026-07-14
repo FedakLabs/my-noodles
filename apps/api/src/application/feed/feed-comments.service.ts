@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import type { FeedCommentDto } from './feed.dto';
 import { FeedProductComment } from './feed-product-comment.entity';
+import type { FeedCommentDto } from './feed.dto';
 
 @Injectable()
 export class FeedCommentsService {

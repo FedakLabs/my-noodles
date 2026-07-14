@@ -2,7 +2,7 @@
 
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
-import { useDeadlineCountdown } from '@my-noodles/web-lib/hooks';
+import { useDeadlineCountdown } from '@my-noodles/web-lib/hooks/deadline-countdown';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/navigation';

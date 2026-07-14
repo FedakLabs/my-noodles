@@ -1,4 +1,4 @@
-import { TransformToInt } from '@my-noodles/api-lib/utils';
+import { TransformToInt } from '@my-noodles/api-lib/transformers';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 

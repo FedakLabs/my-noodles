@@ -2,10 +2,9 @@
 
 import '@/api/clients';
 import '@/api/register-app-locale.client';
-
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import { MyNoodlesTheme } from '@my-noodles/theme';
 import { ToastProvider } from '@my-noodles/ui';
 import { QueryClientProvider } from '@tanstack/react-query';

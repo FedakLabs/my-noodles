@@ -1,14 +1,12 @@
 import { ApiError } from '../../common';
+import type { Client } from '../generated/client';
 import { client } from '../generated/client.gen';
 
 export const APP_LOCALE_HEADER = 'x-app-locale';
 
-let interceptorsAttached = false;
-let resolveAppLocale: (() => string | undefined) | undefined;
-
-export function registerAppLocaleProvider(fn: () => string | undefined): void {
-  resolveAppLocale = fn;
-}
+export type StorefrontApiOptions = {
+  baseUrl: string;
+};
 
 type AppErrorBody = {
   status: number;
@@ -72,38 +70,54 @@ function toApiError(error: unknown, response?: Response): ApiError {
   return new ApiError('Request failed', status);
 }
 
-function attachInterceptors(): void {
-  if (interceptorsAttached) {
-    return;
+/**
+ * Configures the shared hey-api storefront client (base URL, locale header, error mapping).
+ * Construct once at app bootstrap; use `.client` with generated SDK helpers when not relying on the package default.
+ */
+export class StorefrontApi {
+  readonly client: Client;
+
+  private resolveAppLocale: (() => string | undefined) | undefined;
+
+  private static interceptorsAttached = false;
+  private static active: StorefrontApi | undefined;
+
+  constructor(options: StorefrontApiOptions) {
+    this.client = client;
+    StorefrontApi.active = this;
+    StorefrontApi.attachInterceptors();
+    this.client.setConfig({ baseUrl: options.baseUrl });
   }
 
-  client.interceptors.request.use((request) => {
-    request.headers.set('Accept', 'application/json');
+  /** Register a locale resolver for the `x-app-locale` request header. */
+  registerAppLocaleProvider(fn: () => string | undefined): void {
+    this.resolveAppLocale = fn;
+  }
 
-    if (!request.headers.has(APP_LOCALE_HEADER)) {
-      const locale = resolveAppLocale?.();
-      if (locale) {
-        request.headers.set(APP_LOCALE_HEADER, locale);
-      }
+  private static attachInterceptors(): void {
+    if (StorefrontApi.interceptorsAttached) {
+      return;
     }
 
-    return request;
-  });
+    client.interceptors.request.use((request) => {
+      request.headers.set('Accept', 'application/json');
 
-  client.interceptors.error.use((error, response) => {
-    throw toApiError(error, response);
-  });
+      if (!request.headers.has(APP_LOCALE_HEADER)) {
+        const locale = StorefrontApi.active?.resolveAppLocale?.();
+        if (locale) {
+          request.headers.set(APP_LOCALE_HEADER, locale);
+        }
+      }
 
-  interceptorsAttached = true;
-}
+      return request;
+    });
 
-export type StorefrontApiClient = typeof client;
+    client.interceptors.error.use((error, response) => {
+      throw toApiError(error, response);
+    });
 
-/** Configure the shared fetch client — idempotent; safe to call from SSR and browser. */
-export function setupApiClients(baseUrl: string): StorefrontApiClient {
-  attachInterceptors();
-  client.setConfig({ baseUrl });
-  return client;
+    StorefrontApi.interceptorsAttached = true;
+  }
 }
 
 export { client };

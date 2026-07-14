@@ -1,9 +1,6 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": ["./tsconfig.json", "../../configs/typescript/node.json"],
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
     "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"]

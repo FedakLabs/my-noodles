@@ -10,7 +10,7 @@ import {
 } from './locale.config';
 import { LocaleContext } from './locale.context';
 
-/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type -- locale keys come from `SUPPORTED_LOCALES` via Object.assign in the constructor */
+/* oxlint-disable typescript/no-unsafe-declaration-merging, typescript/no-empty-object-type -- locale keys come from `SUPPORTED_LOCALES` via Object.assign in the constructor */
 export class LocalizedString {
   constructor(values: LocalizedStringData | LocalizedStringRecord) {
     Object.assign(this, values);

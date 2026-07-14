@@ -1,9 +1,9 @@
 import type { ProductDetailDto } from '@my-noodles/api-clients/storefront';
 import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { fetchProductDetail, productsQueryKeys } from '@/api/products';
 import { runWithAppLocale } from '@/i18n/app-locale/server';

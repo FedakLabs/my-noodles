@@ -24,7 +24,7 @@
 | `products.controller.ts` | `@Get(':slug')`                            |
 | `products.service.ts`    | `getBySlug()` + localized JSONB resolution |
 | `products.exceptions.ts` | `ProductNotFoundException`                 |
-| `products.test.ts`      | unit + supertest                           |
+| `products.test.ts`       | unit + supertest                           |
 
 ```ts
 @Get(':slug')
@@ -58,7 +58,7 @@ application/products/
 export class ProductsModule {}
 ```
 
-Import integration modules from their **barrel** (`@/application/products` or `@/infrastructure/external-apis/telegram`) — not deep paths like `@/application/products.module`.
+Import integration modules from their **barrel** (`@/application/products` or `@/application/telegram`) — not deep paths like `@/application/products.module`.
 
 Register feature modules in `AppModule.imports` from each domain barrel (`./application/products`), not `products.module`.
 
@@ -68,26 +68,28 @@ Register feature modules in `AppModule.imports` from each domain barrel (`./appl
 
 ## 4. External API integration
 
-**API layer** — hand-written or OpenAPI-generated HTTP clients live under `infrastructure/external-apis/<provider>/`:
+**Client layer** — framework-agnostic HTTP clients live in `@my-noodles/api-clients/<provider>` and extend `ApiClient`. Nest wiring lives under `application/<provider>/` like any other feature module:
 
 ```text
-infrastructure/external-apis/<provider>/
+packages/api-clients/<provider>/
+├── <provider>.client.ts      # *Api extends ApiClient; raw upstream calls
+└── index.ts
+
+apps/api/src/application/<provider>/
 ├── <provider>.config.ts      # env → base URL, auth
-├── <provider>.api.ts         # *Api class extends ExternalApi; raw upstream calls
-├── <provider>.service.ts     # optional *Service — mapping/formatting (same folder)
-├── <provider>.module.ts      # *Module exports *Service (or *Api)
-├── generated/                # optional; @hey-api/openapi-ts output — read-only
+├── <provider>.service.ts     # optional *Service — mapping/formatting
+├── <provider>.module.ts      # useFactory registration; exports *Service
 └── index.ts
 ```
 
-Example: `TelegramApi.sendMessage()` + `TelegramService.sendOrderNotification()` both in `external-apis/telegram/`. Nova Poshta: `NovaPoshtaApi` + `NovaPoshtaService` in `external-apis/nova-poshta/`.
+Example: `TelegramApi` in `@my-noodles/api-clients/telegram` + `TelegramService` / `TelegramModule` in `application/telegram/`.
 
 Setup checklist:
 
-1. **Config** — secrets and base URL from env in `<provider>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
-2. **Api class** — extend `ExternalApi`; implement `getBaseUrl()`; expose upstream-shaped methods (no business orchestration).
-3. **Service (optional)** — same provider folder; inject `*Api`; add formatting/mapping when adapters or feature services need a friendlier surface.
-4. **Module** — small `*Module`; import in the feature module that orchestrates the flow.
+1. **Client** — extend `ApiClient` in `packages/api-clients`; accept options + logger; expose upstream-shaped methods (no business orchestration).
+2. **Config** — secrets and base URL from env in `<provider>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
+3. **Service (optional)** — Nest provider; inject `*Api`; add formatting/mapping when adapters or feature services need a friendlier surface.
+4. **Module** — `useFactory` to construct `*Api` with validated config + `APP_LOGGER`; import in the feature module that orchestrates the flow.
 5. **Feature service** — call the service (or api) after the primary persistence path; **catch and log** outbound failures when the user-facing operation must still succeed (e.g. notification after order save).
 
 ---

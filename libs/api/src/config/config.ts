@@ -17,7 +17,7 @@ import {
 } from 'class-validator';
 
 import { type OtelOptions } from '../otel';
-import { TransformToBoolean } from '../utils/transformers/boolean';
+import { TransformToBoolean } from '../transformers';
 import { DEFAULT_NODE_ENV, loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
 
 export type ConfigOptions = {

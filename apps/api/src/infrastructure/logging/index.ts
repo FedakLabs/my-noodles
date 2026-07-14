@@ -1,3 +1,2 @@
-export { HttpAccessLogInterceptor } from './http-access-log.interceptor';
-export { HttpExceptionLogFilter } from './http-exception-log.filter';
-export { LoggingModule } from './logging.module';
+export { LoggingInterceptor } from './logging.interceptor';
+export { appLogger, LoggingModule } from './logging.module';

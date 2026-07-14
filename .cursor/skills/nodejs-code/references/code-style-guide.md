@@ -27,12 +27,12 @@
 
 ### Path aliases (`@/*`)
 
-| Import from | Use |
-| ----------- | --- |
-| Same feature folder (internal) | Relative — `./orders.service`, `./order.entity` |
-| Sibling feature in `application/` (same layer) | Relative — `../products/product.entity` |
+| Import from                                                    | Use                                                         |
+| -------------------------------------------------------------- | ----------------------------------------------------------- |
+| Same feature folder (internal)                                 | Relative — `./orders.service`, `./order.entity`             |
+| Sibling feature in `application/` (same layer)                 | Relative — `../products/product.entity`                     |
 | Another module’s **public API** (cross-layer or cross-feature) | Barrel — `@/infrastructure/logging`, `@/application/orders` |
-| Single-file top-level modules | `@/config`, `@/configs/api`, `@/env` |
+| Single-file top-level modules                                  | `@/config`, `@/configs/api`, `@/env`                        |
 
 **Do not** reach into another module’s internal files when that module exposes a barrel — import the folder so the module boundary stays explicit and refactors stay local.
 
@@ -45,7 +45,7 @@ import { LoggingModule } from './infrastructure/logging';
 import { prepareDataSource } from './infrastructure/persistence';
 
 // application/checkouts/checkouts.module.ts — integration module via barrel
-import { TelegramModule } from '@/infrastructure/external-apis/telegram';
+import { TelegramModule } from '@/application/telegram';
 
 // application/orders/orders.module.ts — internals stay relative
 import { Product } from '../products/product.entity';
@@ -68,7 +68,7 @@ import { OrdersService } from './orders.service';
   - `<feature>.dto.ts`
   - `<feature>.exceptions.ts`
   - `index.ts` (barrel)
-- Tests: co-located, tilde prefix: `~orders.test.ts`.
+- Tests: co-located, e.g. `orders.test.ts`.
 - Sub-features: nested folder (e.g. `application/products/products.controller.ts` with `GET /products/filters`).
 
 ### Classes
@@ -84,13 +84,11 @@ import { OrdersService } from './orders.service';
 
 We work in an **OOP-first** style aligned with NestJS, TypeORM, and class-validator.
 
-| Use a **class** | Use a **function** |
-| --------------- | ------------------ |
-| Services, controllers, modules, entities, DTOs, filters, interceptors | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`) |
-| Bootstrap/adapters that compose dependencies (e.g. Nest Winston wiring) | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
-| External API clients (`ExternalApi` subclasses) | One-off validators reused across DTOs when a decorator factory is enough |
-| Factories that hold config and expose methods (`WinstonLoggerFactory`) | |
-
+| Use a **class**                                                            | Use a **function**                                                                                     |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Services, controllers, modules, entities, DTOs, filters, interceptors      | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`, `createAppLogger`)           |
+| Bootstrap/adapters that compose dependencies (e.g. Nest filter wiring)     | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
+| External API clients (`ApiClient` subclasses in `@my-noodles/api-clients`) | One-off validators reused across DTOs when a decorator factory is enough                               |
 
 Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/api/src/utils/` when they have no state and no framework coupling.
 
@@ -102,8 +100,11 @@ The barrel is the module’s contract: export Nest `*Module` classes, services/e
 
 ```ts
 // infrastructure/logging/index.ts
-export { LoggingModule } from './logging.module';
-export { HttpExceptionLogFilter } from './http-exception-log.filter';
+export { appLogger, LoggingModule } from './logging.module';
+export { LoggingInterceptor } from './logging.interceptor';
+
+// infrastructure/exceptions/index.ts
+export { ExceptionsFilter } from './exceptions.filter';
 
 // infrastructure/persistence/index.ts
 export { createAppDataSource, prepareDataSource } from './data-source';
@@ -118,7 +119,8 @@ export * from './order.entity';
 Consumers:
 
 ```ts
-import { LoggingModule } from '@/infrastructure/logging';
+import { LoggingModule, appLogger } from '@/infrastructure/logging';
+import { ExceptionsFilter } from '@/infrastructure/exceptions';
 import { OrdersModule } from '@/application/orders';
 import { TimestampEntity } from '@/infrastructure/persistence';
 ```
@@ -183,8 +185,8 @@ export class OrdersController {
 
 ### Clients
 
-- External API classes: `@Injectable()` `*Api` in `infrastructure/external-apis/<provider>/<provider>.api.ts`.
-- Optional domain helpers in the same folder: `@Injectable()` `*Service` in `infrastructure/external-apis/<provider>/<provider>.service.ts`.
+- Framework-agnostic `*Api` client classes live in `@my-noodles/api-clients/<provider>` and extend `ApiClient` from `@my-noodles/api-lib/api-client`.
+- Nest wiring + optional domain helpers: `application/<provider>/` (`*.config.ts`, `*.service.ts`, `*.module.ts` with `useFactory` registration).
 
 ---
 
@@ -255,21 +257,43 @@ export class ProductsController {
 
 ## 6. Exceptions
 
-### Domain exceptions
+### Raw base + presets (`@my-noodles/api-lib/exceptions`)
 
-Live in `<feature>.exceptions.ts`. Extend base app exception but Nest compatible (so that next engine would catch it and handled correctly) src\infrastructure\exceptions\app.exceptions.ts:
+Framework-agnostic — **not** Nest `HttpException` subclasses. Body shape for every error:
 
 ```ts
-import { NotFoundException } from '@/infrastructure/exceptions';
+{
+  (status, identifier, message, payload);
+}
+```
+
+Presets: `BadRequestException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `ServiceUnavailableException`, `ServerSideException`, `ValidationException`.
+
+### Domain exceptions
+
+Live in `<feature>.exceptions.ts`. Extend the raw lib base / presets:
+
+```ts
+import { AppException, HttpStatus, NotFoundException } from '@my-noodles/api-lib/exceptions';
 
 export class CheckoutNotFoundException extends NotFoundException {
   constructor(checkoutId: string) {
     super('checkout_not_found', 'Checkout not found', { checkoutId });
   }
 }
+
+export class CheckoutExpiredException extends AppException<{ checkoutId: string }> {
+  constructor(checkoutId: string) {
+    super(HttpStatus.CONFLICT, 'checkout_expired', 'Checkout expired', { checkoutId });
+  }
+}
 ```
 
-Use the matching built-in when sufficient: `BadRequestException`, `ConflictException`, `TooManyRequestsException`.
+Use the matching preset when sufficient: `BadRequestException`, `ConflictException`, `NotFoundException`, `TooManyRequestsException`.
+
+### Custom filter (Nest coupling lives here only)
+
+`ExceptionsFilter` (`exceptions.filter.ts`) catches everything, maps Nest built-ins (ValidationPipe, route 404, throttler 429, …) and unknown errors into our body, logs, and replies via `httpAdapter.reply()`. Register globally in bootstrap / test apps — do **not** wrap domain exceptions in Nest `HttpException`.
 
 ### Wrapping external errors
 
@@ -295,8 +319,9 @@ throw err;
 
 ### Do not
 
-- `console.log` / `console.error` in feature code — use injected Nest `Logger` or Winston.
+- `console.log` / `console.error` in feature code — use injected Winston via `APP_LOGGER`.
 - Swallow errors with empty `catch {}` unless explicitly best-effort (document why).
+- Extend Nest `HttpException` for domain errors — extend `@my-noodles/api-lib/exceptions` instead.
 
 ---
 
@@ -368,11 +393,11 @@ Input/query DTOs (`CreateOrderDto`, `ListProductsQueryDto`) stay mandatory for v
 
 Choose per table — do not default every entity to UUID.
 
-| Prefer UUID (`uuid`) | Prefer incremental (`increment` / `bigint`) |
-| --- | --- |
+| Prefer UUID (`uuid`)                                                              | Prefer incremental (`increment` / `bigint`)                             |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | IDs exposed in public APIs, URLs, or client-visible references (orders, products) | Internal-only rows (audit logs, job queues, join tables never surfaced) |
-| Merge/replicate across environments without collision | High-volume append-only tables where sequential scan locality matters |
-| Opaque, non-guessable identifiers for security-sensitive resources | Admin-only tables where numeric IDs are acceptable |
+| Merge/replicate across environments without collision                             | High-volume append-only tables where sequential scan locality matters   |
+| Opaque, non-guessable identifiers for security-sensitive resources                | Admin-only tables where numeric IDs are acceptable                      |
 
 ```ts
 // Public-facing resource (PostgreSQL 18+ — DB-generated UUID v7)
@@ -428,13 +453,13 @@ Resolve in service layer by locale query param.
 
 Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 
-| Use | When |
-| --- | --- |
-| `find`, `findOne`, `findAndCount`, `count` | Listing, detail, filtered counts |
-| `FindOptionsWhere<Entity>` + `In`, `Between`, `MoreThan`, … | Filters on entity + relation properties |
-| `relations`, `order`, `skip`, `take`, `select` | Eager load, sort, pagination, partial rows |
-| In-memory aggregation on a bounded filtered set | Facet counts / min–max when result sets stay small enough to load in one query |
-| `createQueryBuilder` | Only when the above cannot express the query (e.g. complex SQL, window functions, bulk relation API in seed scripts) |
+| Use                                                         | When                                                                                                                 |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `find`, `findOne`, `findAndCount`, `count`                  | Listing, detail, filtered counts                                                                                     |
+| `FindOptionsWhere<Entity>` + `In`, `Between`, `MoreThan`, … | Filters on entity + relation properties                                                                              |
+| `relations`, `order`, `skip`, `take`, `select`              | Eager load, sort, pagination, partial rows                                                                           |
+| In-memory aggregation on a bounded filtered set             | Facet counts / min–max when result sets stay small enough to load in one query                                       |
+| `createQueryBuilder`                                        | Only when the above cannot express the query (e.g. complex SQL, window functions, bulk relation API in seed scripts) |
 
 **Do not** scatter `'product.price_minor'` / `'category.slug'` strings in services — renames will not be caught by TypeScript.
 
@@ -450,7 +475,7 @@ Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 
 ### SQL style
 
-- One `queryRunner.query(\`...\`)` per logical step; use `--` comments inside SQL to label sections.
+- One `queryRunner.query(\`...\`)`per logical step; use`--` comments inside SQL to label sections.
 - **Unquoted lowercase** identifiers for tables/columns (`products`, `created_at`) — PostgreSQL folds them consistently.
 - Column layout: align types; put `created_at`, `updated_at`, `deleted_at` on every domain table.
 - **String columns:** use `TEXT` in PostgreSQL (same performance as `VARCHAR(n)`; avoid arbitrary length caps in SQL).
@@ -458,6 +483,7 @@ Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 - **No DB defaults for business/content fields** (`currency`, `flavor`, `status`, `sort_order`, empty arrays, placeholder JSON). Seed scripts and application code must supply intentional values. DB defaults are only for infrastructure: `uuidv7()` (PostgreSQL 18+), timestamp columns (`now()`).
 
 ### Relations & foreign keys
+
 - **Foreign keys — default for every relationship:**
 
 ```sql
@@ -468,13 +494,13 @@ parent_id UUID NOT NULL
         ON DELETE RESTRICT
 ```
 
-| Situation | `ON DELETE` |
-| --------- | ----------- |
-| All FKs (required or optional) | `RESTRICT` — block parent delete while children reference it |
-| Never | `CASCADE` — silent child deletes risk data loss |
-| Never | `SET NULL` — hides broken references; reassign or soft-delete in app code instead |
+| Situation                      | `ON DELETE`                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| All FKs (required or optional) | `RESTRICT` — block parent delete while children reference it                      |
+| Never                          | `CASCADE` — silent child deletes risk data loss                                   |
+| Never                          | `SET NULL` — hides broken references; reassign or soft-delete in app code instead |
 
-**Why `ON UPDATE CASCADE` everywhere:** UUID PKs are effectively immutable, so this rarely fires; when a key *does* change, children stay consistent automatically. Cost is negligible; omitting it can surface surprise FK errors on rare updates.
+**Why `ON UPDATE CASCADE` everywhere:** UUID PKs are effectively immutable, so this rarely fires; when a key _does_ change, children stay consistent automatically. Cost is negligible; omitting it can surface surprise FK errors on rare updates.
 
 **Why not `ON DELETE CASCADE`:** deleting a parent must be an explicit application decision (soft-delete via `deleted_at`, or delete children in code). DB-level cascade can orphan audit trails and order history.
 
@@ -530,82 +556,82 @@ export class AddFeature1740000000000 implements MigrationInterface {
 
 ## 10. External API Integration
 
-### Base class (`infrastructure/external-api/`)
+### Base class (`@my-noodles/api-lib/api-client`)
 
-Hand-written outbound clients extend **`ExternalApi`**: axios + OTEL spans + structured outgoing HTTP logs. Subclasses implement `getBaseUrl()`; call `this.get<T>()` / `this.post<T>()` for requests.
+Hand-written outbound clients extend **`ApiClient`**: fetch + OTEL spans + structured outgoing HTTP logs. Subclasses implement `getBaseUrl()`; call `this.get<T>()` / `this.post<T>()` for requests.
 
 ```ts
-export abstract class ExternalApi {
-  protected constructor(protected readonly serviceName: string) {}
+export abstract class ApiClient {
+  protected constructor(logger: Logger) {}
 
   protected abstract getBaseUrl(): string;
 
-  protected get<T>(params: AxiosRequestConfig): Promise<T> { /* … */ }
-  protected post<T>(params: AxiosRequestConfig): Promise<T> { /* … */ }
+  protected get<T>(params: ApiClientRequestConfig): Promise<T> {
+    /* … */
+  }
+  protected post<T>(params: ApiClientRequestConfig): Promise<T> {
+    /* … */
+  }
 }
 ```
 
-### Application integration service
+### Provider clients (`@my-noodles/api-clients/<provider>`)
 
-Hand-written outbound integrations live in **`application/<integration>/`**: `<integration>.config.ts` (local env const), request/response types in `<integration>.dto.ts`, `@Injectable()` service extending `ExternalApi`.
+Framework-agnostic HTTP client classes live in **`packages/api-clients`**. Nest registers them via `useFactory` in `apps/api` (`application/<provider>/`).
 
 ```ts
-@Injectable()
-export class AcmeWebhookService extends ExternalApi {
-  constructor(private readonly settings: AcmeWebhookConfig) {
-    super(AcmeWebhookService.name);
+// packages/api-clients/src/meest/meest.client.ts
+export class MeestApi extends ApiClient {
+  constructor(
+    private readonly settings: MeestClientOptions,
+    logger: Logger,
+  ) {
+    super(logger);
   }
 
   protected getBaseUrl(): string {
-    return acmeWebhookConfig.baseUrl;
-  }
-
-  async notifyOrderCreated(payload: AcmeOrderCreatedPayload): Promise<void> {
-    await this.post<void>({ url: '/hooks/order-created', data: payload });
+    return this.settings.apiBaseUrl;
   }
 }
 ```
 
-Register via a small `*Module`; inject the service from feature services that orchestrate the flow.
+```ts
+// apps/api/src/application/meest/meest.module.ts
+providers: [
+  {
+    provide: MeestApi,
+    useFactory: (logger: Logger) => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }, logger),
+    inject: [APP_LOGGER],
+  },
+  MeestService,
+],
+```
 
 ### OpenAPI-generated third-party clients
 
-When this API must call **another service’s HTTP API**, add a folder under **`infrastructure/external-apis/<provider>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** (same toolchain as `packages/api-clients`):
+When this API must call **another service’s HTTP API**, prefer adding the raw client under **`packages/api-clients/<provider>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** when a spec exists; otherwise hand-write an `ApiClient` subclass. Nest wiring lives in `application/<provider>/` like any other feature module:
 
 ```text
-infrastructure/external-apis/merchant-email/
-├── generated/              # @hey-api/openapi-ts output — read-only, regen from upstream spec
-├── merchant-email.config.ts
-├── merchant-email.api.ts   # *Api extends ExternalApi; wraps generated SDK on shared axios
-├── merchant-email.service.ts  # optional — mapping/formatting when needed
-├── merchant-email.module.ts   # exports *Service (or *Api if no service layer)
+packages/api-clients/<provider>/
+├── <provider>.client.ts   # *Api extends ApiClient; raw upstream calls
+└── index.ts
+
+apps/api/src/application/<provider>/
+├── <provider>.config.ts
+├── <provider>.service.ts  # optional — mapping/formatting when needed
+├── <provider>.module.ts   # useFactory + exports *Service
 └── index.ts
 ```
 
-```ts
-// merchant-email.api.ts — upstream-shaped methods; extend ExternalApi for OTEL + logging
-@Injectable()
-export class MerchantEmailApi extends ExternalApi {
-  protected getBaseUrl(): string {
-    return merchantEmailConfig.basePath;
-  }
-
-  async sendRaw(payload: NotifyPayload): Promise<void> {
-    await acmeControllerNotifyCreated({ body: payload, baseUrl: this.getBaseUrl() });
-  }
-}
-```
-
-- **`generated/`** — never hand-edit; regenerate with `@hey-api/openapi-ts` when the upstream OpenAPI spec changes.
-- **`*Api`** — thin Nest provider: config, `ExternalApi` subclass, upstream-shaped methods.
-- **`*Service` (optional)** — same provider folder; injects `*Api`; exposes domain-friendly methods to feature modules/adapters.
-- Distinct from **`packages/api-clients`** — that package is **our** storefront fetch client for the web app (`@hey-api/client-fetch`), not inbound third-party integrations.
+- **`*Api`** — framework-agnostic: options + logger, `ApiClient` subclass, upstream-shaped methods.
+- **`*Service` (optional)** — Nest provider in `apps/api`; injects `*Api`; exposes domain-friendly methods to feature modules/adapters.
+- Storefront OpenAPI client for the web app also lives in **`packages/api-clients/storefront`** (`@hey-api/client-fetch`).
 
 ### Rules
 
 - No business logic beyond request shaping and domain exception mapping.
 - Secrets (API tokens, passwords, private keys) in env via `<feature>.config.ts` — not in source. Non-sensitive constants (public API base URLs, notification template IDs, example recipient emails safe to commit) may be hardcoded.
-- Map `ExternalApiException.httpStatus` to domain exceptions at the service boundary when needed.
+- Map `ApiClientException.httpStatus` to domain exceptions at the service boundary when needed.
 
 ---
 
@@ -631,7 +657,7 @@ export function prepareDataSource(appConfig: Config): DataSourceOptions {
 
 // instrumentation.ts — side-effect preload; started via `node --import=./dist/instrumentation.js`
 if (config.otel.enabled) {
-  const sdk = new NodeSDK({ /* ... */ });
+  const sdk = new NodeSDK({/* ... */});
   sdk.start();
 }
 ```
@@ -645,8 +671,8 @@ if (config.otel.enabled) {
 - OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js`.
 - `instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
 - **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
-- **Logging**: raw `winston` via `@my-noodles/api-lib/logging` — one instance from `LoggingModule` (`APP_LOGGER` token).
-- Bootstrap: `app.get<Logger>(APP_LOGGER)` for startup logs.
+- **Logging**: raw `winston` via `@my-noodles/api-lib/logging` — one instance created by `createAppLogger()` as `appLogger` in `logging.module.ts`, provided as `useValue: appLogger` under the `APP_LOGGER` token. Access logging via `LoggingInterceptor` (`logging.interceptor.ts`).
+- Bootstrap: import `appLogger` directly for startup logs and `ExceptionsFilter`.
 - Feature / infrastructure code: inject `@Inject(APP_LOGGER) private readonly logger: Logger`.
 
 ```ts
@@ -654,7 +680,7 @@ this.logger.info({ msg: 'order.created', orderId, totalMinor });
 this.logger.error({ msg: 'order.notify.failed', orderId, error: err.message });
 ```
 
-Do not use `new Logger()` or a second Winston instance — inject `APP_LOGGER` instead.
+Do not use Nest `new Logger()` or a second Winston instance — inject `APP_LOGGER` (or import `appLogger` in bootstrap).
 
 Do not import OTel SDK directly in feature modules — use bootstrap instrumentation + logger correlation.
 
@@ -670,7 +696,7 @@ Global `@nestjs/throttler` (~60 req/min per IP) + tighter limit on sensitive rou
 async create(@Body() dto: CreateOrderDto) { ... }
 ```
 
-On limit exceeded, Nest returns 429 — map to friendly message in exception filter if the project adds one.
+On limit exceeded, Nest returns 429 — `ExceptionsFilter` maps it to `TooManyRequestsException` (`identifier: 'too_many_requests'`).
 
 ---
 
@@ -689,26 +715,27 @@ Run: `pnpm nx run api:test` or `api:validate`.
 
 ## 15. Anti-Patterns
 
-| Anti-pattern                                                     | Do instead                                            |
-| ---------------------------------------------------------------- | ----------------------------------------------------- |
-| Business logic in controller                                     | Move to service                                       |
-| `@InjectRepository` in controller                                | Service only                                          |
-| `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, … |
-| Raw `fetch`/`axios` in controller/service without a client class | `ExternalApi` subclass (`*Api`) in `infrastructure/external-apis/<provider>/`; optional `*Service` in the same folder |
-| Response DTO that mirrors the entity one-to-one                   | Return entity (or pick columns); DTO only when shape genuinely differs |
-| DTO field without class-validator                                | Add validators                                        |
-| Schema change without migration                                  | Generate migration; keep `synchronize: false`         |
-| `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)      |
-| Entity without `created_at` / `updated_at` / `deleted_at`        | Extend `TimestampEntity`                              |
-| Hard `repository.delete()` on catalog rows                       | `softRemove` / `softDelete` unless explicitly required |
-| Hardcoded secrets/URLs                                           | `config.ts` + env                                     |
-| Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED` |
-| `console.log` for diagnostics                                    | Nest `Logger` / Winston                               |
-| God `AppModule` providers                                        | Feature `*.module.ts` per domain                      |
-| Copy-paste validator                                             | Add to `utils/validators/` and reuse                  |
-| Standalone factory function for stateful/bootstrap wiring          | Class with constructor + method (e.g. `WinstonLoggerFactory`) |
-| Deep `../../infrastructure/…` cross-layer imports              | `@/infrastructure/…` (or `@/config`, `@/application/…`) |
-| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging` |
+| Anti-pattern                                                     | Do instead                                                                                                                    |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Business logic in controller                                     | Move to service                                                                                                               |
+| `@InjectRepository` in controller                                | Service only                                                                                                                  |
+| `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, …                                                                    |
+| Raw `fetch`/`axios` in controller/service without a client class | `ApiClient` subclass (`*Api`) in `@my-noodles/api-clients/<provider>`; Nest `*Service`/`*Module` in `application/<provider>/` |
+| Response DTO that mirrors the entity one-to-one                  | Return entity (or pick columns); DTO only when shape genuinely differs                                                        |
+| DTO field without class-validator                                | Add validators                                                                                                                |
+| Schema change without migration                                  | Generate migration; keep `synchronize: false`                                                                                 |
+| `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)                                                                              |
+| Entity without `created_at` / `updated_at` / `deleted_at`        | Extend `TimestampEntity`                                                                                                      |
+| Hard `repository.delete()` on catalog rows                       | `softRemove` / `softDelete` unless explicitly required                                                                        |
+| Hardcoded secrets/URLs                                           | `config.ts` + env                                                                                                             |
+| Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED`                                                                         |
+| `console.log` for diagnostics                                    | Nest `Logger` / Winston                                                                                                       |
+| God `AppModule` providers                                        | Feature `*.module.ts` per domain                                                                                              |
+| Copy-paste validator                                             | Add to `utils/validators/` and reuse                                                                                          |
+| Nest `HttpException` subclasses for domain errors                | Raw `@my-noodles/api-lib/exceptions` + `ExceptionsFilter`                                                                     |
+| Second Winston instance / Nest `Logger` in features              | Inject `APP_LOGGER` (bootstrap may import `appLogger`)                                                                        |
+| Deep `../../infrastructure/…` cross-layer imports                | `@/infrastructure/…` (or `@/config`, `@/application/…`)                                                                       |
+| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging`                                                           |
 
 ---
 

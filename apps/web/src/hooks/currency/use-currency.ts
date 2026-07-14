@@ -1,14 +1,14 @@
 'use client';
 
+import {
+  DEFAULT_CURRENCY,
+  majorToMinor as majorToMinorUtil,
+  minorToMajor as minorToMajorUtil,
+} from '@my-noodles/utils';
 import { useCallback } from 'react';
 
 import { useAppLocale } from '@/hooks/locale';
-import {
-  DEFAULT_CURRENCY,
-  formatCurrency as formatCurrencyUtil,
-  majorToMinor as majorToMinorUtil,
-  minorToMajor as minorToMajorUtil,
-} from '@/utils/format-currency';
+import { formatCurrency as formatCurrencyUtil } from '@/utils/format-currency';
 
 export function useCurrency() {
   const locale = useAppLocale();

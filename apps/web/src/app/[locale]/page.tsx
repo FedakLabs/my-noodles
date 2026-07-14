@@ -1,8 +1,8 @@
 import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { collectionsQueryKeys, fetchCollections } from '@/api/collections';
 import { runWithAppLocale } from '@/i18n/app-locale/server';

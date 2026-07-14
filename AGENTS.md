@@ -27,10 +27,9 @@ apps/web/          # Next.js App Router, MUI, next-intl, React Query
 apps/api/          # NestJS, TypeORM, Postgres
 packages/theme/    # MUI design system + country/brand skin engine
 packages/api-clients/  # OpenAPI-generated axios client + domain wrappers
-configs/eslint/    # shared flat-config presets
 ```
 
-Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v9, react-hook-form + Zod, Zustand cart, NestJS + class-validator DTOs, JSONB i18n columns, ISR + View Transitions.
+Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v9, react-hook-form + Zod, Zustand cart, NestJS + class-validator DTOs, JSONB i18n columns, ISR + View Transitions. Quality: oxlint + oxfmt.
 
 ## How to work in this repo
 

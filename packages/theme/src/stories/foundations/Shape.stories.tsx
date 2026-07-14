@@ -1,11 +1,11 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { MonoValue, TokenTableSection } from '../_components/TokenTable';
 import { spacingUnit } from '../../spacing';
+import { MonoValue, TokenTableSection } from '../_components/TokenTable';
 import { borderRadiusOrder, modalWidthOrder, spacingScaleOrder } from '../storyCatalog';
 
 type RadiusRow = { token: string; px: number; role: string };

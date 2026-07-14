@@ -1,8 +1,7 @@
+import { ServiceUnavailableException } from '@my-noodles/api-lib/exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-
-import { ServiceUnavailableException } from '@/infrastructure/exceptions';
 
 @Injectable()
 export class HealthService {

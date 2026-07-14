@@ -1,6 +1,6 @@
 'use client';
 
-import type { DeliveryProvider } from '@my-noodles/api-clients/storefront';
+import type { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
 import { formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useQuery } from '@tanstack/react-query';
 
@@ -15,7 +15,6 @@ import {
 
 const CITY_MIN_QUERY = 2;
 const SEARCH_DEBOUNCE_MS = 300;
-const POPULAR_CITIES_QUERY = '__popular__';
 
 export function useDeliveryProviders() {
   return formatUseQuery(
@@ -28,29 +27,21 @@ export function useDeliveryProviders() {
   );
 }
 
-export function useDeliveryPopularCities(provider: DeliveryProvider, enabled = true) {
-  return formatUseQuery(
-    useQuery({
-      queryKey: deliveryQueryKeys.popularCities(provider),
-      queryFn: () => fetchDeliveryCities(provider),
-      enabled,
-      staleTime: 60 * 60_000,
-    }),
-    'deliveryPopularCities',
-  );
-}
-
-export function useDeliveryCities(provider: DeliveryProvider, query: string, enabled = true) {
+export function useDeliveryCities(
+  provider: DeliveryProvider,
+  method: DeliveryMethod,
+  query: string,
+  enabled = true,
+) {
   const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
   const searching = debouncedQuery.length >= CITY_MIN_QUERY;
 
   return formatUseQuery(
     useQuery({
-      queryKey: deliveryQueryKeys.cities(provider, searching ? debouncedQuery : POPULAR_CITIES_QUERY),
-      queryFn: () =>
-        searching ? fetchDeliveryCities(provider, debouncedQuery) : fetchDeliveryCities(provider),
-      enabled,
-      staleTime: searching ? 5 * 60_000 : 60 * 60_000,
+      queryKey: deliveryQueryKeys.cities(provider, method, debouncedQuery),
+      queryFn: () => fetchDeliveryCities(provider, method, debouncedQuery),
+      enabled: enabled && searching,
+      staleTime: 5 * 60_000,
     }),
     'deliveryCities',
   );

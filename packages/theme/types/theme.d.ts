@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react';
-
 import '@mui/material/Autocomplete';
 import '@mui/material/Button';
 import '@mui/material/FormControl';

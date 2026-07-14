@@ -3,6 +3,7 @@ import {
   deliveryControllerListProviders,
   deliveryControllerSearchCities,
   deliveryControllerSearchWarehouses,
+  type DeliveryMethod,
   type DeliveryProvider,
   type DeliveryProviderDto,
   type DeliveryWarehouseDto,
@@ -14,10 +15,8 @@ export type { DeliveryCityDto, DeliveryProviderDto, DeliveryWarehouseDto };
 export const deliveryQueryKeys = {
   all: ['delivery'] as const,
   providers: () => [...deliveryQueryKeys.all, 'providers'] as const,
-  popularCities: (provider: DeliveryProvider) =>
-    [...deliveryQueryKeys.all, 'cities', provider, '__popular__'] as const,
-  cities: (provider: DeliveryProvider, query: string) =>
-    [...deliveryQueryKeys.all, 'cities', provider, query] as const,
+  cities: (provider: DeliveryProvider, method: DeliveryMethod, query: string) =>
+    [...deliveryQueryKeys.all, 'cities', provider, method, query] as const,
   warehouses: (provider: DeliveryProvider, cityRef: string, query?: string) =>
     [...deliveryQueryKeys.all, 'warehouses', provider, cityRef, query ?? ''] as const,
 };
@@ -28,11 +27,12 @@ export async function fetchDeliveryProviders(): Promise<DeliveryProviderDto[]> {
 
 export async function fetchDeliveryCities(
   provider: DeliveryProvider,
+  method: DeliveryMethod,
   query?: string,
 ): Promise<DeliveryCityDto[]> {
   return requestData(
     deliveryControllerSearchCities({
-      query: { provider, q: query?.trim() ?? '' },
+      query: { provider, method, q: query?.trim() ?? '' },
     }),
   );
 }

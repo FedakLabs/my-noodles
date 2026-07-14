@@ -1,21 +1,7 @@
+import type { CurrencyCode } from '@my-noodles/utils';
+
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
-
-/** ISO 4217 codes we accept from the API today — extend here for multi-currency. */
-export const CURRENCY_CODES = ['UAH'] as const;
-
-export type CurrencyCode = (typeof CURRENCY_CODES)[number];
-
-export const DEFAULT_CURRENCY: CurrencyCode = 'UAH';
-
-type CurrencyDefinition = {
-  /** Divisor for minor units: major = amountMinor / 10^minorExponent (UAH kopiyky → 2). */
-  minorExponent: number;
-};
-
-export const CURRENCIES: Record<CurrencyCode, CurrencyDefinition> = {
-  UAH: { minorExponent: 2 },
-};
 
 type CurrencyDisplay = {
   symbol: string;
@@ -47,10 +33,6 @@ export const LOCALE_CURRENCY_DISPLAY: Record<AppLocale, LocaleCurrencyDisplay> =
   },
 };
 
-export function isCurrencyCode(value: string): value is CurrencyCode {
-  return (CURRENCY_CODES as readonly string[]).includes(value);
-}
-
 export function resolveAppLocale(locale: string): AppLocale {
   const base = locale.split('-')[0]?.toLowerCase();
 
@@ -59,8 +41,4 @@ export function resolveAppLocale(locale: string): AppLocale {
   }
 
   return routing.defaultLocale;
-}
-
-export function minorFactor(currency: CurrencyCode): number {
-  return 10 ** CURRENCIES[currency].minorExponent;
 }

@@ -13,7 +13,7 @@ export function mapDeliveryDtoToEntity(
     provider: dto.provider,
     method: dto.method,
     city: dto.city,
-    cityRef: isWarehouse ? (dto.cityRef ?? null) : null,
+    cityRef: dto.cityRef ?? null,
     warehouseNumber: isWarehouse ? (dto.warehouseNumber ?? null) : null,
     warehouseName: isWarehouse ? (dto.warehouseName ?? null) : null,
     warehouseRef: isWarehouse ? (dto.warehouseRef ?? null) : null,

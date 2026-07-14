@@ -1,0 +1,64 @@
+{
+  "name": "utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/utils/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib"],
+  "targets": {
+    "build": {
+      "command": "pnpm build",
+      "options": {
+        "cwd": "packages/utils"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "pnpm format",
+      "options": {
+        "cwd": "packages/utils"
+      }
+    },
+    "format-check": {
+      "command": "pnpm format-check",
+      "options": {
+        "cwd": "packages/utils"
+      }
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "options": {
+        "cwd": "packages/utils"
+      }
+    },
+    "lint-check": {
+      "command": "pnpm lint-check",
+      "options": {
+        "cwd": "packages/utils"
+      }
+    },
+    "type-check": {
+      "command": "pnpm type-check",
+      "options": {
+        "cwd": "packages/utils"
+      }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace packages/utils",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx run {projectName}:format",
+          "nx run {projectName}:lint",
+          "nx run {projectName}:type-check",
+          "nx run {projectName}:knip"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

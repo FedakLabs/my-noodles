@@ -5,9 +5,9 @@ import { TransactionalTypeOrmModule } from '@/infrastructure/persistence';
 import { InventoryModule } from '../inventory';
 import { Product } from '../products/product.entity';
 import { VisitorModule } from '../visitor';
+import { CartItem } from './cart-item.entity';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
-import { CartItem } from './cart-item.entity';
 
 @Module({
   imports: [VisitorModule, InventoryModule, TransactionalTypeOrmModule.forFeature([CartItem, Product])],

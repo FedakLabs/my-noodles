@@ -20,9 +20,9 @@
       "types": "./dist/persistence/index.d.ts",
       "default": "./dist/persistence/index.js"
     },
-    "./external-api": {
-      "types": "./dist/external-api/index.d.ts",
-      "default": "./dist/external-api/index.js"
+    "./api-client": {
+      "types": "./dist/api-client/index.d.ts",
+      "default": "./dist/api-client/index.js"
     },
     "./exceptions": {
       "types": "./dist/exceptions/index.d.ts",
@@ -44,6 +44,14 @@
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"
     },
+    "./transformers": {
+      "types": "./dist/transformers/index.d.ts",
+      "default": "./dist/transformers/index.js"
+    },
+    "./validators": {
+      "types": "./dist/validators/index.d.ts",
+      "default": "./dist/validators/index.js"
+    },
     "./middlewares": {
       "types": "./dist/middlewares/index.d.ts",
       "default": "./dist/middlewares/index.js"
@@ -51,10 +59,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
-    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
-    "lint": "eslint . --fix",
-    "lint-check": "eslint .",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --fix",
+    "lint-check": "oxlint",
     "type-check": "tsc --noEmit -p tsconfig.json",
     "test": "jest"
   },
@@ -64,11 +72,11 @@
     "@opentelemetry/instrumentation-winston": "0.63.0",
     "@opentelemetry/sdk-node": "0.219.0",
     "@opentelemetry/winston-transport": "0.29.0",
-    "axios": "1.9.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "dotenv": "16.4.7",
     "http-status-codes": "^2.3.0",
+    "libphonenumber-js": "^1.13.7",
     "winston": "3.19.0"
   },
   "peerDependencies": {
@@ -76,14 +84,11 @@
   },
   "devDependencies": {
     "@jest/globals": "29.7.0",
-    "@my-noodles/eslint-config": "workspace:*",
     "@my-noodles/jest-config": "workspace:*",
     "@types/express": "5.0.3",
     "@types/express-serve-static-core": "5.0.7",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.3",
-    "eslint": "10.5.0",
-    "eslint-config-prettier": "10.1.8",
     "jest": "29.7.0",
     "reflect-metadata": "0.2.2",
     "ts-jest": "29.3.2",

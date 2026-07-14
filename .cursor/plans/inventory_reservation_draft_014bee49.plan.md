@@ -1,27 +1,27 @@
 ---
 name: Inventory reservation draft
-overview: "Підхід B (gross quantity): available = quantity - SUM(non-expired draft order_items). Hold expiry = created_at + DRAFT_HOLD_MS (без колонки expires_at). Deduct на submit; cancel = status only."
+overview: 'Підхід B (gross quantity): available = quantity - SUM(non-expired draft order_items). Hold expiry = created_at + DRAFT_HOLD_MS (без колонки expires_at). Deduct на submit; cancel = status only.'
 todos:
   - id: inventory-service
-    content: "InventoryService: getAvailableQty (draft + time filter), reconcile, deductOnSubmit, isDraftExpired helper"
+    content: 'InventoryService: getAvailableQty (draft + time filter), reconcile, deductOnSubmit, isDraftExpired helper'
     status: completed
   - id: migration-cancelled-reason
-    content: "Migration: orders.cancelled_reason only (no expires_at column)"
+    content: 'Migration: orders.cancelled_reason only (no expires_at column)'
     status: pending
   - id: draft-reserve-flow
-    content: "createDraft: reconcile vs getAvailableQty → draft order_items only"
+    content: 'createDraft: reconcile vs getAvailableQty → draft order_items only'
     status: pending
   - id: draft-cancel-flow
     content: cancelDraftOrder + expireStaleDrafts (created_at + hold) + visitor cart idle
     status: pending
   - id: submit-deduct
-    content: "submitDraft: FOR UPDATE, deduct products.quantity, status new"
+    content: 'submitDraft: FOR UPDATE, deduct products.quantity, status new'
     status: pending
   - id: cart-stock-guards
-    content: "CartService: ceiling via getAvailableQty(); 409 on OOS or max"
+    content: 'CartService: ceiling via getAvailableQty(); 409 on OOS or max'
     status: pending
   - id: frontend-409-ux
-    content: "Frontend: 409 handling, checkout timer from expiresAt (computed), i18n"
+    content: 'Frontend: 409 handling, checkout timer from expiresAt (computed), i18n'
     status: pending
   - id: tests-e2e
     content: Unit + integration tests inventory; оновити e2e mock-api
@@ -33,12 +33,12 @@ isProject: false
 
 ## Що роблять Amazon / Shopify / великий retail
 
-| Фаза | Типова поведінка |
-|------|------------------|
-| **Cart (browsing)** | Без резерву. |
-| **Checkout start** | Hold ≈10–15 хв. |
+| Фаза                  | Типова поведінка             |
+| --------------------- | ---------------------------- |
+| **Cart (browsing)**   | Без резерву.                 |
+| **Checkout start**    | Hold ≈10–15 хв.              |
 | **Place order / Pay** | Atomic перевірка + списання. |
-| **Cancel / timeout** | Hold знімається. |
+| **Cancel / timeout**  | Hold знімається.             |
 
 **Висновок:** cart = без резерву. **Draft `order_items` = hold.** **`products.quantity` = gross.** Expiry = **`created_at + DRAFT_HOLD_MS`** — окремої колонки `expires_at` **не потрібно**.
 
@@ -77,25 +77,25 @@ sequenceDiagram
 
 ### Модель stock
 
-| | |
-|---|---|
-| `products.quantity` | **Gross** — фізичний склад |
-| Hold | `order_items` where parent order is **non-expired draft** |
-| **Available** | `quantity - SUM(reserved qty)` |
-| Draft create | Reconcile + insert draft — **quantity unchanged** |
-| Submit | **`quantity -= line.qty`** + `status = new` |
-| Cancel / expiry | `status = cancelled` — **quantity unchanged** |
+|                     |                                                           |
+| ------------------- | --------------------------------------------------------- |
+| `products.quantity` | **Gross** — фізичний склад                                |
+| Hold                | `order_items` where parent order is **non-expired draft** |
+| **Available**       | `quantity - SUM(reserved qty)`                            |
+| Draft create        | Reconcile + insert draft — **quantity unchanged**         |
+| Submit              | **`quantity -= line.qty`** + `status = new`               |
+| Cancel / expiry     | `status = cancelled` — **quantity unchanged**             |
 
 ### Чи потрібна колонка `expires_at`?
 
 **Ні.** Expiry timestamp = `order.created_at + DRAFT_HOLD_MS` (константа поруч з [`CART_IDLE_MS`](apps/api/src/application/visitor/visitor-session.cookie.ts), default **15 хв**).
 
-| Use case | Як |
-|----------|-----|
+| Use case            | Як                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
 | Checkout timer (UI) | API повертає **computed** `expiresAt: createdAt + hold` у `OrderCheckoutDto` — не зберігаємо в DB |
-| Lazy expiry | `isDraftExpired(order)` → `createdAt + hold < now` |
-| Cron | `find({ status: Draft, createdAt: LessThanOrEqual(draftHoldMinCreatedAt()) })` |
-| Submit guard | reject якщо `isDraftExpired` |
+| Lazy expiry         | `isDraftExpired(order)` → `createdAt + hold < now`                                                |
+| Cron                | `find({ status: Draft, createdAt: LessThanOrEqual(draftHoldMinCreatedAt()) })`                    |
+| Submit guard        | reject якщо `isDraftExpired`                                                                      |
 
 **Trade-off:** fixed hold від `created_at`, не sliding на PATCH activity — OK для MVP (було в plan як phase 2). Sliding timer пізніше = `expires_at` або `updated_at + hold`.
 
@@ -139,8 +139,7 @@ export function activeDraftOrderWhere(now = Date.now()) {
 
 export function isDraftExpired(order: Order, now = Date.now()): boolean {
   return (
-    order.status === OrderStatus.Draft &&
-    order.createdAt.getTime() <= draftHoldMinCreatedAt(now).getTime()
+    order.status === OrderStatus.Draft && order.createdAt.getTime() <= draftHoldMinCreatedAt(now).getTime()
   );
 }
 
@@ -202,12 +201,12 @@ async getAvailableQtyBatch(productIds: string[], em: EntityManager): Promise<Map
 
 ### Де синхронізувати
 
-| Момент | Дія |
-|--------|-----|
-| `addItem` / `updateItem` | `getAvailableQty()` |
-| `POST /orders/draft` | Reconcile → draft або `409 CartInventoryChanged` |
-| `GET /orders/:id` | Якщо `isDraftExpired` → `cancelDraftOrder(Expired)` → 409 |
-| `POST /orders/:id/submit` | Guard not expired → deduct → `new` |
+| Момент                    | Дія                                                       |
+| ------------------------- | --------------------------------------------------------- |
+| `addItem` / `updateItem`  | `getAvailableQty()`                                       |
+| `POST /orders/draft`      | Reconcile → draft або `409 CartInventoryChanged`          |
+| `GET /orders/:id`         | Якщо `isDraftExpired` → `cancelDraftOrder(Expired)` → 409 |
+| `POST /orders/:id/submit` | Guard not expired → deduct → `new`                        |
 
 ### `cancelled_reason` (без `expires_at`)
 
@@ -234,13 +233,13 @@ export enum OrderCancelledReason {
 
 ### 2. Exceptions (409)
 
-| Exception | Коли |
-|-----------|------|
-| `CartProductOutOfStockException` | available === 0 |
-| `CartMaxQuantityReachedException` | > available |
-| `CartInventoryChangedException` | draft create |
-| `OrderDraftExpiredException` | get/submit expired draft |
-| `OrderInventoryChangedException` | submit: gross < line qty |
+| Exception                         | Коли                     |
+| --------------------------------- | ------------------------ |
+| `CartProductOutOfStockException`  | available === 0          |
+| `CartMaxQuantityReachedException` | > available              |
+| `CartInventoryChangedException`   | draft create             |
+| `OrderDraftExpiredException`      | get/submit expired draft |
+| `OrderInventoryChangedException`  | submit: gross < line qty |
 
 ### 3. `OrdersService`
 

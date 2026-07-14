@@ -1,11 +1,8 @@
 {
-  "extends": "../../configs/typescript/base.json",
+  "extends": "../../configs/typescript/library.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "ES2022"],
     "jsx": "preserve",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
     "plugins": [{ "name": "next" }],
     "allowJs": true,
     "incremental": true,

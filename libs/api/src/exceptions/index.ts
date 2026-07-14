@@ -3,7 +3,11 @@ export {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  SERVER_SIDE_FALLBACK_MESSAGE,
   SERVICE_UNAVAILABLE_FALLBACK_MESSAGE,
+  ServerSideException,
   ServiceUnavailableException,
+  TooManyRequestsException,
+  ValidationException,
 } from './http.exceptions';
 export { HttpStatus, type HttpStatusCode } from './http-status';

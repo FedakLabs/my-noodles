@@ -1,19 +1,18 @@
 import { APP_LOGGER } from '@my-noodles/api-lib/logging';
+import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { type DataSource, IsNull, LessThanOrEqual, type Repository } from 'typeorm';
 import type { Logger } from 'winston';
 
-import { TelegramService } from '@/infrastructure/external-apis/telegram';
+import { TelegramService } from '@/application/telegram';
 import { TransactionalRepository } from '@/infrastructure/persistence';
-import { DEFAULT_CURRENCY } from '@/utils/currency.config';
 
+import type { CartItem } from '../cart/cart-item.entity';
 import { CartEmptyException, CartInventoryChangedException } from '../cart/cart.exceptions';
 import { CartService } from '../cart/cart.service';
-import type { CartItem } from '../cart/cart-item.entity';
 import { DeliveryService } from '../delivery/delivery.service';
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
-import { Order } from '../orders/order.entity';
 import { OrderDelivery } from '../orders/order-delivery.entity';
 import { formatOrderDelivery } from '../orders/order-delivery.format';
 import {
@@ -24,12 +23,13 @@ import {
 import { OrderItem } from '../orders/order-item.entity';
 import { formatOrderReceiverName } from '../orders/order-receiver';
 import { OrderStatus } from '../orders/order-status';
+import { Order } from '../orders/order.entity';
 import type { OrderResponseDto } from '../orders/orders.dto';
 import { OrderInventoryChangedException } from '../orders/orders.exceptions';
-import { checkoutExpiresAt, checkoutHoldMinCreatedAt, isCheckoutExpired } from './checkout.config';
-import { Checkout } from './checkout.entity';
 import { CheckoutCancelledReason } from './checkout-cancelled-reason';
 import { CheckoutStatus } from './checkout-status';
+import { checkoutExpiresAt, checkoutHoldMinCreatedAt, isCheckoutExpired } from './checkout.config';
+import { Checkout } from './checkout.entity';
 import type {
   CheckoutDetailDto,
   CheckoutsListDto,
@@ -400,12 +400,9 @@ export class CheckoutsService extends TransactionalRepository {
     order: Order,
     dto: UpdateCheckoutDeliveryDto | SubmitCheckoutDto['delivery'],
   ): Promise<OrderDelivery> {
-    const delivery = {
-      ...createPartialDeliveryEntity(order.id, dto),
-      order,
-    } as OrderDelivery;
-
-    return this.orderDeliveriesRepository.save(delivery);
+    const saved = await this.orderDeliveriesRepository.save(createPartialDeliveryEntity(order.id, dto));
+    order.delivery = saved;
+    return saved;
   }
 
   private async applyReconciledOrderItems(order: Order, lines: InventoryLine[]): Promise<void> {

@@ -6,10 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "format": "prettier --write . --ignore-path ../../configs/prettier/.prettierignore",
-    "format-check": "prettier --check . --ignore-path ../../configs/prettier/.prettierignore",
-    "lint": "eslint . --fix",
-    "lint-check": "eslint .",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --type-aware --fix",
+    "lint-check": "oxlint --type-aware",
     "type-check": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "e2e": "playwright test",
@@ -24,6 +24,7 @@
     "@my-noodles/api-clients": "workspace:*",
     "@my-noodles/theme": "workspace:*",
     "@my-noodles/ui": "workspace:*",
+    "@my-noodles/utils": "workspace:*",
     "@my-noodles/web-lib": "workspace:*",
     "@next/third-parties": "16.2.9",
     "@tanstack/react-query": "5.101.0",
@@ -39,14 +40,11 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
-    "@my-noodles/eslint-config": "workspace:*",
     "@my-noodles/vitest-config": "workspace:*",
     "@svgr/webpack": "8.1.0",
     "@tanstack/react-query-devtools": "5.101.0",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "eslint": "10.5.0",
-    "eslint-config-prettier": "10.1.8",
     "vitest": "4.1.9"
   }
 }

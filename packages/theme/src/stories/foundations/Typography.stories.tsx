@@ -1,6 +1,6 @@
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { MonoValue, TokenTableSection } from '../_components/TokenTable';

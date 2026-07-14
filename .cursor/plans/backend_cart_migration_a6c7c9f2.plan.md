@@ -6,7 +6,7 @@ todos:
     content: Replace feed_sessions with visitor_sessions (feed/cart feature TTLs only); persistent vsid cookie; permanent visitor id; feed view reset on idle/reshuffle
     status: in_progress
   - id: backend-cart-module
-    content: "Create cart module on visitor_sessions: cart_items, controller, service, DTOs; register in app.module"
+    content: 'Create cart module on visitor_sessions: cart_items, controller, service, DTOs; register in app.module'
     status: pending
   - id: order-status-draft
     content: Expand OrderStatus enum + migration; nullable customer/delivery on draft orders; status transition rules
@@ -45,10 +45,10 @@ isProject: false
 
 One **visitor identity** for the whole app — a single UUID with two names depending on layer:
 
-| Layer | Name | Value |
-|-------|------|-------|
-| HttpOnly cookie | `vsid` | `visitor_sessions.id` |
-| Database PK / FKs | `visitor_sessions.id`, `visitor_session_id` | same UUID |
+| Layer             | Name                                        | Value                 |
+| ----------------- | ------------------------------------------- | --------------------- |
+| HttpOnly cookie   | `vsid`                                      | `visitor_sessions.id` |
+| Database PK / FKs | `visitor_sessions.id`, `visitor_session_id` | same UUID             |
 
 Feed and cart differ only in **feature-specific idle TTLs** (`feed_expires_at`, `cart_expires_at`), not in who the user is.
 
@@ -66,13 +66,13 @@ flowchart TB
     vid --> orders[orders.visitor_session_id]
 ```
 
-| Concern | TTL | On idle expire | Visitor id |
-|---------|-----|----------------|------------|
-| **Feed views** (dedup / recently seen) | 2h sliding (`feed_expires_at`) | **Delete views** — products can appear again; reshuffle = same reset | **always unchanged** |
-| **Feed likes** | none (visitor-scoped) | **persist** | unchanged |
-| **Cart items** | 30d sliding (`cart_expires_at`) | Clear cart items (lazy on next cart read) | unchanged |
-| **Draft orders** | 30d lazy cancel | Auto-`cancelled` | unchanged |
-| **Visitor identity (`vsid`)** | **none** | **never rotated** by feed/cart idle | new UUID **only on first visit** (no cookie) |
+| Concern                                | TTL                             | On idle expire                                                       | Visitor id                                   |
+| -------------------------------------- | ------------------------------- | -------------------------------------------------------------------- | -------------------------------------------- |
+| **Feed views** (dedup / recently seen) | 2h sliding (`feed_expires_at`)  | **Delete views** — products can appear again; reshuffle = same reset | **always unchanged**                         |
+| **Feed likes**                         | none (visitor-scoped)           | **persist**                                                          | unchanged                                    |
+| **Cart items**                         | 30d sliding (`cart_expires_at`) | Clear cart items (lazy on next cart read)                            | unchanged                                    |
+| **Draft orders**                       | 30d lazy cancel                 | Auto-`cancelled`                                                     | unchanged                                    |
+| **Visitor identity (`vsid`)**          | **none**                        | **never rotated** by feed/cart idle                                  | new UUID **only on first visit** (no cookie) |
 
 **Cookie:** rename `feed_sid` → **`vsid`**. Persistent HttpOnly cookie, **not tied to feed/cart TTLs** — survives until the customer clears site data (use a long-lived `maxAge` or equivalent persistent cookie; **do not** slide or expire the cookie based on feed/cart activity). The visitor id is **device-bound identity**, not a sliding session.
 
@@ -123,11 +123,11 @@ visitor_sessions (
 
 ### Feed behavior change (breaking vs today, OK pre-prod)
 
-| Action today | Action with unified visitor |
-|--------------|----------------------------|
-| 2h idle → new `feed_sid` | Same `vsid`; views cleared |
-| Reshuffle → new `feed_sid` | Same `vsid`; views cleared |
-| Likes after 2h away | Lost (old session id) | **Still visible** (likes on visitor) |
+| Action today               | Action with unified visitor |
+| -------------------------- | --------------------------- |
+| 2h idle → new `feed_sid`   | Same `vsid`; views cleared  |
+| Reshuffle → new `feed_sid` | Same `vsid`; views cleared  |
+| Likes after 2h away        | Lost (old session id)       | **Still visible** (likes on visitor) |
 
 ---
 
@@ -196,13 +196,13 @@ sequenceDiagram
 
 Uses `VisitorSessionService.resolveForCart` in controller.
 
-| Method | Path | Slides TTL |
-|--------|------|------------|
-| `GET` | `/cart` | `cart_expires_at` |
-| `POST` | `/cart/items` | cart |
-| `PATCH` | `/cart/items/:productId` | cart |
-| `DELETE` | `/cart/items/:productId` | cart |
-| `DELETE` | `/cart` | cart |
+| Method   | Path                     | Slides TTL        |
+| -------- | ------------------------ | ----------------- |
+| `GET`    | `/cart`                  | `cart_expires_at` |
+| `POST`   | `/cart/items`            | cart              |
+| `PATCH`  | `/cart/items/:productId` | cart              |
+| `DELETE` | `/cart/items/:productId` | cart              |
+| `DELETE` | `/cart`                  | cart              |
 
 `CartResponseDto`: `{ items, totalMinor, itemCount, currency, activeDraft? }`
 
@@ -210,23 +210,23 @@ Uses `VisitorSessionService.resolveForCart` in controller.
 
 ## Phase 2 — Draft checkout API
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/orders/draft` | Begin checkout (visitor-scoped) |
-| `GET` | `/orders/:id` | Checkout view + prefill |
-| `PATCH` | `/orders/:id` | Blur autosave |
-| `POST` | `/orders/:id/submit` | `draft` → `new` |
+| Method   | Path                 | Purpose                                   |
+| -------- | -------------------- | ----------------------------------------- |
+| `POST`   | `/orders/draft`      | Begin checkout (visitor-scoped)           |
+| `GET`    | `/orders/:id`        | Checkout view + prefill                   |
+| `PATCH`  | `/orders/:id`        | Blur autosave                             |
+| `POST`   | `/orders/:id/submit` | `draft` → `new`                           |
 | `DELETE` | `/orders/:id/cancel` | Cancel order — status guardrails enforced |
 
 ### `DELETE /orders/:id/cancel` — dedicated cancel endpoint
 
 Centralizes **when** `→ cancelled` is allowed. Storefront MVP rules:
 
-| Current status | Allowed? | Response |
-|----------------|----------|----------|
-| `draft` | **Yes** (if `visitor_session_id === vsid`) | `200` + order with `cancelled` |
-| `cancelled` | **Yes** (idempotent) | `200` + order (already cancelled) |
-| `new`, `confirmed`, `arrived`, `completed`, `returned`, `archived` | **No** | `409 Conflict` — `OrderCancelNotAllowedException` |
+| Current status                                                     | Allowed?                                   | Response                                          |
+| ------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------- |
+| `draft`                                                            | **Yes** (if `visitor_session_id === vsid`) | `200` + order with `cancelled`                    |
+| `cancelled`                                                        | **Yes** (idempotent)                       | `200` + order (already cancelled)                 |
+| `new`, `confirmed`, `arrived`, `completed`, `returned`, `archived` | **No**                                     | `409 Conflict` — `OrderCancelNotAllowedException` |
 
 **Checks (in order):**
 
@@ -272,14 +272,14 @@ Remove legacy `POST /orders` single-shot create.
 
 ## Open questions resolved
 
-| Question | Decision |
-|----------|----------|
-| One or two cookies? | **One** (`vsid`) |
-| Visitor id lifetime | **Permanent per device** — no server-side expiry; new id only when cookie absent (first visit) |
-| Feed idle behavior | **Forget views only**; likes persist on visitor |
-| Reshuffle | Same as feed idle reset (views), **not** new visitor id |
-| Cart vs feed lifetime | `feed_expires_at` / `cart_expires_at` — feature-only; **do not** affect `vsid` |
-| Order linkage | `orders.visitor_session_id` |
+| Question              | Decision                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| One or two cookies?   | **One** (`vsid`)                                                                               |
+| Visitor id lifetime   | **Permanent per device** — no server-side expiry; new id only when cookie absent (first visit) |
+| Feed idle behavior    | **Forget views only**; likes persist on visitor                                                |
+| Reshuffle             | Same as feed idle reset (views), **not** new visitor id                                        |
+| Cart vs feed lifetime | `feed_expires_at` / `cart_expires_at` — feature-only; **do not** affect `vsid`                 |
+| Order linkage         | `orders.visitor_session_id`                                                                    |
 
 ## Still optional later
 

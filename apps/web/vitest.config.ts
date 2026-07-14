@@ -9,7 +9,8 @@ export default createBaseVitestConfig({
     },
   },
   test: {
-    include: ['src/**/*.{test,spec}.ts', 'src/**/*.{test,spec}.tsx', 'src/**/~*.test.ts'],
+    include: ['src/**/*.{test,spec}.ts', 'src/**/*.{test,spec}.tsx'],
+    setupFiles: ['./src/tests/setup.ts'],
     env: {
       NEXT_PUBLIC_API_URL: 'http://localhost:3001',
       NEXT_PUBLIC_SITE_URL: 'http://localhost:3000',

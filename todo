@@ -1,62 +1,18 @@
-apps\api\src\utils\phone can we move this to libs-api validators folder with phone.ts
+====
+improve swagger response documentation
 
+imporve custom decorators haders
 
-move libs-api transformers from utils/transformder just on level up
-
-and thus lib numberjs will be the libs-api @packages/ui/src/components/PhoneInput/phone-format.ts#L1-20 and also lets do the same for libs-web so that packages/ui would consume the libs-web and use the validators from there
-
-===
-move those files in deadline-countdown folder
-libs\web\src\hooks\deadline-countdown.ts
-libs\web\src\hooks\index.ts
-libs\web\src\hooks\use-deadline-countdown.ts
-
-
-=====
-
-@packages/api-clients/src/storefront/client/clients.ts:1-110 make this not as a function, but as a class StorefrontApiClient to instantiate it and return the client
-
-(so that in a future it could be used in other not react or non-function-programming projects. because oop is more usable paradigm)
-
-
-=====
-
-
-apps\api\src\infrastructure\external-apis\meest
-apps\api\src\infrastructure\external-apis\nova-poshta
-apps\api\src\infrastructure\external-apis\telegram
-apps\api\src\infrastructure\external-apis\ukrposhta
-
-
-can we move this to api-clients
-
-since this is just pure ts (except of registering module)
-
-we can move raw part into api-clients (for any part of application to use it simply by 
-
-and in apps/api we would simply register into nestjs the intializations of those clients
-
+better organizing of swagger documentation (i.e exception schema etc, since everything is now )
 
 ====
 
+after nest v12
 
-migrate from eslint to oxlint
+vitest will be used + ESM
 
-====
+migrate completely to vitest for web and api
+migrate completely to esm for web and api
 
-implement lint-staged in quality gatew instead full-cycle validate (to run the checks only on changed files)
-
-validate will still be as keeper before committing, but in active iterative flow
-
-====
-
-remove those custom nestException etc, just to custom middleware validation (even for not found route exception), other also basic exception write into own serversidexecption etc
-
-in other cases, nestjs is flexible enough to go with it in own way
-
-
-====
-same with nest logger, check for some removeing of adaptation of logger service to some nestjs like
-
-just simply instantiate logger in the main of an app and that is it. reference it everywhere by inject across the services/controllers
-
+remove completely jest from project
+remove completely cjs commonjs etc from a project

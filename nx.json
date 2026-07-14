@@ -6,11 +6,10 @@
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-      "!{projectRoot}/**/~*.test.[jt]s?(x)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/eslint.config.mjs"
+      "!{projectRoot}/.oxlintrc.json"
     ],
-    "sharedGlobals": ["{workspaceRoot}/configs/typescript/base.json"]
+    "sharedGlobals": ["{workspaceRoot}/configs/typescript/*.json"]
   },
   "targetDefaults": {
     "build": {
@@ -19,27 +18,19 @@
       "cache": true
     },
     "format": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/configs/prettier/.prettierrc.json",
-        "{workspaceRoot}/configs/prettier/.prettierignore"
-      ],
+      "inputs": ["default", "{workspaceRoot}/.oxfmtrc.json"],
       "cache": false
     },
     "format-check": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/configs/prettier/.prettierrc.json",
-        "{workspaceRoot}/configs/prettier/.prettierignore"
-      ],
+      "inputs": ["default", "{workspaceRoot}/.oxfmtrc.json"],
       "cache": true
     },
     "lint": {
-      "inputs": ["default", "{workspaceRoot}/configs/eslint/**"],
+      "inputs": ["default", "{workspaceRoot}/.oxlintrc.json", "{projectRoot}/.oxlintrc.json"],
       "cache": false
     },
     "lint-check": {
-      "inputs": ["default", "{workspaceRoot}/configs/eslint/**"],
+      "inputs": ["default", "{workspaceRoot}/.oxlintrc.json", "{projectRoot}/.oxlintrc.json"],
       "cache": true
     },
     "type-check": {
@@ -47,7 +38,12 @@
       "cache": true
     },
     "test": {
-      "inputs": ["default", "^default", "{workspaceRoot}/configs/vitest/**", "{workspaceRoot}/configs/jest/**"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/configs/vitest/**",
+        "{workspaceRoot}/configs/jest/**"
+      ],
       "cache": true
     },
     "knip": {

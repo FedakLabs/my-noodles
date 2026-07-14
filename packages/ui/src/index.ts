@@ -66,7 +66,7 @@ export {
   type MediaGalleryVideoLabels,
   resolvePrimaryMediaItem,
 } from './components/MediaGallery';
-export { formatPhoneToE164, isValidPhone, PhoneInput, type PhoneInputProps } from './components/PhoneInput';
+export { PhoneInput, type PhoneInputProps } from './components/PhoneInput';
 export { PriceRangeSlider, type PriceRangeSliderProps } from './components/PriceRangeSlider';
 export { StableLinearProgress, type StableLinearProgressProps } from './components/StableLinearProgress';
 export { showToast, ToastProvider } from './components/Toast';

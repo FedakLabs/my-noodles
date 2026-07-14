@@ -90,7 +90,7 @@ likeFeed(productId, { onError: () => setItemLiked(productId, false) });
 
 | Callback                      | Runs when                                           | Concurrent `mutate()` calls                                                                                                                                              |
 | ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `useMutation({ onSuccess })`  | Every successful mutation                           | ✅ Runs once for **each** successful mutation. You can inspect `variables` to know which request completed.                                                               |
+| `useMutation({ onSuccess })`  | Every successful mutation                           | ✅ Runs once for **each** successful mutation. You can inspect `variables` to know which request completed.                                                              |
 | `mutate(vars, { onSuccess })` | The callback attached to a specific `mutate()` call | ⚠️ If multiple `mutate()` calls overlap on the **same mutation instance**, only the **latest** per-call callbacks are guaranteed to fire. Earlier ones are unsubscribed. |
 
 Every call to `mutate()` creates a new mutation observer. When you call `mutate()` again on the same mutation object before the previous one finishes, React Query removes the previous observer and attaches the new one. The hook-level callbacks belong to the mutation itself, so they execute for every mutation result. The per-call callbacks belong to the observer, so replacing the observer means earlier callbacks are discarded.
@@ -99,14 +99,15 @@ Every call to `mutate()` creates a new mutation observer. When you call `mutate(
 
 There are three common approaches:
 
-* Put the logic in `useMutation({ onSuccess })` (recommended for shared behavior).
-* Use `mutateAsync()` and `await` each call:
+- Put the logic in `useMutation({ onSuccess })` (recommended for shared behavior).
+- Use `mutateAsync()` and `await` each call:
 
   ```tsx
   await mutation.mutateAsync(item1);
   await mutation.mutateAsync(item2);
   ```
-* Create separate mutation instances if each operation needs its own independent lifecycle.
+
+- Create separate mutation instances if each operation needs its own independent lifecycle.
 
 ### Mutations → invalidate, don’t manually patch cache
 
@@ -186,13 +187,13 @@ If the logic is more then CRUD that react-query hooks is enough for, abstract th
 
 Every network-backed surface covers the **full lifecycle**:
 
-| State | Typical signal | UI |
-| --- | --- | --- |
-| **Loading (initial)** | `isPending && !data` | Skeleton — replaces content |
-| **Error** | `isError && !data` | Error copy + retry (`refetch`) |
-| **Empty** | success, nothing meaningful to show | Friendly empty state |
-| **Data** | success + content | Happy path |
-| **Refetching** | `isFetching && !isPending` | Keep stale content visible; soft feedback nearby (see [common-patterns — Initial load vs refetch](./common-patterns.md#initial-load-vs-refetch)) |
+| State                 | Typical signal                      | UI                                                                                                                                               |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Loading (initial)** | `isPending && !data`                | Skeleton — replaces content                                                                                                                      |
+| **Error**             | `isError && !data`                  | Error copy + retry (`refetch`)                                                                                                                   |
+| **Empty**             | success, nothing meaningful to show | Friendly empty state                                                                                                                             |
+| **Data**              | success + content                   | Happy path                                                                                                                                       |
+| **Refetching**        | `isFetching && !isPending`          | Keep stale content visible; soft feedback nearby (see [common-patterns — Initial load vs refetch](./common-patterns.md#initial-load-vs-refetch)) |
 
 ```tsx
 if (isPending) return <Skeleton />;
@@ -274,11 +275,11 @@ import { fetchProductsList } from '@/api/products/products';
 
 Three layers — pick the lightest tool that proves the behavior:
 
-| Layer | Tool | DOM? | Selector strategy |
-| --- | --- | --- | --- |
-| **Unit** | Vitest | No | Pure functions, Zustand stores, formatters — no selectors |
-| **Component / integration** | Vitest + Testing Library | Yes | **`getByRole` → `getByLabel` → `getByText`** (non-i18n data only) |
-| **E2E smoke** | Playwright (`apps/web/e2e/`) | Yes | Roles/labels + **i18n fixtures** + URL/state; **`data-testid` sparingly** |
+| Layer                       | Tool                         | DOM? | Selector strategy                                                         |
+| --------------------------- | ---------------------------- | ---- | ------------------------------------------------------------------------- |
+| **Unit**                    | Vitest                       | No   | Pure functions, Zustand stores, formatters — no selectors                 |
+| **Component / integration** | Vitest + Testing Library     | Yes  | **`getByRole` → `getByLabel` → `getByText`** (non-i18n data only)         |
+| **E2E smoke**               | Playwright (`apps/web/e2e/`) | Yes  | Roles/labels + **i18n fixtures** + URL/state; **`data-testid` sparingly** |
 
 Only valuable use cases that provide value to business should be covered by tests, which overhead with test files and supporting tests will worth the hustle.
 Simple utility functions that will be anyway be tested under some test case should not have saperate test file to not pollute codebase with overgranuality and overwhelming file structure.
@@ -301,7 +302,6 @@ business value of functionality stability > time spent on covering it by tests +
 - Name by **action + domain**, not visual copy: `catalog-add-to-cart--{slug}`, `checkout-submit`
 - Add a testId only when role/label cannot uniquely target the element; never on typography or static headings
 
-
 Use test-ids hardcoded as magic strings in component.This is fine those will be a guardrail to keep components in tact with tests. No need to keep test ids in separate variables file. It will just additional file to reference and overcomplicate imports in files.
 
 A good default is:
@@ -311,33 +311,33 @@ When you do use data-testid, inline the string in both the component and the tes
 
 For most applications, duplicated test ID strings are a reasonable trade-off because they make tests more effective at detecting unintended changes.
 
-
 ### File layout
 
 ```text
-hooks/cart/cart-store.test.ts          # unit — co-located, ~ prefix optional
+hooks/cart/cart-store.test.ts          # unit — co-located
 components/checkout/checkout-form.test.tsx
 e2e/funnel.spec.ts                      # Playwright smoke
 ```
+
 ---
 
 ## Anti-Patterns
 
 Grounded in how `apps/web` is actually structured. When in doubt, grep the nearest feature and copy its shape.
 
-| Avoid | Prefer |
-| --- | --- |
-| Raw generated SDK calls / `fetch` inside screens or components | Server-safe fetchers + query keys in `api/[feature]/[feature].ts`; client hooks in `*.hooks.ts` |
-| Deep imports into module internals (`@/api/orders/orders.hooks`, `@/hooks/cart/use-cart`) | Module barrel only: `@/api/orders`, `@/hooks/cart` (see [Module barrels](#module-barrels-same-idea-as-backend-domains)) |
-| `useState` for catalog filters, sort, or pagination | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI |
-| Mappers from search params in `screens/` | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept search-params/query-params structure directly |
-| User-visible strings in JSX | Define keys in translation framework to their values, so no magic strings would be present in codebase |
-| Hardcoded external `https://…` in screens/components | Named exports in `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …) |
-| Long `sx={{ … }}` chains copying colors, radii, or spacing | Theme tokens + MUI variants in `packages/theme`; feature chrome files for immersive UIs; raw hex only as last resort (see [Design & Theme](#design--theme)) |
-| Query/mutation keys missing query/mutation inputs | Hierarchical key factories (`products(Query|Mutation)Keys.[action](...argrs)`) matching prefetch and hook |
-| `setQueryData` in mutation `onSuccess` to mirror API responses | `invalidateQueries` with the smallest relevant key set; use mutation `data` only for side effects (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
-| `void invalidateQueries(...)` in mutation lifecycle callbacks | `async onSuccess` / `onError` + `await invalidateQueries(...)` so `isPending` covers refetch (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache)) |
-| Skipping loading, error, or empty UI | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle)) |
-| `mutateAsync` for fire-and-forget writes or `.then()` shims | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
-| Global fixed loading indicator for route-local refetch | Contextual feedback near updating content (toolbar + grid veil, filter panel dim) |
-| `data-testid` on every element | Roles/labels first; test ids for ambiguous actions |
+| Avoid                                                                                     | Prefer                                                                                                                                                                                    |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raw generated SDK calls / `fetch` inside screens or components                            | Server-safe fetchers + query keys in `api/[feature]/[feature].ts`; client hooks in `*.hooks.ts`                                                                                           |
+| Deep imports into module internals (`@/api/orders/orders.hooks`, `@/hooks/cart/use-cart`) | Module barrel only: `@/api/orders`, `@/hooks/cart` (see [Module barrels](#module-barrels-same-idea-as-backend-domains))                                                                   |
+| `useState` for catalog filters, sort, or pagination                                       | nuqs in `screens/[feature]/search-params/`; `useCatalogSearchParams()` in client UI                                                                                                       |
+| Mappers from search params in `screens/`                                                  | Map in `api/[feature]/utils.ts` inside fetchers; fetchers accept search-params/query-params structure directly                                                                            |
+| User-visible strings in JSX                                                               | Define keys in translation framework to their values, so no magic strings would be present in codebase                                                                                    |
+| Hardcoded external `https://…` in screens/components                                      | Named exports in `shared/urls.ts` (`TELEGRAM_SUPPORT_URL`, …)                                                                                                                             |
+| Long `sx={{ … }}` chains copying colors, radii, or spacing                                | Theme tokens + MUI variants in `packages/theme`; feature chrome files for immersive UIs; raw hex only as last resort (see [Design & Theme](#design--theme))                               |
+| Query/mutation keys missing query/mutation inputs                                         | Hierarchical key factories (`products(Query                                                                                                                                               | Mutation)Keys.[action](...argrs)`) matching prefetch and hook |
+| `setQueryData` in mutation `onSuccess` to mirror API responses                            | `invalidateQueries` with the smallest relevant key set; use mutation `data` only for side effects (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache))        |
+| `void invalidateQueries(...)` in mutation lifecycle callbacks                             | `async onSuccess` / `onError` + `await invalidateQueries(...)` so `isPending` covers refetch (see [Mutations → invalidate](#mutations--invalidate-dont-manually-patch-cache))             |
+| Skipping loading, error, or empty UI                                                      | Full lifecycle: skeleton → error + retry → empty → data (see [UI states](#ui-states-always-handle))                                                                                       |
+| `mutateAsync` for fire-and-forget writes or `.then()` shims                               | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
+| Global fixed loading indicator for route-local refetch                                    | Contextual feedback near updating content (toolbar + grid veil, filter panel dim)                                                                                                         |
+| `data-testid` on every element                                                            | Roles/labels first; test ids for ambiguous actions                                                                                                                                        |

@@ -20,8 +20,6 @@ services:
   otel-lgtm:
     image: grafana/otel-lgtm:latest
     container_name: my-noodles-otel-lgtm
-    profiles:
-      - observability
     restart: unless-stopped
     ports:
       - '3030:3000'

@@ -19,7 +19,6 @@ import { type Control, Controller, type UseFormSetValue, useWatch } from 'react-
 import type { DeliveryCityDto, DeliveryWarehouseDto } from '@/api/delivery';
 import { useDeliveryCities, useDeliveryProviders, useDeliveryWarehouses } from '@/api/delivery';
 import { formatEstimateDeliveryDate } from '@/components/checkout/delivery';
-import type { AppLocale } from '@/i18n/routing';
 
 import type { CheckoutFormData } from './validation';
 
@@ -197,7 +196,12 @@ export function CheckoutDeliveryFields({
     }
   }, [warehouseName]);
 
-  const { deliveryCities, deliveryCitiesIsFetching } = useDeliveryCities(provider, cityInput, enabled);
+  const { deliveryCities, deliveryCitiesIsFetching } = useDeliveryCities(
+    provider,
+    method,
+    cityInput,
+    enabled,
+  );
   const { deliveryWarehouses, deliveryWarehousesIsFetching } = useDeliveryWarehouses(
     provider,
     cityRef || null,
@@ -320,6 +324,7 @@ export function CheckoutDeliveryFields({
             }}
             loading={deliveryCitiesIsFetching}
             filterOptions={(options) => options}
+            noOptionsText={t('delivery.cityHint')}
             renderInput={(params) => <TextField {...params} size="large" label={t('fields.city')} />}
           />
         )}

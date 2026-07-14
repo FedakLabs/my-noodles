@@ -1,14 +1,12 @@
 {
-  "extends": "../../configs/typescript/base.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
-    "lib": ["ES2022", "DOM"],
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
     "outDir": "./dist",
     "rootDir": "./src"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "src/stories", "src/**/~*.test.ts", "src/**/*.{test,spec}.ts"]
+  "exclude": ["node_modules", "dist", "src/stories", "src/**/*.{test,spec}.ts"]
 }

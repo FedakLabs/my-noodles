@@ -67,7 +67,6 @@ export class UpdateOrderDeliveryDto {
   @MaxLength(120)
   city?: string;
 
-  @ValidateIf((delivery: UpdateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsOptional()
   @IsString()
   @MaxLength(80)
@@ -127,11 +126,10 @@ export class CreateOrderDeliveryDto {
   @MaxLength(120)
   city!: string;
 
-  @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsString()
   @IsNotEmpty()
   @MaxLength(80)
-  cityRef?: string;
+  cityRef!: string;
 
   @ValidateIf((delivery: CreateOrderDeliveryDto) => delivery.method === DeliveryMethod.Warehouse)
   @IsString()

@@ -9,7 +9,7 @@ todos:
     content: Add cookie-parser middleware + CORS credentials/origin in index.ts; configure api-clients fetch SDK with credentials:'include'; add resolveOrCreateSession helper (lazy create + Set-Cookie + expiry refresh).
     status: completed
   - id: be-endpoints-dtos
-    content: "Build FeedController + class-validator DTOs: POST /feed/next (body: previousProduct {id,viewTime} + filters {category?,country?,brand?} reusing a shared base extracted from ProductFilterQueryDto), POST/DELETE /feed/products/:productId/like, GET /feed/products/:productId/comments, GET /feed/likes. Product-scoped routes namespaced under /feed/products/:productId/*; feed-scoped flat under /feed/*. Tune throttler for /feed/next. Register FeedModule in app.module."
+    content: 'Build FeedController + class-validator DTOs: POST /feed/next (body: previousProduct {id,viewTime} + filters {category?,country?,brand?} reusing a shared base extracted from ProductFilterQueryDto), POST/DELETE /feed/products/:productId/like, GET /feed/products/:productId/comments, GET /feed/likes. Product-scoped routes namespaced under /feed/products/:productId/*; feed-scoped flat under /feed/*. Tune throttler for /feed/next. Register FeedModule in app.module.'
     status: completed
   - id: be-services-personalization
     content: Implement FeedSessionService (lazy session + record view/like + keep-alive) and FeedService next-item personalization QueryBuilder (exclude session-viewed, hard-filter by body filters via shared buildProductWhere, boost liked categories/brands/countries + dwell + sortWeight + random) + FeedCommentsService (locale-resolved). Item carries liked flag.
@@ -42,7 +42,7 @@ isProject: false
 
 A full-screen, dark, swipe-one-at-a-time product discovery feed at `/feed`, inspired by YouTube Shorts.
 
-**One core endpoint, `POST /feed/next`, does everything per scroll:** it records the *previous* product's dwell (`previousProduct: {id, viewTime}`) and returns the *next* personalized product. **Filters (hashtags) are client-side** (Zustand-persisted) and passed in the request body as a grouped `filters: { category?: string[], country?: string[], brand?: string[] }` object — the **same shape as the catalog products request** — so the backend reuses `buildProductWhere()`. Add/remove is instant, no DB round-trip. The store persists this grouped `filters` object **canonically** (identical to the wire shape, sent as-is); the UI renders a **derived flat "hashtag" chips view** (each chip = one dimension value) with a delete that maps back to removing that value from its dimension array. **Likes are recorded server-side** in an anonymous cookie session (used for "see similar" boosting + future insights). Comments are synthetic-but-honest "taste impressions" loaded from a dedicated table.
+**One core endpoint, `POST /feed/next`, does everything per scroll:** it records the _previous_ product's dwell (`previousProduct: {id, viewTime}`) and returns the _next_ personalized product. **Filters (hashtags) are client-side** (Zustand-persisted) and passed in the request body as a grouped `filters: { category?: string[], country?: string[], brand?: string[] }` object — the **same shape as the catalog products request** — so the backend reuses `buildProductWhere()`. Add/remove is instant, no DB round-trip. The store persists this grouped `filters` object **canonically** (identical to the wire shape, sent as-is); the UI renders a **derived flat "hashtag" chips view** (each chip = one dimension value) with a delete that maps back to removing that value from its dimension array. **Likes are recorded server-side** in an anonymous cookie session (used for "see similar" boosting + future insights). Comments are synthetic-but-honest "taste impressions" loaded from a dedicated table.
 
 Per the user's choice, build **backend-first**, then the UI.
 
@@ -77,6 +77,7 @@ Notes: filters are deliberately **not** persisted in the DB (the body carries th
 Mirror the products module patterns: entities use `@UuidV7PrimaryColumn`, `TimestampEntity`, snake_case `@Column({ name })`, `@LocalizedColumn` for JSONB i18n; service uses TypeORM repository/QueryBuilder; locale resolves via existing `LocaleContext` (`x-app-locale` header) — no `locale=` param.
 
 ### New tables (one migration `CreateFeed`, mirroring [CreateCatalog](apps/api/src/infrastructure/migrations/1740422400000-CreateCatalog.ts)) — 4 tables, no tags table
+
 - `feed_sessions` — `id` (uuidv7, also the cookie value), `expires_at timestamptz`, timestamps.
 - `feed_session_likes` — `id`, `session_id` FK->feed_sessions (CASCADE), `product_id` FK->products, `created_at`, `deleted_at` (unlike = soft delete). Partial unique `(session_id, product_id) WHERE deleted_at IS NULL`.
 - `feed_session_views` — `id`, `session_id` FK, `product_id` FK, `dwell_ms int`, `filters jsonb` (active filter context at view time, analytics), `created_at` (the per-view engagement record; doubles as the exclusion/dedup source). Index on `(session_id, product_id)`. Extensible: future per-view signals (`opened_details`, `opened_comments`, `shared`, ...) become columns here, no new table.
@@ -85,25 +86,30 @@ Mirror the products module patterns: entities use `@UuidV7PrimaryColumn`, `Times
 Entities live as `*.entity.ts` files (auto-globbed by [data-source.ts](apps/api/src/infrastructure/persistence/data-source.ts)).
 
 ### Cookie/session plumbing
+
 - Add `cookie-parser` middleware in [index.ts](apps/api/src/index.ts) (after `localeMiddleware`).
 - **Sliding ~2h idle expiry.** `resolveOrCreateSession(req, res)` helper: read `feed_sid` cookie; if a session exists and `expires_at` is in the future -> bump `expires_at = now + 2h` (keep-alive); else (missing/expired) create a new session and `Set-Cookie` (`HttpOnly`, `SameSite=Lax`, `Secure` in prod, `Path=/`, `maxAge` = 2h) via `@Res({ passthrough: true })`. A returning user past the idle window gets a fresh session -> the `feed_session_views` exclusion set resets and the catalog re-surfaces. Called by `/feed/next` (lazy create — no separate session endpoint) and the like endpoints; every call refreshes both `expires_at` and the cookie `maxAge`. Idle window is a single named constant.
 - **CORS/credentials:** enable `credentials: true` + web origin allowlist in [index.ts](apps/api/src/index.ts) CORS, and configure the fetch SDK with `credentials: 'include'` (in `packages/api-clients` runtime config / [clients.ts](apps/web/src/api/clients.ts)). web<->api are same registrable site, so `SameSite=Lax` suffices.
 
 ### Endpoints (FeedController) + DTOs (class-validator, Swagger)
+
 - `POST /feed/next` — body `FeedNextDto { previousProduct?: { id: uuid, viewTime: int(ms) }, filters?: FeedFiltersDto }` where `FeedFiltersDto` reuses the catalog dimension fields (`category?: string[]`, `country?: string[]`, `brand?: string[]`) — extract a shared base from `ProductFilterQueryDto` so both endpoints validate identically and feed `buildProductWhere()`. Lazily resolves session (sets cookie), records a view for `previousProduct` (dwell + `filters` context) when present, then returns a single `FeedItemDto` (id, slug, name, priceMinor, currency, images[], videos[], category/brand/country `{slug,label}` hashtags, commentCount, `liked`) or `{ item: null, exhausted: true }`.
 - `POST /feed/products/:productId/like` -> add like (restore soft-deleted row if present). `DELETE /feed/products/:productId/like` -> unlike (soft delete). Both read session from cookie.
 - `GET /feed/products/:productId/comments` -> `[{ authorName, comment }]` (comment resolved to active locale).
 - `GET /feed/likes` -> session's liked product summaries (for the "view liked / unlike" list).
 
 **Route convention:** product-scoped sub-resources are namespaced under `/feed/products/:productId/*` (extensible: future `share`/`save`/`report`/`react`); feed/session-scoped actions stay flat under `/feed/*` (`next`, `likes`). This avoids a bare `:productId` segment colliding with named routes and mirrors the catalog's `products` collection. Feed uses product `:productId` (ids come from `/feed/next`), unlike the catalog's `:slug`.
+
 - Throttler: `/feed/next` fires on every scroll — raise its per-route limit (e.g. `@Throttle` ~120/min) or `@SkipThrottle`.
 
 ### Service split
+
 - `FeedSessionService` (lazy resolve/create/refresh cookie session; record view; like toggle), `FeedService` (personalized `next` QueryBuilder + `FeedItemDto` mapping incl. `liked`), `FeedCommentsService` (load comments). Register `FeedModule` in [app.module.ts](apps/api/src/app.module.ts).
 - Seed a handful of synthetic `feed_product_comments` (warm, emotional taste impressions, localized) so the feature has content — small seed step alongside the migration.
 - Co-located Jest tests in `apps/api/src/tests/application/` mirroring [~products.service.test.ts](apps/api/src/tests/application/~products.service.test.ts): lazy session create/resume/expiry, `next` records `previousProduct` + excludes viewed + hard-filters by body tags + boosts likes, like toggle, comments localization.
 
 ### Regenerate client after API is up
+
 `pnpm nx run api:generate:openapi` -> `pnpm --dir apps/web run generate:clients` -> `pnpm nx run api-clients:build`.
 
 ## Frontend (`apps/web`)
@@ -124,4 +130,5 @@ Mostly client-rendered (personal + interactive), under `[locale]`, **noindex** (
 - **Tests:** Vitest for feed components (card actions, comments avatar/disclaimer, empty state); follow co-located pattern.
 
 ## Validation
+
 Backend: `pnpm nx run api:validate` + `pnpm nx run api:migration:run`. Frontend: `pnpm nx run web:validate`.

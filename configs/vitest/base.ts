@@ -1,11 +1,11 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
 import type { UserConfig } from 'vite';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
-/** Default Vitest preset for packages — node env, co-located + tilde-prefixed tests. */
+/** Default Vitest preset for packages — node env, co-located `*.test.ts` / `*.spec.ts`. */
 export const packageVitestConfig = defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.{test,spec}.ts', 'src/**/~*.test.ts'],
+    include: ['src/**/*.{test,spec}.ts'],
     passWithNoTests: true,
   },
 });

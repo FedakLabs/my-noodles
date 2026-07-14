@@ -26,7 +26,7 @@ export class DeliveryController {
   @ApiOperation({ summary: 'Search cities for a delivery provider' })
   @ApiOkResponse({ type: [DeliveryCityDto] })
   searchCities(@Query() query: DeliveryCityQueryDto): Promise<DeliveryCity[]> {
-    return this.deliveryService.searchCities(query.provider, query.q);
+    return this.deliveryService.searchCities(query.provider, query.q, query.method);
   }
 
   @Get('warehouses')

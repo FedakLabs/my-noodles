@@ -1,7 +1,7 @@
 import { IsInt, Max, Min } from 'class-validator';
 
 import type { PaginationMeta, PaginationQuery } from '../pagination';
-import { TransformToInt } from './transformers';
+import { TransformToInt } from '../transformers';
 
 export class PaginationQueryDto implements PaginationQuery {
   @TransformToInt()

@@ -1,5 +1,4 @@
 import 'server-only';
-
 import { fetchCollections } from '@/api/collections';
 import { fetchProductsList } from '@/api/products';
 import { runWithAppLocale } from '@/i18n/app-locale/server';

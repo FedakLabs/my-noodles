@@ -1,6 +1,6 @@
 import { DeliveryMethod, DeliveryProvider } from '../../orders/order-delivery.dto';
-import type { DeliveryEstimate, DeliveryEstimateInput } from '../delivery.types';
 import { computeShippingCostMinor } from '../delivery-shipping.config';
+import type { DeliveryEstimate, DeliveryEstimateInput } from '../delivery.types';
 
 const DISPATCH_CUTOFF_HOUR = 14;
 

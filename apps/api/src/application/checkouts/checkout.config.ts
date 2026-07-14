@@ -1,5 +1,5 @@
-import type { Checkout } from './checkout.entity';
 import { CheckoutStatus } from './checkout-status';
+import type { Checkout } from './checkout.entity';
 
 /** Checkout hold — fixed from checkout.created_at (not sliding on PATCH). */
 export const CHECKOUT_HOLD_MS = 15 * 60_000;

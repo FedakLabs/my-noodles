@@ -67,7 +67,9 @@ my-noodles/
     web/                      # Next.js (App Router, ISR), MUI, next-intl
     api/                      # NestJS + TypeORM + Postgres
   configs/
-    eslint/                   # composable flat-config presets (base / web / node)
+    vitest/                   # shared Vitest factory presets
+    jest/                     # shared Jest factory presets
+    typescript/               # shared base tsconfig
   packages/
     theme/                    # MUI design system + skin engine (mirrors example)
     api-clients/              # PURE storefront client layer (no React Query)
@@ -107,11 +109,10 @@ Tooling:
 
 - `nx` 23.0.0, `pnpm` 11.8.0, `@hey-api/openapi-ts` 0.98.x
 - `typescript` 6.0.3
-- Quality: `eslint` 10.5.0, `typescript-eslint` 8.61.1, `prettier` 3.8.4, `eslint-config-prettier` 10.1.8, `eslint-plugin-simple-import-sort` 13.0.0, `eslint-plugin-react-hooks` 7.1.1, `eslint-plugin-react` 7.37.5, `@next/eslint-plugin-next` 16.2.9, `eslint-plugin-jsx-a11y` 6.10.2, `knip` 6.17.1
+- Quality: `oxlint` 1.74.0 (+ `oxlint-tsgolint` 0.24.0 for type-aware), `oxfmt` 0.59.0, `knip` 6.17.1
 - Hooks/commits: `husky` 9.1.7, `@commitlint/cli` 21.0.2 (+ `@commitlint/config-conventional`)
 - Tests: `vitest` 4.1.9 (web + packages), `jest` (apps/api, Nest default), `@playwright/test` 1.61.0
 - Storybook (`packages/theme`): `storybook` 10.4.6, `@storybook/react-vite` 10.4.6, `@storybook/addon-docs` 10.4.6
-- Note: `typescript-eslint` 8.61 may print a "supported TS versions" warning against TS 6 / ESLint 10 (functional; verify peer compatibility at setup).
 
 Notes: this lands us on **Next 16 / MUI v9 / TypeORM 1.0 / zod 4 / Nx 23** from day one (all current majors), avoiding a near-term migration. The example theme package was written against MUI v6/v7 APIs; on v9 we keep the same structure but verify component-override slot names and `createTheme` options during the theme-package step.
 
@@ -139,7 +140,7 @@ apps/web/src/
 ├── components/           # feature UI components (+ co-located *.test.tsx, Vitest)
 │   └── [feature]/
 ├── hooks/                # app-level hooks (cart store, useAnalytics, useSkin, ...)
-├── utils/                # domain util fns (+ ~*.test.ts)
+├── utils/                # domain util fns (+ *.test.ts)
 └── shared/               # QueryClient config, error parsers, query-key namespaces, env, shared types
 ```
 
@@ -162,22 +163,17 @@ apps/api/src/
 │       ├── [feature].entity.ts          # TypeORM entity (JSONB i18n fields)
 │       ├── [feature].dto.ts             # class-validator in/out shapes
 │       ├── [feature].exceptions.ts      # domain HTTP exceptions
-│       ├── ~[feature].test.ts           # co-located unit tests (tilde-prefixed)
+│       ├── [feature].test.ts            # co-located unit tests
 │       └── [sub-feature]/               # e.g. products filters on products.controller
 ├── infrastructure/
-│   ├── migrations/           # TypeORM migrations
-│   └── external-apis/        # outbound HTTP clients (*Api + optional *Service per provider)
-│       ├── telegram/         # TelegramApi + TelegramService (order notifications)
-│       ├── nova-poshta/      # NovaPoshtaApi + NovaPoshtaService
-│       ├── meest/            # MeestApi + MeestService (public geo/branches API)
-│       └── ukrposhta/        # UkrposhtaApi + UkrposhtaService (address classifier)
-└── utils/                    # pure helpers (+ ~*.test.ts)
+│   └── migrations/           # TypeORM migrations
+└── utils/                    # pure helpers (+ *.test.ts)
 ```
 
 - Controllers = HTTP + validation only; services = logic. Storefront is public, so controllers are public (the `.controller.public.ts` variant is reserved for if/when auth is added).
 - `GET /products/filters` on `ProductsController` implements catalog filter preview.
-- Telegram and delivery providers live in `infrastructure/external-apis/<provider>/`: `*Api` for HTTP transport, `*Service` when response mapping or formatting is needed (e.g. `TelegramService`, `NovaPoshtaService`). `generated/` under each provider is reserved for _third-party_ OpenAPI clients (distinct from `packages/api-clients`, which is OUR API's client for the web app).
-- Jest `testMatch` includes the tilde pattern (`**/~*.test.ts`); ESLint/knip configured to recognize it.
+- Outbound HTTP clients (Meest, Nova Poshta, Ukrposhta, Telegram) live in `@my-noodles/api-clients/<provider>`. Nest wiring + domain mapping services live under `application/<provider>/` (e.g. `TelegramModule`, `NovaPoshtaService`).
+- Jest `testMatch` matches `**/*.test.ts`.
 
 ## Design system: `packages/theme`
 
@@ -265,34 +261,34 @@ OpenTelemetry-first, with Winston as the logger wired into OTel:
 
 **Per-project targets, not one mixed command.** Each project (`apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`) owns its own scripts + Nx targets tuned to that project; the root only orchestrates. This keeps web (React/Next/jsx-a11y, Vitest, Playwright) and api (Node/Nest, Jest) concerns fully separate for maintainability and per-project Nx caching. One composite `validate` target layers on top of the atomic targets (`format` / `format-check` / `lint` / `lint-check` / `type-check` / `test` / `knip`):
 
-- `validate` (inner-loop / **AI self-check** / **pre-commit gate**): `format` (`prettier --write`) -> `lint` (ESLint `--fix`, project preset) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api) -> `knip`. Auto-fixes what it can, then verifies. **Excludes Playwright `e2e`** (heavier; e2e in CI only).
+- `validate` (inner-loop / **AI self-check** / **pre-commit gate**): `format` (`oxfmt`) -> `lint` (`oxlint --fix`, project config) -> `type-check` (`tsc --noEmit`) -> `test` (Vitest for web/packages, Jest for api) -> `knip`. Auto-fixes what it can, then verifies. **Excludes Playwright `e2e`** (heavier; e2e in CI only).
 - Atomic read-only targets (`format-check`, `lint-check`, …) remain for **CI** — see `.github/workflows/ci.yml` (parallel jobs, no composite `validate` in CI).
 
 Per-project composition:
 
-- `apps/web`: validate = format -> ESLint --fix (web preset) -> `tsc --noEmit` -> Vitest -> knip; `e2e` (Playwright funnel) separate. Vitest: `@my-noodles/vitest-config/base` + app-specific `vitest.config.ts`.
-- `apps/api`: validate = format -> ESLint --fix (node/nest preset) -> `tsc --noEmit` -> Jest (unit + supertest e2e) -> knip. Jest: `@my-noodles/jest-config/base` + app-specific `jest.config.cjs`.
-- `packages/*`: validate = format -> ESLint --fix (base preset) -> `tsc --noEmit` -> Vitest (where tests exist) -> knip. Vitest: `@my-noodles/vitest-config/base`. `api-clients` has no tests.
+- `apps/web`: validate = format -> oxlint --fix --type-aware (react/next/jsx-a11y plugins) -> `tsc --noEmit` -> Vitest -> knip; `e2e` (Playwright funnel) separate. Vitest: `@my-noodles/vitest-config/base` + app-specific `vitest.config.ts`.
+- `apps/api`: validate = format -> oxlint --fix --type-aware (node plugin) -> `tsc --noEmit` -> Jest (unit + supertest e2e) -> knip. Jest: `@my-noodles/jest-config/base` + app-specific `jest.config.cjs`.
+- `packages/*`: validate = format -> oxlint --fix (base config) -> `tsc --noEmit` -> Vitest (where tests exist) -> knip. Vitest: `@my-noodles/vitest-config/base`. `api-clients` has no tests.
 - `libs/api`: Jest via `@my-noodles/jest-config/base` + lib-specific `jest.config.cjs`.
 
-Root scripts: `pnpm validate` = `nx run-many -t validate` (use `nx affected -t validate` for incremental); `pnpm format` = `prettier --write` (repo-wide format shortcut). CI (`.github/workflows/ci.yml`) runs staged `nx affected` atomic jobs: format/lint/types/knip (parallel) → unit tests → e2e.
+Root scripts: `pnpm validate` = `nx run-many -t validate` (use `nx affected -t validate` for incremental); `pnpm format` = `oxfmt` (repo-wide format shortcut). CI (`.github/workflows/ci.yml`) runs staged `nx affected` atomic jobs: format/lint/types/knip (parallel) → unit tests → e2e.
 
-Prettier config is **shared at the root** (uniform formatting everywhere): 2-space, single quotes, semicolons, `trailingComma: all`, printWidth ~110.
+Oxfmt config is **shared at the root** (`.oxfmtrc.json`): 2-space, single quotes, semicolons, `trailingComma: all`, printWidth 110, `sortImports` enabled (replaces simple-import-sort), ignores via `ignorePatterns`.
 
-ESLint via **composable presets** (shared base, no rule mixing across stacks). A small `configs/eslint` package exports flat-config presets; **`configs/vitest`** and **`configs/jest`** export the same style of factory presets for test runners. Each project's `eslint.config.mjs` / `vitest.config.ts` / `jest.config.cjs` composes only what it needs:
+Oxlint via **root + nested project configs** (`.oxlintrc.json` with `extends`). **`configs/vitest`** and **`configs/jest`** export factory presets for test runners. Each project's `.oxlintrc.json` / `vitest.config.ts` / `jest.config.cjs` composes only what it needs:
 
-- **base** (all projects): `@eslint/js` recommended + `typescript-eslint` recommended + curated type-checked rules (`no-floating-promises`, `no-misused-promises`, `await-thenable`, `consistent-type-imports`, `no-unused-vars` ignore `_`); `eslint-plugin-simple-import-sort`; `@nx/enforce-module-boundaries` (tags: `packages/*` pure libs can't import apps; web can't import api); `eslint-config-prettier` last.
-- **web preset** (extends base): `eslint-plugin-react-hooks` (rules-of-hooks error / exhaustive-deps warn), `@next/eslint-plugin-next` core-web-vitals, `eslint-plugin-jsx-a11y` recommended, `eslint-plugin-react` jsx-runtime.
-- **node preset** (extends base, for api): Node/Nest-appropriate rules, no React/DOM plugins.
-- Curated **moderate** ruleset; `unicorn`/`sonarjs` excluded (too opinionated for co-dev review).
+- **base** (root `.oxlintrc.json`): typescript + oxc + import plugins; curated type-aware rules (`no-floating-promises`, `no-misused-promises`, `await-thenable`, `consistent-type-imports`, `no-unused-vars` ignore `_`); module-boundary approximation via `no-restricted-imports` in web/packages (no full `@nx/enforce-module-boundaries` equivalent).
+- **web** (`apps/web`): adds react / nextjs / jsx-a11y plugins (rules-of-hooks error / exhaustive-deps warn).
+- **node** (`apps/api`, `libs/api`): node plugin; `consistent-type-imports` off (Nest DI / `emitDecoratorMetadata` needs value imports).
+- Curated **moderate** ruleset; `unicorn` excluded (too opinionated for co-dev review).
 
-Git hooks (husky, repo root): **pre-commit** = `nx affected -t validate --uncommitted` then `git add -u` (format, ESLint --fix, type-check, unit tests, knip on affected projects only; re-stages auto-fixes); **commit-msg** = `commitlint` (conventional commits). No pre-push hook. CI (`.github/workflows/ci.yml`) runs staged read-only atomic jobs → unit tests → e2e as the authoritative gate.
+Git hooks (husky, repo root): **pre-commit** = `lint-staged` (oxlint --fix + oxfmt on staged files) then `nx affected -t type-check --uncommitted`; **commit-msg** = `commitlint` (conventional commits). No pre-push hook. CI (`.github/workflows/ci.yml`) runs staged read-only atomic jobs → unit tests → e2e as the authoritative gate.
 
 TypeScript: shared base `tsconfig` with **`strict: true`** + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes` (enabled — favor strictness); each project extends it.
 
 ## Build order
 
-1. Nx + pnpm monorepo, strict base tsconfig, quality gate (composable ESLint presets in `configs/eslint` + shared Prettier + knip + husky/commitlint; per-project `validate` composite + atomic CI targets; husky pre-commit runs `nx affected -t validate`), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
+1. Nx + pnpm monorepo, strict base tsconfig, quality gate (oxlint + oxfmt + knip + husky/commitlint; per-project `validate` composite + atomic CI targets; husky pre-commit runs lint-staged + affected type-check), docker-compose (Postgres + opt-in grafana/otel-lgtm profile).
 2. `packages/theme` design system (tokens, MUI theme, Cyrillic fonts) + skin engine.
 3. next-intl setup + message catalogs.
 4. NestJS API: OTel instrumentation + winston logging, entities (JSONB i18n), migrations, DTOs, endpoints (incl. `?collection=`), Swagger, Throttler, seed, Telegram notify.
@@ -388,17 +384,17 @@ Ordered, dependency-aware steps to build the MVP. Each box is a self-contained u
 
 ### Phase 0 - Foundation
 
-- [x] Init pnpm + Nx monorepo (`pnpm-workspace.yaml`, `nx.json`); create `apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`, `configs/eslint`.
+- [x] Init pnpm + Nx monorepo (`pnpm-workspace.yaml`, `nx.json`); create `apps/web`, `apps/api`, `packages/theme`, `packages/api-clients`.
 - [x] Shared base `tsconfig` (`strict: true` + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `exactOptionalPropertyTypes`); each project extends it.
 - [x] Pin all dependencies to the versions in "Pinned versions"; install.
 - [x] `docker-compose.yml`: Postgres service + `grafana/otel-lgtm` under an opt-in `observability` profile.
 
 ### Phase 1 - Quality gate
 
-- [x] `configs/eslint` flat-config presets: base / web / node (+ Nx module boundaries, `eslint-config-prettier` last).
-- [x] Root Prettier config; per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`).
+- [x] Root `.oxlintrc.json` + per-project nested configs (web: react/next/jsx-a11y; api: node; module-boundary approximation via `no-restricted-imports`).
+- [x] Root `.oxfmtrc.json`; per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`).
 - [x] Per-project atomic Nx targets (`format`/`format-check`/`lint`/`lint-check`/`type-check`/`test`/`knip`); composite `validate` (format→lint→type-check→test→knip); root `pnpm validate` / `pnpm format`.
-- [x] husky: pre-commit (`nx affected -t validate --uncommitted` + `git add -u`), commit-msg (`commitlint`).
+- [x] husky: pre-commit (`lint-staged` + affected type-check), commit-msg (`commitlint`).
 
 ### Phase 2 - Design system + skins
 

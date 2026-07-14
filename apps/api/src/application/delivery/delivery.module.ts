@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 
-import { MeestModule } from '@/infrastructure/external-apis/meest';
-import { NovaPoshtaModule } from '@/infrastructure/external-apis/nova-poshta';
-import { UkrposhtaModule } from '@/infrastructure/external-apis/ukrposhta';
+import { MeestModule } from '@/application/meest';
+import { NovaPoshtaModule } from '@/application/nova-poshta';
+import { UkrposhtaModule } from '@/application/ukrposhta';
 
+import { DeliveryCatalogCache } from './delivery-catalog.cache';
 import { DeliveryController } from './delivery.controller';
 import { DeliveryService } from './delivery.service';
-import { DeliveryCatalogCache } from './delivery-catalog.cache';
 import { DeliveryProviderFactory } from './providers/delivery-provider.factory';
 import { MeestDeliveryAdapter } from './providers/meest.adapter';
 import { NovaPoshtaDeliveryAdapter } from './providers/nova-poshta.adapter';

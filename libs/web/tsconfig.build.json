@@ -1,7 +1,7 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": ["./tsconfig.json", "../../configs/typescript/node.json"],
   "compilerOptions": {
-    "noEmit": false,
+    "noEmit": true,
     "emitDeclarationOnly": true,
     "declaration": true,
     "declarationMap": true,

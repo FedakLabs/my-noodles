@@ -10,6 +10,8 @@ import {
   productListRelations,
 } from '../products/products.filters';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
+import { FeedCommentsService } from './feed-comments.service';
+import { FeedSessionService } from './feed-session.service';
 import type {
   FeedFiltersDto,
   FeedItemDto,
@@ -18,8 +20,6 @@ import type {
   FeedNextResponseDto,
 } from './feed.dto';
 import type { FeedFilterSnapshot } from './feed.types';
-import { FeedCommentsService } from './feed-comments.service';
-import { FeedSessionService } from './feed-session.service';
 
 @Injectable()
 export class FeedService {

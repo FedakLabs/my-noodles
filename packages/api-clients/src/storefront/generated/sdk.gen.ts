@@ -84,7 +84,7 @@ export const deliveryControllerSearchWarehouses = <ThrowOnError extends boolean 
 export const checkoutsControllerListCheckouts = <ThrowOnError extends boolean = false>(options?: Options<CheckoutsControllerListCheckoutsData, ThrowOnError>): RequestResult<CheckoutsControllerListCheckoutsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CheckoutsControllerListCheckoutsResponses, unknown, ThrowOnError>({ url: '/api/checkouts', ...options });
 
 /**
- * Begin checkout — move cart items into a draft order
+ * Begin checkout — move cart items into a draft order or an active in-progress checkout
  */
 export const checkoutsControllerStartCheckout = <ThrowOnError extends boolean = false>(options?: Options<CheckoutsControllerStartCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError> => (options?.client ?? client).post<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError>({ url: '/api/checkouts', ...options });
 

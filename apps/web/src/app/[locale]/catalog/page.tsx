@@ -1,10 +1,10 @@
 import { pagePaginatedGetNextPageParam } from '@my-noodles/web-lib/react-query';
 import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 import { fetchProductsList, productsQueryKeys, resolvePaginatedProductsPage } from '@/api/products';
 import {
