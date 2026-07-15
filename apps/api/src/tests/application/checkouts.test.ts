@@ -19,11 +19,16 @@ import { sampleProductId } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '../jest-globals';
 
+function asCheckout(partial: object): Checkout {
+  return Object.assign(new Checkout(), partial);
+}
+
 describe('checkouts (e2e)', () => {
   let app: INestApplication;
   let checkoutsFindOne: jest.Mock;
   let checkoutsFind: jest.Mock;
   let checkoutSave: jest.Mock;
+  let checkoutUpdate: jest.Mock;
   let orderSave: jest.Mock;
   let deliverySave: jest.Mock;
   let itemSave: jest.Mock;
@@ -35,11 +40,13 @@ describe('checkouts (e2e)', () => {
   const checkoutId = '22222222-2222-2222-2222-222222222222';
   const orderId = '44444444-4444-4444-8444-444444444444';
   const visitorId = '33333333-3333-4333-8333-333333333333';
+  const futureExpiresAt = () => new Date(Date.now() + 15 * 60_000);
 
   beforeAll(async () => {
     checkoutsFindOne = jest.fn();
     checkoutsFind = jest.fn().mockResolvedValue([]);
     checkoutSave = jest.fn();
+    checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
     orderSave = jest.fn();
     deliverySave = jest.fn();
     itemSave = jest.fn();
@@ -60,7 +67,12 @@ describe('checkouts (e2e)', () => {
         },
         {
           provide: getRepositoryToken(Checkout),
-          useValue: { findOne: checkoutsFindOne, find: checkoutsFind, save: checkoutSave },
+          useValue: {
+            findOne: checkoutsFindOne,
+            find: checkoutsFind,
+            save: checkoutSave,
+            update: checkoutUpdate,
+          },
         },
         {
           provide: getRepositoryToken(Order),
@@ -80,7 +92,12 @@ describe('checkouts (e2e)', () => {
         },
         {
           provide: CartService,
-          useValue: { getCartItemsForOrder, clearCartItems, applyReconciledQuantities: jest.fn() },
+          useValue: {
+            getCartItemsForOrder,
+            clearCartItems,
+            applyReconciledQuantities: jest.fn(),
+            restoreItemsFromOrder: jest.fn(),
+          },
         },
         {
           provide: InventoryService,
@@ -113,6 +130,7 @@ describe('checkouts (e2e)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    checkoutUpdate.mockResolvedValue({ affected: 1 });
     visitorResolve.mockResolvedValue({ id: visitorId });
     getCartItemsForOrder.mockResolvedValue([
       {
@@ -141,14 +159,17 @@ describe('checkouts (e2e)', () => {
       }),
     );
     checkoutSave.mockImplementation((entity: object) =>
-      Promise.resolve({
-        id: checkoutId,
-        orderId,
-        createdAt: new Date('2025-06-20T10:00:00.000Z'),
-        status: CheckoutStatus.InProgress,
-        visitorSessionId: visitorId,
-        ...entity,
-      }),
+      Promise.resolve(
+        asCheckout({
+          id: checkoutId,
+          orderId,
+          createdAt: new Date('2025-06-20T10:00:00.000Z'),
+          status: CheckoutStatus.InProgress,
+          visitorSessionId: visitorId,
+          expiresAt: futureExpiresAt(),
+          ...entity,
+        }),
+      ),
     );
   });
 
@@ -176,18 +197,19 @@ describe('checkouts (e2e)', () => {
 
   it('GET /api/checkouts?status=in_progress lists visitor checkouts', async () => {
     checkoutsFind.mockResolvedValue([
-      {
+      asCheckout({
         id: checkoutId,
         orderId,
         status: CheckoutStatus.InProgress,
         updatedAt: new Date('2025-06-20T10:05:00.000Z'),
         createdAt: new Date('2025-06-20T10:00:00.000Z'),
+        expiresAt: futureExpiresAt(),
         order: {
           items: [{ qty: 1 }],
           totalMinor: 9_900,
           currency: 'UAH',
         },
-      },
+      }),
     ]);
 
     const server = apiHttpServer(app);
@@ -204,74 +226,13 @@ describe('checkouts (e2e)', () => {
   });
 
   it('GET /api/checkouts/:id returns 409 when checkout is cancelled', async () => {
-    checkoutsFindOne.mockResolvedValue({
-      id: checkoutId,
-      orderId,
-      visitorSessionId: visitorId,
-      status: CheckoutStatus.Cancelled,
-      cancelledReason: 'user',
-      createdAt: new Date(),
-      order: {
-        id: orderId,
-        status: OrderStatus.Draft,
-        items: [],
-        delivery: null,
-        totalMinor: 9_900,
-        currency: 'UAH',
-        firstName: null,
-        lastName: null,
-        phone: null,
-        createdAt: new Date(),
-      },
-    });
-
-    const server = apiHttpServer(app);
-
-    const response = await request(server).get(`/api/checkouts/${checkoutId}`).expect(409);
-
-    expect(response.body).toMatchObject({
-      identifier: 'checkout_not_in_progress',
-      payload: { checkoutId, status: CheckoutStatus.Cancelled },
-    });
-  });
-
-  it('DELETE /api/checkouts/:id cancels checkout', async () => {
-    checkoutsFindOne.mockResolvedValue({
-      id: checkoutId,
-      orderId,
-      visitorSessionId: visitorId,
-      status: CheckoutStatus.InProgress,
-      cancelledReason: null,
-      createdAt: new Date(),
-      order: {
-        id: orderId,
-        status: OrderStatus.Draft,
-        items: [],
-        delivery: null,
-        totalMinor: 9_900,
-        currency: 'UAH',
-        firstName: null,
-        lastName: null,
-        phone: null,
-        createdAt: new Date(),
-      },
-    });
-
-    const server = apiHttpServer(app);
-
-    const response = await request(server).delete(`/api/checkouts/${checkoutId}`).expect(200);
-
-    expect(response.body).toMatchObject({ status: CheckoutStatus.Cancelled });
-  });
-
-  it('PATCH /api/checkouts/:id/receiver autosaves receiver fields', async () => {
-    checkoutsFindOne
-      .mockResolvedValueOnce({
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
         id: checkoutId,
         orderId,
         visitorSessionId: visitorId,
-        status: CheckoutStatus.InProgress,
-        cancelledReason: null,
+        status: CheckoutStatus.Cancelled,
+        cancelledReason: 'user',
         createdAt: new Date(),
         order: {
           id: orderId,
@@ -285,14 +246,29 @@ describe('checkouts (e2e)', () => {
           phone: null,
           createdAt: new Date(),
         },
-      })
-      .mockResolvedValueOnce({
+      }),
+    );
+
+    const server = apiHttpServer(app);
+
+    const response = await request(server).get(`/api/checkouts/${checkoutId}`).expect(409);
+
+    expect(response.body).toMatchObject({
+      identifier: 'checkout_not_in_progress',
+      payload: { checkoutId, status: CheckoutStatus.Cancelled },
+    });
+  });
+
+  it('DELETE /api/checkouts/:id cancels checkout', async () => {
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
         id: checkoutId,
         orderId,
         visitorSessionId: visitorId,
         status: CheckoutStatus.InProgress,
         cancelledReason: null,
         createdAt: new Date(),
+        expiresAt: futureExpiresAt(),
         order: {
           id: orderId,
           status: OrderStatus.Draft,
@@ -300,12 +276,69 @@ describe('checkouts (e2e)', () => {
           delivery: null,
           totalMinor: 9_900,
           currency: 'UAH',
-          firstName: 'Andrii',
-          lastName: 'Fedak',
-          phone: '+380501112233',
+          firstName: null,
+          lastName: null,
+          phone: null,
           createdAt: new Date(),
         },
-      });
+      }),
+    );
+
+    const server = apiHttpServer(app);
+
+    const response = await request(server).delete(`/api/checkouts/${checkoutId}`).expect(200);
+
+    expect(response.body).toMatchObject({ status: CheckoutStatus.Cancelled });
+  });
+
+  it('PATCH /api/checkouts/:id/receiver autosaves receiver fields', async () => {
+    checkoutsFindOne
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: checkoutId,
+          orderId,
+          visitorSessionId: visitorId,
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
+          createdAt: new Date(),
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: orderId,
+            status: OrderStatus.Draft,
+            items: [],
+            delivery: null,
+            totalMinor: 9_900,
+            currency: 'UAH',
+            firstName: null,
+            lastName: null,
+            phone: null,
+            createdAt: new Date(),
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: checkoutId,
+          orderId,
+          visitorSessionId: visitorId,
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
+          createdAt: new Date(),
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: orderId,
+            status: OrderStatus.Draft,
+            items: [],
+            delivery: null,
+            totalMinor: 9_900,
+            currency: 'UAH',
+            firstName: 'Andrii',
+            lastName: 'Fedak',
+            phone: '+380501112233',
+            createdAt: new Date(),
+          },
+        }),
+      );
 
     const server = apiHttpServer(app);
 
@@ -324,26 +357,29 @@ describe('checkouts (e2e)', () => {
   });
 
   it('PATCH /api/checkouts/:id/receiver returns 400 for invalid phone', async () => {
-    checkoutsFindOne.mockResolvedValue({
-      id: checkoutId,
-      orderId,
-      visitorSessionId: visitorId,
-      status: CheckoutStatus.InProgress,
-      cancelledReason: null,
-      createdAt: new Date(),
-      order: {
-        id: orderId,
-        status: OrderStatus.Draft,
-        items: [],
-        delivery: null,
-        totalMinor: 9_900,
-        currency: 'UAH',
-        firstName: null,
-        lastName: null,
-        phone: null,
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
+        id: checkoutId,
+        orderId,
+        visitorSessionId: visitorId,
+        status: CheckoutStatus.InProgress,
+        cancelledReason: null,
         createdAt: new Date(),
-      },
-    });
+        expiresAt: futureExpiresAt(),
+        order: {
+          id: orderId,
+          status: OrderStatus.Draft,
+          items: [],
+          delivery: null,
+          totalMinor: 9_900,
+          currency: 'UAH',
+          firstName: null,
+          lastName: null,
+          phone: null,
+          createdAt: new Date(),
+        },
+      }),
+    );
 
     const server = apiHttpServer(app);
 
@@ -357,55 +393,61 @@ describe('checkouts (e2e)', () => {
 
   it('PATCH /api/checkouts/:id/delivery inserts delivery with order_id when none exists', async () => {
     checkoutsFindOne
-      .mockResolvedValueOnce({
-        id: checkoutId,
-        orderId,
-        visitorSessionId: visitorId,
-        status: CheckoutStatus.InProgress,
-        cancelledReason: null,
-        createdAt: new Date(),
-        order: {
-          id: orderId,
-          status: OrderStatus.Draft,
-          items: [],
-          delivery: null,
-          totalMinor: 9_900,
-          currency: 'UAH',
-          firstName: 'Andrii',
-          lastName: 'Fedak',
-          phone: '+380501112233',
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: checkoutId,
+          orderId,
+          visitorSessionId: visitorId,
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
           createdAt: new Date(),
-        },
-      })
-      .mockResolvedValueOnce({
-        id: checkoutId,
-        orderId,
-        visitorSessionId: visitorId,
-        status: CheckoutStatus.InProgress,
-        cancelledReason: null,
-        createdAt: new Date(),
-        order: {
-          id: orderId,
-          status: OrderStatus.Draft,
-          items: [],
-          delivery: {
-            orderId,
-            provider: 'nova-poshta',
-            method: 'warehouse',
-            city: 'Львів',
-            cityRef: 'city-lviv',
-            warehouseName: '',
-            warehouseNumber: '',
-            warehouseRef: '',
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: orderId,
+            status: OrderStatus.Draft,
+            items: [],
+            delivery: null,
+            totalMinor: 9_900,
+            currency: 'UAH',
+            firstName: 'Andrii',
+            lastName: 'Fedak',
+            phone: '+380501112233',
+            createdAt: new Date(),
           },
-          totalMinor: 9_900,
-          currency: 'UAH',
-          firstName: 'Andrii',
-          lastName: 'Fedak',
-          phone: '+380501112233',
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: checkoutId,
+          orderId,
+          visitorSessionId: visitorId,
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
           createdAt: new Date(),
-        },
-      });
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: orderId,
+            status: OrderStatus.Draft,
+            items: [],
+            delivery: {
+              orderId,
+              provider: 'nova-poshta',
+              method: 'warehouse',
+              city: 'Львів',
+              cityRef: 'city-lviv',
+              warehouseName: '',
+              warehouseNumber: '',
+              warehouseRef: '',
+            },
+            totalMinor: 9_900,
+            currency: 'UAH',
+            firstName: 'Andrii',
+            lastName: 'Fedak',
+            phone: '+380501112233',
+            createdAt: new Date(),
+          },
+        }),
+      );
 
     deliverySave.mockImplementation((entity: { orderId?: string }) =>
       Promise.resolve({ id: 'delivery-1', ...entity }),

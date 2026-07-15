@@ -3,7 +3,7 @@ import { TransactionalRepository } from '@my-noodles/api-lib/nest';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { type DataSource, IsNull, LessThanOrEqual, type Repository } from 'typeorm';
+import { type DataSource, IsNull, LessThanOrEqual, MoreThan, type Repository } from 'typeorm';
 import type { Logger } from 'winston';
 
 import { TelegramService } from '@/application/telegram';
@@ -28,7 +28,6 @@ import type { OrderResponseDto } from '../orders/orders.dto';
 import { OrderInventoryChangedException } from '../orders/orders.exceptions';
 import { CheckoutCancelledReason } from './checkout-cancelled-reason';
 import { CheckoutStatus } from './checkout-status';
-import { checkoutExpiresAt, checkoutHoldMinCreatedAt, isCheckoutExpired } from './checkout.config';
 import { Checkout } from './checkout.entity';
 import type {
   CheckoutDetailDto,
@@ -206,6 +205,34 @@ export class CheckoutsService extends TransactionalRepository {
     }
 
     await this.withTransaction(async () => {
+      const completion = await this.checkoutsRepository.update(
+        {
+          id: checkout.id,
+          status: CheckoutStatus.InProgress,
+          expiresAt: MoreThan(new Date()),
+        },
+        {
+          status: CheckoutStatus.Completed,
+          completedAt: new Date(),
+          cancelledReason: null,
+        },
+      );
+
+      if (!completion.affected) {
+        const current = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+
+        if (current.status === CheckoutStatus.Completed) {
+          return;
+        }
+
+        if (current.isExpired) {
+          await this.cancelCheckoutRecord(current, CheckoutCancelledReason.Expired);
+          throw new CheckoutExpiredException(checkout.id);
+        }
+
+        throw new CheckoutNotInProgressException(checkout.id, current.status);
+      }
+
       await this.inventoryService.deductOnSubmit(inventoryLines);
       await this.ordersRepository.save(order);
 
@@ -216,37 +243,31 @@ export class CheckoutsService extends TransactionalRepository {
         await this.saveNewOrderDelivery(order, dto.delivery);
       }
 
-      checkout.status = CheckoutStatus.Completed;
-      checkout.completedAt = new Date();
-      checkout.cancelledReason = null;
-      await this.checkoutsRepository.save(checkout);
+      void this.telegramService
+        .sendOrderNotification({
+          orderId: order.id,
+          createdAt: order.createdAt,
+          customerName: formatOrderReceiverName(order),
+          phone: order.phone!,
+          deliverySummary: formatOrderDelivery(order.delivery!),
+          currency: order.currency,
+          totalMinor: order.totalMinor,
+          lines: order.items.map((line) => ({
+            title: line.titleSnapshot,
+            qty: line.qty,
+            lineTotalMinor: line.priceMinorSnapshot * line.qty,
+          })),
+        })
+        .catch((error: unknown) => {
+          this.logger.error({
+            msg: 'telegram.notify.failed',
+            orderId: order.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
     });
 
     const submitted = await this.findVisitorCheckout(checkoutId, visitorSessionId);
-
-    try {
-      await this.telegramService.sendOrderNotification({
-        orderId: submitted.order.id,
-        createdAt: submitted.order.createdAt,
-        customerName: formatOrderReceiverName(submitted.order),
-        phone: submitted.order.phone!,
-        deliverySummary: formatOrderDelivery(submitted.order.delivery!),
-        currency: submitted.order.currency,
-        totalMinor: submitted.order.totalMinor,
-        lines: submitted.order.items.map((line) => ({
-          title: line.titleSnapshot,
-          qty: line.qty,
-          lineTotalMinor: line.priceMinorSnapshot * line.qty,
-        })),
-      });
-    } catch (error) {
-      this.logger.error({
-        msg: 'telegram.notify.failed',
-        orderId: submitted.order.id,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-
     return this.toOrderResponse(submitted.order);
   }
 
@@ -270,7 +291,7 @@ export class CheckoutsService extends TransactionalRepository {
     const stale = await this.checkoutsRepository.find({
       where: {
         status: CheckoutStatus.InProgress,
-        createdAt: LessThanOrEqual(checkoutHoldMinCreatedAt()),
+        expiresAt: LessThanOrEqual(new Date()),
         deletedAt: IsNull(),
       },
     });
@@ -312,7 +333,7 @@ export class CheckoutsService extends TransactionalRepository {
       return null;
     }
 
-    if (isCheckoutExpired(checkout)) {
+    if (checkout.isExpired) {
       await this.cancelCheckoutRecord(checkout, CheckoutCancelledReason.Expired);
       return null;
     }
@@ -433,9 +454,17 @@ export class CheckoutsService extends TransactionalRepository {
   }
 
   private async cancelCheckoutRecord(checkout: Checkout, reason: CheckoutCancelledReason): Promise<void> {
-    if (checkout.status !== CheckoutStatus.InProgress) {
+    const result = await this.checkoutsRepository.update(
+      { id: checkout.id, status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: reason },
+    );
+
+    if (!result.affected) {
       return;
     }
+
+    checkout.status = CheckoutStatus.Cancelled;
+    checkout.cancelledReason = reason;
 
     const order =
       checkout.order?.items !== undefined
@@ -451,10 +480,6 @@ export class CheckoutsService extends TransactionalRepository {
         order.items.map((item) => ({ productId: item.productId, qty: item.qty })),
       );
     }
-
-    checkout.status = CheckoutStatus.Cancelled;
-    checkout.cancelledReason = reason;
-    await this.checkoutsRepository.save(checkout);
   }
 
   private async ensureCheckoutActive(checkout: Checkout): Promise<void> {
@@ -462,7 +487,7 @@ export class CheckoutsService extends TransactionalRepository {
       throw new CheckoutNotInProgressException(checkout.id, checkout.status);
     }
 
-    if (isCheckoutExpired(checkout)) {
+    if (checkout.isExpired) {
       await this.cancelCheckoutRecord(checkout, CheckoutCancelledReason.Expired);
       throw new CheckoutExpiredException(checkout.id);
     }
@@ -492,7 +517,7 @@ export class CheckoutsService extends TransactionalRepository {
       totalMinor: checkout.order.totalMinor,
       currency: checkout.order.currency,
       updatedAt: checkout.updatedAt.toISOString(),
-      expiresAt: checkout.status === CheckoutStatus.InProgress ? checkoutExpiresAt(checkout) : null,
+      expiresAt: checkout.expiresAtIso,
     };
   }
 
@@ -552,7 +577,7 @@ export class CheckoutsService extends TransactionalRepository {
         : null,
       deliveryEstimate: await this.deliveryService.estimateForOrder(order),
       createdAt: checkout.createdAt.toISOString(),
-      expiresAt: checkout.status === CheckoutStatus.InProgress ? checkoutExpiresAt(checkout) : null,
+      expiresAt: checkout.expiresAtIso,
     };
   }
 }

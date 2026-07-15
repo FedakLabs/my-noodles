@@ -86,16 +86,17 @@ describe('InventoryService', () => {
     expect(productsSave).toHaveBeenCalledWith(product);
   });
 
-  it('filters reservations by in_progress checkout status only', async () => {
+  it('filters reservations by in_progress checkout with unexpired expiresAt', async () => {
     productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 4 });
     orderItemsFind.mockResolvedValue([]);
 
     await service.getAvailableQty('product-1');
 
     const [findOptions] = orderItemsFind.mock.calls[0] as [
-      { where: { order: { checkout: { status: CheckoutStatus } } } },
+      { where: { order: { checkout: { status: CheckoutStatus; expiresAt: unknown } } } },
     ];
 
     expect(findOptions.where.order.checkout.status).toBe(CheckoutStatus.InProgress);
+    expect(findOptions.where.order.checkout.expiresAt).toBeDefined();
   });
 });

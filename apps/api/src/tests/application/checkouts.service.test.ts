@@ -1,17 +1,26 @@
 import { CartEmptyException } from '@/application/cart/cart.exceptions';
 import { CheckoutsService, CheckoutStatus } from '@/application/checkouts';
-import { CheckoutNotInProgressException } from '@/application/checkouts/checkouts.exceptions';
+import { Checkout } from '@/application/checkouts/checkout.entity';
+import {
+  CheckoutExpiredException,
+  CheckoutNotInProgressException,
+} from '@/application/checkouts/checkouts.exceptions';
 import { type InventoryService } from '@/application/inventory/inventory.service';
 import { DeliveryMethod, DeliveryProvider, OrderStatus } from '@/application/orders';
 import { OrderInventoryChangedException } from '@/application/orders/orders.exceptions';
 
 import { jest } from '../jest-globals';
 
+function asCheckout(partial: object): Checkout {
+  return Object.assign(new Checkout(), partial);
+}
+
 describe('CheckoutsService', () => {
   let transaction: jest.Mock;
   let checkoutsFindOne: jest.Mock;
   let checkoutsFind: jest.Mock;
   let checkoutSave: jest.Mock;
+  let checkoutUpdate: jest.Mock;
   let orderSave: jest.Mock;
   let orderUpdate: jest.Mock;
   let deliverySave: jest.Mock;
@@ -34,6 +43,9 @@ describe('CheckoutsService', () => {
   let applyEstimateSnapshot: jest.Mock;
   let service: CheckoutsService;
 
+  const futureExpiresAt = () => new Date(Date.now() + 15 * 60_000);
+  const pastExpiresAt = () => new Date(Date.now() - 60_000);
+
   const delivery = {
     provider: DeliveryProvider.NovaPoshta,
     method: DeliveryMethod.Warehouse,
@@ -46,14 +58,18 @@ describe('CheckoutsService', () => {
 
   beforeEach(() => {
     checkoutSave = jest.fn().mockImplementation((entity: object) =>
-      Promise.resolve({
-        id: 'checkout-1',
-        orderId: 'order-1',
-        createdAt: new Date('2025-06-20T10:00:00.000Z'),
-        status: CheckoutStatus.InProgress,
-        ...entity,
-      }),
+      Promise.resolve(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          createdAt: new Date('2025-06-20T10:00:00.000Z'),
+          expiresAt: futureExpiresAt(),
+          status: CheckoutStatus.InProgress,
+          ...entity,
+        }),
+      ),
     );
+    checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
 
     orderSave = jest.fn().mockImplementation((entity: object) =>
       Promise.resolve({
@@ -110,7 +126,12 @@ describe('CheckoutsService', () => {
 
     service = new CheckoutsService(
       { transaction } as never,
-      { findOne: checkoutsFindOne, find: checkoutsFind, save: checkoutSave } as never,
+      {
+        findOne: checkoutsFindOne,
+        find: checkoutsFind,
+        save: checkoutSave,
+        update: checkoutUpdate,
+      } as never,
       { save: orderSave, update: orderUpdate, findOne: orderFindOne } as never,
       { save: deliverySave } as never,
       { save: itemSave, update: itemUpdate, delete: itemDelete } as never,
@@ -136,16 +157,28 @@ describe('CheckoutsService', () => {
     expect(reconcileLines).toHaveBeenCalled();
     expect(clearCartItems).toHaveBeenCalledWith('visitor-1');
     expect(itemSave).toHaveBeenCalled();
+    expect(checkoutSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: CheckoutStatus.InProgress,
+        completedAt: null,
+      }),
+    );
+    expect(checkoutSave).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        expiresAt: expect.anything(),
+      }),
+    );
   });
 
   it('merges cart items into an active in-progress checkout', async () => {
-    const existingCheckout = {
+    const existingCheckout = asCheckout({
       id: 'checkout-existing',
       orderId: 'order-existing',
       visitorSessionId: 'visitor-1',
       status: CheckoutStatus.InProgress,
       cancelledReason: null,
       createdAt: new Date(),
+      expiresAt: futureExpiresAt(),
       order: {
         id: 'order-existing',
         totalMinor: 9_900,
@@ -160,7 +193,7 @@ describe('CheckoutsService', () => {
           },
         ],
       },
-    };
+    });
 
     checkoutsFindOne.mockResolvedValue(existingCheckout);
 
@@ -180,18 +213,21 @@ describe('CheckoutsService', () => {
   });
 
   it('creates a new checkout when the in-progress checkout is expired', async () => {
-    checkoutsFindOne.mockResolvedValueOnce({
-      id: 'checkout-expired',
-      orderId: 'order-expired',
-      visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
-      cancelledReason: null,
-      createdAt: new Date('2020-01-01'),
-      order: {
-        id: 'order-expired',
-        items: [{ productId: 'product-1', qty: 1 }],
-      },
-    });
+    checkoutsFindOne.mockResolvedValueOnce(
+      asCheckout({
+        id: 'checkout-expired',
+        orderId: 'order-expired',
+        visitorSessionId: 'visitor-1',
+        status: CheckoutStatus.InProgress,
+        cancelledReason: null,
+        createdAt: new Date('2020-01-01'),
+        expiresAt: pastExpiresAt(),
+        order: {
+          id: 'order-expired',
+          items: [{ productId: 'product-1', qty: 1 }],
+        },
+      }),
+    );
     orderFindOne.mockResolvedValueOnce({
       id: 'order-expired',
       items: [{ productId: 'product-1', qty: 1 }],
@@ -201,6 +237,10 @@ describe('CheckoutsService', () => {
 
     expect(result.id).toBe('checkout-1');
     expect(result.orderId).toBe('order-1');
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-expired', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'expired' },
+    );
     expect(restoreItemsFromOrder).toHaveBeenCalledWith('visitor-1', [{ productId: 'product-1', qty: 1 }]);
   });
 
@@ -211,19 +251,21 @@ describe('CheckoutsService', () => {
   });
 
   it('lists in-progress checkouts for visitor', async () => {
+    const expiresAt = new Date('2025-06-20T10:15:00.000Z');
     checkoutsFind.mockResolvedValue([
-      {
+      asCheckout({
         id: 'checkout-1',
         orderId: 'order-1',
         status: CheckoutStatus.InProgress,
         updatedAt: new Date('2025-06-20T10:05:00.000Z'),
         createdAt: new Date('2025-06-20T10:00:00.000Z'),
+        expiresAt,
         order: {
           items: [{ qty: 2 }, { qty: 1 }],
           totalMinor: 19_800,
           currency: 'UAH',
         },
-      },
+      }),
     ]);
 
     const result = await service.listCheckouts('visitor-1', CheckoutStatus.InProgress);
@@ -234,31 +276,35 @@ describe('CheckoutsService', () => {
       itemCount: 3,
       totalMinor: 19_800,
       status: CheckoutStatus.InProgress,
+      expiresAt: expiresAt.toISOString(),
     });
     expect(checkoutsFind).toHaveBeenCalled();
   });
 
   it('rejects checkout detail when checkout is cancelled', async () => {
-    checkoutsFindOne.mockResolvedValue({
-      id: 'checkout-1',
-      orderId: 'order-1',
-      visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.Cancelled,
-      cancelledReason: 'user',
-      createdAt: new Date(),
-      order: {
-        id: 'order-1',
-        status: OrderStatus.Draft,
-        items: [],
-        delivery: null,
-        totalMinor: 1000,
-        currency: 'UAH',
-        firstName: null,
-        lastName: null,
-        phone: null,
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
+        id: 'checkout-1',
+        orderId: 'order-1',
+        visitorSessionId: 'visitor-1',
+        status: CheckoutStatus.Cancelled,
+        cancelledReason: 'user',
         createdAt: new Date(),
-      },
-    });
+        expiresAt: pastExpiresAt(),
+        order: {
+          id: 'order-1',
+          status: OrderStatus.Draft,
+          items: [],
+          delivery: null,
+          totalMinor: 1000,
+          currency: 'UAH',
+          firstName: null,
+          lastName: null,
+          phone: null,
+          createdAt: new Date(),
+        },
+      }),
+    );
 
     await expect(service.getCheckout('checkout-1', 'visitor-1')).rejects.toBeInstanceOf(
       CheckoutNotInProgressException,
@@ -266,13 +312,14 @@ describe('CheckoutsService', () => {
   });
 
   it('cancels checkout and restores order items to cart', async () => {
-    const checkout = {
+    const checkout = asCheckout({
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
       status: CheckoutStatus.InProgress,
       cancelledReason: null,
       createdAt: new Date(),
+      expiresAt: futureExpiresAt(),
       order: {
         id: 'order-1',
         status: OrderStatus.Draft,
@@ -285,29 +332,31 @@ describe('CheckoutsService', () => {
         phone: null,
         createdAt: new Date(),
       },
-    };
+    });
 
     checkoutsFindOne
       .mockResolvedValueOnce(checkout)
-      .mockResolvedValueOnce({ ...checkout, status: CheckoutStatus.Cancelled });
+      .mockResolvedValueOnce(asCheckout({ ...checkout, status: CheckoutStatus.Cancelled }));
 
     const result = await service.cancelCheckout('checkout-1', 'visitor-1');
 
     expect(result.status).toBe(CheckoutStatus.Cancelled);
-    expect(checkoutSave).toHaveBeenCalledWith(
-      expect.objectContaining({ status: CheckoutStatus.Cancelled, cancelledReason: 'user' }),
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-1', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'user' },
     );
     expect(restoreItemsFromOrder).toHaveBeenCalledWith('visitor-1', [{ productId: 'product-1', qty: 2 }]);
   });
 
   it('cancels checkout without items and skips cart restore', async () => {
-    const checkout = {
+    const checkout = asCheckout({
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
       status: CheckoutStatus.InProgress,
       cancelledReason: null,
       createdAt: new Date(),
+      expiresAt: futureExpiresAt(),
       order: {
         id: 'order-1',
         status: OrderStatus.Draft,
@@ -320,31 +369,58 @@ describe('CheckoutsService', () => {
         phone: null,
         createdAt: new Date(),
       },
-    };
+    });
 
     checkoutsFindOne
       .mockResolvedValueOnce(checkout)
-      .mockResolvedValueOnce({ ...checkout, status: CheckoutStatus.Cancelled });
+      .mockResolvedValueOnce(asCheckout({ ...checkout, status: CheckoutStatus.Cancelled }));
 
     const result = await service.cancelCheckout('checkout-1', 'visitor-1');
 
     expect(result.status).toBe(CheckoutStatus.Cancelled);
-    expect(checkoutSave).toHaveBeenCalledWith(
-      expect.objectContaining({ status: CheckoutStatus.Cancelled, cancelledReason: 'user' }),
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-1', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'user' },
     );
+    expect(restoreItemsFromOrder).not.toHaveBeenCalled();
+  });
+
+  it('skips cart restore when cancel loses the atomic status flip', async () => {
+    checkoutUpdate.mockResolvedValueOnce({ affected: 0 });
+
+    checkoutsFind.mockResolvedValue([
+      asCheckout({
+        id: 'checkout-1',
+        orderId: 'order-1',
+        visitorSessionId: 'visitor-1',
+        status: CheckoutStatus.InProgress,
+        cancelledReason: null,
+        createdAt: new Date(),
+        expiresAt: pastExpiresAt(),
+        order: {
+          id: 'order-1',
+          items: [{ productId: 'product-1', qty: 2 }],
+        },
+      }),
+    ]);
+
+    await service.expireStaleCheckouts();
+
+    expect(checkoutUpdate).toHaveBeenCalled();
     expect(restoreItemsFromOrder).not.toHaveBeenCalled();
   });
 
   it('returns cancelled checkout items to cart on expiry', async () => {
     checkoutsFind.mockResolvedValue([
-      {
+      asCheckout({
         id: 'checkout-1',
         orderId: 'order-1',
         visitorSessionId: 'visitor-1',
         status: CheckoutStatus.InProgress,
         cancelledReason: null,
         createdAt: new Date('2020-01-01'),
-      },
+        expiresAt: pastExpiresAt(),
+      }),
     ]);
     orderFindOne.mockResolvedValue({
       id: 'order-1',
@@ -354,43 +430,44 @@ describe('CheckoutsService', () => {
     await service.expireStaleCheckouts();
 
     expect(restoreItemsFromOrder).toHaveBeenCalledWith('visitor-1', [{ productId: 'product-1', qty: 2 }]);
-    expect(checkoutSave).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: CheckoutStatus.Cancelled,
-        cancelledReason: 'expired',
-      }),
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-1', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'expired' },
     );
   });
 
   it('regresses order items and rejects submit when inventory changed', async () => {
-    checkoutsFindOne.mockResolvedValue({
-      id: 'checkout-1',
-      orderId: 'order-1',
-      visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
-      cancelledReason: null,
-      createdAt: new Date(),
-      order: {
-        id: 'order-1',
-        status: OrderStatus.Draft,
-        items: [
-          {
-            id: 'line-1',
-            productId: 'product-1',
-            titleSnapshot: 'Pocky',
-            qty: 2,
-            priceMinorSnapshot: 9_900,
-          },
-        ],
-        delivery: null,
-        totalMinor: 19_800,
-        currency: 'UAH',
-        firstName: null,
-        lastName: null,
-        phone: null,
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
+        id: 'checkout-1',
+        orderId: 'order-1',
+        visitorSessionId: 'visitor-1',
+        status: CheckoutStatus.InProgress,
+        cancelledReason: null,
         createdAt: new Date(),
-      },
-    });
+        expiresAt: futureExpiresAt(),
+        order: {
+          id: 'order-1',
+          status: OrderStatus.Draft,
+          items: [
+            {
+              id: 'line-1',
+              productId: 'product-1',
+              titleSnapshot: 'Pocky',
+              qty: 2,
+              priceMinorSnapshot: 9_900,
+            },
+          ],
+          delivery: null,
+          totalMinor: 19_800,
+          currency: 'UAH',
+          firstName: null,
+          lastName: null,
+          phone: null,
+          createdAt: new Date(),
+        },
+      }),
+    );
 
     getGrossQtyBatch.mockResolvedValue(new Map([['product-1', 1]]));
     reconcileLines.mockImplementation((lines: Array<{ productId: string; qty: number }>) => {
@@ -414,55 +491,61 @@ describe('CheckoutsService', () => {
 
   it('submits checkout and notifies Telegram', async () => {
     checkoutsFindOne
-      .mockResolvedValueOnce({
-        id: 'checkout-1',
-        orderId: 'order-1',
-        visitorSessionId: 'visitor-1',
-        status: CheckoutStatus.InProgress,
-        cancelledReason: null,
-        createdAt: new Date(),
-        order: {
-          id: 'order-1',
-          status: OrderStatus.Draft,
-          items: [{ productId: 'product-1', titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
-          delivery: null,
-          totalMinor: 19_800,
-          currency: 'UAH',
-          firstName: null,
-          lastName: null,
-          phone: null,
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
           createdAt: new Date(),
-        },
-      })
-      .mockResolvedValueOnce({
-        id: 'checkout-1',
-        orderId: 'order-1',
-        visitorSessionId: 'visitor-1',
-        status: CheckoutStatus.Completed,
-        order: {
-          id: 'order-1',
-          status: OrderStatus.New,
-          items: [{ titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
-          delivery: {
-            provider: DeliveryProvider.NovaPoshta,
-            method: DeliveryMethod.Warehouse,
-            city: 'Київ',
-            warehouseNumber: '1',
-            warehouseName: 'Відділення №1',
-            warehouseRef: null,
-            street: null,
-            building: null,
-            apartment: null,
-            notes: null,
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: 'order-1',
+            status: OrderStatus.Draft,
+            items: [{ productId: 'product-1', titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
+            delivery: null,
+            totalMinor: 19_800,
+            currency: 'UAH',
+            firstName: null,
+            lastName: null,
+            phone: null,
+            createdAt: new Date(),
           },
-          totalMinor: 19_800,
-          currency: 'UAH',
-          firstName: 'Andrii',
-          lastName: 'Fedak',
-          phone: '+380501112233',
-          createdAt: new Date(),
-        },
-      });
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.Completed,
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: 'order-1',
+            status: OrderStatus.New,
+            items: [{ titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
+            delivery: {
+              provider: DeliveryProvider.NovaPoshta,
+              method: DeliveryMethod.Warehouse,
+              city: 'Київ',
+              warehouseNumber: '1',
+              warehouseName: 'Відділення №1',
+              warehouseRef: null,
+              street: null,
+              building: null,
+              apartment: null,
+              notes: null,
+            },
+            totalMinor: 19_800,
+            currency: 'UAH',
+            firstName: 'Andrii',
+            lastName: 'Fedak',
+            phone: '+380501112233',
+            createdAt: new Date(),
+          },
+        }),
+      );
 
     const result = await service.submitCheckout('checkout-1', 'visitor-1', {
       firstName: 'Andrii',
@@ -472,6 +555,16 @@ describe('CheckoutsService', () => {
     });
 
     expect(result.status).toBe(OrderStatus.New);
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'checkout-1',
+        status: CheckoutStatus.InProgress,
+      }),
+      expect.objectContaining({
+        status: CheckoutStatus.Completed,
+        cancelledReason: null,
+      }),
+    );
     expect(deductOnSubmit).toHaveBeenCalled();
     expect(estimateFromDelivery).toHaveBeenCalled();
     expect(applyEstimateSnapshot).toHaveBeenCalledWith(
@@ -479,5 +572,141 @@ describe('CheckoutsService', () => {
       expect.objectContaining({ estimatedDaysMin: 2, estimatedDaysMax: 3, shippingCostMinor: 6_500 }),
     );
     expect(telegramSend).toHaveBeenCalled();
+  });
+
+  it('returns completed order without deducting when submit loses the atomic flip', async () => {
+    const completedOrder = {
+      id: 'order-1',
+      status: OrderStatus.New,
+      items: [{ titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
+      delivery: null,
+      totalMinor: 19_800,
+      currency: 'UAH',
+      firstName: 'Andrii',
+      lastName: 'Fedak',
+      phone: '+380501112233',
+      createdAt: new Date(),
+    };
+
+    checkoutsFindOne
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
+          createdAt: new Date(),
+          expiresAt: futureExpiresAt(),
+          order: {
+            ...completedOrder,
+            status: OrderStatus.Draft,
+            firstName: null,
+            lastName: null,
+            phone: null,
+            items: [{ productId: 'product-1', titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.Completed,
+          expiresAt: futureExpiresAt(),
+          order: completedOrder,
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.Completed,
+          expiresAt: futureExpiresAt(),
+          order: completedOrder,
+        }),
+      );
+
+    checkoutUpdate.mockResolvedValueOnce({ affected: 0 });
+
+    const result = await service.submitCheckout('checkout-1', 'visitor-1', {
+      firstName: 'Andrii',
+      lastName: 'Fedak',
+      phone: '+380501112233',
+      delivery,
+    });
+
+    expect(result.status).toBe(OrderStatus.New);
+    expect(deductOnSubmit).not.toHaveBeenCalled();
+    expect(telegramSend).not.toHaveBeenCalled();
+  });
+
+  it('rejects submit when checkout expired during the atomic flip', async () => {
+    checkoutsFindOne
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
+          createdAt: new Date(),
+          expiresAt: futureExpiresAt(),
+          order: {
+            id: 'order-1',
+            status: OrderStatus.Draft,
+            items: [{ productId: 'product-1', titleSnapshot: 'Pocky', qty: 2, priceMinorSnapshot: 9_900 }],
+            delivery: null,
+            totalMinor: 19_800,
+            currency: 'UAH',
+            firstName: null,
+            lastName: null,
+            phone: null,
+            createdAt: new Date(),
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        asCheckout({
+          id: 'checkout-1',
+          orderId: 'order-1',
+          visitorSessionId: 'visitor-1',
+          status: CheckoutStatus.InProgress,
+          cancelledReason: null,
+          createdAt: new Date(),
+          expiresAt: pastExpiresAt(),
+          order: {
+            id: 'order-1',
+            status: OrderStatus.Draft,
+            items: [{ productId: 'product-1', qty: 2 }],
+            delivery: null,
+            totalMinor: 19_800,
+            currency: 'UAH',
+            firstName: null,
+            lastName: null,
+            phone: null,
+            createdAt: new Date(),
+          },
+        }),
+      );
+
+    checkoutUpdate.mockResolvedValueOnce({ affected: 0 }).mockResolvedValueOnce({ affected: 1 });
+
+    await expect(
+      service.submitCheckout('checkout-1', 'visitor-1', {
+        firstName: 'Andrii',
+        lastName: 'Fedak',
+        phone: '+380501112233',
+        delivery,
+      }),
+    ).rejects.toBeInstanceOf(CheckoutExpiredException);
+
+    expect(deductOnSubmit).not.toHaveBeenCalled();
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-1', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'expired' },
+    );
   });
 });

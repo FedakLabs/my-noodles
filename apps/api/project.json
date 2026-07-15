@@ -15,6 +15,7 @@
       "command": "pnpm build",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -26,6 +27,7 @@
       "command": "pnpm generate:openapi",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -49,6 +51,7 @@
       "command": "pnpm lint",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -59,6 +62,7 @@
       "command": "pnpm lint-check",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -69,6 +73,7 @@
       "command": "pnpm type-check",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -79,6 +84,7 @@
       "command": "pnpm test",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -95,6 +101,7 @@
       "executor": "nx:run-commands",
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
+        { "projects": "api-clients", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
