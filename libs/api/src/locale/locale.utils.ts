@@ -1,7 +1,12 @@
 import type { Request } from 'express';
 
-import { APP_LOCALE_HEADER } from './app-locale-header';
-import { DEFAULT_LOCALE, type Locale, LOCALE_ALIASES, SUPPORTED_LOCALES } from './locale.config';
+import {
+  APP_LOCALE_HEADER,
+  DEFAULT_LOCALE,
+  type Locale,
+  LOCALE_ALIASES,
+  SUPPORTED_LOCALES,
+} from './locale.config';
 
 function isSupportedLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value);

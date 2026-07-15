@@ -12,3 +12,5 @@ export const LOCALE_ALIASES: Record<string, Locale> = {
 export type LocalizedStringData = Partial<Record<Locale, string>> & Record<typeof DEFAULT_LOCALE, string>;
 
 export type LocalizedStringRecord = Partial<Record<Locale, string>>;
+
+export const APP_LOCALE_HEADER = 'x-app-locale';

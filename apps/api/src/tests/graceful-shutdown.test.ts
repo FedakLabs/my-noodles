@@ -1,12 +1,12 @@
-import { gracefulShutdown, resetGracefulShutdownState } from '../infrastructure/shutdown';
+import { GracefulShutdown } from '@my-noodles/api-lib/nest';
+
 import { createMockNestApp } from './helpers/nest-app';
 import { mockProcessExit } from './helpers/process';
 
-describe('gracefulShutdown', () => {
+describe('GracefulShutdown', () => {
   const exitSpy = mockProcessExit();
 
   beforeEach(() => {
-    resetGracefulShutdownState();
     exitSpy.mockClear();
     jest.useFakeTimers();
   });
@@ -27,7 +27,7 @@ describe('gracefulShutdown', () => {
       dataSource: { isInitialized: true, destroy },
     });
 
-    await gracefulShutdown(app, 'SIGTERM');
+    await new GracefulShutdown(app, { timeoutMs: 30_000 }).shutdown('SIGTERM');
 
     expect(close).toHaveBeenCalledTimes(1);
     expect(destroy).toHaveBeenCalledTimes(1);
@@ -41,9 +41,10 @@ describe('gracefulShutdown', () => {
     });
     const close = jest.fn().mockReturnValue(closePromise);
     const app = createMockNestApp({ close });
+    const gracefulShutdown = new GracefulShutdown(app, { timeoutMs: 30_000 });
 
-    const firstShutdown = gracefulShutdown(app, 'SIGTERM');
-    await gracefulShutdown(app, 'SIGINT');
+    const firstShutdown = gracefulShutdown.shutdown('SIGTERM');
+    await gracefulShutdown.shutdown('SIGINT');
 
     expect(close).toHaveBeenCalledTimes(1);
 
@@ -57,7 +58,7 @@ describe('gracefulShutdown', () => {
       dataSource: { isInitialized: false, destroy },
     });
 
-    await gracefulShutdown(app, 'SIGTERM');
+    await new GracefulShutdown(app, { timeoutMs: 30_000 }).shutdown('SIGTERM');
 
     expect(destroy).not.toHaveBeenCalled();
   });
@@ -66,7 +67,7 @@ describe('gracefulShutdown', () => {
     const close = jest.fn().mockReturnValue(new Promise<void>(() => undefined));
     const app = createMockNestApp({ close });
 
-    void gracefulShutdown(app, 'SIGTERM');
+    void new GracefulShutdown(app, { timeoutMs: 30_000 }).shutdown('SIGTERM');
     jest.advanceTimersByTime(30_000);
 
     expect(exitSpy).toHaveBeenCalledWith(1);

@@ -1,4 +1,4 @@
-import { LocalizedString } from '@/infrastructure/i18n';
+import { LocalizedString } from '@my-noodles/api-lib/locale';
 
 export const sampleProductId = '11111111-1111-4111-8111-111111111111';
 

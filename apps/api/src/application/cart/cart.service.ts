@@ -1,9 +1,8 @@
+import { TransactionalRepository } from '@my-noodles/api-lib/nest';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { type DataSource, IsNull, Repository } from 'typeorm';
-
-import { TransactionalRepository } from '@/infrastructure/persistence';
 
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';

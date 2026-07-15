@@ -52,9 +52,13 @@
       "types": "./dist/validators/index.d.ts",
       "default": "./dist/validators/index.js"
     },
-    "./middlewares": {
-      "types": "./dist/middlewares/index.d.ts",
-      "default": "./dist/middlewares/index.js"
+    "./locale": {
+      "types": "./dist/locale/index.d.ts",
+      "default": "./dist/locale/index.js"
+    },
+    "./nest": {
+      "types": "./dist/nest/index.d.ts",
+      "default": "./dist/nest/index.js"
     }
   },
   "scripts": {
@@ -80,17 +84,34 @@
     "winston": "3.19.0"
   },
   "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "rxjs": "^7.8.0",
     "typeorm": "^0.3.0 || ^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/throttler": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@jest/globals": "29.7.0",
     "@my-noodles/jest-config": "workspace:*",
+    "@nestjs/common": "11.1.27",
+    "@nestjs/core": "11.1.27",
+    "@nestjs/swagger": "11.4.4",
+    "@nestjs/throttler": "6.5.0",
+    "@nestjs/typeorm": "11.0.2",
     "@types/express": "5.0.3",
     "@types/express-serve-static-core": "5.0.7",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.3",
     "jest": "29.7.0",
     "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
     "ts-jest": "29.3.2",
     "typeorm": "1.0.0"
   }

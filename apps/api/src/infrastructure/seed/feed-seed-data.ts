@@ -1,4 +1,4 @@
-import type { LocalizedStringData } from '@/infrastructure/i18n';
+import type { LocalizedStringData } from '@my-noodles/api-lib/locale';
 
 /** Warm, human display names for synthetic taste impressions. */
 const FEED_COMMENT_AUTHORS = [

@@ -1,9 +1,10 @@
 import {
   AppException,
+  BadRequestException,
   HttpStatus,
   NotFoundException,
-  ValidationException,
 } from '@my-noodles/api-lib/exceptions';
+import { ExceptionsFilter } from '@my-noodles/api-lib/nest';
 import type { ArgumentsHost } from '@nestjs/common';
 import {
   BadRequestException as NestBadRequestException,
@@ -13,8 +14,6 @@ import { type HttpAdapterHost } from '@nestjs/core';
 import { ThrottlerException } from '@nestjs/throttler';
 import type { Request } from 'express';
 import type { Logger } from 'winston';
-
-import { ExceptionsFilter } from '@/infrastructure/exceptions';
 
 import { jest } from '../jest-globals';
 
@@ -51,6 +50,7 @@ function createFilter(logger: { info: jest.Mock; error: jest.Mock }, reply: jest
       },
     } as unknown as HttpAdapterHost,
     logger as unknown as Logger,
+    { appName: 'test-api', appVersion: 'test' },
   );
 }
 
@@ -116,7 +116,7 @@ describe('ExceptionsFilter', () => {
     );
   });
 
-  it('maps Nest BadRequestException to ValidationException', () => {
+  it('maps Nest BadRequestException to BadRequestException', () => {
     const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
     const filter = createFilter(logger, reply);
@@ -132,7 +132,7 @@ describe('ExceptionsFilter', () => {
 
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
-      new ValidationException(['phone must be a valid phone number']).toBody(),
+      new BadRequestException('bad_request', 'phone must be a valid phone number').toBody(),
       HttpStatus.BAD_REQUEST,
     );
   });

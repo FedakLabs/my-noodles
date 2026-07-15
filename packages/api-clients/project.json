@@ -56,12 +56,14 @@
     },
     "validate": {
       "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:knip"
+          "pnpm --dir packages/api-clients format",
+          "pnpm --dir packages/api-clients lint",
+          "pnpm --dir packages/api-clients type-check",
+          "knip --config configs/knip/knip.json --workspace packages/api-clients"
         ],
         "parallel": false
       }

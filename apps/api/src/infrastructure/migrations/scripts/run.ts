@@ -1,6 +1,7 @@
 import 'reflect-metadata';
+import { createAppDataSource } from '@my-noodles/api-lib/persistence';
+
 import { config } from '@/config';
-import { createAppDataSource } from '@/infrastructure/persistence';
 
 const dataSource = createAppDataSource(config);
 

@@ -49,9 +49,6 @@
         "src/application/orders/order-delivery.dto.ts": ["exports"],
         "src/application/products/products.filters.ts": ["exports"],
         "src/application/products/products.dto.ts": ["types"],
-        "src/infrastructure/i18n/index.ts": ["exports", "types"],
-        "src/infrastructure/i18n/localized-string.ts": ["exports"],
-        "src/infrastructure/exceptions/index.ts": ["exports"],
         "src/infrastructure/seed/index.ts": ["exports", "types"],
         "src/application/telegram/index.ts": ["exports", "types"],
         "src/application/telegram/telegram.config.ts": ["exports"],
@@ -138,7 +135,8 @@
         "src/utils/index.ts",
         "src/transformers/index.ts",
         "src/validators/index.ts",
-        "src/middlewares/index.ts"
+        "src/locale/index.ts",
+        "src/nest/index.ts"
       ],
       "project": ["src/**/*.ts"],
       "ignore": ["src/api-client/logger.ts"],
@@ -146,9 +144,19 @@
         "src/config/config.ts": ["exports"],
         "src/config/env.ts": ["exports"],
         "src/logging/manifest-log.ts": ["exports"],
-        "src/middlewares/client-baggage.ts": ["exports"]
+        "src/locale/index.ts": ["exports", "types"],
+        "src/locale/localized-string.ts": ["exports"]
       },
-      "ignoreDependencies": ["typeorm", "@types/express-serve-static-core"]
+      "ignoreDependencies": [
+        "typeorm",
+        "@types/express-serve-static-core",
+        "@nestjs/common",
+        "@nestjs/core",
+        "@nestjs/swagger",
+        "@nestjs/throttler",
+        "@nestjs/typeorm",
+        "rxjs"
+      ]
     }
   }
 }

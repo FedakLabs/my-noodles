@@ -1,3 +1,4 @@
+import { ApiException } from '@my-noodles/api-lib/nest';
 import {
   Body,
   Controller,
@@ -12,19 +13,13 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
+import { CartEmptyException, CartInventoryChangedException } from '../cart/cart.exceptions';
 import { OrderResponseDto } from '../orders/orders.dto';
+import { OrderInventoryChangedException } from '../orders/orders.exceptions';
 import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
 import {
   CheckoutDetailDto,
@@ -35,6 +30,11 @@ import {
   UpdateCheckoutDeliveryDto,
   UpdateCheckoutReceiverDto,
 } from './checkouts.dto';
+import {
+  CheckoutExpiredException,
+  CheckoutNotFoundException,
+  CheckoutNotInProgressException,
+} from './checkouts.exceptions';
 import { CheckoutsService } from './checkouts.service';
 
 @ApiTags('Checkouts')
@@ -51,8 +51,7 @@ export class CheckoutsController {
     summary: 'Begin checkout — move cart items into a draft order or an active in-progress checkout',
   })
   @ApiCreatedResponse({ type: CheckoutStartDto })
-  @ApiBadRequestResponse({ description: 'Cart is empty' })
-  @ApiConflictResponse({ description: 'Inventory changed since cart was loaded' })
+  @ApiException(CartEmptyException, CartInventoryChangedException)
   async startCheckout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -76,8 +75,7 @@ export class CheckoutsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get checkout details' })
   @ApiOkResponse({ type: CheckoutDetailDto })
-  @ApiNotFoundResponse({ description: 'Checkout not found' })
-  @ApiConflictResponse({ description: 'Checkout expired or no longer in progress' })
+  @ApiException(CheckoutNotFoundException, CheckoutNotInProgressException, CheckoutExpiredException)
   async getCheckout(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: Request,
@@ -91,7 +89,7 @@ export class CheckoutsController {
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ApiOperation({ summary: 'Autosave checkout receiver fields on blur' })
   @ApiOkResponse({ type: CheckoutDetailDto })
-  @ApiNotFoundResponse({ description: 'Checkout not found' })
+  @ApiException(CheckoutNotFoundException, CheckoutNotInProgressException, CheckoutExpiredException)
   async updateCheckoutReceiver(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCheckoutReceiverDto,
@@ -106,7 +104,7 @@ export class CheckoutsController {
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ApiOperation({ summary: 'Autosave checkout delivery fields on change' })
   @ApiOkResponse({ type: CheckoutDetailDto })
-  @ApiNotFoundResponse({ description: 'Checkout not found' })
+  @ApiException(CheckoutNotFoundException, CheckoutNotInProgressException, CheckoutExpiredException)
   async updateCheckoutDelivery(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCheckoutDeliveryDto,
@@ -121,8 +119,12 @@ export class CheckoutsController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Submit checkout — place order' })
   @ApiCreatedResponse({ type: OrderResponseDto })
-  @ApiNotFoundResponse({ description: 'Checkout not found' })
-  @ApiConflictResponse({ description: 'Checkout is not active or expired' })
+  @ApiException(
+    CheckoutNotFoundException,
+    CheckoutNotInProgressException,
+    CheckoutExpiredException,
+    OrderInventoryChangedException,
+  )
   async submitCheckout(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SubmitCheckoutDto,
@@ -137,7 +139,7 @@ export class CheckoutsController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Cancel checkout' })
   @ApiOkResponse({ type: CheckoutDetailDto })
-  @ApiNotFoundResponse({ description: 'Checkout not found' })
+  @ApiException(CheckoutNotFoundException, CheckoutNotInProgressException)
   async cancelCheckout(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: Request,

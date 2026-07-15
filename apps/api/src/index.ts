@@ -1,18 +1,17 @@
 import 'reflect-metadata';
-import { clientBaggageMiddleware, responseDelayMiddleware } from '@my-noodles/api-lib/middlewares';
+import { localeMiddleware } from '@my-noodles/api-lib/locale';
+import { AppValidationPipe, ExceptionsFilter, GracefulShutdown } from '@my-noodles/api-lib/nest';
+import { clientBaggageMiddleware } from '@my-noodles/api-lib/otel';
+import { responseDelayMiddleware } from '@my-noodles/api-lib/utils';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
-import { ExceptionsFilter } from '@/infrastructure/exceptions';
 import { appLogger } from '@/infrastructure/logging';
-import { validationPipe } from '@/utils/validation-pipe';
 
 import { AppModule } from './app.module';
 import { config } from './config';
 import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs/api';
-import { localeMiddleware } from './infrastructure/i18n';
-import { registerGracefulShutdown } from './infrastructure/shutdown';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,10 +19,15 @@ async function bootstrap() {
   // `credentials: true` + reflected origin so the storefront can send the feed session cookie cross-origin.
   app.enableCors({ origin: true, credentials: true });
 
-  app.useGlobalFilters(new ExceptionsFilter(app.get(HttpAdapterHost), appLogger));
+  app.useGlobalFilters(
+    new ExceptionsFilter(app.get(HttpAdapterHost), appLogger, {
+      appName: config.appName,
+      appVersion: config.appVersion,
+    }),
+  );
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
-  app.useGlobalPipes(validationPipe);
+  app.useGlobalPipes(new AppValidationPipe());
   app.use(cookieParser());
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);
@@ -40,7 +44,10 @@ async function bootstrap() {
   );
   SwaggerModule.setup(SWAGGER_UI_PATH, app, swaggerDocument, { jsonDocumentUrl: SWAGGER_JSON_PATH });
 
-  registerGracefulShutdown(app);
+  new GracefulShutdown(app, {
+    timeoutMs: config.shutdownTimeoutMs,
+    enabled: config.nodeEnv !== 'local',
+  }).register();
 
   await app.listen(config.port);
 

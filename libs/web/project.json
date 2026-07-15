@@ -37,11 +37,12 @@
     "validate": {
       "executor": "nx:run-commands",
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:knip"
+          "pnpm --dir libs/web format",
+          "pnpm --dir libs/web lint",
+          "pnpm --dir libs/web type-check",
+          "knip --config configs/knip/knip.json --workspace libs/web"
         ],
         "parallel": false
       }

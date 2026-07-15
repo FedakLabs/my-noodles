@@ -1,7 +1,7 @@
+import { TransactionalTypeOrmModule } from '@my-noodles/api-lib/nest';
 import { Module } from '@nestjs/common';
 
 import { TelegramModule } from '@/application/telegram';
-import { TransactionalTypeOrmModule } from '@/infrastructure/persistence';
 
 import { CartModule } from '../cart';
 import { DeliveryModule } from '../delivery';

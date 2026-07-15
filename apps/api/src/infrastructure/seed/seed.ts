@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { createAppDataSource } from '@my-noodles/api-lib/persistence';
 import { slugify } from '@my-noodles/api-lib/utils';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { type DataSource, type Repository } from 'typeorm';
@@ -10,7 +11,6 @@ import { Country } from '@/application/countries';
 import { FeedProductComment } from '@/application/feed';
 import { Product } from '@/application/products';
 import { config } from '@/config';
-import { createAppDataSource } from '@/infrastructure/persistence';
 
 import { buildFeedCommentSeeds } from './feed-seed-data';
 import {

@@ -1,5 +1,5 @@
+import { validEnv, validOtelEnv } from '../tests/fixtures/env';
 import { Config } from './config';
-import { validEnv, validOtelEnv } from './fixtures/env';
 
 const ROOT_DIRNAME = '/tmp/my-noodles-api/src';
 

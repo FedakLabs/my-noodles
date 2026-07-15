@@ -1,6 +1,48 @@
 import type { Request, Response } from 'express';
 
-import { responseDelayMiddleware } from './response-delay';
+import { delay, responseDelayMiddleware, shouldDelayResponse } from './response-delay';
+
+describe('shouldDelayResponse', () => {
+  it('returns false when delay is zero', () => {
+    expect(shouldDelayResponse('/api/products', { delayMs: 0 })).toBe(false);
+  });
+
+  it('returns true for non-skipped paths when delay is configured', () => {
+    expect(shouldDelayResponse('/api/products', { delayMs: 1500, skipPaths: ['/api/health'] })).toBe(true);
+  });
+
+  it('returns false for skipped paths', () => {
+    expect(shouldDelayResponse('/api/health', { delayMs: 1500, skipPaths: ['/api/health'] })).toBe(false);
+    expect(shouldDelayResponse('/api/docs/json', { delayMs: 1500, skipPaths: ['/api/docs'] })).toBe(false);
+  });
+});
+
+describe('delay', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('resolves immediately when delay is zero', async () => {
+    const pending = delay(0);
+    await expect(pending).resolves.toBeUndefined();
+  });
+
+  it('resolves after the configured delay', async () => {
+    let resolved = false;
+    void delay(1500).then(() => {
+      resolved = true;
+    });
+
+    expect(resolved).toBe(false);
+    jest.advanceTimersByTime(1500);
+    await Promise.resolve();
+    expect(resolved).toBe(true);
+  });
+});
 
 describe('responseDelayMiddleware', () => {
   beforeEach(() => {

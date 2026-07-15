@@ -1,7 +1,6 @@
+import { APP_LOCALE_HEADER, SUPPORTED_LOCALES } from '@my-noodles/api-lib/locale';
 import { applyDecorators } from '@nestjs/common';
 import { ApiHeader } from '@nestjs/swagger';
-
-import { APP_LOCALE_HEADER, SUPPORTED_LOCALES } from '@/infrastructure/i18n';
 
 /** Documents the optional storefront locale header in Swagger. */
 export function SwaggerAppLocaleHeader(): MethodDecorator & ClassDecorator {

@@ -1,5 +1,6 @@
 import { AppException } from './app.exception';
 import { HttpStatus } from './http-status';
+import type { FieldValidationError } from './validation-error';
 
 export const SERVICE_UNAVAILABLE_FALLBACK_MESSAGE = 'Internal server error';
 export const SERVER_SIDE_FALLBACK_MESSAGE = 'Internal server error';
@@ -40,8 +41,8 @@ export class ServerSideException extends AppException {
   }
 }
 
-export class ValidationException extends AppException<{ errors: string[] }> {
-  constructor(errors: string[]) {
-    super(HttpStatus.BAD_REQUEST, 'validation_failed', 'Validation failed', { errors });
+export class ValidationException extends AppException<{ fields: FieldValidationError[] }> {
+  constructor(fields: FieldValidationError[]) {
+    super(HttpStatus.BAD_REQUEST, 'validation_failed', 'Validation failed', { fields });
   }
 }

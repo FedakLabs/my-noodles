@@ -50,12 +50,13 @@
     "validate": {
       "executor": "nx:run-commands",
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:test",
-          "nx run {projectName}:knip"
+          "pnpm --dir packages/ui format",
+          "pnpm --dir packages/ui lint",
+          "pnpm --dir packages/ui type-check",
+          "pnpm --dir packages/ui test",
+          "knip --config configs/knip/knip.json --workspace packages/ui"
         ],
         "parallel": false
       }

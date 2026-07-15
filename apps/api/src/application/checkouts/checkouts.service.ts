@@ -1,4 +1,5 @@
 import { APP_LOGGER } from '@my-noodles/api-lib/logging';
+import { TransactionalRepository } from '@my-noodles/api-lib/nest';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -6,7 +7,6 @@ import { type DataSource, IsNull, LessThanOrEqual, type Repository } from 'typeo
 import type { Logger } from 'winston';
 
 import { TelegramService } from '@/application/telegram';
-import { TransactionalRepository } from '@/infrastructure/persistence';
 
 import type { CartItem } from '../cart/cart-item.entity';
 import { CartEmptyException, CartInventoryChangedException } from '../cart/cart.exceptions';

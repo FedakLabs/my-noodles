@@ -41,12 +41,13 @@
     "validate": {
       "executor": "nx:run-commands",
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:test",
-          "nx run {projectName}:knip"
+          "pnpm --dir libs/api format",
+          "pnpm --dir libs/api lint",
+          "pnpm --dir libs/api type-check",
+          "pnpm --dir libs/api test",
+          "knip --config configs/knip/knip.json --workspace libs/api"
         ],
         "parallel": false
       }

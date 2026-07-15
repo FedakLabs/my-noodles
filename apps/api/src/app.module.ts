@@ -1,3 +1,5 @@
+import { LoggingModule } from '@my-noodles/api-lib/nest';
+import { prepareDataSource } from '@my-noodles/api-lib/persistence';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -14,8 +16,7 @@ import { HealthModule } from './application/health';
 import { OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
 import { config } from './config';
-import { LoggingModule } from './infrastructure/logging';
-import { prepareDataSource } from './infrastructure/persistence';
+import { appLogger } from './infrastructure/logging';
 
 @Module({
   imports: [
@@ -25,7 +26,11 @@ import { prepareDataSource } from './infrastructure/persistence';
       ...prepareDataSource(config),
       autoLoadEntities: true,
     }),
-    LoggingModule,
+    LoggingModule.forRoot({
+      logger: appLogger,
+      appName: config.appName,
+      appVersion: config.appVersion,
+    }),
     HealthModule,
     ProductsModule,
     CollectionsModule,

@@ -1,4 +1,4 @@
-export { type AppErrorBody, AppException } from './app.exception';
+export { type AppErrorBody, AppException, SAMPLE_UUID } from './app.exception';
 export {
   BadRequestException,
   ConflictException,
@@ -11,3 +11,4 @@ export {
   ValidationException,
 } from './http.exceptions';
 export { HttpStatus, type HttpStatusCode } from './http-status';
+export { type FieldValidationError, flattenValidationErrors, type ValidationCode } from './validation-error';

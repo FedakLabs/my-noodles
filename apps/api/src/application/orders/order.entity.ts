@@ -1,6 +1,5 @@
+import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-
-import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Checkout } from '../checkouts/checkout.entity';
 import { VisitorSession } from '../visitor/visitor-session.entity';

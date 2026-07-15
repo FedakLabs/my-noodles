@@ -1,8 +1,9 @@
-import { createContextAwareRepository } from '@my-noodles/api-lib/persistence';
 import { DynamicModule, Module } from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import type { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import type { DataSource } from 'typeorm';
+
+import { createContextAwareRepository } from '../../persistence';
 
 /** Registers context-aware TypeORM repositories for the given entities. */
 @Module({})

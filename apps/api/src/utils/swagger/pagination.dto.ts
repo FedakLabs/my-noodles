@@ -2,7 +2,7 @@ import {
   PaginatedMetaDto,
   PaginationMetaDto as BasePaginationMetaDto,
   PaginationQueryDto,
-} from '@my-noodles/api-lib/utils';
+} from '@my-noodles/api-lib/pagination';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /** Swagger-visible pagination query params (validators inherited from api-lib). */

@@ -1,9 +1,9 @@
+import { LocaleContext, LocalizedString } from '@my-noodles/api-lib/locale';
 import type { Repository } from 'typeorm';
 
 import { type FeedCommentsService, FeedService, type FeedSessionService } from '@/application/feed';
 import type { Product } from '@/application/products';
 import type { VisitorSession } from '@/application/visitor/visitor-session.entity';
-import { LocaleContext, LocalizedString } from '@/infrastructure/i18n';
 
 import { jest } from '../jest-globals';
 

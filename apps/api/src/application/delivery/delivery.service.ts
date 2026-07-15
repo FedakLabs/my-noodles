@@ -1,8 +1,7 @@
+import { LocalizedString } from '@my-noodles/api-lib/locale';
 import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Logger } from 'winston';
-
-import { LocalizedString } from '@/infrastructure/i18n';
 
 import { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { OrderDelivery } from '../orders/order-delivery.entity';

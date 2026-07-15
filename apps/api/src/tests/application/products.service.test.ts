@@ -1,3 +1,4 @@
+import { LocaleContext, LocalizedString } from '@my-noodles/api-lib/locale';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -5,7 +6,6 @@ import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductNotFoundException, ProductsService } from '@/application/products';
-import { LocaleContext, LocalizedString } from '@/infrastructure/i18n';
 
 import { jest } from '../jest-globals';
 

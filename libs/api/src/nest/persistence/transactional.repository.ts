@@ -1,7 +1,8 @@
-import { TransactionalRepository as TransactionalRepositoryBase } from '@my-noodles/api-lib/persistence';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import type { DataSource } from 'typeorm';
+
+import { TransactionalRepository as TransactionalRepositoryBase } from '../../persistence';
 
 /**
  * Nest DI wrapper around `@my-noodles/api-lib/persistence` `TransactionalRepository`.

@@ -1,3 +1,5 @@
+import { LocaleContext } from '@my-noodles/api-lib/locale';
+
 import { DeliveryCatalogCache } from '@/application/delivery/delivery-catalog.cache';
 import { DeliveryService } from '@/application/delivery/delivery.service';
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
@@ -6,7 +8,6 @@ import { MeestDeliveryAdapter } from '@/application/delivery/providers/meest.ada
 import { NovaPoshtaDeliveryAdapter } from '@/application/delivery/providers/nova-poshta.adapter';
 import { UkrposhtaDeliveryAdapter } from '@/application/delivery/providers/ukrposhta.adapter';
 import { DeliveryMethod, DeliveryProvider } from '@/application/orders';
-import { LocaleContext } from '@/infrastructure/i18n';
 
 import { describe, expect, it, jest } from '../jest-globals';
 

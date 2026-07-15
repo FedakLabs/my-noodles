@@ -2,7 +2,7 @@ import { context, propagation, trace } from '@opentelemetry/api';
 import type { Request } from 'express';
 import type { Logger } from 'winston';
 
-import { CLIENT_ID_BAGGAGE_KEY, CLIENT_ID_HEADER } from '../middlewares/client-baggage';
+import { CLIENT_ID_BAGGAGE_KEY, CLIENT_ID_HEADER } from '../otel/client-baggage';
 
 /** OpenTelemetry severity numbers for manifest `severity.number`. */
 export const MANIFEST_SEVERITY = {

@@ -70,12 +70,13 @@
     "validate": {
       "executor": "nx:run-commands",
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:test",
-          "nx run {projectName}:knip"
+          "pnpm --dir packages/theme format",
+          "pnpm --dir packages/theme lint",
+          "pnpm --dir packages/theme type-check",
+          "pnpm --dir packages/theme test",
+          "knip --config configs/knip/knip.json --workspace packages/theme"
         ],
         "parallel": false
       }

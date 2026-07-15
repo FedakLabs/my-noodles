@@ -1,4 +1,4 @@
-import { LocaleContext, LocalizedString, parseRequestLocale } from '@/infrastructure/i18n';
+import { LocaleContext, LocalizedString, parseRequestLocale } from '@my-noodles/api-lib/locale';
 
 describe('LocalizedString', () => {
   it('resolves value from request locale context', () => {

@@ -1,6 +1,5 @@
+import { TransactionalTypeOrmModule } from '@my-noodles/api-lib/nest';
 import { Module } from '@nestjs/common';
-
-import { TransactionalTypeOrmModule } from '@/infrastructure/persistence';
 
 import { InventoryModule } from '../inventory/inventory.module';
 import { OrderDelivery } from './order-delivery.entity';

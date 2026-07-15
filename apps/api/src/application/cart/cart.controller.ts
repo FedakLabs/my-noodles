@@ -1,3 +1,4 @@
+import { ApiException } from '@my-noodles/api-lib/nest';
 import {
   Body,
   Controller,
@@ -19,6 +20,12 @@ import { LocalizedStorefrontController } from '@/utils/localized-storefront.cont
 
 import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
 import { AddCartItemDto, CartResponseDto, SetCartItemQtyDto } from './cart.dto';
+import {
+  CartItemNotFoundException,
+  CartMaxQuantityReachedException,
+  CartProductNotFoundException,
+  CartProductOutOfStockException,
+} from './cart.exceptions';
 import { CartService } from './cart.service';
 
 @ApiTags('Cart')
@@ -42,6 +49,7 @@ export class CartController extends LocalizedStorefrontController {
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @ApiOperation({ summary: 'Add a product to the cart' })
   @ApiCreatedResponse({ type: CartResponseDto })
+  @ApiException(CartProductNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
   async addItem(
     @Body() dto: AddCartItemDto,
     @Req() req: Request,
@@ -55,6 +63,7 @@ export class CartController extends LocalizedStorefrontController {
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @ApiOperation({ summary: 'Update cart item quantity' })
   @ApiOkResponse({ type: CartResponseDto })
+  @ApiException(CartItemNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
   async setItemQty(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: SetCartItemQtyDto,

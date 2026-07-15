@@ -1,7 +1,6 @@
+import { LocalizedColumn, type LocalizedString } from '@my-noodles/api-lib/locale';
+import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-
-import { LocalizedColumn, type LocalizedString } from '@/infrastructure/i18n';
-import { TimestampEntity, UuidV7PrimaryColumn } from '@/infrastructure/persistence';
 
 import { Product } from '../products/product.entity';
 

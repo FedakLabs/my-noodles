@@ -77,13 +77,19 @@
     },
     "validate": {
       "executor": "nx:run-commands",
+      "dependsOn": [
+        { "projects": "api-clients", "target": "build" },
+        { "projects": "web-lib", "target": "build" },
+        { "projects": "ui", "target": "build" }
+      ],
       "options": {
+        "cwd": ".",
         "commands": [
-          "nx run {projectName}:format",
-          "nx run {projectName}:lint",
-          "nx run {projectName}:type-check",
-          "nx run {projectName}:test",
-          "nx run {projectName}:knip"
+          "pnpm --dir apps/web format",
+          "pnpm --dir apps/web lint",
+          "pnpm --dir apps/web type-check",
+          "pnpm --dir apps/web test",
+          "knip --config configs/knip/knip.json --workspace apps/web"
         ],
         "parallel": false
       }

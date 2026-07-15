@@ -1,14 +1,14 @@
+import { ApiException } from '@my-noodles/api-lib/nest';
 import { Body, Controller, Inject, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import {
-  ApiConflictResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
 import { CancelOrderDto, OrderResponseDto } from './orders.dto';
+import {
+  OrderCancelNotAllowedException,
+  OrderInventoryChangedException,
+  OrderNotFoundException,
+} from './orders.exceptions';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -20,8 +20,7 @@ export class OrdersController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Manager cancel — restore stock on submitted orders (new+)' })
   @ApiOkResponse({ type: OrderResponseDto })
-  @ApiNotFoundResponse({ description: 'Order not found' })
-  @ApiConflictResponse({ description: 'Draft or terminal order cannot be cancelled' })
+  @ApiException(OrderNotFoundException, OrderCancelNotAllowedException, OrderInventoryChangedException)
   async cancelOrder(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CancelOrderDto,
