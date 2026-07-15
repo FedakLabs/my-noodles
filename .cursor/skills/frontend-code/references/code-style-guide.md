@@ -206,7 +206,7 @@ return <Content isRefetching={isFetching && !isPending} />;
 
 ## Performance
 
-- ISR/`revalidate` for catalog and product pages per mvp-plan
+- ISR/`revalidate` for catalog and product pages
 - RQ caching — don't refetch on every render
 - Optimize only when measured — no premature `memo` everywhere
 

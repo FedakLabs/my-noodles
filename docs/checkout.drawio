@@ -1,0 +1,903 @@
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="Page-1" id="xj6gHEAyRSLdDMvThIBa">
+    <mxGraphModel dx="4258" dy="1726" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#d6b656;fillColor=#fff2cc;" value="" vertex="1">
+          <mxGeometry height="160" width="210" x="650" y="1540" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-106" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" value="" vertex="1">
+          <mxGeometry height="620" width="370" x="860" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="ucWriluq6hmvRjvZ3AcW-5" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ucWriluq6hmvRjvZ3AcW-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="100" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-52" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: sans-serif; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: pre; background-color: rgb(254, 254, 254); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;User opens &quot;catalog&quot;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="210" x="80" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-10" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-8" value="Ні">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-1" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-13" value="Так">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-5" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;" value="Є сесія (раніше заходив користувач)?" vertex="1">
+          <mxGeometry height="80" width="120" x="335" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-2" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="340" />
+              <mxPoint x="395" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Створюємо нову сесію&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="510" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-19" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-17" value="Ні">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-3" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-20" value="Так">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-13" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;" value="Є корзина?" vertex="1">
+          <mxGeometry height="50" width="120" x="335" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-22" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="525" />
+              <mxPoint x="395" y="525" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-17" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Створюється нова корзина&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="160" x="520" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-24" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="9RjEY3plZiIi9rGLWmET-23" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Вибір товару&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="230" x="280" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-26" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-27">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="395" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Спроба додати товари у корзину&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="230" x="280" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-31" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-30" value="Ні">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-34" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="9RjEY3plZiIi9rGLWmET-33" value="Так">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-27" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Чи є &lt;b&gt;available&lt;/b&gt;&amp;nbsp;кількість товарів на складі?" vertex="1">
+          <mxGeometry height="70" width="150" x="320" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-32" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-30" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Показуємо помилку про недостатню кількість" vertex="1">
+          <mxGeometry height="60" width="180" x="647" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-38" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-47">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="395" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Товар додано до корзини" vertex="1">
+          <mxGeometry height="60" width="120" x="335" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-36" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="Видно всі додані раніше товари" vertex="1">
+          <mxGeometry height="50" width="170" x="470" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-41" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-39">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="370" y="1005" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-44" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-43">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="395" y="1030" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-40" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="70" y="1005" />
+              <mxPoint x="70" y="595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-39" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Продовжити вибір товарів" vertex="1">
+          <mxGeometry height="60" width="180" x="120" y="975" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-48" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="9RjEY3plZiIi9rGLWmET-46" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-43" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Відкрити корзину" vertex="1">
+          <mxGeometry height="60" width="120" x="335" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-56" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-55" value="Ні">
+          <mxGeometry relative="1" x="-0.2727" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-46" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;" value="Є активне оформлення замовлення?" vertex="1">
+          <mxGeometry height="70" width="150" x="320" y="1170" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-47" parent="1" style="points=[[0.25,0.25,0],[0.5,0,0],[0.75,0.25,0],[1,0.5,0],[0.75,0.75,0],[0.5,1,0],[0.25,0.75,0],[0,0.5,0]];shape=mxgraph.bpmn.gateway2;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;align=center;perimeter=rhombusPerimeter;outlineConnect=0;outline=none;symbol=none;gwType=exclusive;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="370" y="980" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-49" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="status=&quot;pending&quot; &amp;amp; Date.now &amp;lt; expires_at" vertex="1">
+          <mxGeometry height="50" width="285" x="455" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-50" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="available = total - in_&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(102, 102, 0), rgb(162, 162, 74));&quot;&gt;checkout&lt;/span&gt;" vertex="1">
+          <mxGeometry height="50" width="170" x="140" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-53" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-51" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;User opens &quot;feed&quot;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="210" x="485" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-65" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="9RjEY3plZiIi9rGLWmET-58" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-66" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-68" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-67">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-54" parent="1" style="points=[[0.25,0.25,0],[0.5,0,0],[0.75,0.25,0],[1,0.5,0],[0.75,0.75,0],[0.5,1,0],[0.25,0.75,0],[0,0.5,0]];shape=mxgraph.bpmn.gateway2;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;align=center;perimeter=rhombusPerimeter;outlineConnect=0;outline=none;symbol=none;gwType=exclusive;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="522.5" y="1342.5" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Оформлити &lt;br/&gt;замовлення&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="165" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-57" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-54" value="Так">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-58" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; white-space: pre;&quot;&gt;&lt;font face=&quot;sans-serif&quot;&gt;Продовжити &lt;br&gt;активне оформлення&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="487.5" y="1440" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-59" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Скасувати оформлення &lt;br&gt;замовлення&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot;font-family: Helvetica; text-align: center; white-space: normal; background-color: rgb(236, 236, 236);&quot;&gt;status=&quot;cenceled&quot;&lt;/span&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="80" width="150" x="785" y="1440" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-67" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" value="&lt;span style=&quot;font-family: sans-serif; white-space: pre;&quot;&gt;Продовжити &lt;/span&gt;&lt;br style=&quot;font-family: sans-serif; white-space: pre;&quot;&gt;&lt;span style=&quot;font-family: sans-serif; white-space: pre;&quot;&gt;активне оформлення з &lt;br&gt;додаванням товарів &lt;br&gt;з корзини&lt;/span&gt;" vertex="1">
+          <mxGeometry height="75" width="135" x="310" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-70" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="canceled_reason=&quot;expired&quot;" vertex="1">
+          <mxGeometry height="60" width="145" x="915" y="1575" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-80" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-73" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-82" value="Ні">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-85" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-73" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-84" value="Так">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-73" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Чи є &lt;b&gt;available&lt;/b&gt; товарів на складі? (з корзини)" vertex="1">
+          <mxGeometry height="70" width="150" x="150" y="1430" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-77" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-74" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-73">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-74" parent="1" style="points=[[0.25,0.25,0],[0.5,0,0],[0.75,0.25,0],[1,0.5,0],[0.75,0.75,0],[0.5,1,0],[0.25,0.75,0],[0,0.5,0]];shape=mxgraph.bpmn.gateway2;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;align=center;perimeter=rhombusPerimeter;outlineConnect=0;outline=throwing;symbol=general;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="200" y="1342.5" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-75" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-74">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-76" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-67" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-74">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-81" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-79" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-43">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="20" y="1100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-79" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Показуємо помилку про недостатню кількість і оновлюємо деталі корзини" vertex="1">
+          <mxGeometry height="60" width="180" x="-70" y="1175" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-83" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-82" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-79">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-82" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Оновлюємо кількість/прибираємо товар до рівня доступності" vertex="1">
+          <mxGeometry height="60" width="180" x="-70" y="1297.5" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-84" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="checkout.status=&quot;pending&quot;&lt;div&gt;order.status=&quot;draft&quot;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="175" x="137.5" y="1540" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-86" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="Видно всі раніше додані товари" vertex="1">
+          <mxGeometry height="50" width="285" x="460" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-92" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-90">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-87" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Ввести деталі отримувача" vertex="1">
+          <mxGeometry height="60" width="120" x="165" y="1750" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-89" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="На кожне введене поле одразу зберігаємо його в БД (щоб потім допродати залишені оформлення)" vertex="1">
+          <mxGeometry height="50" width="285" x="275" y="1730" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-93" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-90" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-91">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-90" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Ввести деталі доставки" vertex="1">
+          <mxGeometry height="60" width="120" x="165" y="1840" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-96" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-91" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-94">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-91" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Ознайомитися з фінальними підсумками (доставка, товари, сума замовлення)" vertex="1">
+          <mxGeometry height="90" width="135" x="157.5" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-97" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-94" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-95">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-94" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-family: sans-serif; text-align: start; white-space: pre; background-color: rgb(254, 254, 254);&quot;&gt;Підтвердити оформлення&lt;/span&gt;" vertex="1">
+          <mxGeometry height="50" width="152.5" x="148.75" y="2050" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-102" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-95" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-101" value="Ні">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-105" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-95" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-104">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-95" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Чи є &lt;b&gt;available&lt;/b&gt; товарів на складі? (які бажані в замовленні)" vertex="1">
+          <mxGeometry height="70" width="150" x="150" y="2160" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-98" parent="1" style="shape=note;strokeWidth=2;fontSize=14;size=20;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#666600;" value="Товари що вже є в checkout якби заброньовані, але додаткова перевірка на випадок якщо в офлайн було продано щось (поза системою)" vertex="1">
+          <mxGeometry height="80" width="317.5" x="290" y="2110" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-103" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-99" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-91">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-99" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Показуємо помилку про недостатню кількість і оновлюємо деталі оформлення" vertex="1">
+          <mxGeometry height="60" width="200" x="-80" y="1945" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-100" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-101" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-99">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-101" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" value="Оновлюємо кількість/прибираємо товар до рівня доступності" vertex="1">
+          <mxGeometry height="60" width="180" x="-70" y="2106.25" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-104" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="checkout.status=&quot;completed&quot;&lt;div&gt;order.status=&quot;new&quot;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="215" x="117.5" y="2270" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-109" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-107" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-108">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-107" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Кожні 10 секунд" vertex="1">
+          <mxGeometry height="60" width="120" x="985" y="1109" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-122" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-108" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-59">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1045" y="1480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-108" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Отримати всі оформлення&lt;div&gt;status=&quot;pending&quot; &amp;amp; expires_at &amp;lt; Date.now&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="260" x="915" y="1220" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-8" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-111" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-114">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-9" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-111" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-70">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-111" parent="1" style="points=[[0.25,0.25,0],[0.5,0,0],[0.75,0.25,0],[1,0.5,0],[0.75,0.75,0],[0.5,1,0],[0.25,0.75,0],[0,0.5,0]];shape=mxgraph.bpmn.gateway2;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;align=center;perimeter=rhombusPerimeter;outlineConnect=0;outline=none;symbol=none;gwType=exclusive;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="835" y="1580" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-114" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="canceled_reason=&quot;user&quot;" vertex="1">
+          <mxGeometry height="60" width="145" x="662.5" y="1575" as="geometry" />
+        </mxCell>
+        <mxCell id="9RjEY3plZiIi9rGLWmET-124" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="9RjEY3plZiIi9rGLWmET-111">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-6" edge="1" parent="1" source="VEDHq-qNevo-SeIfgCGm-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9RjEY3plZiIi9rGLWmET-87">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-4" parent="1" style="points=[[0.25,0.25,0],[0.5,0,0],[0.75,0.25,0],[1,0.5,0],[0.75,0.75,0],[0.5,1,0],[0.25,0.75,0],[0,0.5,0]];shape=mxgraph.bpmn.gateway2;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;align=center;perimeter=rhombusPerimeter;outlineConnect=0;outline=throwing;symbol=general;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="200" y="1640" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-5" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="VEDHq-qNevo-SeIfgCGm-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-7" edge="1" parent="1" source="9RjEY3plZiIi9rGLWmET-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="VEDHq-qNevo-SeIfgCGm-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="1470" />
+              <mxPoint x="390" y="1665" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-11" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Скасовано користувачем" vertex="1">
+          <mxGeometry height="30" width="160" x="650" y="1670" as="geometry" />
+        </mxCell>
+        <mxCell id="VEDHq-qNevo-SeIfgCGm-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Скасовано через протермінування" vertex="1">
+          <mxGeometry height="30" width="200" x="1030" y="1670" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="Yln7od_mFTYPqp8T-oqm" name="Page-2">
+    <mxGraphModel dx="4804" dy="2416" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;flowchart TD\n    Start([Користувач на сайті]) --&gt; CheckSession{Є сесія?}\n    CheckSession -- Ні --&gt; CreateSession[Створити сесію]\n    CheckSession -- Так --&gt; GetCart[Отримати корзину]\n    CreateSession --&gt; GetCart\n    \n    GetCart --&gt; CheckCart{Корзина існує?}\n    CheckCart -- Ні --&gt; NewCart[Створити нову корзину]\n    CheckCart -- Так --&gt; ShowCart[Відобразити корзину]\n    NewCart --&gt; ShowCart\n    \n    ShowCart --&gt; Browse{Вибір товарів}\n    Browse --&gt; Catalog[Каталог товарів]\n    Browse --&gt; Feed[Стрічка товарів]\n    \n    Catalog --&gt; AddToCart[Додати товар]\n    Feed --&gt; AddToCart\n    \n    AddToCart --&gt; CheckInv{Доступно в інвентарі?}\n    CheckInv -- Ні --&gt; ErrorInv[Помилка: недостатньо товару]\n    CheckInv -- Так --&gt; UpdateCart[Товар додано до корзини]\n    ErrorInv --&gt; ShowCart\n    UpdateCart --&gt; ShowCart\n    \n    ShowCart --&gt; OpenCheckout[Відкрити деталі корзини]\n    \n    OpenCheckout --&gt; HasPending{Є активне замовлення?}\n    HasPending -- Так --&gt; PendingOptions{Вибір дії}\n    PendingOptions --&gt;|aa| Continue[Продовжити дооформлення]\n    PendingOptions --&gt;|ab| Merge[Додати товари до замовлення]\n    PendingOptions --&gt;|ac| Cancel[Скасувати оформлення]\n    \n    HasPending -- Ні --&gt; StartCheckout[Почати оформлення]\n    \n    StartCheckout --&gt; CheckStock[Перевірка доступності]\n    CheckStock --&gt; StockResult{Достатньо?}\n    StockResult -- Ні --&gt; ErrorStock[Помилка: змінилася кількість]\n    ErrorStock --&gt; ShowCart\n    StockResult -- Так --&gt; CreateOrder[Створити оформлення]\n    \n    CreateOrder --&gt; FillDetails[Введення деталей: отримувач, доставка, оплата]\n    FillDetails --&gt; Confirm[Підтвердити оформлення]\n    Confirm --&gt; FinalCheck{Перевірка складу}\n    \n    FinalCheck -- Зміни --&gt; ErrorFinal[Помилка: кількість змінилася]\n    ErrorFinal --&gt; FillDetails\n    FinalCheck -- OK --&gt; Success[Замовлення створено: status=new]\n    \n    Cancel --&gt; ReturnToCart[Товари повернуто в корзину]\n    ReturnToCart --&gt; ShowCart\n    \n    subgraph Background\n    Clock[Clock Ticking] --&gt; ExpireCheck{status=pending &amp; expired?}\n    ExpireCheck -- Так --&gt; AutoCancel[status=canceled, reason=expired]\n    end&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="H4icGwtAyobcz7qWVbl4-1">
+          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=20;" vertex="1">
+            <mxGeometry as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Background" mermaidId="n:Background" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Background" id="H4icGwtAyobcz7qWVbl4-2">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="383" width="1124" x="91" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Clock Ticking" mermaidId="n:Clock" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Clock Ticking" id="H4icGwtAyobcz7qWVbl4-3">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-2" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="154" x="35" y="177" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="status=pending &amp; expired?" mermaidId="n:ExpireCheck" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="status=pending &amp; expired?" id="H4icGwtAyobcz7qWVbl4-4">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-2" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="318" width="318" x="319" y="45" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="status=canceled, reason=expired" mermaidId="n:AutoCancel" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="status=canceled, reason=expired" id="H4icGwtAyobcz7qWVbl4-5">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-2" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="296" x="793" y="177" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Clock-&gt;ExpireCheck#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.5;entryX=0;entryY=0.5;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-6">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-2" source="H4icGwtAyobcz7qWVbl4-3" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.5;entryX=0;entryY=0.5;rounded=0;" target="H4icGwtAyobcz7qWVbl4-4">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:ExpireCheck-&gt;AutoCancel#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.5;entryX=0;entryY=0.5;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-7">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-2" source="H4icGwtAyobcz7qWVbl4-4" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.5;entryX=0;entryY=0.5;rounded=0;" target="H4icGwtAyobcz7qWVbl4-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Користувач на сайті" mermaidId="n:Start" mermaidBaseStyle="html=1;rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Користувач на сайті" id="H4icGwtAyobcz7qWVbl4-8">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="39" width="172" x="1265" y="212" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Є сесія?" mermaidId="n:CheckSession" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Є сесія?" id="H4icGwtAyobcz7qWVbl4-9">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="109" width="109" x="1297" y="473" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Створити сесію" mermaidId="n:CreateSession" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Створити сесію" id="H4icGwtAyobcz7qWVbl4-10">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="174" x="1399" y="651" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Отримати корзину" mermaidId="n:GetCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Отримати корзину" id="H4icGwtAyobcz7qWVbl4-11">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="196" x="1253" y="755" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Корзина існує?" mermaidId="n:CheckCart" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Корзина існує?" id="H4icGwtAyobcz7qWVbl4-12">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="190" width="190" x="1256" y="859" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Створити нову корзину" mermaidId="n:NewCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Створити нову корзину" id="H4icGwtAyobcz7qWVbl4-13">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="230" x="1399" y="1119" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Відобразити корзину" mermaidId="n:ShowCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Відобразити корзину" id="H4icGwtAyobcz7qWVbl4-14">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="214" x="1244" y="1223" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Вибір товарів" mermaidId="n:Browse" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Вибір товарів" id="H4icGwtAyobcz7qWVbl4-15">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="174" width="174" x="154" y="1327" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Каталог товарів" mermaidId="n:Catalog" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Каталог товарів" id="H4icGwtAyobcz7qWVbl4-16">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="177" x="40" y="1669" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Стрічка товарів" mermaidId="n:Feed" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Стрічка товарів" id="H4icGwtAyobcz7qWVbl4-17">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="174" x="460" y="1669" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Додати товар" mermaidId="n:AddToCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Додати товар" id="H4icGwtAyobcz7qWVbl4-18">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="160" x="161" y="1942" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Доступно в інвентарі?" mermaidId="n:CheckInv" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Доступно в інвентарі?" id="H4icGwtAyobcz7qWVbl4-19">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="274" width="274" x="104" y="2097" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Помилка: недостатньо товару" mermaidId="n:ErrorInv" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Помилка: недостатньо товару" id="H4icGwtAyobcz7qWVbl4-20">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="281" x="663" y="2486" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Товар додано до корзини" mermaidId="n:UpdateCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Товар додано до корзини" id="H4icGwtAyobcz7qWVbl4-21">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="249" x="1248" y="2486" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Відкрити деталі корзини" mermaidId="n:OpenCheckout" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Відкрити деталі корзини" id="H4icGwtAyobcz7qWVbl4-22">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="242" x="1122" y="1387" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Є активне замовлення?" mermaidId="n:HasPending" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Є активне замовлення?" id="H4icGwtAyobcz7qWVbl4-23">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="290" width="290" x="1098" y="1551" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Вибір дії" mermaidId="n:PendingOptions" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Вибір дії" id="H4icGwtAyobcz7qWVbl4-24">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="118" width="118" x="827" y="1910" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Продовжити дооформлення" mermaidId="n:Continue" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Продовжити дооформлення" id="H4icGwtAyobcz7qWVbl4-25">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="267" x="428" y="2207" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Додати товари до замовлення" mermaidId="n:Merge" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Додати товари до замовлення" id="H4icGwtAyobcz7qWVbl4-26">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="283" x="745" y="2207" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Скасувати оформлення" mermaidId="n:Cancel" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Скасувати оформлення" id="H4icGwtAyobcz7qWVbl4-27">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="233" x="1784" y="2207" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Почати оформлення" mermaidId="n:StartCheckout" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Почати оформлення" id="H4icGwtAyobcz7qWVbl4-28">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="210" x="1516" y="1942" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Перевірка доступності" mermaidId="n:CheckStock" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Перевірка доступності" id="H4icGwtAyobcz7qWVbl4-29">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="227" x="1507" y="2207" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Достатньо?" mermaidId="n:StockResult" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Достатньо?" id="H4icGwtAyobcz7qWVbl4-30">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="147" width="147" x="1547" y="2440" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Помилка: змінилася кількість" mermaidId="n:ErrorStock" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Помилка: змінилася кількість" id="H4icGwtAyobcz7qWVbl4-31">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="280" x="1873" y="2656" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Створити оформлення" mermaidId="n:CreateOrder" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Створити оформлення" id="H4icGwtAyobcz7qWVbl4-32">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="226" x="1504" y="2710" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Введення деталей: отримувач, доставка, оплата" mermaidId="n:FillDetails" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Введення деталей: отримувач, доставка, оплата" id="H4icGwtAyobcz7qWVbl4-33">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="421" x="1406" y="2814" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Підтвердити оформлення" mermaidId="n:Confirm" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Підтвердити оформлення" id="H4icGwtAyobcz7qWVbl4-34">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="250" x="1412" y="2918" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Перевірка складу" mermaidId="n:FinalCheck" mermaidBaseStyle="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Перевірка складу" id="H4icGwtAyobcz7qWVbl4-35">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="rhombus;html=1;strokeWidth=1;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="224" width="224" x="1425" y="3022" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Помилка: кількість змінилася" mermaidId="n:ErrorFinal" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Помилка: кількість змінилася" id="H4icGwtAyobcz7qWVbl4-36">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="280" x="1477" y="3315" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Замовлення створено: status=new" mermaidId="n:Success" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Замовлення створено: status=new" id="H4icGwtAyobcz7qWVbl4-37">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="312" x="1807" y="3315" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Товари повернуто в корзину" mermaidId="n:ReturnToCart" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Товари повернуто в корзину" id="H4icGwtAyobcz7qWVbl4-38">
+          <mxCell parent="H4icGwtAyobcz7qWVbl4-1" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="54" width="271" x="1841" y="2486" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Start-&gt;CheckSession#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-39">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-8" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-9">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Ні" mermaidId="e:CheckSession-&gt;CreateSession#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.83;entryX=0.5;entryY=0;" mermaidBaseValue="Ні" id="H4icGwtAyobcz7qWVbl4-40">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-9" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.83;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-10">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1486" y="617" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:CheckSession-&gt;GetCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-41">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-9" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-11">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:CreateSession-&gt;GetCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.86;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-42">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-10" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.86;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-11">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1486" y="730" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:GetCart-&gt;CheckCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-43">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-11" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-12">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Ні" mermaidId="e:CheckCart-&gt;NewCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.9;entryX=0.5;entryY=0;" mermaidBaseValue="Ні" id="H4icGwtAyobcz7qWVbl4-44">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-12" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.9;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-13">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1514" y="1084" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:CheckCart-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-45">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-12" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:NewCart-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.9;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-46">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-13" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.9;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1514" y="1198" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ShowCart-&gt;Browse#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.59;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-47">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-14" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.59;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-15">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="241" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Browse-&gt;Catalog#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-48">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-15" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-16">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="129" y="1526" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Browse-&gt;Feed#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.68;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-49">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-15" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.68;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-17">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="547" y="1526" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Catalog-&gt;AddToCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.3;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-50">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-16" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.3;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-18">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="129" y="1875" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Feed-&gt;AddToCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=1;entryY=0.04;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-51">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-17" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=1;entryY=0.04;rounded=0;" target="H4icGwtAyobcz7qWVbl4-18">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="547" y="1875" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:AddToCart-&gt;CheckInv#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-52">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-18" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-19">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Ні" mermaidId="e:CheckInv-&gt;ErrorInv#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0;entryY=0;" mermaidBaseValue="Ні" id="H4icGwtAyobcz7qWVbl4-53">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-19" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-20">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="241" y="2405" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:CheckInv-&gt;UpdateCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.59;entryX=0.34;entryY=0;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-54">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-19" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.59;entryX=0.34;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-21">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1210" y="2405" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ErrorInv-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.73;exitY=0;entryX=0;entryY=0.85;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-55">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-20" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.73;exitY=0;entryX=0;entryY=0.85;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1063" y="2405" />
+                <mxPoint x="1063" y="2234" />
+                <mxPoint x="1063" y="2063" />
+                <mxPoint x="1063" y="1969" />
+                <mxPoint x="1063" y="1875" />
+                <mxPoint x="1063" y="1696" />
+                <mxPoint x="1063" y="1526" />
+                <mxPoint x="1063" y="1414" />
+                <mxPoint x="1063" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:UpdateCart-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.55;exitY=0;entryX=0.67;entryY=1;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-56">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-21" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.55;exitY=0;entryX=0.67;entryY=1;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1423" y="2405" />
+                <mxPoint x="1423" y="2234" />
+                <mxPoint x="1423" y="2063" />
+                <mxPoint x="1423" y="1969" />
+                <mxPoint x="1423" y="1875" />
+                <mxPoint x="1423" y="1696" />
+                <mxPoint x="1423" y="1526" />
+                <mxPoint x="1423" y="1414" />
+                <mxPoint x="1423" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ShowCart-&gt;OpenCheckout#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.24;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-57">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-14" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.24;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-22">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1243" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:OpenCheckout-&gt;HasPending#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-58">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-22" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-23">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:HasPending-&gt;PendingOptions#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.75;entryX=0.51;entryY=0;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-59">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-23" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.75;entryX=0.51;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-24">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="887" y="1875" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="aa" mermaidId="e:PendingOptions-&gt;Continue#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.64;entryX=0.5;entryY=0;" mermaidBaseValue="aa" id="H4icGwtAyobcz7qWVbl4-60">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-24" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0;exitY=0.64;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-25">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="562" y="2063" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="ab" mermaidId="e:PendingOptions-&gt;Merge#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.51;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="ab" id="H4icGwtAyobcz7qWVbl4-61">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-24" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.51;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-26">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="ac" mermaidId="e:PendingOptions-&gt;Cancel#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.54;entryX=0.5;entryY=0;" mermaidBaseValue="ac" id="H4icGwtAyobcz7qWVbl4-62">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-24" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.54;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-27">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1901" y="2063" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Ні" mermaidId="e:HasPending-&gt;StartCheckout#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.73;entryX=0.5;entryY=0;" mermaidBaseValue="Ні" id="H4icGwtAyobcz7qWVbl4-63">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-23" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.73;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-28">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1621" y="1875" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:StartCheckout-&gt;CheckStock#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-64">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-28" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-29">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:CheckStock-&gt;StockResult#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-65">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-29" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-30">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Ні" mermaidId="e:StockResult-&gt;ErrorStock#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0;entryY=0.09;" mermaidBaseValue="Ні" id="H4icGwtAyobcz7qWVbl4-66">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-30" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0;entryY=0.09;rounded=0;" target="H4icGwtAyobcz7qWVbl4-31">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1621" y="2621" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ErrorStock-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.71;exitY=0;entryX=1;entryY=0.63;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-67">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-31" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.71;exitY=0;entryX=1;entryY=0.63;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2148" y="2621" />
+                <mxPoint x="2148" y="2513" />
+                <mxPoint x="2148" y="2405" />
+                <mxPoint x="2148" y="2234" />
+                <mxPoint x="2148" y="2063" />
+                <mxPoint x="2148" y="1969" />
+                <mxPoint x="2148" y="1875" />
+                <mxPoint x="2148" y="1696" />
+                <mxPoint x="2148" y="1526" />
+                <mxPoint x="2148" y="1414" />
+                <mxPoint x="2148" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Так" mermaidId="e:StockResult-&gt;CreateOrder#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.58;entryX=0.5;entryY=0;" mermaidBaseValue="Так" id="H4icGwtAyobcz7qWVbl4-68">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-30" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;exitDx=0;exitDy=0;" target="H4icGwtAyobcz7qWVbl4-32">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1630" y="2620" />
+                <mxPoint x="1590" y="2640" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:CreateOrder-&gt;FillDetails#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-69">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-32" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-33">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:FillDetails-&gt;Confirm#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.4;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-70">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-33" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.4;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-34">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1537" y="2893" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Confirm-&gt;FinalCheck#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-71">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-34" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-35">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Зміни" mermaidId="e:FinalCheck-&gt;ErrorFinal#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.38;entryY=0;" mermaidBaseValue="Зміни" id="H4icGwtAyobcz7qWVbl4-72">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-35" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.38;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-36">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1537" y="3280" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ErrorFinal-&gt;FillDetails#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.75;exitY=0;entryX=0.7;entryY=1;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-73">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-36" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.75;exitY=0;entryX=0.7;entryY=1;rounded=0;" target="H4icGwtAyobcz7qWVbl4-33">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1775" y="3280" />
+                <mxPoint x="1775" y="3134" />
+                <mxPoint x="1775" y="2997" />
+                <mxPoint x="1775" y="2945" />
+                <mxPoint x="1775" y="2893" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="OK" mermaidId="e:FinalCheck-&gt;Success#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.67;entryX=0.5;entryY=0;" mermaidBaseValue="OK" id="H4icGwtAyobcz7qWVbl4-74">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-35" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);html=1;fontSize=16;labelBackgroundColor=light-dark(#E8E8E88D,#2a2a2a8D);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);exitX=1;exitY=0.67;entryX=0.5;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-37">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1963" y="3280" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Cancel-&gt;ReturnToCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.43;entryY=0;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-75">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-27" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.5;exitY=1;entryX=0.43;entryY=0;rounded=0;" target="H4icGwtAyobcz7qWVbl4-38">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1901" y="2405" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:ReturnToCart-&gt;ShowCart#0" mermaidBaseStyle="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.57;exitY=0;entryX=1;entryY=0.65;" mermaidBaseValue="" id="H4icGwtAyobcz7qWVbl4-76">
+          <mxCell edge="1" parent="H4icGwtAyobcz7qWVbl4-1" source="H4icGwtAyobcz7qWVbl4-38" style="curved=1;startArrow=none;endArrow=block;endSize=7;strokeColor=light-dark(#333333,#cccccc);exitX=0.57;exitY=0;entryX=1;entryY=0.65;rounded=0;" target="H4icGwtAyobcz7qWVbl4-14">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2052" y="2405" />
+                <mxPoint x="2052" y="2234" />
+                <mxPoint x="2052" y="2063" />
+                <mxPoint x="2052" y="1969" />
+                <mxPoint x="2052" y="1875" />
+                <mxPoint x="2052" y="1696" />
+                <mxPoint x="2052" y="1526" />
+                <mxPoint x="2052" y="1414" />
+                <mxPoint x="2052" y="1302" />
+              </Array>
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

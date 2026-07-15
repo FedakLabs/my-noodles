@@ -104,7 +104,7 @@ Setup checklist:
 
 ### Pagination (`src/utils/pagination.ts`)
 
-Shared query + response shape for all paginated list endpoints (mvp-plan: `page` + **`limit` required**, max 100).
+Shared query + response shape for all paginated list endpoints
 
 **Query** — extend `PaginationQueryDto` on list query DTOs:
 

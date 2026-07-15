@@ -2,7 +2,7 @@
 
 Food-discovery store for imported snacks. We sell **discovery**, not a product grid.
 
-**Read first:** [VISION.md](./VISION.md) — the north star for every feature, screen, and line of code.
+**Read first:** [docs/VISION.md](./docs/VISION.md) — the north star for every feature, screen, and line of code.
 
 ## Litmus test (apply before every change)
 
@@ -48,10 +48,3 @@ Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v
 - **Plumbing:** monorepo setup, linting, API shape, DB schema — necessary, but always in service of the experience above.
 
 When trade-offs arise, choose the option that better serves the litmus test, even if it costs more implementation effort.
-
-## Key references
-
-| Document                               | Purpose                                                           |
-| -------------------------------------- | ----------------------------------------------------------------- |
-| [VISION.md](./VISION.md)               | Why we exist, who we serve, experience promise, what we are _not_ |
-| [docs/mvp-plan.md](./docs/mvp-plan.md) | MVP scope, technical decisions, implementation phases             |
