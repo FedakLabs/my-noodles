@@ -263,7 +263,7 @@ Framework-agnostic — **not** Nest `HttpException` subclasses. Body shape for e
 
 ```ts
 {
-  (status, identifier, message, payload);
+  (status, code, message, payload);
 }
 ```
 
@@ -696,7 +696,7 @@ Global `@nestjs/throttler` (~60 req/min per IP) + tighter limit on sensitive rou
 async create(@Body() dto: CreateOrderDto) { ... }
 ```
 
-On limit exceeded, Nest returns 429 — `ExceptionsFilter` maps it to `TooManyRequestsException` (`identifier: 'too_many_requests'`).
+On limit exceeded, Nest returns 429 — `ExceptionsFilter` maps it to `TooManyRequestsException` (`code: 'too_many_requests'`).
 
 ---
 

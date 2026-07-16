@@ -77,7 +77,7 @@ describe('ExceptionsFilter', () => {
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        identifier: 'internal_server_error',
+        code: 'internal_server_error',
         message: 'Internal server error',
       }),
       HttpStatus.INTERNAL_SERVER_ERROR,
@@ -108,7 +108,7 @@ describe('ExceptionsFilter', () => {
       expect.anything(),
       {
         status: HttpStatus.NOT_FOUND,
-        identifier: 'not_found',
+        code: 'not_found',
         message: 'Not found',
         payload: null,
       },
@@ -164,7 +164,7 @@ describe('ExceptionsFilter', () => {
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        identifier: 'too_many_requests',
+        code: 'too_many_requests',
         status: HttpStatus.TOO_MANY_REQUESTS,
       }),
       HttpStatus.TOO_MANY_REQUESTS,

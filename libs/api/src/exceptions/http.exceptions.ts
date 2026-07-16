@@ -6,20 +6,20 @@ export const SERVICE_UNAVAILABLE_FALLBACK_MESSAGE = 'Internal server error';
 export const SERVER_SIDE_FALLBACK_MESSAGE = 'Internal server error';
 
 export class BadRequestException extends AppException<Record<string, unknown> | null> {
-  constructor(identifier: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.BAD_REQUEST, identifier, message, payload ?? null);
+  constructor(code: string, message: string, payload?: Record<string, unknown>) {
+    super(HttpStatus.BAD_REQUEST, code, message, payload ?? null);
   }
 }
 
 export class NotFoundException extends AppException<Record<string, unknown> | null> {
-  constructor(identifier: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.NOT_FOUND, identifier, message, payload ?? null);
+  constructor(code: string, message: string, payload?: Record<string, unknown>) {
+    super(HttpStatus.NOT_FOUND, code, message, payload ?? null);
   }
 }
 
 export class ConflictException extends AppException<Record<string, unknown> | null> {
-  constructor(identifier: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.CONFLICT, identifier, message, payload ?? null);
+  constructor(code: string, message: string, payload?: Record<string, unknown>) {
+    super(HttpStatus.CONFLICT, code, message, payload ?? null);
   }
 }
 

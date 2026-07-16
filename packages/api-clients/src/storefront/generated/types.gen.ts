@@ -658,14 +658,30 @@ export type CheckoutsControllerStartCheckoutData = {
 
 export type CheckoutsControllerStartCheckoutErrors = {
     /**
-     * Cart is empty
+     * cart_empty
      */
-    400: unknown;
+    400: {
+        status: 400;
+        code: 'cart_empty';
+        message: string;
+        payload: {
+            [key: string]: unknown;
+        } | null;
+    };
     /**
-     * Inventory changed since cart was loaded
+     * cart_inventory_changed
      */
-    409: unknown;
+    409: {
+        status: 409;
+        code: 'cart_inventory_changed';
+        message: string;
+        payload: {
+            [key: string]: unknown;
+        } | null;
+    };
 };
+
+export type CheckoutsControllerStartCheckoutError = CheckoutsControllerStartCheckoutErrors[keyof CheckoutsControllerStartCheckoutErrors];
 
 export type CheckoutsControllerStartCheckoutResponses = {
     201: CheckoutStartDto;
@@ -684,10 +700,31 @@ export type CheckoutsControllerCancelCheckoutData = {
 
 export type CheckoutsControllerCancelCheckoutErrors = {
     /**
-     * Checkout not found
+     * checkout_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'checkout_not_found';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
+    /**
+     * checkout_not_in_progress
+     */
+    409: {
+        status: 409;
+        code: 'checkout_not_in_progress';
+        message: string;
+        payload: {
+            checkoutId?: string;
+            status?: string;
+        };
+    };
 };
+
+export type CheckoutsControllerCancelCheckoutError = CheckoutsControllerCancelCheckoutErrors[keyof CheckoutsControllerCancelCheckoutErrors];
 
 export type CheckoutsControllerCancelCheckoutResponses = {
     200: CheckoutDetailDto;
@@ -706,14 +743,38 @@ export type CheckoutsControllerGetCheckoutData = {
 
 export type CheckoutsControllerGetCheckoutErrors = {
     /**
-     * Checkout not found
+     * checkout_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'checkout_not_found';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
     /**
-     * Checkout expired or no longer in progress
+     * checkout_not_in_progress, checkout_expired
      */
-    409: unknown;
+    409: {
+        status: 409;
+        code: 'checkout_not_in_progress';
+        message: string;
+        payload: {
+            checkoutId?: string;
+            status?: string;
+        };
+    } | {
+        status: 409;
+        code: 'checkout_expired';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
 };
+
+export type CheckoutsControllerGetCheckoutError = CheckoutsControllerGetCheckoutErrors[keyof CheckoutsControllerGetCheckoutErrors];
 
 export type CheckoutsControllerGetCheckoutResponses = {
     200: CheckoutDetailDto;
@@ -732,10 +793,38 @@ export type CheckoutsControllerUpdateCheckoutReceiverData = {
 
 export type CheckoutsControllerUpdateCheckoutReceiverErrors = {
     /**
-     * Checkout not found
+     * checkout_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'checkout_not_found';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
+    /**
+     * checkout_not_in_progress, checkout_expired
+     */
+    409: {
+        status: 409;
+        code: 'checkout_not_in_progress';
+        message: string;
+        payload: {
+            checkoutId?: string;
+            status?: string;
+        };
+    } | {
+        status: 409;
+        code: 'checkout_expired';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
 };
+
+export type CheckoutsControllerUpdateCheckoutReceiverError = CheckoutsControllerUpdateCheckoutReceiverErrors[keyof CheckoutsControllerUpdateCheckoutReceiverErrors];
 
 export type CheckoutsControllerUpdateCheckoutReceiverResponses = {
     200: CheckoutDetailDto;
@@ -754,10 +843,38 @@ export type CheckoutsControllerUpdateCheckoutDeliveryData = {
 
 export type CheckoutsControllerUpdateCheckoutDeliveryErrors = {
     /**
-     * Checkout not found
+     * checkout_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'checkout_not_found';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
+    /**
+     * checkout_not_in_progress, checkout_expired
+     */
+    409: {
+        status: 409;
+        code: 'checkout_not_in_progress';
+        message: string;
+        payload: {
+            checkoutId?: string;
+            status?: string;
+        };
+    } | {
+        status: 409;
+        code: 'checkout_expired';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
 };
+
+export type CheckoutsControllerUpdateCheckoutDeliveryError = CheckoutsControllerUpdateCheckoutDeliveryErrors[keyof CheckoutsControllerUpdateCheckoutDeliveryErrors];
 
 export type CheckoutsControllerUpdateCheckoutDeliveryResponses = {
     200: CheckoutDetailDto;
@@ -776,14 +893,45 @@ export type CheckoutsControllerSubmitCheckoutData = {
 
 export type CheckoutsControllerSubmitCheckoutErrors = {
     /**
-     * Checkout not found
+     * checkout_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'checkout_not_found';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    };
     /**
-     * Checkout is not active or expired
+     * checkout_not_in_progress, checkout_expired, order_inventory_changed
      */
-    409: unknown;
+    409: {
+        status: 409;
+        code: 'checkout_not_in_progress';
+        message: string;
+        payload: {
+            checkoutId?: string;
+            status?: string;
+        };
+    } | {
+        status: 409;
+        code: 'checkout_expired';
+        message: string;
+        payload: {
+            checkoutId?: string;
+        };
+    } | {
+        status: 409;
+        code: 'order_inventory_changed';
+        message: string;
+        payload: {
+            [key: string]: unknown;
+        } | null;
+    };
 };
+
+export type CheckoutsControllerSubmitCheckoutError = CheckoutsControllerSubmitCheckoutErrors[keyof CheckoutsControllerSubmitCheckoutErrors];
 
 export type CheckoutsControllerSubmitCheckoutResponses = {
     201: OrderResponseDto;
@@ -842,6 +990,41 @@ export type CartControllerAddItemData = {
     url: '/api/cart/items';
 };
 
+export type CartControllerAddItemErrors = {
+    /**
+     * cart_product_not_found
+     */
+    404: {
+        status: 404;
+        code: 'cart_product_not_found';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    };
+    /**
+     * cart_product_out_of_stock, cart_max_quantity_reached
+     */
+    409: {
+        status: 409;
+        code: 'cart_product_out_of_stock';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    } | {
+        status: 409;
+        code: 'cart_max_quantity_reached';
+        message: string;
+        payload: {
+            productId?: string;
+            maxQty?: number;
+        };
+    };
+};
+
+export type CartControllerAddItemError = CartControllerAddItemErrors[keyof CartControllerAddItemErrors];
+
 export type CartControllerAddItemResponses = {
     201: CartResponseDto;
 };
@@ -884,6 +1067,41 @@ export type CartControllerSetItemQtyData = {
     url: '/api/cart/items/{productId}';
 };
 
+export type CartControllerSetItemQtyErrors = {
+    /**
+     * cart_item_not_found
+     */
+    404: {
+        status: 404;
+        code: 'cart_item_not_found';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    };
+    /**
+     * cart_product_out_of_stock, cart_max_quantity_reached
+     */
+    409: {
+        status: 409;
+        code: 'cart_product_out_of_stock';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    } | {
+        status: 409;
+        code: 'cart_max_quantity_reached';
+        message: string;
+        payload: {
+            productId?: string;
+            maxQty?: number;
+        };
+    };
+};
+
+export type CartControllerSetItemQtyError = CartControllerSetItemQtyErrors[keyof CartControllerSetItemQtyErrors];
+
 export type CartControllerSetItemQtyResponses = {
     200: CartResponseDto;
 };
@@ -901,14 +1119,37 @@ export type OrdersControllerCancelOrderData = {
 
 export type OrdersControllerCancelOrderErrors = {
     /**
-     * Order not found
+     * order_not_found
      */
-    404: unknown;
+    404: {
+        status: 404;
+        code: 'order_not_found';
+        message: string;
+        payload: {
+            orderId?: string;
+        };
+    };
     /**
-     * Draft or terminal order cannot be cancelled
+     * order_cancel_not_allowed, order_inventory_changed
      */
-    409: unknown;
+    409: {
+        status: 409;
+        code: 'order_cancel_not_allowed';
+        message: string;
+        payload: {
+            status?: string;
+        };
+    } | {
+        status: 409;
+        code: 'order_inventory_changed';
+        message: string;
+        payload: {
+            [key: string]: unknown;
+        } | null;
+    };
 };
+
+export type OrdersControllerCancelOrderError = OrdersControllerCancelOrderErrors[keyof OrdersControllerCancelOrderErrors];
 
 export type OrdersControllerCancelOrderResponses = {
     200: OrderResponseDto;

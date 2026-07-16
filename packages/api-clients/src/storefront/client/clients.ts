@@ -10,7 +10,7 @@ export type StorefrontApiOptions = {
 
 type AppErrorBody = {
   status: number;
-  identifier: string;
+  code: string;
   message: string;
   payload?: unknown;
 };
@@ -21,9 +21,7 @@ function isAppErrorBody(value: unknown): value is AppErrorBody {
   }
 
   const body = value as Partial<AppErrorBody>;
-  return (
-    typeof body.status === 'number' && typeof body.identifier === 'string' && typeof body.message === 'string'
-  );
+  return typeof body.status === 'number' && typeof body.code === 'string' && typeof body.message === 'string';
 }
 
 function toApiError(error: unknown, response?: Response): ApiError {
@@ -35,30 +33,24 @@ function toApiError(error: unknown, response?: Response): ApiError {
 
   if (typeof error === 'object' && error !== null) {
     const body = error as {
-      message?: string | string[] | { message?: string; code?: string; identifier?: string };
+      message?: string | string[] | { message?: string; code?: string };
       code?: string;
-      identifier?: string;
       payload?: unknown;
       status?: number;
     };
 
     if (isAppErrorBody(body)) {
-      return new ApiError(body.message, body.status, body.identifier, body.payload ?? null);
+      return new ApiError(body.message, body.status, body.code, body.payload ?? null);
     }
 
     if (typeof body.message === 'object' && body.message !== null && !Array.isArray(body.message)) {
       const nested = body.message;
-      return new ApiError(nested.message ?? 'Request failed', status, nested.identifier ?? nested.code);
+      return new ApiError(nested.message ?? 'Request failed', status, nested.code);
     }
 
     const payload = body.message;
     const message = Array.isArray(payload) ? payload.join(', ') : (payload ?? 'Request failed');
-    const code =
-      typeof body.identifier === 'string'
-        ? body.identifier
-        : typeof body.code === 'string'
-          ? body.code
-          : undefined;
+    const code = typeof body.code === 'string' ? body.code : undefined;
 
     return new ApiError(message, status, code, body.payload);
   }

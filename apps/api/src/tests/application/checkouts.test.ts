@@ -254,7 +254,7 @@ describe('checkouts (e2e)', () => {
     const response = await request(server).get(`/api/checkouts/${checkoutId}`).expect(409);
 
     expect(response.body).toMatchObject({
-      identifier: 'checkout_not_in_progress',
+      code: 'checkout_not_in_progress',
       payload: { checkoutId, status: CheckoutStatus.Cancelled },
     });
   });

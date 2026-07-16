@@ -18,7 +18,7 @@ export function ApiException(...exceptions: DocumentedException[]) {
 
       return ApiResponse({
         status,
-        description: samples.map((sample) => sample.identifier).join(', '),
+        description: samples.map((sample) => sample.code).join(', '),
         content: {
           'application/json': {
             schema:
@@ -26,10 +26,7 @@ export function ApiException(...exceptions: DocumentedException[]) {
                 ? firstSample.toErrorSchema()
                 : { oneOf: samples.map((sample) => sample.toErrorSchema()) },
             examples: Object.fromEntries(
-              samples.map((sample) => [
-                sample.identifier,
-                { summary: sample.message, value: sample.toBody() },
-              ]),
+              samples.map((sample) => [sample.code, { summary: sample.message, value: sample.toBody() }]),
             ),
           },
         },

@@ -303,7 +303,7 @@ function routeRequest(req, res) {
   if (req.method === 'GET' && pathname === `/api/checkouts/${checkoutId}`) {
     if (checkoutDetail.status !== 'in_progress') {
       sendJson(req, res, 409, {
-        identifier: 'checkout_not_in_progress',
+        code: 'checkout_not_in_progress',
         message: 'Checkout is no longer in progress',
         status: 409,
         payload: { checkoutId, status: checkoutDetail.status },

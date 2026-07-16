@@ -4,7 +4,7 @@ export const SAMPLE_UUID = '00000000-0000-4000-8000-000000000001';
 
 export type AppErrorBody<T = null> = Readonly<{
   status: HttpStatusCode;
-  identifier: string;
+  code: string;
   message: string;
   payload: T;
 }>;
@@ -12,21 +12,21 @@ export type AppErrorBody<T = null> = Readonly<{
 /** Framework-agnostic API error — Nest maps and serializes via ExceptionsFilter. */
 export class AppException<T = null> extends Error {
   readonly status: HttpStatusCode;
-  readonly identifier: string;
+  readonly code: string;
   readonly payload: T;
 
-  constructor(status: HttpStatusCode, identifier: string, message: string, payload?: T) {
+  constructor(status: HttpStatusCode, code: string, message: string, payload?: T) {
     super(message);
     this.name = new.target.name;
     this.status = status;
-    this.identifier = identifier;
+    this.code = code;
     this.payload = (payload ?? null) as T;
   }
 
   toBody(): AppErrorBody<T> {
     return {
       status: this.status,
-      identifier: this.identifier,
+      code: this.code,
       message: this.message,
       payload: this.payload,
     };
@@ -36,10 +36,10 @@ export class AppException<T = null> extends Error {
   toErrorSchema(): Record<string, unknown> {
     return {
       type: 'object',
-      required: ['status', 'identifier', 'message', 'payload'],
+      required: ['status', 'code', 'message', 'payload'],
       properties: {
         status: { type: 'integer', enum: [this.status], example: this.status },
-        identifier: { type: 'string', enum: [this.identifier], example: this.identifier },
+        code: { type: 'string', enum: [this.code], example: this.code },
         message: { type: 'string', example: this.message },
         payload: inferSchema(this.payload),
       },

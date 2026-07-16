@@ -1,13 +1,28 @@
-import { ApiError } from '@my-noodles/api-clients/storefront';
+import {
+  ApiError,
+  type CartControllerAddItemError,
+  type CartControllerSetItemQtyError,
+  type CheckoutsControllerCancelCheckoutError,
+  type CheckoutsControllerGetCheckoutError,
+  type CheckoutsControllerStartCheckoutError,
+  type CheckoutsControllerSubmitCheckoutError,
+  type CheckoutsControllerUpdateCheckoutDeliveryError,
+  type CheckoutsControllerUpdateCheckoutReceiverError,
+  type OrdersControllerCancelOrderError,
+} from '@my-noodles/api-clients/storefront';
 
-export type ApiErrorCode =
-  | 'cart_product_out_of_stock'
-  | 'cart_max_quantity_reached'
-  | 'cart_inventory_changed'
-  | 'cart_empty'
-  | 'checkout_expired'
-  | 'checkout_not_in_progress'
-  | 'order_inventory_changed';
+type StorefrontApiError =
+  | CartControllerAddItemError
+  | CartControllerSetItemQtyError
+  | CheckoutsControllerStartCheckoutError
+  | CheckoutsControllerCancelCheckoutError
+  | CheckoutsControllerGetCheckoutError
+  | CheckoutsControllerUpdateCheckoutReceiverError
+  | CheckoutsControllerUpdateCheckoutDeliveryError
+  | CheckoutsControllerSubmitCheckoutError
+  | OrdersControllerCancelOrderError;
+
+export type ApiErrorCode = Extract<StorefrontApiError, { code: string }>['code'];
 
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
