@@ -93,8 +93,8 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   const lastName = useWatch({ control: form.control, name: 'lastName' });
   const phone = useWatch({ control: form.control, name: 'phone' });
   const canSubmitForm = useMemo(
-    () => isCheckoutFormValid(form.getValues(), checkoutSchema),
-    [checkoutSchema, form, watchedValues],
+    () => isCheckoutFormValid(watchedValues as CheckoutFormData, checkoutSchema),
+    [checkoutSchema, watchedValues],
   );
   const receiverComplete = isCheckoutReceiverComplete({ firstName, lastName, phone }, receiverSchema);
   const hydratedCheckoutIdRef = useRef<string | null>(null);

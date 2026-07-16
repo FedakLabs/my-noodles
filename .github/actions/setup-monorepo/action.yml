@@ -5,12 +5,12 @@ runs:
   using: composite
   steps:
     - name: pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
       with:
         version: 11.8.0
 
     - name: Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version: 22
         cache: pnpm
@@ -20,10 +20,10 @@ runs:
       run: pnpm install --frozen-lockfile
 
     - name: Configure nx affected SHAs
-      uses: nrwl/nx-set-shas@v4
+      uses: nrwl/nx-set-shas@v5
 
     - name: Restore Nx cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: .nx/cache
         key: nx-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
