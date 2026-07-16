@@ -8,9 +8,10 @@
     "start": "next start",
     "format": "oxfmt",
     "format-check": "oxfmt --check",
-    "lint": "oxlint --type-aware --fix",
-    "lint-check": "oxlint --type-aware",
-    "type-check": "tsc --noEmit -p tsconfig.json",
+    "typegen": "next typegen",
+    "lint": "pnpm typegen && oxlint --type-aware --fix",
+    "lint-check": "pnpm typegen && oxlint --type-aware",
+    "type-check": "pnpm typegen && tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "e2e": "playwright test",
     "generate:clients": "nx run api-clients:api:generate"
