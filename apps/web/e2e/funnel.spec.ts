@@ -18,7 +18,7 @@ test.describe('discovery funnel', () => {
     await page.goto(`/${e2eLocale}/catalog`, { waitUntil: 'networkidle' });
 
     await expect(page.getByRole('heading', { name: uk.catalog.title })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Pocky Matcha/ }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Pocky Matcha/ })).toBeVisible();
 
     await page.getByTestId('catalog-add-to-cart--pocky-matcha').click();
 

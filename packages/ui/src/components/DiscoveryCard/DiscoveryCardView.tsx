@@ -432,10 +432,14 @@ export function DiscoveryCardView({
   );
 
   const placeholderCard = (
-    <Stack spacing={1.5} sx={{ p: 1.5, visibility: 'hidden', pointerEvents: 'none', height: '100%' }}>
+    <Stack
+      spacing={1.5}
+      aria-hidden
+      sx={{ p: 1.5, visibility: 'hidden', pointerEvents: 'none', height: '100%' }}
+    >
       {placeholderHero}
       <Stack spacing={0.5}>{meta}</Stack>
-      <Box sx={{ mt: 'auto' }}>{actions}</Box>
+      <Box sx={{ flexShrink: 0, width: '100%', mt: 'auto', minHeight: 40 }} />
     </Stack>
   );
 

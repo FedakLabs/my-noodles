@@ -31,8 +31,13 @@ const productDetail = {
   forWhom: 'Matcha lovers',
   flavor: { spice: 0, sweet: 3, texture: 'crispy' },
   allergens: ['milk'],
+  videos: [],
   alternatives: [],
 };
+
+function holdExpiresAt(minutes = 15) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
+}
 
 const productsList = {
   items: [productSummary],
@@ -57,22 +62,7 @@ const emptyCart = {
   currency: 'UAH',
 };
 
-let cart = {
-  items: [
-    {
-      productId,
-      slug: 'pocky-matcha',
-      title: 'Pocky Matcha',
-      priceMinor: 9900,
-      currency: 'UAH',
-      imageUrl: 'https://example.com/pocky.jpg',
-      qty: 1,
-    },
-  ],
-  totalMinor: 9900,
-  itemCount: 1,
-  currency: 'UAH',
-};
+let cart = { ...emptyCart };
 
 const stubCities = [
   { ref: 'city-kyiv', name: 'Київ' },
@@ -105,7 +95,7 @@ function buildDeliveryEstimate(delivery) {
   };
 
   return {
-    estimatedDeliveryAt: '2025-06-22T00:00:00.000Z',
+    estimatedDeliveryAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     estimatedDaysMin: 2,
     estimatedDaysMax: 3,
     shippingCostMinor: providerRates[delivery.provider] ?? 6500,
@@ -123,16 +113,11 @@ const checkoutDetail = {
   firstName: null,
   lastName: null,
   phone: null,
-  items: cart.items.map((item) => ({
-    productId: item.productId,
-    title: item.title,
-    priceMinor: item.priceMinor,
-    qty: item.qty,
-  })),
+  items: [],
   delivery: null,
   deliveryEstimate: null,
-  createdAt: '2025-06-20T10:00:00.000Z',
-  expiresAt: '2025-06-20T10:15:00.000Z',
+  createdAt: new Date().toISOString(),
+  expiresAt: holdExpiresAt(),
 };
 
 function checkoutSummaryFromDetail() {
@@ -148,14 +133,21 @@ function checkoutSummaryFromDetail() {
   };
 }
 
-function sendJson(res, statusCode, body) {
-  res.writeHead(statusCode, {
+function corsHeaders(req) {
+  // Must reflect Origin (not *) when the storefront uses credentials: 'include'.
+  const origin = req.headers.origin ?? 'http://localhost:3000';
+  return {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Accept-Language',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept-Language, x-app-locale',
     'Access-Control-Allow-Credentials': 'true',
-  });
+    Vary: 'Origin',
+  };
+}
+
+function sendJson(req, res, statusCode, body) {
+  res.writeHead(statusCode, corsHeaders(req));
   res.end(JSON.stringify(body));
 }
 
@@ -177,12 +169,7 @@ function parseBody(req) {
 
 function routeRequest(req, res) {
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Accept-Language',
-      'Access-Control-Allow-Credentials': 'true',
-    });
+    res.writeHead(204, corsHeaders(req));
     res.end();
     return;
   }
@@ -191,33 +178,33 @@ function routeRequest(req, res) {
   const { pathname } = url;
 
   if (req.method === 'GET' && pathname === '/api/health/live') {
-    sendJson(res, 200, { status: 'ok' });
+    sendJson(req, res, 200, { status: 'ok' });
     return;
   }
 
   if (req.method === 'GET' && pathname === '/api/products/facets') {
-    sendJson(res, 200, productFacets);
+    sendJson(req, res, 200, productFacets);
     return;
   }
 
   if (req.method === 'GET' && pathname === '/api/products') {
-    sendJson(res, 200, productsList);
+    sendJson(req, res, 200, productsList);
     return;
   }
 
   if (req.method === 'GET' && pathname.startsWith('/api/products/')) {
-    sendJson(res, 200, productDetail);
+    sendJson(req, res, 200, productDetail);
     return;
   }
 
   if (req.method === 'GET' && pathname === '/api/cart') {
-    sendJson(res, 200, cart);
+    sendJson(req, res, 200, cart);
     return;
   }
 
   if (req.method === 'DELETE' && pathname === '/api/cart') {
     cart = { ...emptyCart };
-    sendJson(res, 200, cart);
+    sendJson(req, res, 200, cart);
     return;
   }
 
@@ -240,14 +227,14 @@ function routeRequest(req, res) {
       }
       cart.itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
       cart.totalMinor = cart.items.reduce((sum, item) => sum + item.priceMinor * item.qty, 0);
-      res.setHeader('Set-Cookie', `vsid=${vsid}; Path=/; HttpOnly`);
-      sendJson(res, 201, cart);
+      res.setHeader('Set-Cookie', `vsid=${vsid}; Path=/; HttpOnly; SameSite=Lax`);
+      sendJson(req, res, 201, cart);
     });
     return;
   }
 
   if (req.method === 'GET' && pathname === '/api/delivery/providers') {
-    sendJson(res, 200, [
+    sendJson(req, res, 200, [
       { id: 'nova-poshta', label: 'Нова Пошта' },
       { id: 'meest', label: 'Meest' },
       { id: 'ukrposhta', label: 'Укрпошта' },
@@ -261,14 +248,14 @@ function routeRequest(req, res) {
       query.length >= 2
         ? stubCities.filter((city) => city.name.toLowerCase().includes(query))
         : stubCities.slice(0, 5);
-    sendJson(res, 200, cities);
+    sendJson(req, res, 200, cities);
     return;
   }
 
   if (req.method === 'GET' && pathname === '/api/delivery/warehouses') {
     const cityRef = url.searchParams.get('cityRef') ?? '';
     const warehouses = cityRef.startsWith('city-kyiv') ? stubWarehouses : [];
-    sendJson(res, 200, warehouses);
+    sendJson(req, res, 200, warehouses);
     return;
   }
 
@@ -278,11 +265,12 @@ function routeRequest(req, res) {
       status === 'in_progress'
         ? inProgressCheckouts
         : inProgressCheckouts.filter((checkout) => !status || checkout.status === status);
-    sendJson(res, 200, { items });
+    sendJson(req, res, 200, { items });
     return;
   }
 
   if (req.method === 'POST' && pathname === '/api/checkouts') {
+    const now = new Date().toISOString();
     checkoutDetail.items = cart.items.map((item) => ({
       productId: item.productId,
       title: item.title,
@@ -291,22 +279,30 @@ function routeRequest(req, res) {
     }));
     checkoutDetail.totalMinor = cart.totalMinor;
     checkoutDetail.status = 'in_progress';
+    checkoutDetail.createdAt = now;
+    checkoutDetail.expiresAt = holdExpiresAt();
+    checkoutDetail.firstName = null;
+    checkoutDetail.lastName = null;
+    checkoutDetail.phone = null;
+    checkoutDetail.delivery = null;
+    checkoutDetail.deliveryEstimate = null;
     inProgressCheckouts = [checkoutSummaryFromDetail()];
     cart = { ...emptyCart };
-    sendJson(res, 201, {
+    sendJson(req, res, 201, {
       id: checkoutId,
       orderId,
       status: 'in_progress',
       totalMinor: checkoutDetail.totalMinor,
       currency: checkoutDetail.currency,
       createdAt: checkoutDetail.createdAt,
+      expiresAt: checkoutDetail.expiresAt,
     });
     return;
   }
 
   if (req.method === 'GET' && pathname === `/api/checkouts/${checkoutId}`) {
     if (checkoutDetail.status !== 'in_progress') {
-      sendJson(res, 409, {
+      sendJson(req, res, 409, {
         identifier: 'checkout_not_in_progress',
         message: 'Checkout is no longer in progress',
         status: 409,
@@ -314,7 +310,7 @@ function routeRequest(req, res) {
       });
       return;
     }
-    sendJson(res, 200, checkoutDetail);
+    sendJson(req, res, 200, checkoutDetail);
     return;
   }
 
@@ -329,7 +325,7 @@ function routeRequest(req, res) {
       if (body.phone !== undefined) {
         checkoutDetail.phone = body.phone;
       }
-      sendJson(res, 200, checkoutDetail);
+      sendJson(req, res, 200, checkoutDetail);
     });
     return;
   }
@@ -350,14 +346,14 @@ function routeRequest(req, res) {
         notes: body.notes ?? checkoutDetail.delivery?.notes ?? null,
       };
       checkoutDetail.deliveryEstimate = buildDeliveryEstimate(checkoutDetail.delivery);
-      sendJson(res, 200, checkoutDetail);
+      sendJson(req, res, 200, checkoutDetail);
     });
     return;
   }
 
   if (req.method === 'POST' && pathname === `/api/checkouts/${checkoutId}/submit`) {
     inProgressCheckouts = [];
-    sendJson(res, 201, {
+    sendJson(req, res, 201, {
       id: orderId,
       status: 'new',
       totalMinor: 9900,
@@ -370,11 +366,11 @@ function routeRequest(req, res) {
   if (req.method === 'DELETE' && pathname === `/api/checkouts/${checkoutId}`) {
     inProgressCheckouts = [];
     checkoutDetail.status = 'cancelled';
-    sendJson(res, 200, { ...checkoutDetail, status: 'cancelled' });
+    sendJson(req, res, 200, { ...checkoutDetail, status: 'cancelled' });
     return;
   }
 
-  sendJson(res, 404, { message: 'Not found' });
+  sendJson(req, res, 404, { message: 'Not found' });
 }
 
 const server = createServer(routeRequest);

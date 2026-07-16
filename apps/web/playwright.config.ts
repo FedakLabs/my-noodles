@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const mockApiUrl = 'http://127.0.0.1:3001';
+const mockApiUrl = 'http://localhost:3001';
 const webUrl = 'http://localhost:3000';
 
 // Playwright loads test files in this Node process — not only the Next webServer child.
@@ -28,6 +28,7 @@ export default defineConfig({
       url: webUrl,
       reuseExistingServer: !process.env.CI,
       env: {
+        ...process.env,
         NEXT_PUBLIC_API_URL: mockApiUrl,
         NEXT_PUBLIC_SITE_URL: webUrl,
       },
