@@ -69,6 +69,7 @@ describe('CheckoutsService', () => {
         }),
       ),
     );
+    const checkoutCreate = jest.fn().mockImplementation((entity: object) => entity);
     checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
 
     orderSave = jest.fn().mockImplementation((entity: object) =>
@@ -130,6 +131,7 @@ describe('CheckoutsService', () => {
         findOne: checkoutsFindOne,
         find: checkoutsFind,
         save: checkoutSave,
+        create: checkoutCreate,
         update: checkoutUpdate,
       } as never,
       { save: orderSave, update: orderUpdate, findOne: orderFindOne } as never,
@@ -161,11 +163,7 @@ describe('CheckoutsService', () => {
       expect.objectContaining({
         status: CheckoutStatus.InProgress,
         completedAt: null,
-      }),
-    );
-    expect(checkoutSave).toHaveBeenCalledWith(
-      expect.not.objectContaining({
-        expiresAt: expect.anything(),
+        expiresAt: expect.any(Date),
       }),
     );
   });

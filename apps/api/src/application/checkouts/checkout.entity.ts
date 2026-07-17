@@ -50,7 +50,8 @@ export class Checkout extends TimestampEntity {
 
   @BeforeInsert()
   setDefaultExpiresAt(): void {
-    this.expiresAt ??= new Date(Date.now() + CHECKOUT_HOLD_MS);
+    this.expiresAt = this.expiresAt || new Date(Date.now() + CHECKOUT_HOLD_MS);
+    this.status = this.status || CheckoutStatus.InProgress;
   }
 
   get isExpired(): boolean {

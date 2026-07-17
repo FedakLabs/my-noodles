@@ -5,6 +5,12 @@ import { type HttpAccessLogResource } from './http-access-log';
 import { buildHttpAccessLog, emitManifestLog } from './manifest-log';
 import { getRequestStartTimeMs } from './request-timing';
 
+export type HttpExceptionLogOptions = Readonly<{
+  statusCode?: number;
+  responseBody?: unknown;
+  sanitizedMessage?: string;
+}>;
+
 type HttpStatusException = {
   getStatus: () => number;
 };
@@ -46,14 +52,16 @@ export class HttpExceptionLog {
     return 500;
   }
 
-  log(request: Request, exception: unknown): void {
+  log(request: Request, rawError: unknown, options: HttpExceptionLogOptions = {}): void {
     const startTimeMs = getRequestStartTimeMs(request);
     const record = buildHttpAccessLog({
       request,
-      statusCode: this.resolveStatusCode(exception),
+      statusCode: options.statusCode ?? this.resolveStatusCode(rawError),
       execTimeMs: performance.now() - startTimeMs,
       ...this.resource,
-      error: exception,
+      error: rawError,
+      responseBody: options.responseBody,
+      sanitizedMessage: options.sanitizedMessage,
     });
 
     emitManifestLog(this.logger, record);

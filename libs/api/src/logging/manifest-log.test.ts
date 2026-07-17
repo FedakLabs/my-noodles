@@ -18,7 +18,7 @@ function createRequest(overrides: Partial<Request> = {}): Request {
 describe('buildHttpAccessLog', () => {
   const app = { appName: 'my-noodles-api', appVersion: 'dev' };
 
-  it('builds INFO access log without request/response payloads', () => {
+  it('builds INFO access log with flat attributes and without request/response payloads', () => {
     const record = buildHttpAccessLog({
       request: createRequest(),
       statusCode: 200,
@@ -31,18 +31,17 @@ describe('buildHttpAccessLog', () => {
     expect(record['resource.appName']).toBe('my-noodles-api');
     expect(record['resource.appVersion']).toBe('dev');
     expect(record.body).toBe('GET /api/health 200');
-    expect(record.attributes).toEqual({
-      'attributes.execTime': '12',
-      'attributes.http.requestType': 'ingoing',
-      'attributes.http.method': 'GET',
-      'attributes.http.url': '/api/health',
-      'attributes.http.route': '/health',
-      'attributes.http.queryParams': '',
-      'attributes.http.responseStatus': '200',
-      'attributes.xRealIp': '127.0.0.1',
-    });
-    expect(record.attributes['attributes.http.requestBody']).toBeUndefined();
-    expect(record.attributes['attributes.http.responseBody']).toBeUndefined();
+    expect(record['attributes.execTime']).toBe('12');
+    expect(record['attributes.http.requestType']).toBe('ingoing');
+    expect(record['attributes.http.method']).toBe('GET');
+    expect(record['attributes.http.url']).toBe('/api/health');
+    expect(record['attributes.http.route']).toBe('/health');
+    expect(record['attributes.http.queryParams']).toBe('');
+    expect(record['attributes.http.responseStatus']).toBe('200');
+    expect(record['attributes.xRealIp']).toBe('127.0.0.1');
+    expect(record['attributes.http.requestBody']).toBeUndefined();
+    expect(record['attributes.http.responseBody']).toBeUndefined();
+    expect(record).not.toHaveProperty('attributes');
   });
 
   it('includes query params and route template', () => {
@@ -58,9 +57,9 @@ describe('buildHttpAccessLog', () => {
       ...app,
     });
 
-    expect(record.attributes['attributes.http.url']).toBe('/api/products?limit=25&offset=0');
-    expect(record.attributes['attributes.http.route']).toBe('/api/products/:id');
-    expect(record.attributes['attributes.http.queryParams']).toBe('limit=25&offset=0');
+    expect(record['attributes.http.url']).toBe('/api/products?limit=25&offset=0');
+    expect(record['attributes.http.route']).toBe('/api/products/:id');
+    expect(record['attributes.http.queryParams']).toBe('limit=25&offset=0');
     expect(record.body).toBe('GET /api/products?limit=25&offset=0 404');
   });
 
@@ -106,23 +105,105 @@ describe('buildHttpAccessLog', () => {
       ...app,
     });
 
-    expect(record.attributes['attributes.http.requestBody']).toBe(JSON.stringify(orderPayload));
-    expect(record.attributes['attributes.http.responseBody']).toBeUndefined();
+    expect(record['attributes.http.requestBody']).toBe(JSON.stringify(orderPayload));
+    expect(record['attributes.http.responseBody']).toBeUndefined();
   });
 
-  it('uses INFO for 4xx client errors', () => {
+  it('uses INFO for 4xx client errors, omits error attributes, and keeps responseBody', () => {
+    const responseBody = { status: 404, code: 'not_found', message: 'Not found', payload: null };
     const record = buildHttpAccessLog({
       request: createRequest(),
       statusCode: 404,
       execTimeMs: 2,
       ...app,
+      error: new Error('not found'),
+      responseBody,
     });
 
     expect(record['severity.text']).toBe('INFO');
     expect(record['severity.number']).toBe(9);
+    expect(record['attributes.error.name']).toBeUndefined();
+    expect(record['attributes.error.message']).toBeUndefined();
+    expect(record['attributes.error.stack']).toBeUndefined();
+    expect(record['attributes.error.raw']).toBeUndefined();
+    expect(record['attributes.http.responseBody']).toBe(JSON.stringify(responseBody));
   });
 
-  it('uses ERROR for 5xx with exception details', () => {
+  it('includes responseBody on successful responses', () => {
+    const responseBody = { items: [{ id: '1' }], total: 1 };
+    const record = buildHttpAccessLog({
+      request: createRequest(),
+      statusCode: 200,
+      execTimeMs: 12,
+      ...app,
+      responseBody,
+    });
+
+    expect(record['severity.text']).toBe('INFO');
+    expect(record['attributes.http.responseBody']).toBe(JSON.stringify(responseBody));
+  });
+
+  it('uses ERROR for 5xx with raw exception details and falls back body message to raw', () => {
+    const error = Object.assign(new Error('fk violation'), { code: '23503', constraint: 'users_fkey' });
+    const record = buildHttpAccessLog({
+      request: createRequest(),
+      statusCode: 500,
+      execTimeMs: 2,
+      ...app,
+      error,
+      responseBody: {
+        status: 500,
+        code: 'internal_server_error',
+        message: 'Internal server error',
+        payload: null,
+      },
+    });
+
+    expect(record['severity.text']).toBe('ERROR');
+    expect(record['severity.number']).toBe(17);
+    expect(record.body).toBe('GET /api/health 500 — fk violation');
+    expect(record['attributes.error.name']).toBe('Error');
+    expect(record['attributes.error.message']).toBe('fk violation');
+    expect(record['attributes.error.stack']).toContain('fk violation');
+
+    const raw = JSON.parse(record['attributes.error.raw']!) as Record<string, unknown>;
+    expect(raw.name).toBe('Error');
+    expect(raw.message).toBe('fk violation');
+    expect(raw.code).toBe('23503');
+    expect(raw.constraint).toBe('users_fkey');
+    expect(raw.stack).toEqual(expect.any(String));
+
+    expect(record['attributes.http.responseBody']).toBe(
+      JSON.stringify({
+        status: 500,
+        code: 'internal_server_error',
+        message: 'Internal server error',
+        payload: null,
+      }),
+    );
+  });
+
+  it('uses sanitizedMessage for the body summary line on 5xx', () => {
+    const record = buildHttpAccessLog({
+      request: createRequest(),
+      statusCode: 500,
+      execTimeMs: 2,
+      ...app,
+      error: new Error('fk violation'),
+      sanitizedMessage: 'Internal server error',
+      responseBody: {
+        status: 500,
+        code: 'internal_server_error',
+        message: 'Internal server error',
+        payload: null,
+      },
+    });
+
+    expect(record.body).toBe('GET /api/health 500 — Internal server error');
+    expect(record['attributes.error.message']).toBe('fk violation');
+  });
+
+  it('always includes error.raw for 5xx errors', () => {
     const record = buildHttpAccessLog({
       request: createRequest(),
       statusCode: 500,
@@ -131,11 +212,12 @@ describe('buildHttpAccessLog', () => {
       error: new Error('test'),
     });
 
-    expect(record['severity.text']).toBe('ERROR');
-    expect(record['severity.number']).toBe(17);
-    expect(record.body).toBe('GET /api/health 500 — test');
-    expect(record.attributes['attributes.error.name']).toBe('Error');
-    expect(record.attributes['attributes.error.message']).toBe('test');
+    expect(record['attributes.error.name']).toBe('Error');
+    expect(record['attributes.error.message']).toBe('test');
+
+    const raw = JSON.parse(record['attributes.error.raw']!) as { name: string; message: string };
+    expect(raw.name).toBe('Error');
+    expect(raw.message).toBe('test');
   });
 
   it('adds client and ip attributes when present', () => {
@@ -157,7 +239,7 @@ describe('buildHttpAccessLog', () => {
       ...app,
     });
 
-    expect(record.attributes['attributes.clientId']).toBe('1200997640');
-    expect(record.attributes['attributes.xRealIp']).toBe('91.196.55.1');
+    expect(record['attributes.clientId']).toBe('1200997640');
+    expect(record['attributes.xRealIp']).toBe('91.196.55.1');
   });
 });

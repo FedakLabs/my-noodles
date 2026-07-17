@@ -26,9 +26,6 @@
     "apartment": "Квартира",
     "notes": "Коментар до доставки"
   },
-  "validation": {
-    "invalidPhone": "Введи коректний номер телефону"
-  },
   "sections": {
     "receiver": "Отримувач",
     "delivery": "Доставка",

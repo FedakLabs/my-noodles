@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField';
 import { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
 import { PhoneInput } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import type { CheckoutDetailDto } from '@/api/checkouts';
@@ -46,12 +46,28 @@ type CheckoutFormProps = {
   onHoldExpired: () => void;
 };
 
+function isCheckoutFieldTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (target.closest('[data-testid="checkout-submit"]')) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      'input, textarea, select, [role="combobox"], .MuiInputBase-root, .MuiSelect-select, .MuiAutocomplete-root',
+    ),
+  );
+}
+
 export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFormProps) {
   const t = useTranslations('checkout');
   const tItems = useTranslations('checkout.items');
   const { isDesktop } = useViewport();
   const router = usePendingRouter();
-  const { updateCheckoutReceiver } = useUpdateCheckoutReceiver(checkoutId);
+  const { updateCheckoutReceiver, updateCheckoutReceiverIsPending } = useUpdateCheckoutReceiver(checkoutId);
   const { updateCheckoutDelivery, updateCheckoutDeliveryIsPending } = useUpdateCheckoutDelivery(checkoutId);
   const { submitCheckout, submitCheckoutIsPending, submitCheckoutIsError, submitCheckoutError } =
     useSubmitCheckout(checkoutId);
@@ -60,11 +76,9 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     error: submitCheckoutIsError ? submitCheckoutError : undefined,
   });
   const { trackPurchase } = useAnalyticsActions();
+  const [isFieldFocused, setIsFieldFocused] = useState(false);
 
-  const { receiverSchema, deliverySchema, checkoutSchema } = useMemo(
-    () => createCheckoutSchemas(t('validation.invalidPhone')),
-    [t],
-  );
+  const { receiverSchema, deliverySchema, checkoutSchema } = useMemo(() => createCheckoutSchemas(), []);
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
@@ -99,6 +113,10 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   const receiverComplete = isCheckoutReceiverComplete({ firstName, lastName, phone }, receiverSchema);
   const hydratedCheckoutIdRef = useRef<string | null>(null);
 
+  const isAutosaving = updateCheckoutReceiverIsPending || updateCheckoutDeliveryIsPending;
+  const isSubmitBusy = isAutosaving || submitCheckoutIsPending;
+  const canSubmit = canSubmitForm && !isFieldFocused && !isSubmitBusy && checkout.items.length > 0;
+
   useEffect(() => {
     if (hydratedCheckoutIdRef.current === checkoutId) {
       return;
@@ -108,6 +126,10 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     form.reset(checkoutToFormValues(checkout));
     void form.trigger();
   }, [checkoutId, checkout, form]);
+
+  const syncFieldFocus = () => {
+    setIsFieldFocused(isCheckoutFieldTarget(document.activeElement));
+  };
 
   const autosaveReceiverField = (field: CheckoutReceiverField) => {
     const values = form.getValues();
@@ -132,7 +154,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   };
 
   const submitOrder = (data: CheckoutFormData) => {
-    if (!checkout.items.length) {
+    if (!canSubmit) {
       return;
     }
 
@@ -172,11 +194,9 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
       variant="contained"
       fullWidth
       data-testid="checkout-submit"
-      disabled={submitCheckoutIsPending || !checkout.items.length || !canSubmitForm}
-      aria-busy={submitCheckoutIsPending}
-      startIcon={
-        submitCheckoutIsPending ? <CircularProgress size={22} color="inherit" aria-hidden /> : undefined
-      }
+      disabled={!canSubmit}
+      aria-busy={isSubmitBusy}
+      startIcon={isSubmitBusy ? <CircularProgress size={22} color="inherit" aria-hidden /> : undefined}
     >
       {t('submit')}
     </Button>
@@ -230,15 +250,13 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
         <Controller
           name="phone"
           control={form.control}
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <PhoneInput
               value={field.value}
               onChange={field.onChange}
               size="large"
               label={t('fields.phone')}
               fullWidth
-              error={Boolean(fieldState.error)}
-              helperText={fieldState.error?.message}
               onBlur={() => {
                 field.onBlur();
                 autosaveReceiverField('phone');
@@ -301,6 +319,10 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     <Stack
       component="form"
       spacing={2}
+      onFocusCapture={syncFieldFocus}
+      onBlurCapture={() => {
+        queueMicrotask(syncFieldFocus);
+      }}
       onSubmit={(event) => {
         void onSubmit(event);
       }}

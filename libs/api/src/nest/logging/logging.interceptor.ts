@@ -27,8 +27,8 @@ export class LoggingInterceptor implements NestInterceptor {
     const started = this.accessLog.markRequestStart(request);
 
     return next.handle().pipe(
-      tap(() => {
-        this.accessLog.logSuccess(request, response.statusCode, started);
+      tap((responseBody) => {
+        this.accessLog.logSuccess(request, response.statusCode, started, responseBody);
       }),
     );
   }

@@ -1,6 +1,7 @@
 export { APP_LOGGER } from './app-logger.token';
+export { MAX_ERROR_RAW_LENGTH, serializeErrorForObservability } from './error-serialization';
 export { HttpAccessLog, type HttpAccessLogResource } from './http-access-log';
-export { HttpExceptionLog } from './http-exception-log';
+export { HttpExceptionLog, type HttpExceptionLogOptions } from './http-exception-log';
 export {
   buildHttpAccessLog,
   emitManifestLog,
@@ -10,6 +11,7 @@ export {
   resolveClientId,
   resolveExceptionMessage,
   resolveExceptionName,
+  resolveExceptionStack,
   resolveHttpAccessSeverity,
   resolveHttpRoute,
   resolveXRealIp,

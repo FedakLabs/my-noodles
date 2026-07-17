@@ -22,17 +22,16 @@ describe('HttpAccessLog', () => {
     const started = accessLog.markRequestStart(request);
 
     expect(getRequestStartTimeMs(request)).toBe(started);
-    accessLog.logSuccess(request, 200, started);
+    accessLog.logSuccess(request, 200, started, { status: 'ok' });
 
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'INFO',
         body: 'GET /api/health 200',
-        attributes: expect.objectContaining({
-          'attributes.http.requestType': 'ingoing',
-          'attributes.http.method': 'GET',
-          'attributes.http.responseStatus': '200',
-        }) as Record<string, string>,
+        'attributes.http.requestType': 'ingoing',
+        'attributes.http.method': 'GET',
+        'attributes.http.responseStatus': '200',
+        'attributes.http.responseBody': JSON.stringify({ status: 'ok' }),
       }),
     );
     expect(logger.error).not.toHaveBeenCalled();

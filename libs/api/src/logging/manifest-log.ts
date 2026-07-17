@@ -3,6 +3,7 @@ import type { Request } from 'express';
 import type { Logger } from 'winston';
 
 import { CLIENT_ID_BAGGAGE_KEY, CLIENT_ID_HEADER } from '../otel/client-baggage';
+import { serializeErrorForObservability } from './error-serialization';
 
 /** OpenTelemetry severity numbers for manifest `severity.number`. */
 export const MANIFEST_SEVERITY = {
@@ -16,21 +17,24 @@ export type ManifestHttpAccessInput = Readonly<{
   statusCode: number;
   execTimeMs: number;
   error?: unknown;
+  responseBody?: unknown;
+  sanitizedMessage?: string;
   appName: string;
   appVersion: string;
 }>;
 
-export type ManifestLogRecord = Readonly<{
-  '@timestamp': string;
-  'severity.text': string;
-  'severity.number': number;
-  'resource.appName': string;
-  'resource.appVersion': string;
-  traceId?: string;
-  spanId?: string;
-  body: string;
-  attributes: Record<string, string>;
-}>;
+export type ManifestLogRecord = Readonly<
+  {
+    '@timestamp': string;
+    'severity.text': string;
+    'severity.number': number;
+    'resource.appName': string;
+    'resource.appVersion': string;
+    traceId?: string;
+    spanId?: string;
+    body: string;
+  } & Record<`attributes.${string}`, string>
+>;
 
 type HttpExceptionLike = {
   getResponse(): unknown;
@@ -89,6 +93,14 @@ export function resolveExceptionName(exception: unknown): string {
   }
 
   return 'Error';
+}
+
+export function resolveExceptionStack(exception: unknown): string | undefined {
+  if (exception instanceof Error && typeof exception.stack === 'string' && exception.stack.length > 0) {
+    return exception.stack;
+  }
+
+  return undefined;
 }
 
 function toPlainString(value: string | number): string {
@@ -187,7 +199,8 @@ export function resolveHttpRoute(request: Request): string {
 }
 
 export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogRecord {
-  const { request, statusCode, execTimeMs, appName, appVersion, error } = input;
+  const { request, statusCode, execTimeMs, appName, appVersion, error, responseBody, sanitizedMessage } =
+    input;
   const method = request.method.toUpperCase();
   const url = resolveHttpUrl(request);
   const route = resolveHttpRoute(request);
@@ -196,9 +209,10 @@ export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogR
   const clientId = resolveClientId(request);
   const xRealIp = resolveXRealIp(request);
   const severity = resolveHttpAccessSeverity(statusCode);
-  const errorMessage = error === undefined ? undefined : resolveExceptionMessage(error);
+  const rawErrorMessage = error === undefined ? undefined : resolveExceptionMessage(error);
+  const bodyMessage = sanitizedMessage ?? rawErrorMessage;
 
-  const attributes: Record<string, string> = {
+  const attributes: Record<`attributes.${string}`, string> = {
     'attributes.execTime': toPlainString(Math.round(execTimeMs)),
     'attributes.http.requestType': 'ingoing',
     'attributes.http.method': method,
@@ -220,15 +234,26 @@ export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogR
     attributes['attributes.xRealIp'] = xRealIp;
   }
 
+  if (responseBody !== undefined) {
+    attributes['attributes.http.responseBody'] = safeJsonStringify(responseBody);
+  }
+
   if (severity.text === 'ERROR' && error !== undefined) {
     attributes['attributes.error.name'] = resolveExceptionName(error);
-    attributes['attributes.error.message'] = errorMessage ?? 'Unknown error';
+    attributes['attributes.error.message'] = rawErrorMessage ?? 'Unknown error';
+
+    const stack = resolveExceptionStack(error);
+    if (stack) {
+      attributes['attributes.error.stack'] = stack;
+    }
+
+    attributes['attributes.error.raw'] = serializeErrorForObservability(error);
   }
 
   const baseBody = `${method} ${url} ${statusCode}`;
   const body =
-    severity.text === 'ERROR' && errorMessage !== undefined && errorMessage.length > 0
-      ? `${baseBody} — ${errorMessage}`
+    severity.text === 'ERROR' && bodyMessage !== undefined && bodyMessage.length > 0
+      ? `${baseBody} — ${bodyMessage}`
       : baseBody;
 
   return {
@@ -239,7 +264,7 @@ export function buildHttpAccessLog(input: ManifestHttpAccessInput): ManifestLogR
     'resource.appVersion': appVersion,
     body,
     ...resolveTraceContext(),
-    attributes,
+    ...attributes,
   };
 }
 

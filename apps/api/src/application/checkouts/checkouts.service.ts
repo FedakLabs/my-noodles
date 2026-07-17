@@ -367,13 +367,13 @@ export class CheckoutsService extends TransactionalRepository {
         })),
       );
 
-      const savedCheckout = await this.checkoutsRepository.save({
-        orderId: savedOrder.id,
-        visitorSessionId,
-        status: CheckoutStatus.InProgress,
-        cancelledReason: null,
-        completedAt: null,
-      });
+      const savedCheckout = await this.checkoutsRepository.save(
+        this.checkoutsRepository.create({
+          orderId: savedOrder.id,
+          visitorSessionId,
+          status: CheckoutStatus.InProgress,
+        }),
+      );
 
       savedCheckout.order = savedOrder;
       return savedCheckout;

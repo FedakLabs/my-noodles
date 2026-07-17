@@ -7,11 +7,11 @@ import {
 import { isValidPhone } from '@my-noodles/web-lib/validators';
 import { z } from 'zod';
 
-export function createReceiverSchema(invalidPhoneMessage: string) {
+export function createReceiverSchema() {
   return z.object({
     firstName: z.string().trim().min(1),
     lastName: z.string().trim().min(1),
-    phone: z.string().trim().refine(isValidPhone, { message: invalidPhoneMessage }),
+    phone: z.string().trim().refine(isValidPhone),
   });
 }
 
@@ -32,7 +32,7 @@ export function createDeliverySchema() {
     }),
     z.object({
       method: z.literal(DeliveryMethod.COURIER),
-      provider: z.nativeEnum(DeliveryProvider),
+      provider: z.enum(DeliveryProvider),
       cityName: z.string().trim().min(1),
       cityRef: z.string().trim().min(1),
       street: z.string().trim().min(1),
@@ -46,8 +46,8 @@ export function createDeliverySchema() {
   ]);
 }
 
-export function createCheckoutSchemas(invalidPhoneMessage: string) {
-  const receiverSchema = createReceiverSchema(invalidPhoneMessage);
+export function createCheckoutSchemas() {
+  const receiverSchema = createReceiverSchema();
   const deliverySchema = createDeliverySchema();
 
   return {
@@ -57,8 +57,8 @@ export function createCheckoutSchemas(invalidPhoneMessage: string) {
   };
 }
 
-export function createCheckoutSchema(invalidPhoneMessage: string) {
-  return createCheckoutSchemas(invalidPhoneMessage).checkoutSchema;
+export function createCheckoutSchema() {
+  return createCheckoutSchemas().checkoutSchema;
 }
 
 export type CheckoutFormData = z.infer<ReturnType<typeof createCheckoutSchema>>;

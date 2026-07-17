@@ -49,11 +49,10 @@ describe('LoggingInterceptor', () => {
       expect.objectContaining({
         'severity.text': 'INFO',
         body: 'GET /api/health 200',
-        attributes: expect.objectContaining({
-          'attributes.http.requestType': 'ingoing',
-          'attributes.http.method': 'GET',
-          'attributes.http.responseStatus': '200',
-        }) as Record<string, string>,
+        'attributes.http.requestType': 'ingoing',
+        'attributes.http.method': 'GET',
+        'attributes.http.responseStatus': '200',
+        'attributes.http.responseBody': JSON.stringify({ status: 'ok' }),
       }),
     );
   });

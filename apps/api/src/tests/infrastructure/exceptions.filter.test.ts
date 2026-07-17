@@ -59,20 +59,31 @@ describe('ExceptionsFilter', () => {
     const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
     const filter = createFilter(logger, reply);
+    const rawError = Object.assign(new Error('test'), { code: '23503' });
 
-    filter.catch(new Error('test'), createHost(createRequest(performance.now() - 5)));
+    filter.catch(rawError, createHost(createRequest(performance.now() - 5)));
 
     expect(logger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'ERROR',
         'severity.number': 17,
         body: 'GET /api/health 500 — Internal server error',
-        attributes: expect.objectContaining({
-          'attributes.http.responseStatus': '500',
-          'attributes.error.message': 'Internal server error',
-        }) as Record<string, string>,
+        'attributes.http.responseStatus': '500',
+        'attributes.error.name': 'Error',
+        'attributes.error.message': 'test',
+        'attributes.http.responseBody': JSON.stringify({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          code: 'internal_server_error',
+          message: 'Internal server error',
+          payload: null,
+        }),
       }),
     );
+
+    const logged = logger.error.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
+    const raw = JSON.parse(logged['attributes.error.raw']) as { message: string; code: string };
+    expect(raw.message).toBe('test');
+    expect(raw.code).toBe('23503');
     expect(logger.info).not.toHaveBeenCalled();
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
@@ -98,9 +109,7 @@ describe('ExceptionsFilter', () => {
       expect.objectContaining({
         'severity.text': 'INFO',
         body: 'GET /api/health 404',
-        attributes: expect.objectContaining({
-          'attributes.http.responseStatus': '404',
-        }) as Record<string, string>,
+        'attributes.http.responseStatus': '404',
       }),
     );
     expect(logger.error).not.toHaveBeenCalled();

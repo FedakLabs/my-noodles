@@ -20,13 +20,14 @@ export class HttpAccessLog {
     return markRequestStart(request);
   }
 
-  logSuccess(request: Request, statusCode: number, startedMs?: number): void {
+  logSuccess(request: Request, statusCode: number, startedMs?: number, responseBody?: unknown): void {
     const started = startedMs ?? getRequestStartTimeMs(request);
     const record = buildHttpAccessLog({
       request,
       statusCode,
       execTimeMs: performance.now() - started,
       ...this.resource,
+      responseBody,
     });
 
     emitManifestLog(this.logger, record);

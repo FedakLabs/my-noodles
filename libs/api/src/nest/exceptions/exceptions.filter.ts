@@ -47,7 +47,11 @@ export class ExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const appException = this.toAppException(exception);
 
-    this.exceptionLog.log(ctx.getRequest<Request>(), appException);
+    this.exceptionLog.log(ctx.getRequest<Request>(), exception, {
+      statusCode: appException.status,
+      responseBody: appException.toBody(),
+      sanitizedMessage: appException.message,
+    });
     httpAdapter.reply(ctx.getResponse(), appException.toBody(), appException.status);
   }
 

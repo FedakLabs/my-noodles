@@ -26,9 +26,6 @@
     "apartment": "Apartment",
     "notes": "Delivery notes"
   },
-  "validation": {
-    "invalidPhone": "Enter a valid phone number"
-  },
   "sections": {
     "receiver": "Recipient",
     "delivery": "Delivery",
