@@ -1,4 +1,4 @@
-import { PRODUCT_SORT_OPTIONS, ProductSort } from '@my-noodles/api-clients/storefront';
+import { type ProductSort } from '@my-noodles/api-clients/storefront';
 import {
   createSearchParamsCache,
   parseAsArrayOf,
@@ -8,7 +8,11 @@ import {
   parseAsStringEnum,
 } from 'nuqs/server';
 
-const sortParser = parseAsStringEnum<ProductSort>([...PRODUCT_SORT_OPTIONS]).withDefault(ProductSort.POPULAR);
+import { DEFAULT_PRODUCT_SORT, PRODUCT_SORT_OPTIONS } from '@/api/products/constants';
+
+const sortParser = parseAsStringEnum<ProductSort>([...PRODUCT_SORT_OPTIONS]).withDefault(
+  DEFAULT_PRODUCT_SORT,
+);
 
 export const catalogSearchParamsParsers = {
   collection: parseAsString,

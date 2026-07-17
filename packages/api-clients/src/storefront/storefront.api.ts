@@ -1,6 +1,6 @@
-import { ApiError } from '../../common';
-import type { Client } from '../generated/client';
-import { client } from '../generated/client.gen';
+import { ApiError } from '../common';
+import type { Client } from './generated/client';
+import { client as apiClient } from './generated/client.gen';
 
 export const APP_LOCALE_HEADER = 'x-app-locale';
 
@@ -64,10 +64,10 @@ function toApiError(error: unknown, response?: Response): ApiError {
 
 /**
  * Configures the shared hey-api storefront client (base URL, locale header, error mapping).
- * Construct once at app bootstrap; use `.client` with generated SDK helpers when not relying on the package default.
+ * Construct once at app bootstrap; use `.apiClient` with generated SDK helpers when not relying on the package default.
  */
 export class StorefrontApi {
-  readonly client: Client;
+  readonly apiClient: Client;
 
   private resolveAppLocale: (() => string | undefined) | undefined;
 
@@ -75,10 +75,15 @@ export class StorefrontApi {
   private static active: StorefrontApi | undefined;
 
   constructor(options: StorefrontApiOptions) {
-    this.client = client;
+    this.apiClient = apiClient;
     StorefrontApi.active = this;
     StorefrontApi.attachInterceptors();
-    this.client.setConfig({ baseUrl: options.baseUrl });
+    this.apiClient.setConfig({
+      baseUrl: options.baseUrl,
+      throwOnError: true,
+      // Send the feed session cookie on cross-origin storefront requests.
+      credentials: 'include',
+    });
   }
 
   /** Register a locale resolver for the `x-app-locale` request header. */
@@ -91,7 +96,7 @@ export class StorefrontApi {
       return;
     }
 
-    client.interceptors.request.use((request) => {
+    apiClient.interceptors.request.use((request) => {
       request.headers.set('Accept', 'application/json');
 
       if (!request.headers.has(APP_LOCALE_HEADER)) {
@@ -104,7 +109,7 @@ export class StorefrontApi {
       return request;
     });
 
-    client.interceptors.error.use((error, response) => {
+    apiClient.interceptors.error.use((error, response) => {
       throw toApiError(error, response);
     });
 
@@ -112,4 +117,4 @@ export class StorefrontApi {
   }
 }
 
-export { client };
+export { apiClient };

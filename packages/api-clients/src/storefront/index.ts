@@ -1,3 +1,3 @@
 export { ApiError } from '../common';
-export * from './client';
+export { APP_LOCALE_HEADER, apiClient, StorefrontApi, type StorefrontApiOptions } from './storefront.api';
 export * from './generated';

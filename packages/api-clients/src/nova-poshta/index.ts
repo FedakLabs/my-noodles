@@ -5,4 +5,4 @@ export {
   type NovaPoshtaSearchSettlementRow,
   type NovaPoshtaSettlementAddress,
   type NovaPoshtaWarehouseRow,
-} from './nova-poshta.client';
+} from './nova-poshta.api';

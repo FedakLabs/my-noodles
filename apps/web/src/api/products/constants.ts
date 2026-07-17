@@ -1,4 +1,4 @@
-import { ProductSort } from '../generated/types.gen';
+import { ProductSort } from '@my-noodles/api-clients/storefront';
 
 export const PRODUCT_SORT_OPTIONS = Object.values(ProductSort) as ProductSort[];
 

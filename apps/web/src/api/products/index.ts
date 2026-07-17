@@ -1,3 +1,4 @@
+export { DEFAULT_PRODUCT_SORT, PRODUCT_SORT_OPTIONS } from './constants';
 export {
   fetchProductDetail,
   fetchProductFacets,

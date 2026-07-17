@@ -6,6 +6,7 @@ export type NovaPoshtaClientOptions = {
   apiKey: string;
 };
 
+const ADDRESS_MODEL = 'Address';
 const ADDRESS_GENERAL_MODEL = 'AddressGeneral';
 
 type NovaPoshtaResponse<T> = {
@@ -51,16 +52,14 @@ export class NovaPoshtaApi extends ApiClient {
     return this.settings.apiBaseUrl;
   }
 
-  /** Company city directory — Ref is valid for getWarehouses CityRef. */
   async getCities(query: string, page = 1, limit = 50): Promise<NovaPoshtaDirectoryCityRow[]> {
-    return this.apiRequest<NovaPoshtaDirectoryCityRow[]>(ADDRESS_GENERAL_MODEL, 'getCities', {
+    return this.apiRequest<NovaPoshtaDirectoryCityRow[]>(ADDRESS_MODEL, 'getCities', {
       Page: page,
       Limit: limit,
       FindByString: query,
     });
   }
 
-  /** Online fuzzy city search — requires a valid apiKey. */
   async searchSettlements(query: string): Promise<NovaPoshtaSearchSettlementRow[]> {
     return this.apiRequest<NovaPoshtaSearchSettlementRow[]>(ADDRESS_GENERAL_MODEL, 'searchSettlements', {
       CityName: query,

@@ -3,4 +3,4 @@ export {
   type UkrposhtaCityRow,
   type UkrposhtaClientOptions,
   type UkrposhtaPostOfficeRow,
-} from './ukrposhta.client';
+} from './ukrposhta.api';

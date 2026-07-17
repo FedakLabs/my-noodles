@@ -580,7 +580,7 @@ export abstract class ApiClient {
 Framework-agnostic HTTP client classes live in **`packages/api-clients`**. Nest registers them via `useFactory` in `apps/api` (`application/<provider>/`).
 
 ```ts
-// packages/api-clients/src/meest/meest.client.ts
+// packages/api-clients/src/meest/meest.api.ts
 export class MeestApi extends ApiClient {
   constructor(
     private readonly settings: MeestClientOptions,
@@ -613,7 +613,7 @@ When this API must call **another service’s HTTP API**, prefer adding the raw 
 
 ```text
 packages/api-clients/<provider>/
-├── <provider>.client.ts   # *Api extends ApiClient; raw upstream calls
+├── <provider>.api.ts      # *Api extends ApiClient; raw upstream calls
 └── index.ts
 
 apps/api/src/application/<provider>/

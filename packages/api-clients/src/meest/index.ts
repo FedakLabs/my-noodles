@@ -4,4 +4,4 @@ export {
   type MeestClientOptions,
   type MeestLocalityData,
   type MeestLocalityRow,
-} from './meest.client';
+} from './meest.api';

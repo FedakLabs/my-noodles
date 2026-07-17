@@ -10,7 +10,6 @@ export default defineConfig({
     },
     {
       name: '@hey-api/client-fetch',
-      runtimeConfigPath: './src/storefront/client/runtime.config',
     },
     {
       name: '@hey-api/sdk',

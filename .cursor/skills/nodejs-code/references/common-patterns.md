@@ -72,7 +72,7 @@ Register feature modules in `AppModule.imports` from each domain barrel (`./appl
 
 ```text
 packages/api-clients/<provider>/
-├── <provider>.client.ts      # *Api extends ApiClient; raw upstream calls
+├── <provider>.api.ts         # *Api extends ApiClient; raw upstream calls
 └── index.ts
 
 apps/api/src/application/<provider>/
