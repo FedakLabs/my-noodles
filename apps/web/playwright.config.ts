@@ -19,7 +19,7 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: 'node e2e/mock-api.mjs',
+      command: 'node --experimental-strip-types e2e/mock-api.ts',
       url: `${mockApiUrl}/api/health/live`,
       reuseExistingServer: !process.env.CI,
     },

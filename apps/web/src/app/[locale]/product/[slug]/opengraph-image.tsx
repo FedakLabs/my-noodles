@@ -1,50 +1,40 @@
-import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
 import { fetchProductDetail } from '@/api/products';
-import { runWithAppLocale } from '@/i18n/app-locale/server';
-import { routing } from '@/i18n/routing';
-import type { LocaleSlugPageProps } from '@/shared/page-props';
+import { withPageLocaleResult } from '@/i18n/app-locale/server';
+import type { LocalePageProps } from '@/shared/page-props';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 import { formatCurrency } from '@/utils/format-currency';
 
 export const size = OG_IMAGE_SIZE;
 export const contentType = OG_IMAGE_CONTENT_TYPE;
 
-type ProductOpenGraphImageProps = LocaleSlugPageProps;
+type ProductOpenGraphImageProps = LocalePageProps<{ slug: string }>;
 
-export default async function Image({ params }: ProductOpenGraphImageProps) {
-  const { locale, slug } = await params;
+export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnType<typeof createOgImage>>>(
+  async ({ params, locale }) => {
+    const { slug } = params;
+    const [product, tMetadata] = await Promise.all([
+      fetchProductDetail(slug),
+      getTranslations({ locale, namespace: 'metadata' }),
+    ]);
+    const title = product.name ?? product.slug;
+    const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
 
-  if (!hasLocale(routing.locales, locale)) {
-    return createOgImage({ title: slug });
-  }
+    return createOgImage({
+      eyebrow: tMetadata('title'),
+      title,
+      subtitle,
+    });
+  },
+  ({ slug }) => createOgImage({ title: slug }),
+);
 
-  const [product, tMetadata] = await runWithAppLocale(locale, async () =>
-    Promise.all([fetchProductDetail(slug), getTranslations({ locale, namespace: 'metadata' })]),
-  );
-  const title = product.name ?? product.slug;
-  const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
+export const generateImageMetadata = withPageLocaleResult<ProductOpenGraphImageProps, Array<{ alt: string }>>(
+  async ({ params }) => {
+    const product = await fetchProductDetail(params.slug);
 
-  return createOgImage({
-    eyebrow: tMetadata('title'),
-    title,
-    subtitle,
-  });
-}
-
-export async function generateImageMetadata({ params }: ProductOpenGraphImageProps) {
-  const { locale, slug } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    return [{ alt: slug }];
-  }
-
-  const product = await runWithAppLocale(locale, () => fetchProductDetail(slug));
-
-  return [
-    {
-      alt: product.name ?? product.slug,
-    },
-  ];
-}
+    return [{ alt: product.name ?? product.slug }];
+  },
+  ({ slug }) => [{ alt: slug }],
+);

@@ -130,20 +130,21 @@
         "src/persistence/index.ts",
         "src/api-client/index.ts",
         "src/exceptions/index.ts",
-        "src/logging/index.ts",
+        "src/logger/index.ts",
         "src/otel/index.ts",
         "src/utils/index.ts",
         "src/transformers/index.ts",
         "src/validators/index.ts",
         "src/locale/index.ts",
-        "src/nest/index.ts"
+        "src/nest/index.ts",
+        "src/express/index.ts"
       ],
       "project": ["src/**/*.ts"],
       "ignore": ["src/api-client/logger.ts"],
       "ignoreIssues": {
         "src/config/config.ts": ["exports"],
         "src/config/env.ts": ["exports"],
-        "src/logging/manifest-log.ts": ["exports"],
+        "src/logger/manifest-log.ts": ["exports"],
         "src/locale/index.ts": ["exports", "types"],
         "src/locale/localized-string.ts": ["exports"]
       },

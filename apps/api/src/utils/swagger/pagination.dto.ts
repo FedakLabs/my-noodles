@@ -5,7 +5,6 @@ import {
 } from '@my-noodles/api-lib/pagination';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-/** Swagger-visible pagination query params (validators inherited from api-lib). */
 export class PaginationQuerySwaggerDto extends PaginationQueryDto {
   @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 })
   declare page: number;

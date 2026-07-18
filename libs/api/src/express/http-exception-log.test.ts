@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 
+import { configureAppLogger, logger } from '../logger';
 import { HttpExceptionLog } from './http-exception-log';
 
 function createRequest(startTimeMs: number): Request {
@@ -16,11 +17,23 @@ function createRequest(startTimeMs: number): Request {
 }
 
 describe('HttpExceptionLog', () => {
-  const resource = { appName: 'my-noodles-api', appVersion: 'dev' };
+  beforeAll(() => {
+    configureAppLogger({
+      appName: 'my-noodles-api',
+      appVersion: 'dev',
+      nodeEnv: 'local',
+      otel: { enabled: false },
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   it('logs unhandled exceptions as manifest ERROR records with raw error fields', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
-    const exceptionLog = new HttpExceptionLog(logger as never, resource);
+    const infoSpy = jest.spyOn(logger, 'info').mockImplementation((() => logger) as never);
+    const errorSpy = jest.spyOn(logger, 'error').mockImplementation((() => logger) as never);
+    const exceptionLog = new HttpExceptionLog();
     const rawError = Object.assign(new Error('fk violation'), { code: '23503' });
 
     exceptionLog.log(createRequest(performance.now() - 5), rawError, {
@@ -34,11 +47,11 @@ describe('HttpExceptionLog', () => {
       },
     });
 
-    expect(logger.error).toHaveBeenCalledWith(
+    expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'ERROR',
         'severity.number': 17,
-        body: 'GET /api/health 500 — Internal server error',
+        body: expect.stringMatching(/^GET 500 \d+ms \/api\/health — Internal server error$/),
         'attributes.http.responseStatus': '500',
         'attributes.error.name': 'Error',
         'attributes.error.message': 'fk violation',
@@ -51,16 +64,17 @@ describe('HttpExceptionLog', () => {
       }),
     );
 
-    const logged = logger.error.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
+    const logged = errorSpy.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
     const raw = JSON.parse(logged['attributes.error.raw']) as { message: string; code: string };
     expect(raw.message).toBe('fk violation');
     expect(raw.code).toBe('23503');
-    expect(logger.info).not.toHaveBeenCalled();
+    expect(infoSpy).not.toHaveBeenCalled();
   });
 
   it('logs 4xx status exceptions as manifest INFO records', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
-    const exceptionLog = new HttpExceptionLog(logger as never, resource);
+    const infoSpy = jest.spyOn(logger, 'info').mockImplementation((() => logger) as never);
+    const errorSpy = jest.spyOn(logger, 'error').mockImplementation((() => logger) as never);
+    const exceptionLog = new HttpExceptionLog();
 
     exceptionLog.log(createRequest(performance.now() - 3), {
       getStatus: () => 404,
@@ -68,18 +82,18 @@ describe('HttpExceptionLog', () => {
       name: 'NotFoundException',
     });
 
-    expect(logger.info).toHaveBeenCalledWith(
+    expect(infoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'INFO',
-        body: 'GET /api/health 404',
+        body: expect.stringMatching(/^GET 404 \d+ms \/api\/health$/),
         'attributes.http.responseStatus': '404',
       }),
     );
-    expect(logger.error).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it('resolves status from a numeric status field on raw AppException-like errors', () => {
-    const exceptionLog = new HttpExceptionLog({ info: jest.fn(), error: jest.fn() } as never, resource);
+    const exceptionLog = new HttpExceptionLog();
 
     expect(exceptionLog.resolveStatusCode({ status: 409, message: 'conflict' })).toBe(409);
   });

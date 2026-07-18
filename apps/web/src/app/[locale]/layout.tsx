@@ -1,12 +1,10 @@
-import type { Metadata } from 'next';
-import { hasLocale, NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getTranslations } from 'next-intl/server';
 
 import { AnalyticsHead } from '@/components/analytics/analytics-head';
 import { ConsentBanner } from '@/components/analytics/consent-banner';
 import { AppShell } from '@/components/layout/app-shell';
-import { runWithAppLocale } from '@/i18n/app-locale/server';
+import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
 import { routing } from '@/i18n/routing';
 import { env } from '@/shared/env';
 import type { LocalePageProps } from '@/shared/page-props';
@@ -27,13 +25,7 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({ params }: Pick<LocaleLayoutProps, 'params'>): Promise<Metadata> {
-  const { locale } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    return {};
-  }
-
+export const generateMetadata = withPageLocaleMetadata<LocalePageProps>(async ({ locale }) => {
   const t = await getTranslations({ locale, namespace: 'metadata' });
   const siteName = t('title');
   const alternateLocales = routing.locales.filter((loc) => loc !== locale).map(openGraphLocale);
@@ -66,23 +58,15 @@ export async function generateMetadata({ params }: Pick<LocaleLayoutProps, 'para
       apple: '/brand/mynoodles-logo.svg',
     },
   };
-}
+});
 
-export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
-  const { locale } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-
-  setRequestLocale(locale);
-
+async function LocaleLayout({ children, locale }: WithPageLocaleProps<LocaleLayoutProps>) {
   const [messages, t] = await Promise.all([
     getMessages(),
     getTranslations({ locale, namespace: 'metadata' }),
   ]);
 
-  return runWithAppLocale(locale, () => (
+  return (
     <>
       <AnalyticsHead />
       <JsonLdScript data={buildOrganizationWebSiteJsonLd(t('title'))} />
@@ -93,5 +77,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         </Providers>
       </NextIntlClientProvider>
     </>
-  ));
+  );
 }
+
+export default withPageLocale(LocaleLayout);

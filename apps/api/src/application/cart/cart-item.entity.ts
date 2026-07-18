@@ -24,6 +24,7 @@ export class CartItem extends TimestampEntity {
   productId!: string;
 
   @ManyToOne(() => Product, {
+    eager: true,
     nullable: false,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',

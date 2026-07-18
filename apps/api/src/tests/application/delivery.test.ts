@@ -1,4 +1,3 @@
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
@@ -62,7 +61,6 @@ describe('delivery (e2e)', () => {
             searchWarehouses: jest.fn(() => Promise.resolve(stubWarehouses)),
           },
         },
-        { provide: APP_LOGGER, useValue: { warn: jest.fn(), error: jest.fn(), info: jest.fn() } },
       ],
     });
   });

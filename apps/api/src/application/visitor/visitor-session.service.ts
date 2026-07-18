@@ -18,7 +18,6 @@ export class VisitorSessionService {
     private readonly cartItemsRepository: Repository<CartItem>,
   ) {}
 
-  /** First visit creates a visitor; existing cookie always returns the same id. */
   async resolve(existingId?: string): Promise<VisitorSession> {
     if (existingId) {
       const existing = await this.visitorsRepository.findOne({ where: { id: existingId } });

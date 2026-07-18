@@ -30,6 +30,12 @@ export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptio
     migrations: globs?.migrations ?? defaults.migrations,
     entities: globs?.entities ?? defaults.entities,
     logging: appConfig.database.logging,
+    // Prefer optional-filter ergonomics: `where: { status }` may pass `undefined`.
+    // Use `IsNull()` when matching SQL NULL — bare `null` is ignored, not translated.
+    invalidWhereValuesBehavior: {
+      null: 'ignore',
+      undefined: 'ignore',
+    },
   };
 }
 

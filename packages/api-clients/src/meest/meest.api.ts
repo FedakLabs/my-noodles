@@ -1,5 +1,4 @@
 import { ApiClient } from '@my-noodles/api-lib/api-client';
-import type { Logger } from 'winston';
 
 export type MeestClientOptions = {
   apiBaseUrl: string;
@@ -33,11 +32,8 @@ export type MeestBranchRow = {
 };
 
 export class MeestApi extends ApiClient {
-  constructor(
-    private readonly settings: MeestClientOptions,
-    logger: Logger,
-  ) {
-    super(logger);
+  constructor(private readonly settings: MeestClientOptions) {
+    super();
   }
 
   protected getBaseUrl(): string {

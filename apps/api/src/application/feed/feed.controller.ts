@@ -1,21 +1,17 @@
 import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
+import { Product } from '../products/product.entity';
 import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
 import { FeedCommentsService } from './feed-comments.service';
+import { FeedProductComment } from './feed-product-comment.entity';
 import { FeedSessionService } from './feed-session.service';
-import {
-  FeedCommentDto,
-  FeedLikedItemDto,
-  FeedLikeStateDto,
-  FeedNextDto,
-  FeedNextResponseDto,
-} from './feed.dto';
+import { FeedLikeStateDto, FeedNextDto, FeedNextResponseDto } from './feed.dto';
 import { FeedService } from './feed.service';
 
 @ApiTags('Feed')
@@ -32,7 +28,6 @@ export class FeedController extends LocalizedStorefrontController {
 
   @Post('next')
   @Throttle({ default: { limit: 120, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Record the previous product view and return the next personalized item' })
   async next(
     @Body() dto: FeedNextDto,
     @Req() req: Request,
@@ -45,7 +40,6 @@ export class FeedController extends LocalizedStorefrontController {
 
   @Post('products/:productId/like')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Like a product in the current feed session' })
   @ApiNotFoundResponse({ description: 'Product not found' })
   async like(
     @Param('productId', ParseUUIDPipe) productId: string,
@@ -59,7 +53,6 @@ export class FeedController extends LocalizedStorefrontController {
 
   @Delete('products/:productId/like')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Remove a like in the current feed session' })
   async unlike(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Req() req: Request,
@@ -72,14 +65,12 @@ export class FeedController extends LocalizedStorefrontController {
 
   @Get('products/:productId/comments')
   @Throttle({ default: { limit: 120, ttl: 60_000 } })
-  @ApiOperation({ summary: 'List taste-impression comments for a product' })
-  comments(@Param('productId', ParseUUIDPipe) productId: string): Promise<FeedCommentDto[]> {
+  comments(@Param('productId', ParseUUIDPipe) productId: string): Promise<FeedProductComment[]> {
     return this.commentsService.listForProduct(productId);
   }
 
   @Get('likes')
-  @ApiOperation({ summary: 'List products liked in the current feed session' })
-  async likes(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<FeedLikedItemDto[]> {
+  async likes(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<Product[]> {
     const visitor = await this.resolveVisitorForFeed(req, res);
     return this.feedService.getLikedItems(visitor);
   }

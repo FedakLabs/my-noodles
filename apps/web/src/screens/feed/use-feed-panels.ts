@@ -14,7 +14,6 @@ export type FeedPanels = {
   closeLiked: () => void;
 };
 
-/** Tracks which of the mutually-aware feed overlays (comments, details, liked) is open. */
 export function useFeedPanels(): FeedPanels {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);

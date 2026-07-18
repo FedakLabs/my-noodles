@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Product } from '../products/product.entity';
 import { FeedSessionLike } from './feed-session-like.entity';
@@ -25,7 +25,6 @@ export class FeedSessionService {
     private readonly productsRepository: Repository<Product>,
   ) {}
 
-  /** Records dwell for the just-left product — accumulates on repeat views in the same session. */
   async recordView(visitorSessionId: string, input: RecordViewInput): Promise<void> {
     if (!(await this.productExists(input.productId))) {
       return;
@@ -77,15 +76,12 @@ export class FeedSessionService {
     await this.likesRepository.softDelete({
       visitorSessionId,
       productId,
-      deletedAt: IsNull(),
     });
   }
 
-  /** Active likes with product relations — powers personalization boosts and the liked list. */
   async getLikedProducts(visitorSessionId: string): Promise<Product[]> {
     const likes = await this.likesRepository.find({
       where: { visitorSessionId },
-      relations: { product: { brand: true, country: true, category: true } },
       order: { createdAt: 'DESC' },
     });
 

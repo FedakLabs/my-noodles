@@ -9,17 +9,18 @@
 3. [Layered Architecture](#3-layered-architecture)
 4. [NestJS Modules & DI](#4-nestjs-modules--di)
 5. [HTTP & Controllers](#5-http--controllers)
-6. [Exceptions](#6-exceptions)
-7. [DTOs & Validation](#7-dtos--validation)
-8. [TypeORM Entities](#8-typeorm-entities)
-9. [Migrations](#9-migrations)
-10. [External API Integration](#10-external-api-integration)
-11. [Configuration](#11-configuration)
-12. [Logging, Tracing, Observability](#12-logging-tracing-observability)
-13. [Rate Limiting](#13-rate-limiting)
-14. [Tests](#14-tests)
-15. [Anti-Patterns](#15-anti-patterns)
-16. [Quick Sanity Checklist](#16-quick-sanity-checklist)
+6. [DTOs & Validation](#6-dtos--validation)
+7. [Exceptions](#7-exceptions)
+8. [OpenAPI Documentation](#8-openapi-documentation)
+9. [TypeORM Entities](#9-typeorm-entities)
+10. [Migrations](#10-migrations)
+11. [External API Integration](#11-external-api-integration)
+12. [Configuration](#12-configuration)
+13. [Logging, Tracing, Observability](#13-logging-tracing-observability)
+14. [Rate Limiting](#14-rate-limiting)
+15. [Tests](#15-tests)
+16. [Anti-Patterns](#16-anti-patterns)
+17. [Quick Sanity Checklist](#17-quick-sanity-checklist)
 
 ---
 
@@ -36,13 +37,12 @@
 
 **Do not** reach into another module’s internal files when that module exposes a barrel — import the folder so the module boundary stays explicit and refactors stay local.
 
-**NestJS modules:** when importing a `*Module` (e.g. `LoggingModule`, `TelegramModule`) from outside that folder, always use the module’s barrel — never `logging.module`, `telegram.module`, etc.
+**NestJS modules:** when importing a `*Module` (e.g. `TelegramModule`) from outside that folder, always use the module’s barrel — never `telegram.module`, etc.
 
 ```ts
-// app.module.ts — feature + infra modules via barrels
+// app.module.ts — feature modules via barrels
 import { OrdersModule } from './application/orders';
-import { LoggingModule } from './infrastructure/logging';
-import { prepareDataSource } from './infrastructure/persistence';
+import { prepareDataSource } from '@my-noodles/api-lib/persistence';
 
 // application/checkouts/checkouts.module.ts — integration module via barrel
 import { TelegramModule } from '@/application/telegram';
@@ -99,16 +99,9 @@ Every **module folder** (feature in `application/`, subsystem in `infrastructure
 The barrel is the module’s contract: export Nest `*Module` classes, services/entities other features need, and bootstrap adapters (middleware, filters). Keep helpers used only inside the folder unexported.
 
 ```ts
-// infrastructure/logging/index.ts
-export { appLogger, LoggingModule } from './logging.module';
-export { LoggingInterceptor } from './logging.interceptor';
-
-// infrastructure/exceptions/index.ts
-export { ExceptionsFilter } from './exceptions.filter';
-
-// infrastructure/persistence/index.ts
-export { createAppDataSource, prepareDataSource } from './data-source';
-export { TimestampEntity } from './timestamp.entity';
+// infrastructure/logging/index.ts — configures ambient logger (and app log metadata) as a side effect
+import { configureAppLogger } from '@my-noodles/api-lib/logger';
+configureAppLogger({ appName, appVersion, nodeEnv, otel });
 
 // application/orders/index.ts
 export * from './orders.module';
@@ -119,10 +112,8 @@ export * from './order.entity';
 Consumers:
 
 ```ts
-import { LoggingModule, appLogger } from '@/infrastructure/logging';
-import { ExceptionsFilter } from '@/infrastructure/exceptions';
+import { logger } from '@my-noodles/api-lib/logger';
 import { OrdersModule } from '@/application/orders';
-import { TimestampEntity } from '@/infrastructure/persistence';
 ```
 
 **Inside** the same module folder, keep relative imports to sibling files (`./orders.service.js`). **Outside** the module, use the barrel only — including `AppModule`, `index.ts` bootstrap, tests, seed scripts, and cross-feature services.
@@ -225,24 +216,25 @@ Register in `AppModule.imports`. Export providers other modules need.
 
 ### Controller template
 
+Document routes per [§8 OpenAPI Documentation](#8-openapi-documentation). Keep handlers thin. **No operation JSDoc by default** — method names + routes + return types are enough.
+
 ```ts
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Products')
-@Controller('products')
-export class ProductsController {
-  constructor(@Inject(ProductsService) private readonly productsService: ProductsService) {}
+@ApiTags('Resources')
+@Controller('resources')
+export class ResourcesController {
+  constructor(@Inject(ResourcesService) private readonly resourcesService: ResourcesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List products' })
-  async list(@Query() query: ListProductsQueryDto): Promise<PaginatedProductsDto> {
-    return this.productsService.list(query);
+  async list(@Query() query: ListResourcesQueryDto): Promise<PaginatedResourcesDto> {
+    return this.resourcesService.list(query);
   }
 
-  @Get(':slug')
-  async getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
-    return this.productsService.getBySlug(slug);
+  @Get(':id')
+  async getById(@Param('id') id: string): Promise<Resource> {
+    return this.resourcesService.getById(id);
   }
 }
 ```
@@ -251,11 +243,63 @@ export class ProductsController {
 
 - **Query DTOs** for filters, pagination (`page`, `limit` required when paginating, max 100), `locale`.
 - **Body DTOs** for POST/PATCH with class-validator decorators.
-- **Path params**: simple `@Param('slug')` or a small param DTO if multiple params need validation.
+- **Path params**: simple `@Param('id')` or a small param DTO if multiple params need validation.
 
 ---
 
-## 6. Exceptions
+## 6. DTOs & Validation
+
+### Layout
+
+- All DTOs in `<feature>.dto.ts` (request, query, response shapes as needed).
+- Nest-facing DTO classes must live in files matched by the OpenAPI generation conventions. Prefer `*.dto.ts`; keep stable imports through small barrel files when moving shared DTOs.
+- Regex/constants above the classes that use them.
+
+### class-validator
+
+Every input field gets validators:
+
+```ts
+export class CreateOrderDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(30)
+  phone: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
+}
+```
+
+### OpenAPI on DTOs
+
+Schema docs, `@example`, and when `@ApiProperty` is required: [§8 OpenAPI Documentation](#8-openapi-documentation).
+
+### Shared validators
+
+- Reusable field decorators or small validator classes in `src/utils/validators/`.
+- Pagination: extend `PaginationQueryDto` / `PaginatedMetaDto` from `src/utils/pagination.ts` — see [common-patterns §7](./common-patterns.md#7-validators--pipes).
+
+### Response shapes (entity vs DTO)
+
+**Default:** return the entity (or a typed pick of its columns) when the handler is a straight load-and-respond — no extra response DTO that mirrors the entity field-for-field.
+
+**Add a response DTO or mapper only when there is a concrete reason**, for example:
+
+- Aggregating data from multiple sources (join + computed fields not on one entity)
+- Hiding internal columns (cost, internal flags, soft-delete metadata)
+- Resolving localized JSONB to a plain string for the requested `?locale`
+- Shaping a write model differently from persistence (checkout payload ≠ order row)
+
+If a response DTO would duplicate the entity one-to-one, skip it — two shapes to maintain with no benefit.
+
+Input/query DTOs (`CreateOrderDto`, `ListProductsQueryDto`) stay mandatory for validation at the boundary.
+
+---
+
+## 7. Exceptions
 
 ### Raw base + presets (`@my-noodles/api-lib/exceptions`)
 
@@ -319,69 +363,172 @@ throw err;
 
 ### Do not
 
-- `console.log` / `console.error` in feature code — use injected Winston via `APP_LOGGER`.
+- `console.log` / `console.error` in feature code — use the ambient `logger` from `@my-noodles/api-lib/logger`.
 - Swallow errors with empty `catch {}` unless explicitly best-effort (document why).
 - Extend Nest `HttpException` for domain errors — extend `@my-noodles/api-lib/exceptions` instead.
 
 ---
 
-## 7. DTOs & Validation
+## 8. OpenAPI Documentation
 
-### Layout
+How we document Nest HTTP APIs for Swagger / OpenAPI. Prefer **TypeScript types + validators**; use JSDoc and decorators only when they add information the plugin cannot infer.
 
-- All DTOs in `<feature>.dto.ts` (request, query, response shapes as needed).
-- Nest-facing DTO classes must live in files matched by the OpenAPI generation conventions. Prefer `*.dto.ts`; keep stable imports through small barrel files when moving shared DTOs.
-- Regex/constants above the classes that use them.
+Plugin: `introspectComments: true` in `apps/api/nest-cli.json`. Live spec: `/api/docs-json`. After public API changes, regenerate the storefront client (see skill workflow).
 
-### class-validator
+### Principle
 
-Every input field gets validators:
+| Layer                            | Source of truth                                                            |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| Operation summary / description  | **Opt-in** method JSDoc — omit by default                                  |
+| Success status + response schema | Nest HTTP defaults + method return type                                    |
+| Field description / example      | Property JSDoc + `@example` when the field needs human text or a sample    |
+| Tags, errors, uninferable schema | Swagger decorators (see [When to use decorators](#when-to-use-decorators)) |
+
+Do not duplicate inferred metadata with `@ApiOperation` or success-response decorators.
+
+### Controllers (operations)
+
+**Default: no handler JSDoc.** Route + HTTP method + handler name + return type are enough for the spec and for readers.
+
+Add a summary / `@remarks` **only** when the operation has non-obvious behavior that clients or maintainers would otherwise misread (e.g. side effects, dual-purpose endpoints, semantics not in the name). Do not write summaries that restate `list` / `getById` / `create`.
+
+| Need                  | How                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| Summary / description | Optional handler JSDoc — first line = summary, `@remarks …` = longer note; use sparingly      |
+| Success schema        | Explicit return type (`Promise<Resource>`, `Promise<Resource[]>`, `Promise<ResourceListDto>`) |
+| Success status        | Nest defaults (GET → 200, POST → 201) unless `@HttpCode` changes runtime behavior             |
 
 ```ts
-export class CreateOrderDto {
+@Post()
+@ApiException(ResourceConflictException)
+async create(@Body() body: CreateResourceDto): Promise<Resource> {
+  return this.resourcesService.create(body);
+}
+
+@Get(':id')
+@ApiException(ResourceNotFoundException)
+async getById(@Param('id') id: string): Promise<Resource> {
+  return this.resourcesService.getById(id);
+}
+
+/**
+ * Merge cart into an existing in-progress checkout when one is already open.
+ *
+ * @remarks Creates a new checkout only when the visitor has no active hold.
+ */
+@Post()
+async startCheckout(...): Promise<Checkout> { ... }
+```
+
+Class-level grouping:
+
+```ts
+@ApiTags('Resources')
+@Controller('resources')
+export class ResourcesController { ... }
+```
+
+### DTOs & entities (schemas)
+
+Prefer `class-validator` on inputs. Add property JSDoc when a field needs a human description or `@example` — not on every property by habit.
+
+| Need                     | How                                                                              |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| Field description        | First line(s) of the property JSDoc (when useful)                                |
+| Example value            | `@example …` on that property (when useful)                                      |
+| Type / required / format | TypeScript + validators (`@IsUUID`, `@IsDateString`, `@IsEnum`, …) when possible |
+
+```ts
+export class CreateResourceDto {
+  /**
+   * Owning account id
+   * @example 00000000-0000-4000-8000-000000000001
+   */
+  @IsUUID()
+  accountId!: string;
+
   @IsString()
   @IsNotEmpty()
-  @MaxLength(30)
-  phone: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OrderItemDto)
-  items: OrderItemDto[];
+  @MaxLength(120)
+  name!: string;
 }
 ```
 
-### Swagger
+Nest-facing DTO classes must live in files matched by OpenAPI generation conventions — prefer `*.dto.ts`.
 
-Prefer `class-validator` decorators on DTO fields and let OpenAPI generation infer simple schema metadata from TypeScript and validators.
+### When to use decorators
 
-Add `@ApiProperty()` / `@ApiPropertyOptional()` only when the generated schema needs metadata that cannot be safely inferred, such as custom descriptions/examples, enum schema names, UUID/date-time formats without an equivalent validator, `nullable: true`, or mapped/intersection DTO cases that drop inherited fields.
+Use Swagger decorators only for metadata the plugin cannot (or should not) infer from types / validators / (optional) JSDoc.
 
-**Response strings (`string | null`)** — set `{ type: String, nullable: true }` on `@ApiProperty()` / `@ApiPropertyOptional()`. Union types collapse to `Object` under `emitDecoratorMetadata`, so Swagger would otherwise emit `type: object` for locale-resolved copy.
+| Need                                                    | Decorator                                                                                                                            |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Tag / group in Swagger UI                               | `@ApiTags('Resources')`                                                                                                              |
+| Documented error responses                              | `@ApiException(...)` (preferred); `@ApiNotFoundResponse` etc. only when there is no typed exception yet                              |
+| Enum schema name                                        | `@ApiProperty({ enum: Status, enumName: 'ResourceStatus' })`                                                                         |
+| Nullable unions                                         | `@ApiProperty({ type: String, nullable: true })` for `string \| null` — unions collapse to `Object` under `emitDecoratorMetadata`    |
+| Localized JSONB columns on API entities                 | `@ApiLocalizedColumn()` from `@my-noodles/api-lib/nest` (not bare `@LocalizedColumn()` — that stays Nest-free for persistence)       |
+| Format without a matching validator                     | `@ApiProperty({ format: 'uuid' })` / `date-time` when validators alone do not emit it                                                |
+| Mapped / intersection DTOs that drop fields             | Explicit `@ApiProperty` / `@ApiPropertyOptional` on the resulting shape                                                              |
+| Non-default success status that must appear in the spec | `@HttpCode(...)` for runtime; add `@ApiOkResponse` / `@ApiCreatedResponse` only if you must document a divergence from Nest defaults |
 
-### Shared validators
+When a field already has useful JSDoc, do not also put `description` / `example` on `@ApiProperty` unless you must override the plugin.
 
-- Reusable field decorators or small validator classes in `src/utils/validators/`.
-- Pagination: extend `PaginationQueryDto` / `PaginatedMetaDto` from `src/utils/pagination.ts` — see [common-patterns §7](./common-patterns.md#7-validators--pipes).
+### Do not
 
-### Response shapes (entity vs DTO)
+- Handler JSDoc that only restates the method name or route (`/** List products */` on `list()`)
+- `@ApiOperation({ summary })` — if a summary is warranted, use opt-in handler JSDoc instead
+- `@ApiOkResponse` / `@ApiCreatedResponse` on the happy path — use return types + Nest status defaults
+- `@ApiProperty({ description, example })` when JSDoc already covers it
+- Omitting return types on controllers (plugin needs them for response schemas)
 
-**Default:** return the entity (or a typed pick of its columns) when the handler is a straight load-and-respond — no extra response DTO that mirrors the entity field-for-field.
+### End-to-end example
 
-**Add a response DTO or mapper only when there is a concrete reason**, for example:
+```ts
+// resources.controller.ts
+@ApiTags('Resources')
+@Controller('resources')
+export class ResourcesController {
+  constructor(@Inject(ResourcesService) private readonly resourcesService: ResourcesService) {}
 
-- Aggregating data from multiple sources (join + computed fields not on one entity)
-- Hiding internal columns (cost, internal flags, soft-delete metadata)
-- Resolving localized JSONB to a plain string for the requested `?locale`
-- Shaping a write model differently from persistence (checkout payload ≠ order row)
+  @Get()
+  async list(@Query() query: ListResourcesQueryDto): Promise<PaginatedResourcesDto> {
+    return this.resourcesService.list(query);
+  }
 
-If a response DTO would duplicate the entity one-to-one, skip it — two shapes to maintain with no benefit.
+  @Post()
+  @ApiException(ResourceConflictException)
+  async create(@Body() body: CreateResourceDto): Promise<Resource> {
+    return this.resourcesService.create(body);
+  }
+}
+```
 
-Input/query DTOs (`CreateOrderDto`, `ListProductsQueryDto`) stay mandatory for validation at the boundary.
+```ts
+// resources.dto.ts
+export class CreateResourceDto {
+  /**
+   * Stable business key
+   * @example resource-alpha
+   */
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(64)
+  key!: string;
+
+  /**
+   * Optional note; omitted when unset
+   * @example Ready for review
+   */
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @IsOptional()
+  @IsString()
+  note!: string | null;
+}
+```
 
 ---
 
-## 8. TypeORM Entities
+## 9. TypeORM Entities
 
 ### Naming
 
@@ -465,7 +612,7 @@ Prefer **type-safe** `Repository` APIs over `createQueryBuilder` string columns:
 
 ---
 
-## 9. Migrations
+## 10. Migrations
 
 - **Never** rely on `synchronize: true` — `prepareDataSource()` sets `synchronize: false` always.
 - Migration classes in `src/infrastructure/migrations/*.ts` (CLI helpers live in `migrations/scripts/`).
@@ -554,7 +701,7 @@ export class AddFeature1740000000000 implements MigrationInterface {
 
 ---
 
-## 10. External API Integration
+## 11. External API Integration
 
 ### Base class (`@my-noodles/api-lib/api-client`)
 
@@ -562,8 +709,7 @@ Hand-written outbound clients extend **`ApiClient`**: fetch + OTEL spans + struc
 
 ```ts
 export abstract class ApiClient {
-  protected constructor(logger: Logger) {}
-
+  // uses ambient `logger` from `@my-noodles/api-lib/logger` — no constructor injection
   protected abstract getBaseUrl(): string;
 
   protected get<T>(params: ApiClientRequestConfig): Promise<T> {
@@ -582,11 +728,8 @@ Framework-agnostic HTTP client classes live in **`packages/api-clients`**. Nest 
 ```ts
 // packages/api-clients/src/meest/meest.api.ts
 export class MeestApi extends ApiClient {
-  constructor(
-    private readonly settings: MeestClientOptions,
-    logger: Logger,
-  ) {
-    super(logger);
+  constructor(private readonly settings: MeestClientOptions) {
+    super();
   }
 
   protected getBaseUrl(): string {
@@ -600,8 +743,7 @@ export class MeestApi extends ApiClient {
 providers: [
   {
     provide: MeestApi,
-    useFactory: (logger: Logger) => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }, logger),
-    inject: [APP_LOGGER],
+    useFactory: () => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }),
   },
   MeestService,
 ],
@@ -623,7 +765,7 @@ apps/api/src/application/<provider>/
 └── index.ts
 ```
 
-- **`*Api`** — framework-agnostic: options + logger, `ApiClient` subclass, upstream-shaped methods.
+- **`*Api`** — framework-agnostic: options only, `ApiClient` subclass (ambient logger), upstream-shaped methods.
 - **`*Service` (optional)** — Nest provider in `apps/api`; injects `*Api`; exposes domain-friendly methods to feature modules/adapters.
 - Storefront OpenAPI client for the web app also lives in **`packages/api-clients/storefront`** (`@hey-api/client-fetch`).
 
@@ -635,7 +777,7 @@ apps/api/src/application/<provider>/
 
 ---
 
-## 11. Configuration
+## 12. Configuration
 
 - Root: `src/config.ts` — `loadConfig()` maps env → validated `Config` (not raw env DTOs).
 - Env files (via `env.ts` → `loadAppEnv()`, later overrides earlier): `.env` → `.env.{NODE_ENV}` → `.env.local`.
@@ -666,27 +808,28 @@ if (config.otel.enabled) {
 
 ---
 
-## 12. Logging, Tracing, Observability
+## 13. Logging, Tracing, Observability
 
 - OTEL loads **before** the app via Node preload: `node --import=./dist/instrumentation.js dist/index.js`.
 - `instrumentation.ts` is a side-effect module — no init/shutdown helpers in `index.ts` or graceful shutdown.
 - **OTLP export**: opt-in via `OTEL_ENABLED`; no-op preload when off (local dev unaffected).
-- **Logging**: raw `winston` via `@my-noodles/api-lib/logging` — one instance created by `createAppLogger()` as `appLogger` in `logging.module.ts`, provided as `useValue: appLogger` under the `APP_LOGGER` token. Access logging via `LoggingInterceptor` (`logging.interceptor.ts`).
-- Bootstrap: import `appLogger` directly for startup logs and `ExceptionsFilter`.
-- Feature / infrastructure code: inject `@Inject(APP_LOGGER) private readonly logger: Logger`.
+- **Logging**: ambient Winston singleton `logger` from `@my-noodles/api-lib/logger`. Configured once at startup via `configureAppLogger(...)` in `apps/api/src/infrastructure/logging` (also sets `LogMetadata` — `appName`/`appVersion`). Register `LoggingInterceptor` in bootstrap with `app.useGlobalInterceptors(...)`.
+- Use the same `logger` everywhere — bootstrap, services, cron, Nest filters/interceptors, and non-DI utilities.
 
 ```ts
-this.logger.info({ msg: 'order.created', orderId, totalMinor });
-this.logger.error({ msg: 'order.notify.failed', orderId, error: err.message });
+import { logger } from '@my-noodles/api-lib/logger';
+
+logger.info({ msg: 'order.created', orderId, totalMinor });
+logger.error({ msg: 'order.notify.failed', orderId, error: err.message });
 ```
 
-Do not use Nest `new Logger()` or a second Winston instance — inject `APP_LOGGER` (or import `appLogger` in bootstrap).
+Do not use Nest `new Logger()` or a second Winston instance — import the ambient `logger`.
 
 Do not import OTel SDK directly in feature modules — use bootstrap instrumentation + logger correlation.
 
 ---
 
-## 13. Rate Limiting
+## 14. Rate Limiting
 
 Global `@nestjs/throttler` (~60 req/min per IP) + tighter limit on sensitive routes:
 
@@ -700,7 +843,7 @@ On limit exceeded, Nest returns 429 — `ExceptionsFilter` maps it to `TooManyRe
 
 ---
 
-## 14. Tests
+## 15. Tests
 
 - Naming: `<feature>.test.ts`, co-located.
 - **Unit**: `@nestjs/testing` `Test.createTestingModule` with mocked providers/repos.
@@ -713,7 +856,7 @@ Run: `pnpm nx run api:test` or `api:validate`.
 
 ---
 
-## 15. Anti-Patterns
+## 16. Anti-Patterns
 
 | Anti-pattern                                                     | Do instead                                                                                                                    |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -733,13 +876,14 @@ Run: `pnpm nx run api:test` or `api:validate`.
 | God `AppModule` providers                                        | Feature `*.module.ts` per domain                                                                                              |
 | Copy-paste validator                                             | Add to `utils/validators/` and reuse                                                                                          |
 | Nest `HttpException` subclasses for domain errors                | Raw `@my-noodles/api-lib/exceptions` + `ExceptionsFilter`                                                                     |
-| Second Winston instance / Nest `Logger` in features              | Inject `APP_LOGGER` (bootstrap may import `appLogger`)                                                                        |
+| Second Winston instance / Nest `Logger` in features              | Import ambient `logger` from `@my-noodles/api-lib/logger`                                                                     |
 | Deep `../../infrastructure/…` cross-layer imports                | `@/infrastructure/…` (or `@/config`, `@/application/…`)                                                                       |
-| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder — e.g. `LoggingModule` from `@/infrastructure/logging`                                                           |
+| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder barrel — e.g. `TelegramModule` from `@/application/telegram`                                                     |
+| Handler JSDoc that restates the method/route                     | Omit; add summary/`@remarks` only for non-obvious operation semantics                                                         |
 
 ---
 
-## 16. Quick Sanity Checklist
+## 17. Quick Sanity Checklist
 
 Before declaring done:
 
@@ -750,4 +894,4 @@ Before declaring done:
 - [ ] DB changes have `up` + `down` migrations
 - [ ] New entities extend `TimestampEntity`; FKs use `onUpdate: 'CASCADE'`, no `onDelete: 'CASCADE'`
 - [ ] `pnpm nx run api:validate` passes
-- [ ] Swagger/OpenAPI still generates if DTOs/controllers changed
+- [ ] OpenAPI still generates from types/validators ([§8](#8-openapi-documentation)); no filler handler JSDoc

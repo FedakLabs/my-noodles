@@ -1,9 +1,7 @@
 import type {
   InfiniteData,
-  QueryClient,
   UseInfiniteQueryResult,
   UseMutationResult,
-  UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
 
@@ -21,19 +19,6 @@ export type RenameMultiple<T, R extends [PropertyKey, PropertyKey][]> = R extend
       : RenameKey<T, From, To>
     : never
   : T;
-
-export function defineQueryOptions<TQueryFnData, TError = Error, TData = TQueryFnData>(
-  options: UseQueryOptions<TQueryFnData, TError, TData>,
-): UseQueryOptions<TQueryFnData, TError, TData> {
-  return options;
-}
-
-export async function prefetchQuery<TQueryFnData, TError = Error, TData = TQueryFnData>(
-  queryClient: QueryClient,
-  options: UseQueryOptions<TQueryFnData, TError, TData>,
-): Promise<void> {
-  await queryClient.prefetchQuery(options);
-}
 
 /** Page-based list responses from our API (`PaginatedProductsDto`, …). */
 export type PagePaginatedResponse<TItem> = {

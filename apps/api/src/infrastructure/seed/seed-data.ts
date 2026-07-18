@@ -170,7 +170,6 @@ const PRODUCT_BLUEPRINTS: readonly ProductBlueprint[] = [
   },
 ];
 
-/** Dev-only catalog rows — generated to make the storefront feel stocked and browsable. */
 export const PRODUCT_SEEDS: readonly SeedProductRow[] = MARKETS.flatMap((market, marketIndex) =>
   PRODUCT_BLUEPRINTS.map((blueprint, blueprintIndex) => {
     const brand = market.brands[blueprintIndex % market.brands.length]!;

@@ -4,13 +4,10 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 const STORE_VERSION = 1;
 
-/** Filter dimensions, identical to the catalog + the `FeedFiltersDto` wire shape. */
 export type FeedTagDimension = 'category' | 'country' | 'brand';
 
-/** Canonical grouped filters — persisted as-is and sent directly on `POST /feed/next`. */
 export type FeedFilters = Required<Pick<FeedFiltersDto, FeedTagDimension>>;
 
-/** Flat "hashtag" view of the grouped filters — one chip per dimension value. */
 export type FeedTagChip = {
   type: FeedTagDimension;
   value: string;
@@ -18,7 +15,7 @@ export type FeedTagChip = {
 
 type FeedTagsState = {
   filters: FeedFilters;
-  /** Display labels captured at add-time (e.g. localized names), keyed `type:value`. Not persisted. */
+  /** Display labels keyed `type:value` — not persisted (see `partialize`). */
   labels: Record<string, string>;
   addTag: (type: FeedTagDimension, value: string, label?: string) => void;
   removeTag: (type: FeedTagDimension, value: string) => void;
@@ -70,14 +67,12 @@ export const useFeedTagsStore = create<FeedTagsState>()(
   ),
 );
 
-/** Resolve a chip's display label: captured label, else a humanized slug. */
 export function feedTagLabel(labels: Record<string, string>, chip: FeedTagChip): string {
   return labels[tagKey(chip.type, chip.value)] ?? chip.value.replace(/-/g, ' ');
 }
 
 const TAG_DIMENSIONS: FeedTagDimension[] = ['category', 'country', 'brand'];
 
-/** Derive the flat chips view for rendering — each chip maps back to a `removeTag(type, value)`. */
 export function flattenFeedTags(filters: FeedFilters): FeedTagChip[] {
   return TAG_DIMENSIONS.flatMap((type) => filters[type].map((value) => ({ type, value })));
 }

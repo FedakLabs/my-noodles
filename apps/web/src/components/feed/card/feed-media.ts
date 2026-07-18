@@ -1,10 +1,9 @@
 import type { MediaGalleryItem } from '@my-noodles/ui';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 
-/** Build MediaGallery items (images first, then videos) from a feed product. */
 export function toFeedMediaItems(
-  item: Pick<FeedItemDto, 'name' | 'slug' | 'images' | 'videos'>,
+  item: Pick<Product, 'name' | 'slug' | 'images' | 'videos'>,
 ): MediaGalleryItem[] {
   const alt = item.name ?? item.slug;
 

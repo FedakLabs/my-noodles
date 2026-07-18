@@ -5,3 +5,6 @@ export const DISCOVERY_CARD_IMAGE_FRAME_SX = {
   bgcolor: 'action.hover',
   flexShrink: 0,
 } as const;
+
+/** Theme button minHeight (44) + DiscoveryCardActions 1px border top/bottom. */
+export const DISCOVERY_CARD_ACTIONS_ROW_MIN_HEIGHT = 46;

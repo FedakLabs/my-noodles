@@ -1,23 +1,24 @@
-import { type CheckoutDetailDto, DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
+import { type Checkout, DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
 
 import { type CheckoutFormData, toSubmitDeliveryDto } from './validation';
 
-export function checkoutToFormValues(checkout: CheckoutDetailDto): CheckoutFormData {
+export function checkoutToFormValues(checkout: Checkout): CheckoutFormData {
+  const { delivery } = checkout.order;
   return {
-    firstName: checkout.firstName ?? '',
-    lastName: checkout.lastName ?? '',
-    phone: checkout.phone ?? '',
-    method: checkout.delivery?.method ?? DeliveryMethod.WAREHOUSE,
-    provider: checkout.delivery?.provider ?? DeliveryProvider.NOVA_POSHTA,
-    cityName: checkout.delivery?.city ?? '',
-    cityRef: checkout.delivery?.cityRef ?? '',
-    warehouseRef: checkout.delivery?.warehouseRef ?? '',
-    warehouseName: checkout.delivery?.warehouseName ?? '',
-    warehouseNumber: checkout.delivery?.warehouseNumber ?? '',
-    street: checkout.delivery?.street ?? '',
-    building: checkout.delivery?.building ?? '',
-    apartment: checkout.delivery?.apartment ?? '',
-    notes: checkout.delivery?.notes ?? '',
+    firstName: checkout.order.firstName ?? '',
+    lastName: checkout.order.lastName ?? '',
+    phone: checkout.order.phone ?? '',
+    method: delivery?.method ?? DeliveryMethod.WAREHOUSE,
+    provider: delivery?.provider ?? DeliveryProvider.NOVA_POSHTA,
+    cityName: delivery?.city ?? '',
+    cityRef: delivery?.cityRef ?? '',
+    warehouseRef: delivery?.warehouseRef ?? '',
+    warehouseName: delivery?.warehouseName ?? '',
+    warehouseNumber: delivery?.warehouseNumber ?? '',
+    street: delivery?.street ?? '',
+    building: delivery?.building ?? '',
+    apartment: delivery?.apartment ?? '',
+    notes: delivery?.notes ?? '',
   };
 }
 

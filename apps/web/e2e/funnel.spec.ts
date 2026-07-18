@@ -4,7 +4,8 @@ import { CATALOG_VIEW_MODE_COOKIE } from '../src/components/catalog-view-mode/vi
 import { e2eLocale, uk } from './fixtures/uk-messages';
 
 test.describe('discovery funnel', () => {
-  test.beforeEach(async ({ context }) => {
+  test.beforeEach(async ({ context, request }) => {
+    await request.post('http://localhost:3001/api/e2e/reset');
     await context.addCookies([
       {
         name: CATALOG_VIEW_MODE_COOKIE,
@@ -41,6 +42,9 @@ test.describe('discovery funnel', () => {
 
     await expect(page.getByText(/Орієнтовна доставка/)).toBeVisible();
 
+    // Checkout disables submit while a field/combobox is focused (autosave guard).
+    await page.getByRole('heading', { name: uk.checkout.title }).click();
+    await expect(page.getByTestId('checkout-submit')).toBeEnabled();
     await page.getByTestId('checkout-submit').click();
 
     await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/success$`));

@@ -49,98 +49,84 @@ export type PaginationMetaDto = {
     limit: number;
 };
 
-export type BrandRefDto = {
+export type Brand = {
+    id: string;
     slug: string;
     name: string;
+    logoUrl: string | null;
+    themeKey: string | null;
+    products: Array<Product>;
 };
 
-export type CountryRefDto = {
-    slug: string;
-    code: string;
+export type Country = {
     name: string | null;
-};
-
-export type CategoryRefDto = {
-    slug: string;
-    name: string | null;
-};
-
-export type ProductSummaryDto = {
     id: string;
-    brand?: BrandRefDto | null;
+    code: string;
     slug: string;
+    flagEmoji: string | null;
+    themeKey: string | null;
+    products: Array<Product>;
+};
+
+export type Category = {
     name: string | null;
+    id: string;
+    slug: string;
+    icon: string | null;
+    sortOrder: number;
+    themeKey: string | null;
+    products: Array<Product>;
+};
+
+export type Collection = {
+    name: string | null;
+    description: string | null;
+    id: string;
+    code: string;
+    slug: string;
+    heroImage: string | null;
+    themeKey: string | null;
+    sortOrder: number;
+    isActive: boolean;
+    products: Array<Product>;
+};
+
+export type Product = {
+    name: string | null;
+    description: string | null;
+    story: string | null;
+    forWhom: string | null;
+    inStock: boolean;
+    liked?: boolean;
+    commentCount?: number;
+    id: string;
+    slug: string;
+    weight: string | null;
     priceMinor: number;
     currency: string;
+    flavor: {
+        [key: string]: unknown;
+    };
+    allergens: Array<string>;
     images: Array<string>;
-    inStock: boolean;
+    videos: Array<string>;
     isTriedByUs: boolean;
+    quantity: number;
     sortWeight: number;
-    country: CountryRefDto;
-    category: CategoryRefDto;
+    brandId: string | null;
+    brand: Brand | null;
+    countryId: string;
+    country: Country;
+    categoryId: string;
+    category: Category;
+    alternatives: Array<Product>;
+    alternativeOf: Array<Product>;
+    collections: Array<Collection>;
 };
 
 export type PaginatedProductsDto = {
     meta: PaginationMetaDto;
-    items: Array<ProductSummaryDto>;
-};
-
-export type ProductFlavorDto = {
-    spice: number;
-    sweet: number;
-    texture: string;
-};
-
-export type ProductDetailDto = {
-    id: string;
-    brand?: BrandRefDto | null;
-    slug: string;
-    name: string | null;
-    priceMinor: number;
-    currency: string;
-    images: Array<string>;
-    inStock: boolean;
-    isTriedByUs: boolean;
-    sortWeight: number;
-    country: CountryRefDto;
-    category: CategoryRefDto;
-    weight: string | null;
-    description: string | null;
-    story: string | null;
-    forWhom: string | null;
-    flavor: ProductFlavorDto;
-    allergens: Array<string>;
-    videos: Array<string>;
-    alternatives: Array<ProductSummaryDto>;
-};
-
-export type CollectionSummaryDto = {
-    heroImage?: string | null;
-    themeKey?: string | null;
-    code: string;
-    slug: string;
-    name: string | null;
-    description: string | null;
-    sortOrder: number;
-};
-
-export type CollectionDetailDto = {
-    heroImage?: string | null;
-    themeKey?: string | null;
-    code: string;
-    slug: string;
-    name: string | null;
-    description: string | null;
-    sortOrder: number;
-    productSlugs: Array<string>;
-};
-
-export type CountryDto = {
-    flagEmoji?: string | null;
-    themeKey?: string | null;
-    code: string;
-    slug: string;
-    name: string | null;
+    items: Array<Product>;
 };
 
 export const DeliveryProvider = {
@@ -172,13 +158,110 @@ export type DeliveryWarehouseDto = {
     address?: string;
 };
 
-export type CheckoutStartDto = {
+export type OrderDeliveryEstimateDto = {
+    estimatedDeliveryAt: string;
+    estimatedDaysMin: number;
+    estimatedDaysMax: number;
+    shippingCostMinor: number;
+};
+
+export type FeedSessionLike = {
+    id: string;
+    visitorSessionId: string;
+    visitorSession: VisitorSession;
+    productId: string;
+    product: Product;
+};
+
+export type FeedSessionView = {
+    id: string;
+    visitorSessionId: string;
+    visitorSession: VisitorSession;
+    productId: string;
+    product: Product;
+    dwellMs: number;
+    filters: {
+        [key: string]: unknown;
+    } | null;
+};
+
+export type VisitorSession = {
+    id: string;
+    feedExpiresAt: string;
+    cartExpiresAt: string;
+    likes: Array<FeedSessionLike>;
+    views: Array<FeedSessionView>;
+};
+
+export type OrderDelivery = {
     id: string;
     orderId: string;
-    createdAt: string;
-    status: string;
+    order: Order;
+    provider: 'nova-poshta' | 'ukrposhta' | 'meest';
+    method: 'warehouse' | 'courier';
+    city: string | null;
+    cityRef: string | null;
+    warehouseNumber: string | null;
+    warehouseName: string | null;
+    warehouseRef: string | null;
+    street: string | null;
+    building: string | null;
+    apartment: string | null;
+    notes: string | null;
+    estimatedDeliveryAt: string | null;
+    estimatedDaysMin: number | null;
+    estimatedDaysMax: number | null;
+    shippingCostMinor: number | null;
+};
+
+export type OrderItem = {
+    id: string;
+    orderId: string;
+    order: Order;
+    productId: string;
+    product: Product;
+    titleSnapshot: string;
+    priceMinorSnapshot: number;
+    qty: number;
+};
+
+export type Checkout = {
+    /**
+     * Live delivery estimate for the current checkout draft.
+     * Response-only — set by `CheckoutsService.attachCheckoutAggregates`.
+     */
+    deliveryEstimate?: OrderDeliveryEstimateDto | null;
+    isExpired: boolean;
+    id: string;
+    orderId: string;
+    order: Order;
+    visitorSessionId: string;
+    visitorSession: VisitorSession;
+    status: 'in_progress' | 'completed' | 'cancelled';
+    cancelledReason: 'user' | 'expired';
+    completedAt: string | null;
+    expiresAt: string;
+};
+
+export type Order = {
+    /**
+     * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
+     * Response-only — set by `CheckoutCalculator.calculateTotals`.
+     */
+    grandTotalMinor?: number;
+    id: string;
+    visitorSessionId: string | null;
+    visitorSession: VisitorSession | null;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
     totalMinor: number;
     currency: string;
+    status: 'draft' | 'new' | 'confirmed' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+    cancelledReason: 'customer_request' | 'out_of_stock';
+    delivery: OrderDelivery | null;
+    items: Array<OrderItem>;
+    checkout: Checkout | null;
 };
 
 export const CheckoutStatus = {
@@ -188,65 +271,6 @@ export const CheckoutStatus = {
 } as const;
 
 export type CheckoutStatus = typeof CheckoutStatus[keyof typeof CheckoutStatus];
-
-export type CheckoutSummaryDto = {
-    id: string;
-    orderId: string;
-    updatedAt: string;
-    expiresAt: string | null;
-    status: string;
-    itemCount: number;
-    totalMinor: number;
-    currency: string;
-};
-
-export type CheckoutsListDto = {
-    items: Array<CheckoutSummaryDto>;
-};
-
-export type OrderDeliveryEstimateDto = {
-    estimatedDeliveryAt: string;
-    estimatedDaysMin: number;
-    estimatedDaysMax: number;
-    shippingCostMinor: number;
-};
-
-export type OrderItemDto = {
-    productId: string;
-    title: string;
-    priceMinor: number;
-    qty: number;
-};
-
-export type OrderDeliveryResponseDto = {
-    provider: 'nova-poshta' | 'ukrposhta' | 'meest';
-    method: 'warehouse' | 'courier';
-    city: string | null;
-    cityRef?: string | null;
-    warehouseNumber?: string | null;
-    warehouseName?: string | null;
-    warehouseRef?: string | null;
-    street?: string | null;
-    building?: string | null;
-    apartment?: string | null;
-    notes?: string | null;
-};
-
-export type CheckoutDetailDto = {
-    id: string;
-    orderId: string;
-    deliveryEstimate: OrderDeliveryEstimateDto | null;
-    createdAt: string;
-    expiresAt: string | null;
-    status: string;
-    totalMinor: number;
-    currency: string;
-    firstName: string | null;
-    lastName: string | null;
-    phone: string | null;
-    items: Array<OrderItemDto>;
-    delivery: OrderDeliveryResponseDto | null;
-};
 
 export type UpdateCheckoutReceiverDto = {
     phone?: string;
@@ -289,37 +313,46 @@ export type SubmitCheckoutDto = {
     delivery: CreateOrderDeliveryDto;
 };
 
-export type OrderResponseDto = {
+export type CartItem = {
     id: string;
-    createdAt: string;
-    status: string;
-    totalMinor: number;
-    currency: string;
-};
-
-export type CartItemDto = {
+    visitorSessionId: string;
+    visitorSession: VisitorSession;
     productId: string;
-    slug: string;
-    title: string;
-    priceMinor: number;
-    currency: string;
-    imageUrl?: string;
+    product: Product;
     qty: number;
 };
 
 export type CartResponseDto = {
-    items: Array<CartItemDto>;
+    items: Array<CartItem>;
+    /**
+     * Cart total in minor currency units
+     */
     totalMinor: number;
+    /**
+     * Sum of line quantities
+     */
     itemCount: number;
+    /**
+     * ISO currency code for totals
+     */
     currency: string;
 };
 
 export type AddCartItemDto = {
+    /**
+     * Quantity to add (defaults to 1)
+     */
     qty?: number;
+    /**
+     * Product to add
+     */
     productId: string;
 };
 
 export type SetCartItemQtyDto = {
+    /**
+     * Absolute quantity to set for the cart line
+     */
     qty: number;
 };
 
@@ -354,29 +387,8 @@ export type FeedNextDto = {
     reshuffle?: boolean;
 };
 
-export type FeedTagRefDto = {
-    slug: string;
-    name: string | null;
-};
-
-export type FeedItemDto = {
-    id: string;
-    brand?: FeedTagRefDto | null;
-    slug: string;
-    name: string | null;
-    priceMinor: number;
-    currency: string;
-    images: Array<string>;
-    videos: Array<string>;
-    inStock: boolean;
-    category: FeedTagRefDto;
-    country: FeedTagRefDto;
-    commentCount: number;
-    liked: boolean;
-};
-
 export type FeedNextResponseDto = {
-    item?: FeedItemDto | null;
+    item?: Product | null;
     /**
      * True when no more products match the current filters for this session.
      */
@@ -387,19 +399,12 @@ export type FeedLikeStateDto = {
     liked: boolean;
 };
 
-export type FeedCommentDto = {
-    id: string;
-    authorName: string;
+export type FeedProductComment = {
     comment: string | null;
-};
-
-export type FeedLikedItemDto = {
     id: string;
-    slug: string;
-    name: string | null;
-    priceMinor: number;
-    currency: string;
-    images: Array<string>;
+    productId: string;
+    product: Product;
+    authorName: string;
 };
 
 export type HealthControllerGetLiveData = {
@@ -516,7 +521,7 @@ export type ProductsControllerGetBySlugData = {
 };
 
 export type ProductsControllerGetBySlugResponses = {
-    200: ProductDetailDto;
+    200: Product;
 };
 
 export type ProductsControllerGetBySlugResponse = ProductsControllerGetBySlugResponses[keyof ProductsControllerGetBySlugResponses];
@@ -535,7 +540,7 @@ export type CollectionsControllerListData = {
 };
 
 export type CollectionsControllerListResponses = {
-    200: Array<CollectionSummaryDto>;
+    200: Array<Collection>;
 };
 
 export type CollectionsControllerListResponse = CollectionsControllerListResponses[keyof CollectionsControllerListResponses];
@@ -563,7 +568,7 @@ export type CollectionsControllerGetBySlugErrors = {
 };
 
 export type CollectionsControllerGetBySlugResponses = {
-    200: CollectionDetailDto;
+    200: Collection;
 };
 
 export type CollectionsControllerGetBySlugResponse = CollectionsControllerGetBySlugResponses[keyof CollectionsControllerGetBySlugResponses];
@@ -582,7 +587,7 @@ export type CountriesControllerListData = {
 };
 
 export type CountriesControllerListResponses = {
-    200: Array<CountryDto>;
+    200: Array<Country>;
 };
 
 export type CountriesControllerListResponse = CountriesControllerListResponses[keyof CountriesControllerListResponses];
@@ -644,7 +649,7 @@ export type CheckoutsControllerListCheckoutsData = {
 };
 
 export type CheckoutsControllerListCheckoutsResponses = {
-    200: CheckoutsListDto;
+    200: Array<Checkout>;
 };
 
 export type CheckoutsControllerListCheckoutsResponse = CheckoutsControllerListCheckoutsResponses[keyof CheckoutsControllerListCheckoutsResponses];
@@ -684,7 +689,7 @@ export type CheckoutsControllerStartCheckoutErrors = {
 export type CheckoutsControllerStartCheckoutError = CheckoutsControllerStartCheckoutErrors[keyof CheckoutsControllerStartCheckoutErrors];
 
 export type CheckoutsControllerStartCheckoutResponses = {
-    201: CheckoutStartDto;
+    201: Checkout;
 };
 
 export type CheckoutsControllerStartCheckoutResponse = CheckoutsControllerStartCheckoutResponses[keyof CheckoutsControllerStartCheckoutResponses];
@@ -727,7 +732,7 @@ export type CheckoutsControllerCancelCheckoutErrors = {
 export type CheckoutsControllerCancelCheckoutError = CheckoutsControllerCancelCheckoutErrors[keyof CheckoutsControllerCancelCheckoutErrors];
 
 export type CheckoutsControllerCancelCheckoutResponses = {
-    200: CheckoutDetailDto;
+    200: Checkout;
 };
 
 export type CheckoutsControllerCancelCheckoutResponse = CheckoutsControllerCancelCheckoutResponses[keyof CheckoutsControllerCancelCheckoutResponses];
@@ -753,31 +758,12 @@ export type CheckoutsControllerGetCheckoutErrors = {
             checkoutId?: string;
         };
     };
-    /**
-     * checkout_not_in_progress, checkout_expired
-     */
-    409: {
-        status: 409;
-        code: 'checkout_not_in_progress';
-        message: string;
-        payload: {
-            checkoutId?: string;
-            status?: string;
-        };
-    } | {
-        status: 409;
-        code: 'checkout_expired';
-        message: string;
-        payload: {
-            checkoutId?: string;
-        };
-    };
 };
 
 export type CheckoutsControllerGetCheckoutError = CheckoutsControllerGetCheckoutErrors[keyof CheckoutsControllerGetCheckoutErrors];
 
 export type CheckoutsControllerGetCheckoutResponses = {
-    200: CheckoutDetailDto;
+    200: Checkout;
 };
 
 export type CheckoutsControllerGetCheckoutResponse = CheckoutsControllerGetCheckoutResponses[keyof CheckoutsControllerGetCheckoutResponses];
@@ -827,7 +813,7 @@ export type CheckoutsControllerUpdateCheckoutReceiverErrors = {
 export type CheckoutsControllerUpdateCheckoutReceiverError = CheckoutsControllerUpdateCheckoutReceiverErrors[keyof CheckoutsControllerUpdateCheckoutReceiverErrors];
 
 export type CheckoutsControllerUpdateCheckoutReceiverResponses = {
-    200: CheckoutDetailDto;
+    200: Checkout;
 };
 
 export type CheckoutsControllerUpdateCheckoutReceiverResponse = CheckoutsControllerUpdateCheckoutReceiverResponses[keyof CheckoutsControllerUpdateCheckoutReceiverResponses];
@@ -877,7 +863,7 @@ export type CheckoutsControllerUpdateCheckoutDeliveryErrors = {
 export type CheckoutsControllerUpdateCheckoutDeliveryError = CheckoutsControllerUpdateCheckoutDeliveryErrors[keyof CheckoutsControllerUpdateCheckoutDeliveryErrors];
 
 export type CheckoutsControllerUpdateCheckoutDeliveryResponses = {
-    200: CheckoutDetailDto;
+    200: Checkout;
 };
 
 export type CheckoutsControllerUpdateCheckoutDeliveryResponse = CheckoutsControllerUpdateCheckoutDeliveryResponses[keyof CheckoutsControllerUpdateCheckoutDeliveryResponses];
@@ -934,7 +920,7 @@ export type CheckoutsControllerSubmitCheckoutErrors = {
 export type CheckoutsControllerSubmitCheckoutError = CheckoutsControllerSubmitCheckoutErrors[keyof CheckoutsControllerSubmitCheckoutErrors];
 
 export type CheckoutsControllerSubmitCheckoutResponses = {
-    201: OrderResponseDto;
+    201: Order;
 };
 
 export type CheckoutsControllerSubmitCheckoutResponse = CheckoutsControllerSubmitCheckoutResponses[keyof CheckoutsControllerSubmitCheckoutResponses];
@@ -1152,7 +1138,7 @@ export type OrdersControllerCancelOrderErrors = {
 export type OrdersControllerCancelOrderError = OrdersControllerCancelOrderErrors[keyof OrdersControllerCancelOrderErrors];
 
 export type OrdersControllerCancelOrderResponses = {
-    200: OrderResponseDto;
+    201: Order;
 };
 
 export type OrdersControllerCancelOrderResponse = OrdersControllerCancelOrderResponses[keyof OrdersControllerCancelOrderResponses];
@@ -1241,7 +1227,7 @@ export type FeedControllerCommentsData = {
 };
 
 export type FeedControllerCommentsResponses = {
-    200: Array<FeedCommentDto>;
+    200: Array<FeedProductComment>;
 };
 
 export type FeedControllerCommentsResponse = FeedControllerCommentsResponses[keyof FeedControllerCommentsResponses];
@@ -1260,7 +1246,7 @@ export type FeedControllerLikesData = {
 };
 
 export type FeedControllerLikesResponses = {
-    200: Array<FeedLikedItemDto>;
+    200: Array<Product>;
 };
 
 export type FeedControllerLikesResponse = FeedControllerLikesResponses[keyof FeedControllerLikesResponses];

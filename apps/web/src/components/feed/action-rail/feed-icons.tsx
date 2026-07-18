@@ -20,13 +20,13 @@ export function HeartIcon({ size = 26, filled = false }: FeedIconProps & { fille
   );
 }
 
-export function CommentIcon({ size = 26 }: FeedIconProps) {
+export function CommentIcon({ size = 26, filled = false }: FeedIconProps & { filled?: boolean }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth={2}
       strokeLinecap="round"

@@ -1,4 +1,5 @@
 export {
+  feedQueries,
   feedQueryKeys,
   fetchFeedComments,
   fetchFeedLikes,
@@ -8,12 +9,10 @@ export {
 } from './feed';
 export { useFeedComments, useFeedLikes, useLikeFeedProduct, useUnlikeFeedProduct } from './feed.hooks';
 export type {
-  FeedCommentDto,
   FeedFiltersDto,
-  FeedItemDto,
-  FeedLikedItemDto,
+  FeedProductComment,
   FeedLikeStateDto,
   FeedNextDto,
   FeedNextResponseDto,
-  FeedTagRefDto,
+  Product,
 } from './types';

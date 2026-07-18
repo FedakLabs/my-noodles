@@ -29,7 +29,7 @@ export function resolveCartErrorMessage(
     case 'cart_inventory_changed':
       return t('inventoryChanged');
     case 'cart_empty':
-      return t('empty');
+      return fallback === 'checkoutError' ? t('checkoutItemsUnavailable') : t('empty');
     default:
       return t(fallback);
   }

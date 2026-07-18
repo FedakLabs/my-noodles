@@ -9,7 +9,6 @@ import type { ReactNode } from 'react';
 import { SITE_HEADER_HEIGHT } from '@/components/layout/site-nav-config';
 import { useNavigationRawPending, useNavigationSmoothBusy } from '@/hooks/smooth';
 
-/** Fixed bar height (px) — sits in the header/content seam during global navigation. */
 export const NAVIGATION_PROGRESS_HEIGHT = 3;
 
 type NavigationBusyOverlayProps = {

@@ -1,7 +1,6 @@
 'use client';
 
 import Typography from '@mui/material/Typography';
-import type { ProductSort } from '@my-noodles/api-clients/storefront';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef } from 'react';
 
@@ -15,23 +14,20 @@ import { catalogGridProducts, type CatalogProductGridSharedProps } from './catal
 import { useClearViewModeReset } from './use-clear-view-mode-reset';
 
 export function CatalogInfiniteGrid({
-  onOpenFilters,
   isViewModeResetting,
   clearViewModeReset,
   viewMode,
   listTitle,
 }: CatalogProductGridSharedProps) {
   const t = useTranslations('catalog');
-  const { params, setParams, hasFiltersApplied } = useCatalogSearchParams();
+  const { params } = useCatalogSearchParams();
   const previousCountRef = useRef(0);
   const infiniteListParams = useMemo(() => toCatalogInfiniteListParams(params), [params]);
 
   const {
     products,
-    productsTotal,
     productsIsInitialLoad,
     productsIsError,
-    productsIsRefetching,
     productsIsBusy,
     productsHasNextPage,
     productsIsFetchingNextPage,
@@ -39,7 +35,6 @@ export function CatalogInfiniteGrid({
   } = useProductsInfiniteList(infiniteListParams);
 
   const displayItems = products;
-  const totalCount = productsTotal ?? 0;
   const isInitialLoad = productsIsInitialLoad;
   const showSkeleton = isViewModeResetting || isInitialLoad;
   const gridProducts = catalogGridProducts(showSkeleton, displayItems);
@@ -91,12 +86,6 @@ export function CatalogInfiniteGrid({
   return (
     <ProductGrid
       products={gridProducts}
-      totalCount={showSkeleton ? undefined : totalCount}
-      showResultsCount
-      sort={params.sort}
-      onSortChange={(sort: ProductSort) => void setParams({ sort, page: 1 })}
-      onOpenFilters={onOpenFilters}
-      hasFiltersApplied={hasFiltersApplied}
       loadMore={
         showSkeleton
           ? undefined
@@ -107,7 +96,6 @@ export function CatalogInfiniteGrid({
             }
       }
       isPending={showSkeleton}
-      isFetching={productsIsRefetching}
       skeletonCount={params.limit}
     />
   );

@@ -3,14 +3,8 @@
 import { formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-import { countriesQueryKeys, fetchCountries } from './countries';
+import { countriesQueries } from './countries';
 
 export function useCountries() {
-  return formatUseQuery(
-    useQuery({
-      queryKey: countriesQueryKeys.list(),
-      queryFn: () => fetchCountries(),
-    }),
-    'countries',
-  );
+  return formatUseQuery(useQuery(countriesQueries.list()), 'countries');
 }

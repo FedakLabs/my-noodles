@@ -1,11 +1,7 @@
 'use client';
 
-import type { PaginatedProductsDto, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
-import {
-  formatUseInfiniteQuery,
-  formatUseQuery,
-  pagePaginatedGetNextPageParam,
-} from '@my-noodles/web-lib/react-query';
+import type { PaginatedProductsDto, Product } from '@my-noodles/api-clients/storefront';
+import { formatUseInfiniteQuery, formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -13,16 +9,7 @@ import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog
 import type { CatalogInfiniteListParams } from '@/screens/catalog/search-params';
 import { toCatalogInfiniteListParams } from '@/screens/catalog/search-params';
 
-import {
-  fetchProductDetail,
-  fetchProductFacets,
-  fetchProductsList,
-  productsQueryKeys,
-  resolvePaginatedProductsPage,
-} from './products';
-
-/** Facet counts for the current filter slice — safe to reuse briefly when reopening the filter UI. */
-const PRODUCT_FACETS_STALE_TIME_MS = 60_000;
+import { productsQueries, productsQueryKeys, resolvePaginatedProductsPage } from './products';
 
 type QueryEnabledOptions = {
   enabled?: boolean;
@@ -31,15 +18,13 @@ type QueryEnabledOptions = {
 export function useProductsList(params: CatalogSearchParams, options?: QueryEnabledOptions) {
   return formatUseQuery(
     useQuery({
-      queryKey: productsQueryKeys.list(params),
-      queryFn: () => fetchProductsList(params),
+      ...productsQueries.list(params),
       enabled: options?.enabled ?? true,
     }),
     'products',
   );
 }
 
-/** Pagination view mode — URL `page` drives fetches; accumulated items live in the query cache. */
 export function useProductsPaginatedList(params: CatalogSearchParams, options?: QueryEnabledOptions) {
   const queryClient = useQueryClient();
   const listParams = useMemo(() => toCatalogInfiniteListParams(params), [params]);
@@ -56,7 +41,7 @@ export function useProductsPaginatedList(params: CatalogSearchParams, options?: 
 }
 
 export function useProductsInfiniteList(params: CatalogInfiniteListParams, options?: QueryEnabledOptions) {
-  return formatUseInfiniteQuery<PaginatedProductsDto, ProductSummaryDto, Error, 'products'>(
+  return formatUseInfiniteQuery<PaginatedProductsDto, Product, Error, 'products'>(
     useInfiniteQuery<
       PaginatedProductsDto,
       Error,
@@ -64,10 +49,7 @@ export function useProductsInfiniteList(params: CatalogInfiniteListParams, optio
       ReturnType<typeof productsQueryKeys.infiniteList>,
       number
     >({
-      queryKey: productsQueryKeys.infiniteList(params),
-      queryFn: ({ pageParam }) => fetchProductsList({ ...params, page: pageParam }),
-      initialPageParam: 1,
-      getNextPageParam: pagePaginatedGetNextPageParam<ProductSummaryDto>(),
+      ...productsQueries.infiniteList(params),
       enabled: options?.enabled ?? true,
     }),
     'products',
@@ -77,8 +59,7 @@ export function useProductsInfiniteList(params: CatalogInfiniteListParams, optio
 export function useProductDetail(slug: string, options?: QueryEnabledOptions) {
   return formatUseQuery(
     useQuery({
-      queryKey: productsQueryKeys.detail(slug),
-      queryFn: () => fetchProductDetail(slug),
+      ...productsQueries.detail(slug),
       enabled: options?.enabled ?? true,
     }),
     'product',
@@ -86,12 +67,5 @@ export function useProductDetail(slug: string, options?: QueryEnabledOptions) {
 }
 
 export function useProductFacets(params: CatalogFacetsParams) {
-  return formatUseQuery(
-    useQuery({
-      queryKey: productsQueryKeys.facets(params),
-      queryFn: () => fetchProductFacets(params),
-      staleTime: PRODUCT_FACETS_STALE_TIME_MS,
-    }),
-    'productFacets',
-  );
+  return formatUseQuery(useQuery(productsQueries.facets(params)), 'productFacets');
 }

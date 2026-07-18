@@ -1,6 +1,9 @@
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
+import { OrderDeliveryEstimateDto } from '../delivery/delivery.dto';
 import { Order } from '../orders/order.entity';
 import { VisitorSession } from '../visitor/visitor-session.entity';
 import { CheckoutCancelledReason } from './checkout-cancelled-reason';
@@ -18,6 +21,7 @@ export class Checkout extends TimestampEntity {
   orderId!: string;
 
   @OneToOne(() => Order, (order) => order.checkout, {
+    eager: true,
     nullable: false,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
@@ -54,12 +58,16 @@ export class Checkout extends TimestampEntity {
     this.status = this.status || CheckoutStatus.InProgress;
   }
 
+  /**
+   * Live delivery estimate for the current checkout draft.
+   * Response-only — set by `CheckoutsService.attachCheckoutAggregates`.
+   */
+  @ApiPropertyOptional({ type: () => OrderDeliveryEstimateDto, nullable: true })
+  deliveryEstimate?: OrderDeliveryEstimateDto | null;
+
+  @Expose()
+  @ApiProperty()
   get isExpired(): boolean {
     return this.status === CheckoutStatus.InProgress && this.expiresAt.getTime() <= Date.now();
-  }
-
-  /** ISO `expiresAt` for API while the hold is active; otherwise null. */
-  get expiresAtIso(): string | null {
-    return this.status === CheckoutStatus.InProgress ? this.expiresAt.toISOString() : null;
   }
 }

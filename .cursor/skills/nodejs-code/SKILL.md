@@ -26,7 +26,7 @@ Consult [references/common-patterns.md](./references/common-patterns.md) and [re
 ## Workflow (short)
 
 1. **Analyze** — scope, modules, layers, external clients
-2. **Read** `code-style-guide.md`; grep analogous feature
+2. **Read** `code-style-guide.md` (§8 for OpenAPI docs when touching controllers/DTOs); grep analogous feature
 3. **Plan** files (DTO, controller, service, module, migration, tests)
 4. **Implement** — validators on all inputs; migrations for schema
 5. **Test** — unit + supertest where applicable

@@ -1,6 +1,10 @@
 import type { NovaPoshtaApi } from '@my-noodles/api-clients/nova-poshta';
 
-import { formatNovaPoshtaDirectoryCityName, NovaPoshtaService } from '@/application/nova-poshta';
+import {
+  formatNovaPoshtaDirectoryCityName,
+  NovaPoshtaException,
+  NovaPoshtaService,
+} from '@/application/nova-poshta';
 import { DeliveryMethod } from '@/application/orders/order-delivery.dto';
 
 import { describe, expect, it, jest } from '../jest-globals';
@@ -82,5 +86,39 @@ describe('NovaPoshtaService', () => {
     expect(cities).toEqual([{ ref: 'settlement-ref', name: 'м. Київ, Київська обл.' }]);
     expect(searchSettlements).toHaveBeenCalledWith('Київ');
     expect(getCities).not.toHaveBeenCalled();
+  });
+
+  it('rethrows NovaPoshtaException when city search fails', async () => {
+    const getCities = jest.fn().mockRejectedValue(new Error('CityName has invalid characters'));
+    const novaPoshtaApi = {
+      getCities,
+      searchSettlements: jest.fn(),
+    } as unknown as NovaPoshtaApi;
+
+    const service = new NovaPoshtaService(novaPoshtaApi);
+    const error = await service.searchCities('Київ', DeliveryMethod.Warehouse).catch((err) => err);
+
+    expect(error).toBeInstanceOf(NovaPoshtaException);
+    expect(error).toMatchObject({
+      code: 'nova_poshta_error',
+      message: 'Nova Poshta request failed',
+      payload: { reason: 'CityName has invalid characters' },
+    });
+  });
+
+  it('rethrows NovaPoshtaException when warehouse search fails', async () => {
+    const getWarehouses = jest.fn().mockRejectedValue(new Error('CityRef is empty'));
+    const novaPoshtaApi = {
+      getWarehouses,
+    } as unknown as NovaPoshtaApi;
+
+    const service = new NovaPoshtaService(novaPoshtaApi);
+    const error = await service.searchWarehouses('city-ref').catch((err) => err);
+
+    expect(error).toBeInstanceOf(NovaPoshtaException);
+    expect(error).toMatchObject({
+      code: 'nova_poshta_error',
+      payload: { reason: 'CityRef is empty' },
+    });
   });
 });

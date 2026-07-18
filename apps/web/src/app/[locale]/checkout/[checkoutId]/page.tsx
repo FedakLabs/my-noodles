@@ -1,24 +1,13 @@
-import type { Metadata } from 'next';
-import { hasLocale } from 'next-intl';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
-import { routing } from '@/i18n/routing';
+import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
 import { CheckoutScreen } from '@/screens/checkout';
 import type { LocalePageProps } from '@/shared/page-props';
 import { buildPageMetadata, NOINDEX_ROBOTS } from '@/shared/seo';
 
-type CheckoutPageProps = LocalePageProps & {
-  params: Promise<{ locale: string; checkoutId: string }>;
-};
+type CheckoutPageProps = LocalePageProps<{ checkoutId: string }>;
 
-export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
-  const { locale } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    return {};
-  }
-
+export const generateMetadata = withPageLocaleMetadata<CheckoutPageProps>(async ({ locale }) => {
   const t = await getTranslations({ locale, namespace: 'checkout' });
 
   return buildPageMetadata({
@@ -27,16 +16,10 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
     title: t('title'),
     robots: NOINDEX_ROBOTS,
   });
+});
+
+function CheckoutPage({ params }: WithPageLocaleProps<CheckoutPageProps>) {
+  return <CheckoutScreen checkoutId={params.checkoutId} />;
 }
 
-export default async function CheckoutPage({ params }: CheckoutPageProps) {
-  const { locale, checkoutId } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-
-  setRequestLocale(locale);
-
-  return <CheckoutScreen checkoutId={checkoutId} />;
-}
+export default withPageLocale(CheckoutPage);

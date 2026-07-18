@@ -1,8 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import type { Logger } from 'winston';
 
-import { APP_LOGGER } from '../../logging';
+import { logger } from '../../logger';
 
 export type GracefulShutdownOptions = Readonly<{
   timeoutMs: number;
@@ -37,7 +36,6 @@ export class GracefulShutdown {
 
     this.isShuttingDown = true;
 
-    const logger = this.app.get<Logger>(APP_LOGGER);
     logger.info({ msg: 'shutdown.start', signal });
 
     const dataSource = this.app.get<DataSource>(DataSource, { strict: false });
@@ -53,7 +51,7 @@ export class GracefulShutdown {
 
     try {
       await this.app.close();
-      await this.closeResources(dataSource, signal, logger);
+      await this.closeResources(dataSource, signal);
       clearTimeout(forceExitTimer);
       logger.info({ msg: 'shutdown.complete', signal });
       process.exit(0);
@@ -64,11 +62,7 @@ export class GracefulShutdown {
     }
   }
 
-  private async closeResources(
-    dataSource: DataSource | undefined,
-    signal: NodeJS.Signals,
-    logger: Logger,
-  ): Promise<void> {
+  private async closeResources(dataSource: DataSource | undefined, signal: NodeJS.Signals): Promise<void> {
     if (dataSource?.isInitialized) {
       await dataSource.destroy();
     }

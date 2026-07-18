@@ -1,5 +1,4 @@
 import { ApiClient } from '@my-noodles/api-lib/api-client';
-import type { Logger } from 'winston';
 
 export type UkrposhtaClientOptions = {
   apiBaseUrl: string;
@@ -31,11 +30,8 @@ export type UkrposhtaPostOfficeRow = {
 };
 
 export class UkrposhtaApi extends ApiClient {
-  constructor(
-    private readonly settings: UkrposhtaClientOptions,
-    logger: Logger,
-  ) {
-    super(logger);
+  constructor(private readonly settings: UkrposhtaClientOptions) {
+    super();
   }
 
   protected getBaseUrl(): string {

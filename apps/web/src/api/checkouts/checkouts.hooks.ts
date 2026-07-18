@@ -9,30 +9,29 @@ import { isApiConflict } from '@/shared/api-error';
 
 import {
   cancelCheckout,
+  CheckoutStatus,
+  checkoutsQueries,
   checkoutsQueryKeys,
-  fetchCheckout,
-  fetchCheckouts,
-  mergeCheckoutDetail,
   startCheckout,
   submitCheckout,
   updateCheckoutDelivery,
   updateCheckoutReceiver,
 } from './checkouts';
 import type {
-  CheckoutDetailDto,
   ListCheckoutsParams,
   SubmitCheckoutDto,
   UpdateCheckoutDeliveryDto,
   UpdateCheckoutReceiverDto,
 } from './types';
 
-const inProgressListParams = { status: 'in_progress' } as const satisfies ListCheckoutsParams;
+const inProgressListParams = {
+  status: CheckoutStatus.IN_PROGRESS,
+} as const satisfies ListCheckoutsParams;
 
 export function useCheckoutsList(params?: ListCheckoutsParams, enabled = true) {
   return formatUseQuery(
     useQuery({
-      queryKey: checkoutsQueryKeys.list(params),
-      queryFn: () => fetchCheckouts(params),
+      ...checkoutsQueries.list(params),
       enabled,
     }),
     'checkouts',
@@ -45,18 +44,12 @@ export function useInProgressCheckouts() {
 
   return {
     ...query,
-    checkouts: query.checkouts?.items ?? [],
+    checkouts: query.checkouts ?? [],
   };
 }
 
 export function useCheckout(checkoutId: string) {
-  return formatUseQuery(
-    useQuery({
-      queryKey: checkoutsQueryKeys.detail(checkoutId),
-      queryFn: () => fetchCheckout(checkoutId),
-    }),
-    'checkout',
-  );
+  return formatUseQuery(useQuery(checkoutsQueries.detail(checkoutId)), 'checkout');
 }
 
 export function useStartCheckout() {
@@ -88,11 +81,8 @@ export function useUpdateCheckoutReceiver(checkoutId: string) {
   return formatUseMutation(
     useMutation({
       mutationFn: (body: UpdateCheckoutReceiverDto) => updateCheckoutReceiver(checkoutId, body),
-      onSuccess: (updated) => {
-        queryClient.setQueryData<CheckoutDetailDto | undefined>(
-          checkoutsQueryKeys.detail(checkoutId),
-          (current) => mergeCheckoutDetail(current, updated),
-        );
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) });
       },
     }),
     'updateCheckoutReceiver',
@@ -105,11 +95,8 @@ export function useUpdateCheckoutDelivery(checkoutId: string) {
   return formatUseMutation(
     useMutation({
       mutationFn: (body: UpdateCheckoutDeliveryDto) => updateCheckoutDelivery(checkoutId, body),
-      onSuccess: (updated) => {
-        queryClient.setQueryData<CheckoutDetailDto | undefined>(
-          checkoutsQueryKeys.detail(checkoutId),
-          (current) => mergeCheckoutDetail(current, updated),
-        );
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) });
       },
     }),
     'updateCheckoutDelivery',

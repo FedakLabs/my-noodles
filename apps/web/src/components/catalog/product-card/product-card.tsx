@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import {
   DiscoveryCard,
   discoveryCardGroupedCartButtonSx,
@@ -31,12 +31,10 @@ import { CATALOG_PRODUCT_GRID_COLUMNS } from './use-catalog-grid-columns';
 import { usePreviewCollapse } from './use-preview-collapse';
 
 export type ProductCardProps = {
-  product: ProductSummaryDto;
-  /** Grid index for overlay anchor positioning. */
+  product: Product;
   gridIndex?: number;
   /** Column count for preview anchor — pass from ProductGrid to avoid per-card media-query drift. */
   gridColumns?: number;
-  /** Enable click-to-expand preview (catalog grid). */
   previewEnabled?: boolean;
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import { Carousel, CarouselContent, CarouselSlide, railCarouselOptions } from '@my-noodles/ui';
 
 import { ProductCard } from '@/components/catalog/product-card/product-card';
@@ -12,7 +12,7 @@ const ALTERNATIVE_CARD_BASIS = {
 } as const;
 
 export type AlternativesRailProps = {
-  products: ProductSummaryDto[];
+  products: Product[];
   ariaLabel: string;
 };
 

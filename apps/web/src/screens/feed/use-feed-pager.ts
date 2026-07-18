@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { type FeedItemDto, fetchFeedNext } from '@/api/feed';
+import { fetchFeedNext, type Product } from '@/api/feed';
 import { type FeedFilters, useFeedTagsStore } from '@/hooks/feed';
 
 function getFeedFilters(): FeedFilters {
@@ -14,8 +14,8 @@ function clearFeedTags(): void {
 }
 
 export type FeedPager = {
-  items: FeedItemDto[];
-  currentItem: FeedItemDto | null;
+  items: Product[];
+  currentItem: Product | null;
   index: number;
   count: number;
   initializing: boolean;
@@ -47,7 +47,7 @@ const NAV_LOCK_MS = 500;
 export function useFeedPager(): FeedPager {
   const filters = useFeedTagsStore((state) => state.filters);
 
-  const [items, setItems] = useState<FeedItemDto[]>([]);
+  const [items, setItems] = useState<Product[]>([]);
   const [index, setIndex] = useState(0);
   const [exhausted, setExhausted] = useState(false);
   const [initializing, setInitializing] = useState(true);
@@ -71,7 +71,7 @@ export function useFeedPager(): FeedPager {
   }, []);
 
   const loadNext = useCallback(
-    async (leavingItem: FeedItemDto, generation: number, rollbackIndex: number) => {
+    async (leavingItem: Product, generation: number, rollbackIndex: number) => {
       setLoading(true);
       setError(false);
 

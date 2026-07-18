@@ -8,6 +8,7 @@ import {
   type CartResponseDto,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 
@@ -15,10 +16,11 @@ export const cartQueryKeys = {
   all: withAppLocaleKey(() => ['cart'] as const),
 };
 
-/** Stable keys for `useMutation({ mutationKey })` and `useMutationState` filters — add only when needed. */
 export const cartMutationKeys = {
   all: ['cart'] as const,
   addItem: () => ['cart', 'addItem'] as const,
+  setItemQty: () => ['cart', 'setItemQty'] as const,
+  removeItem: () => ['cart', 'removeItem'] as const,
   clearCart: () => ['cart', 'clearCart'] as const,
 };
 
@@ -41,3 +43,11 @@ export async function removeCartItem(productId: string): Promise<CartResponseDto
 export async function clearCart(): Promise<CartResponseDto> {
   return requestData(cartControllerClearCart());
 }
+
+export const cartQueries = {
+  all: () =>
+    queryOptions({
+      queryKey: cartQueryKeys.all(),
+      queryFn: fetchCart,
+    }),
+};

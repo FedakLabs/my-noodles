@@ -1,4 +1,3 @@
-/** Deterministic, calm palette for synthetic comment avatars. */
 const FEED_AVATAR_COLORS = [
   '#E4572E',
   '#F3A712',

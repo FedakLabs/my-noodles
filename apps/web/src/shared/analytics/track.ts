@@ -1,4 +1,4 @@
-import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { sendGTMEvent } from '@next/third-parties/google';
 
@@ -36,7 +36,7 @@ function pushCustomEvent(event: string, params: Record<string, unknown> = {}) {
 export function trackViewItemList(
   listId: string,
   listName: string,
-  products: ProductSummaryDto[],
+  products: Product[],
   options?: { catalogBrowseMode?: CatalogBrowseMode },
 ) {
   if (products.length === 0) {
@@ -62,7 +62,7 @@ export function trackViewItemList(
   );
 }
 
-export function trackViewItem(product: ProductDetailDto | ProductSummaryDto) {
+export function trackViewItem(product: Product) {
   pushEcommerceEvent('view_item', {
     currency: product.currency,
     value: priceMinorToMajor(product.priceMinor),

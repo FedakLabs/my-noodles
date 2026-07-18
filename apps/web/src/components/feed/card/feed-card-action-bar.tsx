@@ -10,7 +10,7 @@ import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import { useTranslations } from 'next-intl';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 import { ChevronIcon } from '@/components/feed/action-rail/feed-icons';
 import { useCartActions } from '@/hooks/cart';
 import { Link } from '@/i18n/navigation';
@@ -18,7 +18,7 @@ import { Link } from '@/i18n/navigation';
 const actionIconSx = iconStyle({ size: 18, color: 'inherit' });
 
 type FeedCardActionBarProps = {
-  item: FeedItemDto;
+  item: Product;
   detailsOpen: boolean;
   onToggleDetails: () => void;
   sx?: SxProps<Theme>;
@@ -118,7 +118,11 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
                   color: 'primary.contrastText',
                   opacity: 1,
                 }
-              : undefined,
+              : {
+                  color: '#fff',
+                  bgcolor: 'rgba(0,0,0,0.45)',
+                  opacity: 1,
+                },
           }}
         >
           {item.inStock ? t('details.add') : t('details.outOfStock')}

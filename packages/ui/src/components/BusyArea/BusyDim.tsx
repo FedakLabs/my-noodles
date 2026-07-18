@@ -18,5 +18,8 @@ export function BusyDim({ active, transitionMs, transitionEasing, sx, ...boxProp
     transition: busyContentDimTransition(transitionMs, transitionEasing),
   };
 
-  return <Box sx={(sx ? [dimSx, sx] : dimSx) as SxProps<Theme>} {...boxProps} />;
+  // Flatten so callers can pass `sx={[a, b]}` — a nested `[dimSx, [a, b]]` drops the inner styles in MUI.
+  const sxList = Array.isArray(sx) ? sx : sx != null ? [sx] : [];
+
+  return <Box {...boxProps} sx={[dimSx, ...sxList] as SxProps<Theme>} />;
 }

@@ -1,4 +1,4 @@
-import type { ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 
 import type { CartLine } from '@/hooks/cart';
 
@@ -18,7 +18,10 @@ export function cartLineToGa4Item(line: Pick<CartLine, 'slug' | 'title' | 'price
 }
 
 export function productToGa4Item(
-  product: Pick<ProductSummaryDto, 'slug' | 'name' | 'priceMinor' | 'brand' | 'category'>,
+  product: Pick<Product, 'slug' | 'name' | 'priceMinor'> & {
+    brand: { slug: string; name?: string } | null;
+    category: { slug: string; name?: string | null };
+  },
   quantity = 1,
 ): Ga4Item {
   const item: Ga4Item = {

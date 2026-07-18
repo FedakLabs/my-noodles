@@ -6,7 +6,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import type { MediaGalleryHandle } from '@my-noodles/ui';
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 import { FeedActionRail, type FeedCardControlsProps } from '@/components/feed/action-rail/feed-action-rail';
 import { FeedCard } from '@/components/feed/card/feed-card';
 import { FeedCardSkeleton } from '@/components/feed/card/feed-card-skeleton';
@@ -29,7 +29,7 @@ export type FeedReelViewportHandle = {
 };
 
 type FeedReelViewportProps = {
-  items: FeedItemDto[];
+  items: Product[];
   index: number;
   exhausted: boolean;
   showSkeletonSlide: boolean;
@@ -43,6 +43,7 @@ type FeedReelViewportProps = {
   onOpenDetails: () => void;
   onCloseDetails: () => void;
   onToggleLike: () => void;
+  commentsOpen: boolean;
   onOpenComments: () => void;
   onOpenLiked: () => void;
   activeTags: FeedTagChip[];
@@ -70,6 +71,7 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
       onOpenDetails,
       onCloseDetails,
       onToggleLike,
+      commentsOpen,
       onOpenComments,
       onOpenLiked,
       activeTags,
@@ -144,6 +146,7 @@ export const FeedReelViewport = forwardRef<FeedReelViewportHandle, FeedReelViewp
 
     const cardControls: FeedCardControlsProps = {
       onToggleLike,
+      commentsOpen,
       onOpenComments,
       onOpenLiked,
       activeTags,

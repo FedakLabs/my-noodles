@@ -18,7 +18,6 @@ export const FEED_REEL_WIDE_VERTICAL_INSET = 3;
 /** Wide feed reel height cap — accounts for `feedReelStageSx` vertical inset. */
 export const FEED_REEL_WIDE_MAX_HEIGHT = 'min(calc(100dvh - 48px), 880px)';
 
-/** Wide feed reel card — centered in the stage; rail is absolute on this box. */
 export const feedReelItemSx = {
   position: 'relative',
   alignSelf: 'center',
@@ -42,10 +41,8 @@ export const feedReelViewportGestureSx = {
   },
 } as const;
 
-/** Gap between the reel card and the outside action rail (600px+). */
 export const FEED_RAIL_GAP_PX = 10;
 
-/** Wide feed outside action rail — absolute beside the card, lifted from the bottom edge. */
 export const feedOutsideRailSx = {
   position: 'absolute',
   left: `calc(100% + ${FEED_RAIL_GAP_PX}px)`,
@@ -55,7 +52,6 @@ export const feedOutsideRailSx = {
   flexDirection: 'column',
 } as const;
 
-/** Desktop comments column — in-flow beside the reel stage (900px+). */
 export const feedCommentsPanelLayoutSx = {
   flexShrink: 0,
   height: '100%',
@@ -67,7 +63,6 @@ export const feedCommentsPanelLayoutSx = {
   overflow: 'hidden',
 } as const;
 
-/** Full-width row: reel stage (flex 1) + optional comments column. */
 export const feedDesktopSplitRowSx = {
   display: 'flex',
   width: '100%',
@@ -77,7 +72,6 @@ export const feedDesktopSplitRowSx = {
   alignItems: 'stretch',
 } as const;
 
-/** Left pane — centers the feed item; nav chevrons are absolute on this box. */
 export const feedReelStageSx = {
   position: 'relative',
   flex: 1,
@@ -91,7 +85,6 @@ export const feedReelStageSx = {
   boxSizing: 'border-box',
 } as const;
 
-/** Vertical prev/next controls on the reel stage (not on the card). */
 export const feedNavStackSx = {
   position: 'absolute',
   top: '50%',
@@ -109,7 +102,6 @@ export function feedGlassIconButtonSx(theme: Theme) {
   };
 }
 
-/** Feed close control — fixed touch target, glass background, readable on bright media. */
 export function feedExitButtonSx(theme: Theme) {
   return {
     color: theme.palette.common.white,

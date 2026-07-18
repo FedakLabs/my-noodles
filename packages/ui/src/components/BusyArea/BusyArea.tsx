@@ -75,8 +75,10 @@ function BusyAreaBody({
     </>
   );
 
+  const regionSxList = [regionSx, ...(Array.isArray(sx) ? sx : sx != null ? [sx] : [])];
+
   if (!dim) {
-    return <Box sx={sx ? ([regionSx, sx] as SxProps<Theme>) : regionSx}>{content}</Box>;
+    return <Box sx={regionSxList as SxProps<Theme>}>{content}</Box>;
   }
 
   return (
@@ -84,7 +86,7 @@ function BusyAreaBody({
       active={dimActive}
       transitionMs={transitionMs}
       transitionEasing={transitionEasing}
-      sx={sx ? ([regionSx, sx] as SxProps<Theme>) : regionSx}
+      sx={regionSxList as SxProps<Theme>}
     >
       {content}
     </BusyDim>

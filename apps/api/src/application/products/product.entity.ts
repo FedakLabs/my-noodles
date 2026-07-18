@@ -1,5 +1,8 @@
-import { LocalizedColumn, type LocalizedString } from '@my-noodles/api-lib/locale';
+import { type LocalizedString } from '@my-noodles/api-lib/locale';
+import { ApiLocalizedColumn } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
 import { Brand } from '../brands/brand.entity';
@@ -16,16 +19,16 @@ export class Product extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @LocalizedColumn()
+  @ApiLocalizedColumn()
   name!: LocalizedString;
 
-  @LocalizedColumn()
+  @ApiLocalizedColumn()
   description!: LocalizedString;
 
-  @LocalizedColumn()
+  @ApiLocalizedColumn()
   story!: LocalizedString;
 
-  @LocalizedColumn({ name: 'for_whom' })
+  @ApiLocalizedColumn({ name: 'for_whom' })
   forWhom!: LocalizedString;
 
   @Column({ type: 'text', nullable: true })
@@ -62,6 +65,7 @@ export class Product extends TimestampEntity {
   brandId!: string | null;
 
   @ManyToOne(() => Brand, (brand) => brand.products, {
+    eager: true,
     nullable: true,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
@@ -73,6 +77,7 @@ export class Product extends TimestampEntity {
   countryId!: string;
 
   @ManyToOne(() => Country, (country) => country.products, {
+    eager: true,
     nullable: false,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
@@ -84,6 +89,7 @@ export class Product extends TimestampEntity {
   categoryId!: string;
 
   @ManyToOne(() => Category, (category) => category.products, {
+    eager: true,
     nullable: false,
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
@@ -104,4 +110,16 @@ export class Product extends TimestampEntity {
 
   @ManyToMany(() => Collection, (collection) => collection.products)
   collections!: Collection[];
+
+  @Expose()
+  @ApiProperty()
+  get inStock(): boolean {
+    return this.quantity > 0;
+  }
+
+  @ApiPropertyOptional()
+  liked?: boolean;
+
+  @ApiPropertyOptional()
+  commentCount?: number;
 }

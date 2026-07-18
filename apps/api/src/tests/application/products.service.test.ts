@@ -91,9 +91,9 @@ describe('ProductsService', () => {
 
     const result = await LocaleContext.run('uk', () => service.getBySlug('pocky'));
 
-    expect(result.name).toBe('Pocky');
-    expect(result.description).toBe('Опис');
-    expect(result.inStock).toBe(true);
+    expect(result.name.localized).toBe('Pocky');
+    expect(result.description.localized).toBe('Опис');
+    expect(result.quantity).toBeGreaterThan(0);
   });
 
   it('throws when product is missing', async () => {

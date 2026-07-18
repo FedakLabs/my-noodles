@@ -1,12 +1,16 @@
 import { CartEmptyException } from '@/application/cart/cart.exceptions';
 import { CheckoutsService, CheckoutStatus } from '@/application/checkouts';
 import { Checkout } from '@/application/checkouts/checkout.entity';
-import {
-  CheckoutExpiredException,
-  CheckoutNotInProgressException,
-} from '@/application/checkouts/checkouts.exceptions';
+import { CheckoutExpiredException } from '@/application/checkouts/checkouts.exceptions';
 import { type InventoryService } from '@/application/inventory/inventory.service';
-import { DeliveryMethod, DeliveryProvider, OrderStatus } from '@/application/orders';
+import {
+  DeliveryMethod,
+  DeliveryProvider,
+  Order,
+  OrderDelivery,
+  OrderItem,
+  OrderStatus,
+} from '@/application/orders';
 import { OrderInventoryChangedException } from '@/application/orders/orders.exceptions';
 
 import { jest } from '../jest-globals';
@@ -28,11 +32,10 @@ describe('CheckoutsService', () => {
   let itemUpdate: jest.Mock;
   let itemDelete: jest.Mock;
   let telegramSend: jest.Mock;
-  let getCartItemsForOrder: jest.Mock;
+  let getCartItems: jest.Mock;
   let clearCartItems: jest.Mock;
   let restoreItemsFromOrder: jest.Mock;
   let applyReconciledQuantities: jest.Mock;
-  let orderFindOne: jest.Mock;
   let getAvailableQtyBatch: jest.Mock;
   let getGrossQtyBatch: jest.Mock;
   let reconcileLines: jest.Mock;
@@ -57,19 +60,28 @@ describe('CheckoutsService', () => {
   };
 
   beforeEach(() => {
-    checkoutSave = jest.fn().mockImplementation((entity: object) =>
-      Promise.resolve(
-        asCheckout({
-          id: 'checkout-1',
-          orderId: 'order-1',
-          createdAt: new Date('2025-06-20T10:00:00.000Z'),
-          expiresAt: futureExpiresAt(),
-          status: CheckoutStatus.InProgress,
-          ...entity,
-        }),
-      ),
-    );
-    const checkoutCreate = jest.fn().mockImplementation((entity: object) => entity);
+    checkoutSave = jest.fn().mockImplementation((entity: Checkout) => {
+      entity.setDefaultExpiresAt();
+      const saved = asCheckout({
+        ...entity,
+        id: 'checkout-1',
+        orderId: 'order-1',
+        createdAt: new Date('2025-06-20T10:00:00.000Z'),
+        order: {
+          id: 'order-1',
+          totalMinor: 19_800,
+          currency: 'UAH',
+          status: OrderStatus.Draft,
+          items: [{ productId: 'product-1', qty: 2 }],
+          delivery: null,
+        },
+      });
+      checkoutsFindOne.mockResolvedValue(saved);
+      return Promise.resolve(saved);
+    });
+    const checkoutCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(Checkout.prototype), entity));
     checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
 
     orderSave = jest.fn().mockImplementation((entity: object) =>
@@ -85,16 +97,26 @@ describe('CheckoutsService', () => {
         ...entity,
       }),
     );
+    const orderCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(Order.prototype), entity));
 
     deliverySave = jest.fn().mockResolvedValue({});
+    const deliveryCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(OrderDelivery.prototype), entity));
     itemSave = jest.fn().mockResolvedValue([]);
+    const itemCreate = jest.fn().mockImplementation((entities: object | object[]) => {
+      const create = (entity: object) => Object.assign(Object.create(OrderItem.prototype), entity);
+      return Array.isArray(entities) ? entities.map(create) : create(entities);
+    });
     itemUpdate = jest.fn().mockResolvedValue(undefined);
     itemDelete = jest.fn().mockResolvedValue(undefined);
     orderUpdate = jest.fn().mockResolvedValue(undefined);
     checkoutsFindOne = jest.fn().mockResolvedValue(null);
     checkoutsFind = jest.fn().mockResolvedValue([]);
     transaction = jest.fn(async (callback: () => Promise<unknown>) => callback());
-    getCartItemsForOrder = jest.fn().mockResolvedValue([
+    getCartItems = jest.fn().mockResolvedValue([
       {
         productId: 'product-1',
         qty: 2,
@@ -109,7 +131,6 @@ describe('CheckoutsService', () => {
     clearCartItems = jest.fn().mockResolvedValue(undefined);
     restoreItemsFromOrder = jest.fn().mockResolvedValue(undefined);
     applyReconciledQuantities = jest.fn().mockResolvedValue(undefined);
-    orderFindOne = jest.fn().mockResolvedValue({ id: 'order-1', items: [] });
     telegramSend = jest.fn().mockResolvedValue(undefined);
     getAvailableQtyBatch = jest.fn().mockResolvedValue(new Map([['product-1', 2]]));
     getGrossQtyBatch = jest.fn().mockResolvedValue(new Map([['product-1', 2]]));
@@ -134,10 +155,10 @@ describe('CheckoutsService', () => {
         create: checkoutCreate,
         update: checkoutUpdate,
       } as never,
-      { save: orderSave, update: orderUpdate, findOne: orderFindOne } as never,
-      { save: deliverySave } as never,
-      { save: itemSave, update: itemUpdate, delete: itemDelete } as never,
-      { getCartItemsForOrder, clearCartItems, restoreItemsFromOrder, applyReconciledQuantities } as never,
+      { create: orderCreate, save: orderSave, update: orderUpdate } as never,
+      { create: deliveryCreate, save: deliverySave } as never,
+      { create: itemCreate, save: itemSave, update: itemUpdate, delete: itemDelete } as never,
+      { getCartItems, clearCartItems, restoreItemsFromOrder, applyReconciledQuantities } as never,
       {
         getAvailableQtyBatch,
         getGrossQtyBatch,
@@ -146,7 +167,6 @@ describe('CheckoutsService', () => {
       } as unknown as InventoryService,
       { sendOrderNotification: telegramSend } as never,
       { estimateForOrder, canEstimate, estimateFromDelivery, applyEstimateSnapshot } as never,
-      { error: jest.fn(), info: jest.fn() } as never,
     );
   });
 
@@ -155,15 +175,16 @@ describe('CheckoutsService', () => {
 
     expect(result.id).toBe('checkout-1');
     expect(result.orderId).toBe('order-1');
-    expect(result.totalMinor).toBe(19_800);
+    expect(result.order.totalMinor).toBe(19_800);
+    expect(result.order.grandTotalMinor).toBe(19_800);
     expect(reconcileLines).toHaveBeenCalled();
     expect(clearCartItems).toHaveBeenCalledWith('visitor-1');
     expect(itemSave).toHaveBeenCalled();
     expect(checkoutSave).toHaveBeenCalledWith(
       expect.objectContaining({
         status: CheckoutStatus.InProgress,
-        completedAt: null,
-        expiresAt: expect.any(Date),
+        orderId: 'order-1',
+        visitorSessionId: 'visitor-1',
       }),
     );
   });
@@ -199,7 +220,8 @@ describe('CheckoutsService', () => {
 
     expect(result.id).toBe('checkout-existing');
     expect(result.orderId).toBe('order-existing');
-    expect(result.totalMinor).toBe(29_700);
+    expect(result.order.totalMinor).toBe(29_700);
+    expect(result.order.grandTotalMinor).toBe(29_700);
     expect(itemSave).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'line-1', qty: 3, priceMinorSnapshot: 9_900 }),
     );
@@ -226,11 +248,6 @@ describe('CheckoutsService', () => {
         },
       }),
     );
-    orderFindOne.mockResolvedValueOnce({
-      id: 'order-expired',
-      items: [{ productId: 'product-1', qty: 1 }],
-    });
-
     const result = await service.startFromCart('visitor-1');
 
     expect(result.id).toBe('checkout-1');
@@ -243,7 +260,7 @@ describe('CheckoutsService', () => {
   });
 
   it('rejects checkout start when cart is empty', async () => {
-    getCartItemsForOrder.mockResolvedValueOnce([]);
+    getCartItems.mockResolvedValueOnce([]);
 
     await expect(service.startFromCart('visitor-1')).rejects.toBeInstanceOf(CartEmptyException);
   });
@@ -268,33 +285,105 @@ describe('CheckoutsService', () => {
 
     const result = await service.listCheckouts('visitor-1', CheckoutStatus.InProgress);
 
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatchObject({
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
       id: 'checkout-1',
-      itemCount: 3,
-      totalMinor: 19_800,
       status: CheckoutStatus.InProgress,
-      expiresAt: expiresAt.toISOString(),
+      expiresAt,
+      order: {
+        items: [{ qty: 2 }, { qty: 1 }],
+        totalMinor: 19_800,
+      },
     });
     expect(checkoutsFind).toHaveBeenCalled();
   });
 
-  it('rejects checkout detail when checkout is cancelled', async () => {
+  it('returns checkout detail when checkout is cancelled', async () => {
+    const cancelled = asCheckout({
+      id: 'checkout-1',
+      orderId: 'order-1',
+      visitorSessionId: 'visitor-1',
+      status: CheckoutStatus.Cancelled,
+      cancelledReason: 'user',
+      createdAt: new Date(),
+      expiresAt: pastExpiresAt(),
+      order: {
+        id: 'order-1',
+        status: OrderStatus.Draft,
+        items: [],
+        delivery: null,
+        totalMinor: 1000,
+        currency: 'UAH',
+        firstName: null,
+        lastName: null,
+        phone: null,
+        createdAt: new Date(),
+      },
+    });
+    checkoutsFindOne.mockResolvedValue(cancelled);
+
+    const result = await service.getCheckout('checkout-1', 'visitor-1');
+
+    expect(result.status).toBe(CheckoutStatus.Cancelled);
+    expect(result.cancelledReason).toBe('user');
+  });
+
+  it('cancels and returns checkout detail when hold has expired', async () => {
+    const expired = asCheckout({
+      id: 'checkout-1',
+      orderId: 'order-1',
+      visitorSessionId: 'visitor-1',
+      status: CheckoutStatus.InProgress,
+      cancelledReason: null,
+      createdAt: new Date(),
+      expiresAt: pastExpiresAt(),
+      order: {
+        id: 'order-1',
+        status: OrderStatus.Draft,
+        items: [{ productId: 'product-1', qty: 2 }],
+        delivery: null,
+        totalMinor: 1000,
+        currency: 'UAH',
+        firstName: null,
+        lastName: null,
+        phone: null,
+        createdAt: new Date(),
+      },
+    });
+    const cancelled = asCheckout({
+      ...expired,
+      status: CheckoutStatus.Cancelled,
+      cancelledReason: 'expired',
+    });
+    checkoutsFindOne.mockResolvedValueOnce(expired).mockResolvedValueOnce(cancelled);
+
+    const result = await service.getCheckout('checkout-1', 'visitor-1');
+
+    expect(result.status).toBe(CheckoutStatus.Cancelled);
+    expect(result.cancelledReason).toBe('expired');
+    expect(checkoutUpdate).toHaveBeenCalledWith(
+      { id: 'checkout-1', status: CheckoutStatus.InProgress },
+      { status: CheckoutStatus.Cancelled, cancelledReason: 'expired' },
+    );
+    expect(restoreItemsFromOrder).toHaveBeenCalledWith('visitor-1', [{ productId: 'product-1', qty: 2 }]);
+  });
+
+  it('attaches delivery estimate and grand total on checkout detail', async () => {
     checkoutsFindOne.mockResolvedValue(
       asCheckout({
         id: 'checkout-1',
         orderId: 'order-1',
         visitorSessionId: 'visitor-1',
-        status: CheckoutStatus.Cancelled,
-        cancelledReason: 'user',
+        status: CheckoutStatus.InProgress,
+        cancelledReason: null,
         createdAt: new Date(),
-        expiresAt: pastExpiresAt(),
+        expiresAt: futureExpiresAt(),
         order: {
           id: 'order-1',
           status: OrderStatus.Draft,
           items: [],
           delivery: null,
-          totalMinor: 1000,
+          totalMinor: 9_900,
           currency: 'UAH',
           firstName: null,
           lastName: null,
@@ -303,10 +392,17 @@ describe('CheckoutsService', () => {
         },
       }),
     );
+    estimateForOrder.mockResolvedValue({
+      estimatedDeliveryAt: '2025-06-23T10:00:00.000Z',
+      estimatedDaysMin: 2,
+      estimatedDaysMax: 3,
+      shippingCostMinor: 650,
+    });
 
-    await expect(service.getCheckout('checkout-1', 'visitor-1')).rejects.toBeInstanceOf(
-      CheckoutNotInProgressException,
-    );
+    const result = await service.getCheckout('checkout-1', 'visitor-1');
+
+    expect(result.deliveryEstimate?.shippingCostMinor).toBe(650);
+    expect(result.order.grandTotalMinor).toBe(10_550);
   });
 
   it('cancels checkout and restores order items to cart', async () => {
@@ -418,12 +514,12 @@ describe('CheckoutsService', () => {
         cancelledReason: null,
         createdAt: new Date('2020-01-01'),
         expiresAt: pastExpiresAt(),
+        order: {
+          id: 'order-1',
+          items: [{ productId: 'product-1', qty: 2 }],
+        },
       }),
     ]);
-    orderFindOne.mockResolvedValue({
-      id: 'order-1',
-      items: [{ productId: 'product-1', qty: 2 }],
-    });
 
     await service.expireStaleCheckouts();
 

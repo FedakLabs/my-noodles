@@ -1,12 +1,12 @@
 import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
+import { Product } from './product.entity';
 import {
   ListProductsQueryDto,
   PaginatedProductsDto,
-  ProductDetailDto,
   ProductFacetsQueryDto,
   ProductFacetsResponseDto,
 } from './products.dto';
@@ -20,20 +20,17 @@ export class ProductsController extends LocalizedStorefrontController {
   }
 
   @Get('facets')
-  @ApiOperation({ summary: 'Catalog facet options and result counts for the current filter state' })
   getFacets(@Query() query: ProductFacetsQueryDto): Promise<ProductFacetsResponseDto> {
     return this.productsService.getFacets(query);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List products with filters and pagination' })
   list(@Query() query: ListProductsQueryDto): Promise<PaginatedProductsDto> {
     return this.productsService.list(query);
   }
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Get product by slug' })
-  getBySlug(@Param('slug') slug: string): Promise<ProductDetailDto> {
+  getBySlug(@Param('slug') slug: string): Promise<Product> {
     return this.productsService.getBySlug(slug);
   }
 }

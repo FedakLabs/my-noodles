@@ -5,24 +5,29 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect } from 'react';
 
 import { cartQueryKeys } from '@/api/cart';
-import { checkoutsQueryKeys } from '@/api/checkouts';
+import { type Checkout, checkoutsQueryKeys } from '@/api/checkouts';
 import { Link } from '@/i18n/navigation';
 import { type ApiErrorCode, getApiErrorCode } from '@/shared/api-error';
 
 type UseCheckoutSessionStateOptions = {
   checkoutId: string;
+  checkout?: Checkout | null;
   error?: unknown;
 };
 
-export function useCheckoutSessionState({ checkoutId, error }: UseCheckoutSessionStateOptions) {
+export function useCheckoutSessionState({ checkoutId, checkout, error }: UseCheckoutSessionStateOptions) {
   const queryClient = useQueryClient();
   const t = useTranslations('checkout');
 
+  const isInProgress = checkout?.status === 'in_progress';
+  const isExpiredHold = checkout?.status === 'cancelled' && checkout.cancelledReason === 'expired';
+
   const errorCode: ApiErrorCode | undefined = error ? getApiErrorCode(error) : undefined;
-  const isExpired = errorCode === 'checkout_expired';
-  const isNotInProgress = errorCode === 'checkout_not_in_progress';
+  const isExpiredBySubmit = errorCode === 'checkout_expired';
+  const isNotInProgressBySubmit = errorCode === 'checkout_not_in_progress';
   const isInventoryChanged = errorCode === 'order_inventory_changed';
-  const showSubmitErrorAlert = Boolean(error) && !isExpired && !isNotInProgress;
+  const isExpired = isExpiredHold || isExpiredBySubmit;
+  const showSubmitErrorAlert = Boolean(error) && !isExpiredBySubmit && !isNotInProgressBySubmit;
 
   const submitErrorMessage = isInventoryChanged ? t('submitInventoryChanged') : t('error');
 
@@ -44,9 +49,9 @@ export function useCheckoutSessionState({ checkoutId, error }: UseCheckoutSessio
   }, [checkoutId, queryClient]);
 
   return {
-    errorCode,
+    isInProgress,
     isExpired,
-    isNotInProgress,
+    isNotInProgressBySubmit,
     isInventoryChanged,
     showSubmitErrorAlert,
     submitErrorMessage,

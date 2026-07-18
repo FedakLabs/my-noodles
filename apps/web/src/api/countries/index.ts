@@ -1,3 +1,3 @@
-export { countriesQueryKeys, fetchCountries } from './countries';
+export { countriesQueries, countriesQueryKeys, fetchCountries } from './countries';
 export { useCountries } from './countries.hooks';
-export type { CountryDto } from '@my-noodles/api-clients/storefront';
+export type { Country } from '@my-noodles/api-clients/storefront';

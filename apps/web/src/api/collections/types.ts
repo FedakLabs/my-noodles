@@ -1,1 +1,1 @@
-export type { CollectionDetailDto, CollectionSummaryDto } from '@my-noodles/api-clients/storefront';
+export type { Collection } from '@my-noodles/api-clients/storefront';

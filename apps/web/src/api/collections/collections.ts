@@ -1,10 +1,10 @@
 import {
-  type CollectionDetailDto,
+  type Collection,
   collectionsControllerGetBySlug,
   collectionsControllerList,
-  type CollectionSummaryDto,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 
@@ -16,14 +16,27 @@ export const collectionsQueryKeys = {
   detail: withAppLocaleKey((slug: string) => [...collectionsQueryKeyRoot, 'detail', slug] as const),
 };
 
-export async function fetchCollections(): Promise<CollectionSummaryDto[]> {
+export async function fetchCollections(): Promise<Collection[]> {
   return requestData(collectionsControllerList());
 }
 
-export async function fetchCollectionDetail(slug: string): Promise<CollectionDetailDto> {
+export async function fetchCollectionDetail(slug: string): Promise<Collection> {
   return requestData(
     collectionsControllerGetBySlug({
       path: { slug },
     }),
   );
 }
+
+export const collectionsQueries = {
+  list: () =>
+    queryOptions({
+      queryKey: collectionsQueryKeys.list(),
+      queryFn: () => fetchCollections(),
+    }),
+  detail: (slug: string) =>
+    queryOptions({
+      queryKey: collectionsQueryKeys.detail(slug),
+      queryFn: () => fetchCollectionDetail(slug),
+    }),
+};

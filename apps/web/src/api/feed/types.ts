@@ -1,10 +1,8 @@
 export type {
-  FeedCommentDto,
   FeedFiltersDto,
-  FeedItemDto,
-  FeedLikedItemDto,
+  FeedProductComment,
   FeedLikeStateDto,
   FeedNextDto,
   FeedNextResponseDto,
-  FeedTagRefDto,
+  Product,
 } from '@my-noodles/api-clients/storefront';

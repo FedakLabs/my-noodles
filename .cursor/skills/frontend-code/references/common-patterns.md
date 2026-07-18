@@ -558,7 +558,7 @@ await page.getByLabel('checkout-field-name').fill('Andrii');
 await page.getByTestId('checkout-field-submit').click();
 ```
 
-**Mock API for e2e:** `e2e/mock-api.mjs` — Playwright `webServer` starts it before Next dev (see `playwright.config.ts`).
+**Mock API for e2e:** `e2e/mock-api.ts` + typed fixtures in `e2e/fixtures/*.ts` (bound to external api response types). Playwright `webServer` starts it before Next dev (see `playwright.config.ts`).
 
 ### Running tests
 

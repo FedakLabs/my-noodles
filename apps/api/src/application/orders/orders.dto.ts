@@ -1,57 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
 import { IsOrderCancelledReason, OrderCancelledReason } from './order-cancelled-reason';
 import { DeliveryMethod, DeliveryProvider, IsDeliveryMethod, IsDeliveryProvider } from './order-delivery.dto';
-
-export class OrderItemDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  productId!: string;
-
-  title!: string;
-
-  priceMinor!: number;
-
-  qty!: number;
-}
-
-export class OrderDeliveryResponseDto {
-  provider!: DeliveryProvider;
-
-  method!: DeliveryMethod;
-
-  city!: string | null;
-
-  cityRef?: string | null;
-
-  warehouseNumber?: string | null;
-
-  warehouseName?: string | null;
-
-  warehouseRef?: string | null;
-
-  street?: string | null;
-
-  building?: string | null;
-
-  apartment?: string | null;
-
-  notes?: string | null;
-}
-
-export class OrderResponseDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  id!: string;
-
-  status!: string;
-
-  totalMinor!: number;
-
-  currency!: string;
-
-  @ApiProperty({ type: String, format: 'date-time' })
-  createdAt!: string;
-}
 
 export class UpdateOrderDeliveryDto {
   @IsOptional()

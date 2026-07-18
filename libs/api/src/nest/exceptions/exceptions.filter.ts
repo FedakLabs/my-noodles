@@ -11,7 +11,6 @@ import {
 import { HttpAdapterHost } from '@nestjs/core';
 import { ThrottlerException } from '@nestjs/throttler';
 import type { Request } from 'express';
-import type { Logger } from 'winston';
 
 import {
   AppException,
@@ -22,21 +21,14 @@ import {
   ServiceUnavailableException,
   TooManyRequestsException,
 } from '../../exceptions';
-import { HttpExceptionLog } from '../../logging';
-import type { HttpAccessLogResource } from '../../logging/http-access-log';
+import { HttpExceptionLog } from '../../express';
 
 @Catch()
 @Injectable()
 export class ExceptionsFilter implements ExceptionFilter {
-  private readonly exceptionLog: HttpExceptionLog;
+  private readonly exceptionLog = new HttpExceptionLog();
 
-  constructor(
-    private readonly httpAdapterHost: HttpAdapterHost,
-    logger: Logger,
-    metadata: HttpAccessLogResource,
-  ) {
-    this.exceptionLog = new HttpExceptionLog(logger, metadata);
-  }
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     if (host.getType() !== 'http') {

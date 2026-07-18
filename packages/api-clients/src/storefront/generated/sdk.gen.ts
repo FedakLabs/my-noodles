@@ -18,89 +18,38 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
-/**
- * Liveness probe
- */
 export const healthControllerGetLive = <ThrowOnError extends boolean = false>(options?: Options<HealthControllerGetLiveData, ThrowOnError>): RequestResult<HealthControllerGetLiveResponses, unknown, ThrowOnError> => (options?.client ?? client).get<HealthControllerGetLiveResponses, unknown, ThrowOnError>({ url: '/api/health/live', ...options });
 
-/**
- * Readiness probe
- */
 export const healthControllerGetReady = <ThrowOnError extends boolean = false>(options?: Options<HealthControllerGetReadyData, ThrowOnError>): RequestResult<HealthControllerGetReadyResponses, unknown, ThrowOnError> => (options?.client ?? client).get<HealthControllerGetReadyResponses, unknown, ThrowOnError>({ url: '/api/health/ready', ...options });
 
-/**
- * Startup probe
- */
 export const healthControllerGetStartup = <ThrowOnError extends boolean = false>(options?: Options<HealthControllerGetStartupData, ThrowOnError>): RequestResult<HealthControllerGetStartupResponses, unknown, ThrowOnError> => (options?.client ?? client).get<HealthControllerGetStartupResponses, unknown, ThrowOnError>({ url: '/api/health/startup', ...options });
 
-/**
- * Catalog facet options and result counts for the current filter state
- */
 export const productsControllerGetFacets = <ThrowOnError extends boolean = false>(options?: Options<ProductsControllerGetFacetsData, ThrowOnError>): RequestResult<ProductsControllerGetFacetsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ProductsControllerGetFacetsResponses, unknown, ThrowOnError>({ url: '/api/products/facets', ...options });
 
-/**
- * List products with filters and pagination
- */
 export const productsControllerList = <ThrowOnError extends boolean = false>(options?: Options<ProductsControllerListData, ThrowOnError>): RequestResult<ProductsControllerListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ProductsControllerListResponses, unknown, ThrowOnError>({ url: '/api/products', ...options });
 
-/**
- * Get product by slug
- */
 export const productsControllerGetBySlug = <ThrowOnError extends boolean = false>(options: Options<ProductsControllerGetBySlugData, ThrowOnError>): RequestResult<ProductsControllerGetBySlugResponses, unknown, ThrowOnError> => (options.client ?? client).get<ProductsControllerGetBySlugResponses, unknown, ThrowOnError>({ url: '/api/products/{slug}', ...options });
 
-/**
- * List active collections
- */
 export const collectionsControllerList = <ThrowOnError extends boolean = false>(options?: Options<CollectionsControllerListData, ThrowOnError>): RequestResult<CollectionsControllerListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CollectionsControllerListResponses, unknown, ThrowOnError>({ url: '/api/collections', ...options });
 
-/**
- * Get collection by slug
- */
 export const collectionsControllerGetBySlug = <ThrowOnError extends boolean = false>(options: Options<CollectionsControllerGetBySlugData, ThrowOnError>): RequestResult<CollectionsControllerGetBySlugResponses, CollectionsControllerGetBySlugErrors, ThrowOnError> => (options.client ?? client).get<CollectionsControllerGetBySlugResponses, CollectionsControllerGetBySlugErrors, ThrowOnError>({ url: '/api/collections/{slug}', ...options });
 
-/**
- * List countries
- */
 export const countriesControllerList = <ThrowOnError extends boolean = false>(options?: Options<CountriesControllerListData, ThrowOnError>): RequestResult<CountriesControllerListResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CountriesControllerListResponses, unknown, ThrowOnError>({ url: '/api/countries', ...options });
 
-/**
- * List available delivery providers
- */
 export const deliveryControllerListProviders = <ThrowOnError extends boolean = false>(options?: Options<DeliveryControllerListProvidersData, ThrowOnError>): RequestResult<DeliveryControllerListProvidersResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DeliveryControllerListProvidersResponses, unknown, ThrowOnError>({ url: '/api/delivery/providers', ...options });
 
-/**
- * Search cities for a delivery provider
- */
 export const deliveryControllerSearchCities = <ThrowOnError extends boolean = false>(options: Options<DeliveryControllerSearchCitiesData, ThrowOnError>): RequestResult<DeliveryControllerSearchCitiesResponses, unknown, ThrowOnError> => (options.client ?? client).get<DeliveryControllerSearchCitiesResponses, unknown, ThrowOnError>({ url: '/api/delivery/cities', ...options });
 
-/**
- * Search warehouses for a city and delivery provider
- */
 export const deliveryControllerSearchWarehouses = <ThrowOnError extends boolean = false>(options: Options<DeliveryControllerSearchWarehousesData, ThrowOnError>): RequestResult<DeliveryControllerSearchWarehousesResponses, unknown, ThrowOnError> => (options.client ?? client).get<DeliveryControllerSearchWarehousesResponses, unknown, ThrowOnError>({ url: '/api/delivery/warehouses', ...options });
 
-/**
- * List checkouts for the current visitor session
- */
 export const checkoutsControllerListCheckouts = <ThrowOnError extends boolean = false>(options?: Options<CheckoutsControllerListCheckoutsData, ThrowOnError>): RequestResult<CheckoutsControllerListCheckoutsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CheckoutsControllerListCheckoutsResponses, unknown, ThrowOnError>({ url: '/api/checkouts', ...options });
 
-/**
- * Begin checkout — move cart items into a draft order or an active in-progress checkout
- */
 export const checkoutsControllerStartCheckout = <ThrowOnError extends boolean = false>(options?: Options<CheckoutsControllerStartCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError> => (options?.client ?? client).post<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError>({ url: '/api/checkouts', ...options });
 
-/**
- * Cancel checkout
- */
 export const checkoutsControllerCancelCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerCancelCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError> => (options.client ?? client).delete<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError>({ url: '/api/checkouts/{id}', ...options });
 
-/**
- * Get checkout details
- */
 export const checkoutsControllerGetCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerGetCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerGetCheckoutResponses, CheckoutsControllerGetCheckoutErrors, ThrowOnError> => (options.client ?? client).get<CheckoutsControllerGetCheckoutResponses, CheckoutsControllerGetCheckoutErrors, ThrowOnError>({ url: '/api/checkouts/{id}', ...options });
 
-/**
- * Autosave checkout receiver fields on blur
- */
 export const checkoutsControllerUpdateCheckoutReceiver = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerUpdateCheckoutReceiverData, ThrowOnError>): RequestResult<CheckoutsControllerUpdateCheckoutReceiverResponses, CheckoutsControllerUpdateCheckoutReceiverErrors, ThrowOnError> => (options.client ?? client).patch<CheckoutsControllerUpdateCheckoutReceiverResponses, CheckoutsControllerUpdateCheckoutReceiverErrors, ThrowOnError>({
     url: '/api/checkouts/{id}/receiver',
     ...options,
@@ -110,9 +59,6 @@ export const checkoutsControllerUpdateCheckoutReceiver = <ThrowOnError extends b
     }
 });
 
-/**
- * Autosave checkout delivery fields on change
- */
 export const checkoutsControllerUpdateCheckoutDelivery = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerUpdateCheckoutDeliveryData, ThrowOnError>): RequestResult<CheckoutsControllerUpdateCheckoutDeliveryResponses, CheckoutsControllerUpdateCheckoutDeliveryErrors, ThrowOnError> => (options.client ?? client).patch<CheckoutsControllerUpdateCheckoutDeliveryResponses, CheckoutsControllerUpdateCheckoutDeliveryErrors, ThrowOnError>({
     url: '/api/checkouts/{id}/delivery',
     ...options,
@@ -122,9 +68,6 @@ export const checkoutsControllerUpdateCheckoutDelivery = <ThrowOnError extends b
     }
 });
 
-/**
- * Submit checkout — place order
- */
 export const checkoutsControllerSubmitCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerSubmitCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerSubmitCheckoutResponses, CheckoutsControllerSubmitCheckoutErrors, ThrowOnError> => (options.client ?? client).post<CheckoutsControllerSubmitCheckoutResponses, CheckoutsControllerSubmitCheckoutErrors, ThrowOnError>({
     url: '/api/checkouts/{id}/submit',
     ...options,
@@ -134,19 +77,10 @@ export const checkoutsControllerSubmitCheckout = <ThrowOnError extends boolean =
     }
 });
 
-/**
- * Clear all cart items
- */
 export const cartControllerClearCart = <ThrowOnError extends boolean = false>(options?: Options<CartControllerClearCartData, ThrowOnError>): RequestResult<CartControllerClearCartResponses, unknown, ThrowOnError> => (options?.client ?? client).delete<CartControllerClearCartResponses, unknown, ThrowOnError>({ url: '/api/cart', ...options });
 
-/**
- * Get cart items and active draft checkout for the current visitor
- */
 export const cartControllerGetCart = <ThrowOnError extends boolean = false>(options?: Options<CartControllerGetCartData, ThrowOnError>): RequestResult<CartControllerGetCartResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CartControllerGetCartResponses, unknown, ThrowOnError>({ url: '/api/cart', ...options });
 
-/**
- * Add a product to the cart
- */
 export const cartControllerAddItem = <ThrowOnError extends boolean = false>(options: Options<CartControllerAddItemData, ThrowOnError>): RequestResult<CartControllerAddItemResponses, CartControllerAddItemErrors, ThrowOnError> => (options.client ?? client).post<CartControllerAddItemResponses, CartControllerAddItemErrors, ThrowOnError>({
     url: '/api/cart/items',
     ...options,
@@ -156,14 +90,8 @@ export const cartControllerAddItem = <ThrowOnError extends boolean = false>(opti
     }
 });
 
-/**
- * Remove a product from the cart
- */
 export const cartControllerRemoveItem = <ThrowOnError extends boolean = false>(options: Options<CartControllerRemoveItemData, ThrowOnError>): RequestResult<CartControllerRemoveItemResponses, unknown, ThrowOnError> => (options.client ?? client).delete<CartControllerRemoveItemResponses, unknown, ThrowOnError>({ url: '/api/cart/items/{productId}', ...options });
 
-/**
- * Update cart item quantity
- */
 export const cartControllerSetItemQty = <ThrowOnError extends boolean = false>(options: Options<CartControllerSetItemQtyData, ThrowOnError>): RequestResult<CartControllerSetItemQtyResponses, CartControllerSetItemQtyErrors, ThrowOnError> => (options.client ?? client).patch<CartControllerSetItemQtyResponses, CartControllerSetItemQtyErrors, ThrowOnError>({
     url: '/api/cart/items/{productId}',
     ...options,
@@ -173,9 +101,6 @@ export const cartControllerSetItemQty = <ThrowOnError extends boolean = false>(o
     }
 });
 
-/**
- * Manager cancel — restore stock on submitted orders (new+)
- */
 export const ordersControllerCancelOrder = <ThrowOnError extends boolean = false>(options: Options<OrdersControllerCancelOrderData, ThrowOnError>): RequestResult<OrdersControllerCancelOrderResponses, OrdersControllerCancelOrderErrors, ThrowOnError> => (options.client ?? client).post<OrdersControllerCancelOrderResponses, OrdersControllerCancelOrderErrors, ThrowOnError>({
     url: '/api/orders/{id}/cancel',
     ...options,
@@ -185,9 +110,6 @@ export const ordersControllerCancelOrder = <ThrowOnError extends boolean = false
     }
 });
 
-/**
- * Record the previous product view and return the next personalized item
- */
 export const feedControllerNext = <ThrowOnError extends boolean = false>(options: Options<FeedControllerNextData, ThrowOnError>): RequestResult<FeedControllerNextResponses, unknown, ThrowOnError> => (options.client ?? client).post<FeedControllerNextResponses, unknown, ThrowOnError>({
     url: '/api/feed/next',
     ...options,
@@ -197,22 +119,10 @@ export const feedControllerNext = <ThrowOnError extends boolean = false>(options
     }
 });
 
-/**
- * Remove a like in the current feed session
- */
 export const feedControllerUnlike = <ThrowOnError extends boolean = false>(options: Options<FeedControllerUnlikeData, ThrowOnError>): RequestResult<FeedControllerUnlikeResponses, unknown, ThrowOnError> => (options.client ?? client).delete<FeedControllerUnlikeResponses, unknown, ThrowOnError>({ url: '/api/feed/products/{productId}/like', ...options });
 
-/**
- * Like a product in the current feed session
- */
 export const feedControllerLike = <ThrowOnError extends boolean = false>(options: Options<FeedControllerLikeData, ThrowOnError>): RequestResult<FeedControllerLikeResponses, FeedControllerLikeErrors, ThrowOnError> => (options.client ?? client).post<FeedControllerLikeResponses, FeedControllerLikeErrors, ThrowOnError>({ url: '/api/feed/products/{productId}/like', ...options });
 
-/**
- * List taste-impression comments for a product
- */
 export const feedControllerComments = <ThrowOnError extends boolean = false>(options: Options<FeedControllerCommentsData, ThrowOnError>): RequestResult<FeedControllerCommentsResponses, unknown, ThrowOnError> => (options.client ?? client).get<FeedControllerCommentsResponses, unknown, ThrowOnError>({ url: '/api/feed/products/{productId}/comments', ...options });
 
-/**
- * List products liked in the current feed session
- */
 export const feedControllerLikes = <ThrowOnError extends boolean = false>(options?: Options<FeedControllerLikesData, ThrowOnError>): RequestResult<FeedControllerLikesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<FeedControllerLikesResponses, unknown, ThrowOnError>({ url: '/api/feed/likes', ...options });

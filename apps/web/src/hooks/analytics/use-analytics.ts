@@ -1,6 +1,6 @@
 'use client';
 
-import type { ProductDetailDto, ProductSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import { useEffect, useRef } from 'react';
 
 import type { CartLine } from '@/hooks/cart';
@@ -16,7 +16,7 @@ import {
 export function useViewItemList(
   listId: string,
   listName: string,
-  products: ProductSummaryDto[] | undefined,
+  products: Product[] | undefined,
   enabled: boolean,
   catalogBrowseMode?: CatalogBrowseMode,
 ) {
@@ -38,7 +38,7 @@ export function useViewItemList(
   }, [catalogBrowseMode, enabled, listId, listName, products]);
 }
 
-export function useViewItem(product: ProductDetailDto | ProductSummaryDto | undefined, enabled: boolean) {
+export function useViewItem(product: Product | undefined, enabled: boolean) {
   const lastIdRef = useRef<string | null>(null);
 
   useEffect(() => {

@@ -1,47 +1,40 @@
-import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
 import { fetchCollectionDetail } from '@/api/collections';
-import { runWithAppLocale } from '@/i18n/app-locale/server';
-import { routing } from '@/i18n/routing';
-import type { LocaleSlugPageProps } from '@/shared/page-props';
+import { withPageLocaleResult } from '@/i18n/app-locale/server';
+import type { LocalePageProps } from '@/shared/page-props';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 
 export const size = OG_IMAGE_SIZE;
 export const contentType = OG_IMAGE_CONTENT_TYPE;
 
-type CollectionOpenGraphImageProps = LocaleSlugPageProps;
+type CollectionOpenGraphImageProps = LocalePageProps<{ slug: string }>;
 
-export default async function Image({ params }: CollectionOpenGraphImageProps) {
-  const { locale, slug } = await params;
+export default withPageLocaleResult<CollectionOpenGraphImageProps, Awaited<ReturnType<typeof createOgImage>>>(
+  async ({ params, locale }) => {
+    const { slug } = params;
+    const [collection, tMetadata] = await Promise.all([
+      fetchCollectionDetail(slug),
+      getTranslations({ locale, namespace: 'metadata' }),
+    ]);
 
-  if (!hasLocale(routing.locales, locale)) {
-    return createOgImage({ title: slug });
-  }
+    return createOgImage({
+      eyebrow: tMetadata('title'),
+      title: collection.name ?? collection.slug,
+      subtitle: collection.description ?? undefined,
+    });
+  },
+  ({ slug }) => createOgImage({ title: slug }),
+);
 
-  const [collection, tMetadata] = await runWithAppLocale(locale, async () =>
-    Promise.all([fetchCollectionDetail(slug), getTranslations({ locale, namespace: 'metadata' })]),
-  );
+export const generateImageMetadata = withPageLocaleResult<
+  CollectionOpenGraphImageProps,
+  Array<{ alt: string }>
+>(
+  async ({ params }) => {
+    const collection = await fetchCollectionDetail(params.slug);
 
-  return createOgImage({
-    eyebrow: tMetadata('title'),
-    title: collection.name ?? collection.slug,
-    subtitle: collection.description ?? undefined,
-  });
-}
-
-export async function generateImageMetadata({ params }: CollectionOpenGraphImageProps) {
-  const { locale, slug } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    return [{ alt: slug }];
-  }
-
-  const collection = await runWithAppLocale(locale, () => fetchCollectionDetail(slug));
-
-  return [
-    {
-      alt: collection.name ?? collection.slug,
-    },
-  ];
-}
+    return [{ alt: collection.name ?? collection.slug }];
+  },
+  ({ slug }) => [{ alt: slug }],
+);

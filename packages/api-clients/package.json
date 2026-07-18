@@ -75,8 +75,7 @@
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@my-noodles/api-lib": "workspace:*",
-    "winston": "3.19.0"
+    "@my-noodles/api-lib": "workspace:*"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.98.2"

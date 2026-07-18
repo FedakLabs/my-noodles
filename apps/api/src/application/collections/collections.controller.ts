@@ -1,9 +1,9 @@
 import { Controller, Get, Inject, Param } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
-import { CollectionDetailDto, CollectionSummaryDto } from './collections.dto';
+import { Collection } from './collection.entity';
 import { CollectionsService } from './collections.service';
 
 @ApiTags('Collections')
@@ -14,15 +14,13 @@ export class CollectionsController extends LocalizedStorefrontController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List active collections' })
-  list(): Promise<CollectionSummaryDto[]> {
+  list(): Promise<Collection[]> {
     return this.collectionsService.list();
   }
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Get collection by slug' })
   @ApiNotFoundResponse({ description: 'Collection not found' })
-  getBySlug(@Param('slug') slug: string): Promise<CollectionDetailDto> {
+  getBySlug(@Param('slug') slug: string): Promise<Collection> {
     return this.collectionsService.getBySlug(slug);
   }
 }

@@ -1,4 +1,3 @@
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import { type INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
@@ -27,13 +26,17 @@ describe('checkouts (e2e)', () => {
   let app: INestApplication;
   let checkoutsFindOne: jest.Mock;
   let checkoutsFind: jest.Mock;
+  let checkoutCreate: jest.Mock;
   let checkoutSave: jest.Mock;
   let checkoutUpdate: jest.Mock;
+  let orderCreate: jest.Mock;
   let orderSave: jest.Mock;
+  let deliveryCreate: jest.Mock;
   let deliverySave: jest.Mock;
+  let itemCreate: jest.Mock;
   let itemSave: jest.Mock;
   let telegramSend: jest.Mock;
-  let getCartItemsForOrder: jest.Mock;
+  let getCartItems: jest.Mock;
   let clearCartItems: jest.Mock;
   let visitorResolve: jest.Mock;
 
@@ -41,17 +44,31 @@ describe('checkouts (e2e)', () => {
   const orderId = '44444444-4444-4444-8444-444444444444';
   const visitorId = '33333333-3333-4333-8333-333333333333';
   const futureExpiresAt = () => new Date(Date.now() + 15 * 60_000);
+  const pastExpiresAt = () => new Date(Date.now() - 60_000);
 
   beforeAll(async () => {
     checkoutsFindOne = jest.fn();
     checkoutsFind = jest.fn().mockResolvedValue([]);
+    checkoutCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(Checkout.prototype), entity));
     checkoutSave = jest.fn();
     checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
+    orderCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(Order.prototype), entity));
     orderSave = jest.fn();
+    deliveryCreate = jest
+      .fn()
+      .mockImplementation((entity: object) => Object.assign(Object.create(OrderDelivery.prototype), entity));
     deliverySave = jest.fn();
+    itemCreate = jest.fn().mockImplementation((entities: object | object[]) => {
+      const create = (entity: object) => Object.assign(Object.create(OrderItem.prototype), entity);
+      return Array.isArray(entities) ? entities.map(create) : create(entities);
+    });
     itemSave = jest.fn();
     telegramSend = jest.fn().mockResolvedValue(undefined);
-    getCartItemsForOrder = jest.fn();
+    getCartItems = jest.fn();
     clearCartItems = jest.fn().mockResolvedValue(undefined);
     visitorResolve = jest.fn().mockResolvedValue({ id: visitorId });
 
@@ -70,21 +87,22 @@ describe('checkouts (e2e)', () => {
           useValue: {
             findOne: checkoutsFindOne,
             find: checkoutsFind,
+            create: checkoutCreate,
             save: checkoutSave,
             update: checkoutUpdate,
           },
         },
         {
           provide: getRepositoryToken(Order),
-          useValue: { save: orderSave },
+          useValue: { create: orderCreate, save: orderSave },
         },
         {
           provide: getRepositoryToken(OrderDelivery),
-          useValue: { save: deliverySave },
+          useValue: { create: deliveryCreate, save: deliverySave },
         },
         {
           provide: getRepositoryToken(OrderItem),
-          useValue: { save: itemSave },
+          useValue: { create: itemCreate, save: itemSave },
         },
         {
           provide: TelegramService,
@@ -93,7 +111,7 @@ describe('checkouts (e2e)', () => {
         {
           provide: CartService,
           useValue: {
-            getCartItemsForOrder,
+            getCartItems,
             clearCartItems,
             applyReconciledQuantities: jest.fn(),
             restoreItemsFromOrder: jest.fn(),
@@ -116,10 +134,6 @@ describe('checkouts (e2e)', () => {
           provide: DeliveryService,
           useValue: { estimateForOrder: jest.fn().mockResolvedValue(null) },
         },
-        {
-          provide: APP_LOGGER,
-          useValue: { info: jest.fn(), error: jest.fn() },
-        },
       ],
     });
   });
@@ -132,7 +146,7 @@ describe('checkouts (e2e)', () => {
     jest.clearAllMocks();
     checkoutUpdate.mockResolvedValue({ affected: 1 });
     visitorResolve.mockResolvedValue({ id: visitorId });
-    getCartItemsForOrder.mockResolvedValue([
+    getCartItems.mockResolvedValue([
       {
         productId: sampleProductId,
         qty: 1,
@@ -158,19 +172,26 @@ describe('checkouts (e2e)', () => {
         ...entity,
       }),
     );
-    checkoutSave.mockImplementation((entity: object) =>
-      Promise.resolve(
-        asCheckout({
-          id: checkoutId,
-          orderId,
-          createdAt: new Date('2025-06-20T10:00:00.000Z'),
-          status: CheckoutStatus.InProgress,
-          visitorSessionId: visitorId,
-          expiresAt: futureExpiresAt(),
-          ...entity,
-        }),
-      ),
-    );
+    checkoutSave.mockImplementation((entity: Checkout) => {
+      entity.setDefaultExpiresAt();
+      const saved = asCheckout({
+        ...entity,
+        id: checkoutId,
+        orderId,
+        createdAt: new Date('2025-06-20T10:00:00.000Z'),
+        visitorSessionId: visitorId,
+        order: {
+          id: orderId,
+          totalMinor: 9_900,
+          currency: 'UAH',
+          status: OrderStatus.Draft,
+          items: [{ productId: sampleProductId, qty: 1 }],
+          delivery: null,
+        },
+      });
+      checkoutsFindOne.mockResolvedValue(saved);
+      return Promise.resolve(saved);
+    });
   });
 
   it('POST /api/checkouts starts checkout from cart items', async () => {
@@ -182,14 +203,16 @@ describe('checkouts (e2e)', () => {
       id: checkoutId,
       orderId,
       status: CheckoutStatus.InProgress,
-      totalMinor: 9_900,
-      currency: 'UAH',
+      order: {
+        totalMinor: 9_900,
+        currency: 'UAH',
+      },
     });
     expect(clearCartItems).toHaveBeenCalledWith(visitorId);
   });
 
   it('POST /api/checkouts returns 400 when cart is empty', async () => {
-    getCartItemsForOrder.mockResolvedValueOnce([]);
+    getCartItems.mockResolvedValueOnce([]);
     const server = apiHttpServer(app);
 
     await request(server).post('/api/checkouts').expect(400);
@@ -216,16 +239,16 @@ describe('checkouts (e2e)', () => {
 
     const response = await request(server).get('/api/checkouts?status=in_progress').expect(200);
 
-    const body = response.body as { items: Array<{ id: string; status: string; itemCount: number }> };
-    expect(body.items).toHaveLength(1);
-    expect(body.items[0]).toMatchObject({
+    const body = response.body as Array<{ id: string; status: string; order: { items: unknown[] } }>;
+    expect(body).toHaveLength(1);
+    expect(body[0]).toMatchObject({
       id: checkoutId,
       status: CheckoutStatus.InProgress,
-      itemCount: 1,
+      order: { items: [{ qty: 1 }] },
     });
   });
 
-  it('GET /api/checkouts/:id returns 409 when checkout is cancelled', async () => {
+  it('GET /api/checkouts/:id returns cancelled checkout with status', async () => {
     checkoutsFindOne.mockResolvedValue(
       asCheckout({
         id: checkoutId,
@@ -234,6 +257,7 @@ describe('checkouts (e2e)', () => {
         status: CheckoutStatus.Cancelled,
         cancelledReason: 'user',
         createdAt: new Date(),
+        expiresAt: pastExpiresAt(),
         order: {
           id: orderId,
           status: OrderStatus.Draft,
@@ -251,11 +275,12 @@ describe('checkouts (e2e)', () => {
 
     const server = apiHttpServer(app);
 
-    const response = await request(server).get(`/api/checkouts/${checkoutId}`).expect(409);
+    const response = await request(server).get(`/api/checkouts/${checkoutId}`).expect(200);
 
     expect(response.body).toMatchObject({
-      code: 'checkout_not_in_progress',
-      payload: { checkoutId, status: CheckoutStatus.Cancelled },
+      id: checkoutId,
+      status: CheckoutStatus.Cancelled,
+      cancelledReason: 'user',
     });
   });
 
@@ -348,9 +373,11 @@ describe('checkouts (e2e)', () => {
       .expect(200);
 
     expect(response.body).toMatchObject({
-      firstName: 'Andrii',
-      lastName: 'Fedak',
-      phone: '+380501112233',
+      order: {
+        firstName: 'Andrii',
+        lastName: 'Fedak',
+        phone: '+380501112233',
+      },
     });
     expect(orderSave).toHaveBeenCalled();
     expect(deliverySave).not.toHaveBeenCalled();

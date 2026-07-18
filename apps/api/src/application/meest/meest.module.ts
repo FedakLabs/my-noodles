@@ -1,7 +1,5 @@
 import { MeestApi } from '@my-noodles/api-clients/meest';
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
 import { Module } from '@nestjs/common';
-import type { Logger } from 'winston';
 
 import { meestConfig } from './meest.config';
 import { MeestService } from './meest.service';
@@ -10,8 +8,7 @@ import { MeestService } from './meest.service';
   providers: [
     {
       provide: MeestApi,
-      useFactory: (logger: Logger) => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }, logger),
-      inject: [APP_LOGGER],
+      useFactory: () => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }),
     },
     MeestService,
   ],

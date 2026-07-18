@@ -1,7 +1,6 @@
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
-import { HTTP_LOG_METADATA, LoggingInterceptor } from '@my-noodles/api-lib/nest';
+import { logger } from '@my-noodles/api-lib/logger';
+import { LoggingInterceptor } from '@my-noodles/api-lib/nest';
 import type { ExecutionContext } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import type { Request, Response } from 'express';
 import { of } from 'rxjs';
 
@@ -9,17 +8,8 @@ import { jest } from '../jest-globals';
 
 describe('LoggingInterceptor', () => {
   it('emits manifest access log after the request completes', async () => {
-    const logger = { info: jest.fn() };
-
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        LoggingInterceptor,
-        { provide: APP_LOGGER, useValue: logger },
-        { provide: HTTP_LOG_METADATA, useValue: { appName: 'test-api', appVersion: 'test' } },
-      ],
-    }).compile();
-
-    const interceptor = moduleRef.get(LoggingInterceptor);
+    const infoSpy = jest.spyOn(logger, 'info').mockImplementation((() => logger) as never);
+    const interceptor = new LoggingInterceptor();
 
     const request = {
       method: 'GET',
@@ -38,22 +28,26 @@ describe('LoggingInterceptor', () => {
       }),
     } as ExecutionContext;
 
-    await new Promise<void>((resolve, reject) => {
-      interceptor.intercept(context, { handle: () => of({ status: 'ok' }) }).subscribe({
-        complete: () => resolve(),
-        error: reject,
+    try {
+      await new Promise<void>((resolve, reject) => {
+        interceptor.intercept(context, { handle: () => of({ status: 'ok' }) }).subscribe({
+          complete: () => resolve(),
+          error: reject,
+        });
       });
-    });
 
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.objectContaining({
-        'severity.text': 'INFO',
-        body: 'GET /api/health 200',
-        'attributes.http.requestType': 'ingoing',
-        'attributes.http.method': 'GET',
-        'attributes.http.responseStatus': '200',
-        'attributes.http.responseBody': JSON.stringify({ status: 'ok' }),
-      }),
-    );
+      expect(infoSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          'severity.text': 'INFO',
+          body: expect.stringMatching(/^GET 200 \d+ms \/api\/health$/),
+          'attributes.http.requestType': 'ingoing',
+          'attributes.http.method': 'GET',
+          'attributes.http.responseStatus': '200',
+          'attributes.http.responseBody': JSON.stringify({ status: 'ok' }),
+        }),
+      );
+    } finally {
+      infoSpy.mockRestore();
+    }
   });
 });

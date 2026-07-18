@@ -1,6 +1,5 @@
 import type { LocalizedStringData } from '@my-noodles/api-lib/locale';
 
-/** Warm, human display names for synthetic taste impressions. */
 const FEED_COMMENT_AUTHORS = [
   'Оля',
   'Андрій',
@@ -16,7 +15,6 @@ const FEED_COMMENT_AUTHORS = [
   'Іра',
 ] as const;
 
-/** Honest, emotional "taste impressions" — written by us to convey how a product feels. */
 const FEED_COMMENT_TEMPLATES: readonly LocalizedStringData[] = [
   {
     uk: 'Перший укус — і одразу хочеться ще. Смак яскравий, але не набридає.',

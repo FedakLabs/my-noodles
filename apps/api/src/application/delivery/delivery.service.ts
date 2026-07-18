@@ -1,7 +1,6 @@
 import { LocalizedString } from '@my-noodles/api-lib/locale';
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
+import { logger } from '@my-noodles/api-lib/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import type { Logger } from 'winston';
 
 import { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { OrderDelivery } from '../orders/order-delivery.entity';
@@ -26,7 +25,6 @@ export class DeliveryService {
   constructor(
     @Inject(DeliveryProviderFactory) private readonly providerFactory: DeliveryProviderFactory,
     @Inject(DeliveryCatalogCache) private readonly catalogCache: DeliveryCatalogCache,
-    @Inject(APP_LOGGER) private readonly logger: Logger,
   ) {}
 
   listProviders(): { id: DeliveryProvider; label: string }[] {
@@ -95,7 +93,7 @@ export class DeliveryService {
     try {
       return await this.estimateFromDelivery(order.delivery, order.createdAt, order.items.length);
     } catch (error) {
-      this.logger.warn({
+      logger.warn({
         msg: 'delivery.estimate.failed',
         orderId: order.id,
         provider: order.delivery.provider,

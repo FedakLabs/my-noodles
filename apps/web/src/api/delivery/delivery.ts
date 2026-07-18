@@ -9,6 +9,7 @@ import {
   type DeliveryWarehouseDto,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 export type { DeliveryCityDto, DeliveryProviderDto, DeliveryWarehouseDto };
 
@@ -48,3 +49,24 @@ export async function fetchDeliveryWarehouses(
     }),
   );
 }
+
+export const deliveryQueries = {
+  providers: () =>
+    queryOptions({
+      queryKey: deliveryQueryKeys.providers(),
+      queryFn: fetchDeliveryProviders,
+      staleTime: 60 * 60_000,
+    }),
+  cities: (provider: DeliveryProvider, method: DeliveryMethod, query: string) =>
+    queryOptions({
+      queryKey: deliveryQueryKeys.cities(provider, method, query),
+      queryFn: () => fetchDeliveryCities(provider, method, query),
+      staleTime: 5 * 60_000,
+    }),
+  warehouses: (provider: DeliveryProvider, cityRef: string, query?: string) =>
+    queryOptions({
+      queryKey: deliveryQueryKeys.warehouses(provider, cityRef, query),
+      queryFn: () => fetchDeliveryWarehouses(provider, cityRef, query),
+      staleTime: 5 * 60_000,
+    }),
+};

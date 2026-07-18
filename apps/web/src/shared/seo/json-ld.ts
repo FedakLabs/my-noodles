@@ -1,4 +1,4 @@
-import type { ProductDetailDto } from '@my-noodles/api-clients/storefront';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import { minorToMajor } from '@my-noodles/utils';
 
 import type { AppLocale } from '@/i18n/routing';
@@ -26,7 +26,7 @@ export function buildOrganizationWebSiteJsonLd(siteName: string): JsonLdGraph {
   };
 }
 
-export function buildProductJsonLd(product: ProductDetailDto, locale: AppLocale): JsonLdGraph {
+export function buildProductJsonLd(product: Product, locale: AppLocale): JsonLdGraph {
   const productUrl = absoluteUrl(localePath(locale, `/product/${product.slug}`));
   const description = product.description ?? product.story ?? undefined;
 

@@ -1,7 +1,6 @@
 'use client';
 
 import Typography from '@mui/material/Typography';
-import type { ProductSort } from '@my-noodles/api-clients/storefront';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
@@ -15,14 +14,13 @@ import { catalogGridProducts, type CatalogProductGridSharedProps } from './catal
 import { useClearViewModeReset } from './use-clear-view-mode-reset';
 
 export function CatalogPaginatedGrid({
-  onOpenFilters,
   isViewModeResetting,
   clearViewModeReset,
   viewMode,
   listTitle,
 }: CatalogProductGridSharedProps) {
   const t = useTranslations('catalog');
-  const { params, setParams, hasFiltersApplied } = useCatalogSearchParams();
+  const { params, setParams } = useCatalogSearchParams();
   const previousPageRef = useRef(params.page);
   const skipScrollOnPageChangeRef = useRef(false);
 
@@ -30,7 +28,6 @@ export function CatalogPaginatedGrid({
     products: paginatedProducts,
     productsIsInitialLoad,
     productsIsError,
-    productsIsRefetching,
     productsIsBusy,
     productsIsFetching,
   } = useProductsPaginatedList(params);
@@ -84,12 +81,6 @@ export function CatalogPaginatedGrid({
   return (
     <ProductGrid
       products={gridProducts}
-      totalCount={showSkeleton ? undefined : totalCount}
-      showResultsCount
-      sort={params.sort}
-      onSortChange={(sort: ProductSort) => void setParams({ sort, page: 1 })}
-      onOpenFilters={onOpenFilters}
-      hasFiltersApplied={hasFiltersApplied}
       pagination={
         showSkeleton
           ? undefined
@@ -111,7 +102,6 @@ export function CatalogPaginatedGrid({
           : undefined
       }
       isPending={showSkeleton}
-      isFetching={productsIsRefetching && !isLoadMoreFetching}
       skeletonCount={params.limit}
     />
   );

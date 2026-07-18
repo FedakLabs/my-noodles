@@ -3,7 +3,7 @@
 import { formatUseMutation, formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { feedQueryKeys, fetchFeedComments, fetchFeedLikes, likeFeedProduct, unlikeFeedProduct } from './feed';
+import { feedQueries, feedQueryKeys, likeFeedProduct, unlikeFeedProduct } from './feed';
 
 export function useLikeFeedProduct() {
   const queryClient = useQueryClient();
@@ -36,10 +36,8 @@ export function useUnlikeFeedProduct() {
 export function useFeedLikes(options?: { enabled?: boolean }) {
   return formatUseQuery(
     useQuery({
-      queryKey: feedQueryKeys.likes(),
-      queryFn: fetchFeedLikes,
+      ...feedQueries.likes(),
       enabled: options?.enabled ?? true,
-      placeholderData: undefined,
     }),
     'feedLikes',
   );
@@ -48,10 +46,8 @@ export function useFeedLikes(options?: { enabled?: boolean }) {
 export function useFeedComments(productId: string | null, options?: { enabled?: boolean }) {
   return formatUseQuery(
     useQuery({
-      queryKey: feedQueryKeys.comments(productId ?? ''),
-      queryFn: () => fetchFeedComments(productId ?? ''),
+      ...feedQueries.comments(productId ?? ''),
       enabled: (options?.enabled ?? true) && Boolean(productId),
-      placeholderData: undefined,
     }),
     'feedComments',
   );

@@ -58,6 +58,7 @@
     "backToCatalog": "Back to catalog"
   },
   "loading": "Loading checkout…",
+  "empty": "Checkout not found.",
   "hold": {
     "remaining": "Complete checkout by {deadline} — {remaining} left.",
     "expired": "This checkout expired. Go to the <catalog>catalog</catalog> to start a new order."

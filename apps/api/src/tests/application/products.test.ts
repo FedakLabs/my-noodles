@@ -17,7 +17,7 @@ describe('products (e2e)', () => {
   let productsFind: jest.Mock;
 
   beforeAll(async () => {
-    getManyAndCount = jest.fn().mockResolvedValue([[sampleProduct], 1]);
+    getManyAndCount = jest.fn().mockResolvedValue([[Object.assign(new Product(), sampleProduct)], 1]);
     productsFind = jest.fn().mockResolvedValue([
       {
         priceMinor: sampleProduct.priceMinor,

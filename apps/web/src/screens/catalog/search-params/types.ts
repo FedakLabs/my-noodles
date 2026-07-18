@@ -10,7 +10,6 @@ export type CatalogFilterParams = Omit<CatalogSearchParams, 'page' | 'limit'>;
 
 export type CatalogInfiniteListParams = Omit<CatalogSearchParams, 'page'>;
 
-/** Multi-select facet dimensions — keys shared by URL filters and `/products/facets` response. */
 export type CatalogFacetKey = {
   [K in keyof ProductFacetsDto]: ProductFacetsDto[K] extends Array<ProductFacetOptionDto> ? K : never;
 }[keyof ProductFacetsDto];

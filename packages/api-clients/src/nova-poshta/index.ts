@@ -2,6 +2,7 @@ export {
   NovaPoshtaApi,
   type NovaPoshtaClientOptions,
   type NovaPoshtaDirectoryCityRow,
+  type NovaPoshtaResponse,
   type NovaPoshtaSearchSettlementRow,
   type NovaPoshtaSettlementAddress,
   type NovaPoshtaWarehouseRow,

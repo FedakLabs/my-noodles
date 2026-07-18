@@ -3,22 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 
 import { Product } from '../products/product.entity';
-import {
-  buildProductOrder,
-  buildProductWhere,
-  DEFAULT_PRODUCT_SORT,
-  productListRelations,
-} from '../products/products.filters';
+import { buildProductOrder, buildProductWhere, DEFAULT_PRODUCT_SORT } from '../products/products.filters';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
 import { FeedCommentsService } from './feed-comments.service';
 import { FeedSessionService } from './feed-session.service';
-import type {
-  FeedFiltersDto,
-  FeedItemDto,
-  FeedLikedItemDto,
-  FeedNextDto,
-  FeedNextResponseDto,
-} from './feed.dto';
+import type { FeedFiltersDto, FeedNextDto, FeedNextResponseDto } from './feed.dto';
 import type { FeedFilterSnapshot } from './feed.types';
 
 @Injectable()
@@ -53,7 +42,6 @@ export class FeedService {
 
     const [next] = await this.productsRepository.find({
       where,
-      relations: productListRelations,
       order: buildProductOrder(DEFAULT_PRODUCT_SORT),
       take: 1,
     });
@@ -64,39 +52,18 @@ export class FeedService {
 
     const likedIds = new Set(likedProducts.map((product) => product.id));
     const commentCount = await this.commentsService.countForProduct(next.id);
+    next.liked = likedIds.has(next.id);
+    next.commentCount = commentCount;
 
-    return { item: this.toItem(next, likedIds.has(next.id), commentCount), exhausted: false };
+    return { item: next, exhausted: false };
   }
 
-  async getLikedItems(visitor: VisitorSession): Promise<FeedLikedItemDto[]> {
+  async getLikedItems(visitor: VisitorSession): Promise<Product[]> {
     const products = await this.sessionService.getLikedProducts(visitor.id);
-
-    return products.map((product) => ({
-      id: product.id,
-      slug: product.slug,
-      name: product.name.localized,
-      priceMinor: product.priceMinor,
-      currency: product.currency,
-      images: product.images,
-    }));
-  }
-
-  private toItem(product: Product, liked: boolean, commentCount: number): FeedItemDto {
-    return {
-      id: product.id,
-      slug: product.slug,
-      name: product.name.localized,
-      priceMinor: product.priceMinor,
-      currency: product.currency,
-      images: product.images,
-      videos: product.videos,
-      inStock: product.quantity > 0,
-      category: { slug: product.category.slug, name: product.category.name.localized },
-      country: { slug: product.country.slug, name: product.country.name.localized },
-      brand: product.brand ? { slug: product.brand.slug, name: product.brand.name } : null,
-      commentCount,
-      liked,
-    };
+    for (const product of products) {
+      product.liked = true;
+    }
+    return products;
   }
 }
 

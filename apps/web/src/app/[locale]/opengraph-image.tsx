@@ -1,7 +1,6 @@
-import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
-import { routing } from '@/i18n/routing';
+import { withPageLocaleResult } from '@/i18n/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 
@@ -11,21 +10,18 @@ export const contentType = OG_IMAGE_CONTENT_TYPE;
 
 type LocaleOpenGraphImageProps = Pick<LocalePageProps, 'params'>;
 
-export default async function Image({ params }: LocaleOpenGraphImageProps) {
-  const { locale } = await params;
+export default withPageLocaleResult<LocaleOpenGraphImageProps, Awaited<ReturnType<typeof createOgImage>>>(
+  async ({ locale }) => {
+    const [tHome, tMetadata] = await Promise.all([
+      getTranslations({ locale, namespace: 'home' }),
+      getTranslations({ locale, namespace: 'metadata' }),
+    ]);
 
-  if (!hasLocale(routing.locales, locale)) {
-    return createOgImage({ title: 'MyNoodles' });
-  }
-
-  const [tHome, tMetadata] = await Promise.all([
-    getTranslations({ locale, namespace: 'home' }),
-    getTranslations({ locale, namespace: 'metadata' }),
-  ]);
-
-  return createOgImage({
-    eyebrow: tMetadata('title'),
-    title: tHome('title'),
-    subtitle: tHome('description'),
-  });
-}
+    return createOgImage({
+      eyebrow: tMetadata('title'),
+      title: tHome('title'),
+      subtitle: tHome('description'),
+    });
+  },
+  () => createOgImage({ title: 'MyNoodles' }),
+);

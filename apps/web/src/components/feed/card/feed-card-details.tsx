@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 import { useProductDetail } from '@/api/products';
 import {
   feedDetailsBodyTextSx,
@@ -19,15 +19,11 @@ import { FeedCardActionBar } from './feed-card-action-bar';
 import { FeedCardDetailsSkeleton } from './feed-card-details-skeleton';
 
 type FeedCardDetailsProps = {
-  item: FeedItemDto;
+  item: Product;
   open: boolean;
   onClose: () => void;
 };
 
-/**
- * Bottom drawer that slides up *within* the reel card. Height follows content up to 70%
- * of the card; only the copy scrolls — actions stay pinned at the bottom.
- */
 export function FeedCardDetails({ item, open, onClose }: FeedCardDetailsProps) {
   const { formatCurrency } = useCurrency();
   const theme = useTheme();

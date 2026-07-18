@@ -27,7 +27,9 @@ export function CollectionScreen({ slug }: CollectionScreenProps) {
 
   const collectionProducts =
     collection && products?.items
-      ? products.items.filter((product) => collection.productSlugs.includes(product.slug))
+      ? products.items.filter((product) =>
+          collection.products.some((collectionProduct) => collectionProduct.id === product.id),
+        )
       : [];
 
   useViewItemList(

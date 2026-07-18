@@ -4,33 +4,43 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
 import { DeliveryMethod } from '@/application/orders/order-delivery.dto';
 
+import { NovaPoshtaException } from './nova-poshta.exceptions';
+
 @Injectable()
 export class NovaPoshtaService {
   constructor(@Inject(NovaPoshtaApi) private readonly novaPoshtaApi: NovaPoshtaApi) {}
 
   async searchCities(query: string, method: DeliveryMethod): Promise<DeliveryCity[]> {
-    if (method === DeliveryMethod.Courier) {
-      return this.searchSettlements(query);
-    }
+    try {
+      if (method === DeliveryMethod.Courier) {
+        return await this.searchSettlements(query);
+      }
 
-    const cities = await this.novaPoshtaApi.getCities(query);
-    const mapped = this.mapDirectoryCities(cities);
-    if (mapped.length > 0) {
-      return mapped;
-    }
+      const cities = await this.novaPoshtaApi.getCities(query);
+      const mapped = this.mapDirectoryCities(cities);
+      if (mapped.length > 0) {
+        return mapped;
+      }
 
-    return this.searchCitiesFromSearchSettlements(query);
+      return await this.searchCitiesFromSearchSettlements(query);
+    } catch (error) {
+      throw NovaPoshtaException.from(error);
+    }
   }
 
   async searchWarehouses(cityRef: string, query?: string): Promise<DeliveryWarehouse[]> {
-    const response = await this.novaPoshtaApi.getWarehouses(cityRef, query);
+    try {
+      const response = await this.novaPoshtaApi.getWarehouses(cityRef, query);
 
-    return response.map((warehouse) => ({
-      ref: warehouse.Ref,
-      number: warehouse.Number,
-      name: warehouse.Description,
-      address: warehouse.ShortAddress,
-    }));
+      return response.map((warehouse) => ({
+        ref: warehouse.Ref,
+        number: warehouse.Number,
+        name: warehouse.Description,
+        address: warehouse.ShortAddress,
+      }));
+    } catch (error) {
+      throw NovaPoshtaException.from(error);
+    }
   }
 
   private async searchSettlements(query: string): Promise<DeliveryCity[]> {

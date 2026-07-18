@@ -1,9 +1,10 @@
-import { createAppLogger } from '@my-noodles/api-lib/logging';
+import { configureAppLogger } from '@my-noodles/api-lib/logger';
 
 import { config } from '@/config';
 
-export const appLogger = createAppLogger({
+configureAppLogger({
   appName: config.appName,
+  appVersion: config.appVersion,
   nodeEnv: config.nodeEnv,
   otel: config.otel,
 });

@@ -1,24 +1,12 @@
-import {
-  type CallHandler,
-  type ExecutionContext,
-  Inject,
-  Injectable,
-  type NestInterceptor,
-} from '@nestjs/common';
+import { type CallHandler, type ExecutionContext, Injectable, type NestInterceptor } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { type Observable, tap } from 'rxjs';
-import type { Logger } from 'winston';
 
-import { APP_LOGGER, HttpAccessLog } from '../../logging';
-import { HTTP_LOG_METADATA, type HttpLogMetadata } from './http-log-metadata';
+import { HttpAccessLog } from '../../express';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly accessLog: HttpAccessLog;
-
-  constructor(@Inject(APP_LOGGER) logger: Logger, @Inject(HTTP_LOG_METADATA) metadata: HttpLogMetadata) {
-    this.accessLog = new HttpAccessLog(logger, metadata);
-  }
+  private readonly accessLog = new HttpAccessLog();
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();

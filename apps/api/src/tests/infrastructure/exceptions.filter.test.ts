@@ -4,6 +4,7 @@ import {
   HttpStatus,
   NotFoundException,
 } from '@my-noodles/api-lib/exceptions';
+import { logger } from '@my-noodles/api-lib/logger';
 import { ExceptionsFilter } from '@my-noodles/api-lib/nest';
 import type { ArgumentsHost } from '@nestjs/common';
 import {
@@ -13,9 +14,8 @@ import {
 import { type HttpAdapterHost } from '@nestjs/core';
 import { ThrottlerException } from '@nestjs/throttler';
 import type { Request } from 'express';
-import type { Logger } from 'winston';
 
-import { jest } from '../jest-globals';
+import { afterEach, beforeEach, jest } from '../jest-globals';
 
 function createHost(request: Request, response: object = {}): ArgumentsHost {
   return {
@@ -41,33 +41,41 @@ function createRequest(startTimeMs: number): Request {
   } as unknown as Request;
 }
 
-function createFilter(logger: { info: jest.Mock; error: jest.Mock }, reply: jest.Mock): ExceptionsFilter {
-  return new ExceptionsFilter(
-    {
-      httpAdapter: {
-        reply,
-        isHeadersSent: () => false,
-      },
-    } as unknown as HttpAdapterHost,
-    logger as unknown as Logger,
-    { appName: 'test-api', appVersion: 'test' },
-  );
+function createFilter(reply: jest.Mock): ExceptionsFilter {
+  return new ExceptionsFilter({
+    httpAdapter: {
+      reply,
+      isHeadersSent: () => false,
+    },
+  } as unknown as HttpAdapterHost);
 }
 
 describe('ExceptionsFilter', () => {
+  let infoSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    infoSpy = jest.spyOn(logger, 'info').mockImplementation((() => logger) as never);
+    errorSpy = jest.spyOn(logger, 'error').mockImplementation((() => logger) as never);
+  });
+
+  afterEach(() => {
+    infoSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
   it('logs and replies with ServerSideException for unhandled errors', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
-    const filter = createFilter(logger, reply);
+    const filter = createFilter(reply);
     const rawError = Object.assign(new Error('test'), { code: '23503' });
 
     filter.catch(rawError, createHost(createRequest(performance.now() - 5)));
 
-    expect(logger.error).toHaveBeenCalledWith(
+    expect(errorSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'ERROR',
         'severity.number': 17,
-        body: 'GET /api/health 500 — Internal server error',
+        body: expect.stringMatching(/^GET 500 \d+ms \/api\/health — Internal server error$/),
         'attributes.http.responseStatus': '500',
         'attributes.error.name': 'Error',
         'attributes.error.message': 'test',
@@ -80,11 +88,11 @@ describe('ExceptionsFilter', () => {
       }),
     );
 
-    const logged = logger.error.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
+    const logged = errorSpy.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
     const raw = JSON.parse(logged['attributes.error.raw']) as { message: string; code: string };
     expect(raw.message).toBe('test');
     expect(raw.code).toBe('23503');
-    expect(logger.info).not.toHaveBeenCalled();
+    expect(infoSpy).not.toHaveBeenCalled();
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -96,23 +104,22 @@ describe('ExceptionsFilter', () => {
   });
 
   it('logs AppException 4xx as manifest INFO records and replies with toBody()', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
-    const filter = createFilter(logger, reply);
+    const filter = createFilter(reply);
 
     filter.catch(
       new AppException(HttpStatus.NOT_FOUND, 'not_found', 'Not found'),
       createHost(createRequest(performance.now() - 3)),
     );
 
-    expect(logger.info).toHaveBeenCalledWith(
+    expect(infoSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         'severity.text': 'INFO',
-        body: 'GET /api/health 404',
+        body: expect.stringMatching(/^GET 404 \d+ms \/api\/health$/),
         'attributes.http.responseStatus': '404',
       }),
     );
-    expect(logger.error).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
       {
@@ -126,9 +133,8 @@ describe('ExceptionsFilter', () => {
   });
 
   it('maps Nest BadRequestException to BadRequestException', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
-    const filter = createFilter(logger, reply);
+    const filter = createFilter(reply);
 
     filter.catch(
       new NestBadRequestException({
@@ -147,9 +153,8 @@ describe('ExceptionsFilter', () => {
   });
 
   it('maps Nest NotFoundException to our NotFoundException preset', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
-    const filter = createFilter(logger, reply);
+    const filter = createFilter(reply);
 
     filter.catch(
       new NestNotFoundException('Cannot GET /api/missing'),
@@ -164,9 +169,8 @@ describe('ExceptionsFilter', () => {
   });
 
   it('maps ThrottlerException to TooManyRequestsException', () => {
-    const logger = { info: jest.fn(), error: jest.fn() };
     const reply = jest.fn();
-    const filter = createFilter(logger, reply);
+    const filter = createFilter(reply);
 
     filter.catch(new ThrottlerException(), createHost(createRequest(performance.now() - 2)));
 

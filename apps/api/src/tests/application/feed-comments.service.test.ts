@@ -25,12 +25,14 @@ describe('FeedCommentsService', () => {
   it('resolves comment text to the active locale', async () => {
     const result = await LocaleContext.run('en', () => service.listForProduct('product-1'));
 
-    expect(result).toEqual([{ id: 'comment-1', authorName: 'Оля', comment: 'Delicious!' }]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ id: 'comment-1', authorName: 'Оля' });
+    expect(LocalizedString.resolveFor(result[0]!.comment, 'en')).toBe('Delicious!');
   });
 
   it('uses the default locale text when active locale is Ukrainian', async () => {
     const result = await LocaleContext.run('uk', () => service.listForProduct('product-1'));
 
-    expect(result[0]?.comment).toBe('Смакота!');
+    expect(LocalizedString.resolveFor(result[0]!.comment, 'uk')).toBe('Смакота!');
   });
 });

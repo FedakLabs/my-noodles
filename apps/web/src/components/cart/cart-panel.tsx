@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { iconStyle } from '@my-noodles/ui';
+import { BusyArea, iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
@@ -27,6 +27,7 @@ type CartPanelProps = {
 
 export function CartPanel({ onClose }: CartPanelProps) {
   const t = useTranslations('cart');
+  const tCommon = useTranslations('common');
   const { formatCurrency } = useCurrency();
   const items = useCartItems();
   const totalMinor = useCartTotalMinor();
@@ -50,11 +51,13 @@ export function CartPanel({ onClose }: CartPanelProps) {
   } = useStartCheckout();
   const router = usePendingRouter();
 
-  const currency = items[0]?.currency ?? cart?.currency ?? 'UAH';
+  const currency = cart?.currency;
 
   const checkoutErrorMessage = startCheckoutIsError
     ? resolveCartErrorMessage(t, startCheckoutError, 'checkoutError')
     : undefined;
+
+  const panelBusy = clearCartIsPending || startCheckoutIsPending;
 
   const handleStartCheckout = () => {
     startCheckoutReset();
@@ -67,104 +70,123 @@ export function CartPanel({ onClose }: CartPanelProps) {
   };
 
   return (
-    <Stack sx={{ height: '100%', minHeight: 0 }}>
-      <Stack
-        direction="row"
-        sx={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: 2,
-          py: 1.5,
-          borderBottom: 1,
-          borderColor: 'divider',
-          flexShrink: 0,
-        }}
-      >
-        <Typography variant="h6">{t('title')}</Typography>
-        <IconButton onClick={onClose} aria-label={t('close')}>
-          <CloseIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
-        </IconButton>
-      </Stack>
-
-      <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column' }}>
-        {inProgressCheckouts.length > 0 ? (
-          <Stack spacing={0}>
-            {inProgressCheckouts.map((checkout) => (
-              <CartCheckoutRow key={checkout.id} checkout={checkout} onClose={onClose} />
-            ))}
-          </Stack>
-        ) : null}
-
-        {items.length === 0 ? (
-          <CartEmptyState onClose={onClose} />
-        ) : (
-          <Stack spacing={1.5}>
-            {items.map((item) => (
-              <CartLineRow
-                key={item.productId}
-                item={item}
-                isUpdating={isUpdatingProduct(item.productId)}
-                isRemoving={isRemovingProduct(item.productId)}
-                onDecrease={() => setQuantity(item.productId, item.qty - 1, item)}
-                onIncrease={() => setQuantity(item.productId, item.qty + 1, item)}
-                onRemove={() => removeItem(item.productId, item)}
-                formatCurrency={formatCurrency}
-                t={t}
-              />
-            ))}
-          </Stack>
-        )}
-      </Box>
-
-      {items.length > 0 ? (
+    <BusyArea
+      busy={panelBusy}
+      label={tCommon('loading')}
+      timingOptions={{ minVisibleMs: 0, showDelayMs: 0 }}
+      sx={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Stack sx={{ flex: 1, minHeight: 0 }}>
         <Stack
-          spacing={1.5}
+          direction="row"
           sx={{
-            flexShrink: 0,
-            p: 2,
-            borderTop: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+            borderBottom: 1,
             borderColor: 'divider',
-            bgcolor: 'background.paper',
+            flexShrink: 0,
           }}
         >
-          <Typography variant="subtitle1">
-            {t('total')}: {formatCurrency(totalMinor, currency)}
-          </Typography>
-          {startCheckoutIsError ? <Alert severity="error">{checkoutErrorMessage}</Alert> : null}
-          <Stack direction="row" spacing={1.5}>
-            <Button variant="outlined" fullWidth onClick={onClose}>
-              {t('continueBrowsing')}
-            </Button>
+          <Typography variant="h6">{t('title')}</Typography>
+          <IconButton onClick={onClose} aria-label={t('close')}>
+            <CloseIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
+          </IconButton>
+        </Stack>
+
+        {startCheckoutIsError ? (
+          <Alert severity="error" sx={{ mx: 2, mt: 1.5, flexShrink: 0 }}>
+            {checkoutErrorMessage}
+          </Alert>
+        ) : null}
+
+        <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column' }}>
+          {inProgressCheckouts.length > 0 ? (
+            <Stack spacing={0}>
+              {inProgressCheckouts.map((checkout) => (
+                <CartCheckoutRow key={checkout.id} checkout={checkout} onClose={onClose} />
+              ))}
+            </Stack>
+          ) : null}
+
+          {items.length === 0 ? (
+            <CartEmptyState onClose={onClose} />
+          ) : (
+            <Stack spacing={1.5}>
+              {items.map((item) => (
+                <CartLineRow
+                  key={item.productId}
+                  item={item}
+                  isUpdating={isUpdatingProduct(item.productId)}
+                  isRemoving={isRemovingProduct(item.productId)}
+                  onDecrease={() => setQuantity(item.productId, item.qty - 1, item)}
+                  onIncrease={() => setQuantity(item.productId, item.qty + 1, item)}
+                  onRemove={() => removeItem(item.productId, item)}
+                  formatCurrency={formatCurrency}
+                  t={t}
+                />
+              ))}
+            </Stack>
+          )}
+        </Box>
+
+        {items.length > 0 ? (
+          <Stack
+            spacing={1.5}
+            sx={{
+              flexShrink: 0,
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Typography variant="subtitle1">
+              {t('total')}: {formatCurrency(totalMinor, currency)}
+            </Typography>
+            <Stack direction="row" spacing={1.5}>
+              <Button variant="outlined" fullWidth onClick={onClose}>
+                {t('continueBrowsing')}
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                disabled={clearCartIsPending}
+                aria-busy={clearCartIsPending}
+                startIcon={
+                  clearCartIsPending ? <CircularProgress size={20} color="inherit" aria-hidden /> : undefined
+                }
+                onClick={() => clearCart()}
+              >
+                {t('clearCart')}
+              </Button>
+            </Stack>
             <Button
-              variant="outlined"
-              color="error"
+              variant="contained"
+              size="large"
               fullWidth
-              disabled={clearCartIsPending}
-              aria-busy={clearCartIsPending}
+              disabled={startCheckoutIsPending}
+              aria-busy={startCheckoutIsPending}
               startIcon={
-                clearCartIsPending ? <CircularProgress size={20} color="inherit" aria-hidden /> : undefined
+                startCheckoutIsPending ? (
+                  <CircularProgress size={22} color="inherit" aria-hidden />
+                ) : undefined
               }
-              onClick={() => clearCart()}
+              onClick={handleStartCheckout}
             >
-              {t('clearCart')}
+              {inProgressCheckouts.length > 0 ? t('inProgress.addToCheckout') : t('checkout')}
             </Button>
           </Stack>
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            disabled={startCheckoutIsPending}
-            aria-busy={startCheckoutIsPending}
-            startIcon={
-              startCheckoutIsPending ? <CircularProgress size={22} color="inherit" aria-hidden /> : undefined
-            }
-            onClick={handleStartCheckout}
-          >
-            {inProgressCheckouts.length > 0 ? t('inProgress.addToCheckout') : t('checkout')}
-          </Button>
-        </Stack>
-      ) : null}
-    </Stack>
+        ) : null}
+      </Stack>
+    </BusyArea>
   );
 }
 
@@ -223,7 +245,7 @@ function CartLineRow({
             size="small"
             aria-label={t('decrease')}
             aria-busy={isUpdating}
-            disabled={lineBusy}
+            disabled={lineBusy || item.qty <= 1}
             onClick={onDecrease}
             sx={{ width: 28, height: 28 }}
           >

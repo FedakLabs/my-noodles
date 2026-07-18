@@ -3,7 +3,7 @@
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import type { CheckoutSummaryDto } from '@my-noodles/api-clients/storefront';
+import type { Checkout } from '@my-noodles/api-clients/storefront';
 import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
@@ -13,7 +13,7 @@ import { useCurrency } from '@/hooks/currency';
 import { Link } from '@/i18n/navigation';
 
 type CartCheckoutRowProps = {
-  checkout: CheckoutSummaryDto;
+  checkout: Checkout;
   onClose: () => void;
 };
 
@@ -35,9 +35,11 @@ export function CartCheckoutRow({ checkout, onClose }: CartCheckoutRowProps) {
       }}
     >
       <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle2">{t('summary', { count: checkout.itemCount })}</Typography>
+        <Typography variant="subtitle2">
+          {t('summary', { count: checkout.order.items.reduce((sum, item) => sum + item.qty, 0) })}
+        </Typography>
         <Typography variant="body2" color="text.secondary">
-          {formatCurrency(checkout.totalMinor, checkout.currency)}
+          {formatCurrency(checkout.order.totalMinor, checkout.order.currency)}
         </Typography>
         <Typography
           component={Link}

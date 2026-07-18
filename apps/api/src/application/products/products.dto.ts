@@ -1,7 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 
 import { PaginatedMetaSwaggerDto, PaginationQuerySwaggerDto } from '@/utils/swagger';
 
+import { Product } from './product.entity';
 import { ProductFilterQueryDto, ProductListFilterQueryDto } from './products.filter-query.dto';
 
 export type { ProductFacetFilters, ProductFilters } from './products.filter-query.dto';
@@ -13,83 +14,9 @@ export class ListProductsQueryDto extends IntersectionType(
 
 export { ProductFilterQueryDto as ProductFacetsQueryDto };
 
-export class BrandRefDto {
-  slug!: string;
-
-  name!: string;
-}
-
-export class CountryRefDto {
-  slug!: string;
-
-  code!: string;
-
-  name!: string | null;
-}
-
-export class CategoryRefDto {
-  slug!: string;
-
-  name!: string | null;
-}
-
-export class ProductSummaryDto {
-  @ApiProperty({ type: String, format: 'uuid' })
-  id!: string;
-
-  slug!: string;
-
-  name!: string | null;
-
-  priceMinor!: number;
-
-  currency!: string;
-
-  images!: string[];
-
-  inStock!: boolean;
-
-  isTriedByUs!: boolean;
-
-  sortWeight!: number;
-
-  @ApiPropertyOptional({ type: () => BrandRefDto, nullable: true })
-  brand!: BrandRefDto | null;
-
-  country!: CountryRefDto;
-
-  category!: CategoryRefDto;
-}
-
 export class PaginatedProductsDto extends PaginatedMetaSwaggerDto {
-  @ApiProperty({ type: [ProductSummaryDto] })
-  items!: ProductSummaryDto[];
-}
-
-export class ProductFlavorDto {
-  spice!: number;
-
-  sweet!: number;
-
-  texture!: string;
-}
-
-export class ProductDetailDto extends ProductSummaryDto {
-  weight!: string | null;
-
-  description!: string | null;
-
-  story!: string | null;
-
-  forWhom!: string | null;
-
-  flavor!: ProductFlavorDto;
-
-  allergens!: string[];
-
-  videos!: string[];
-
-  alternatives!: ProductSummaryDto[];
+  @ApiProperty({ type: [Product] })
+  items!: Product[];
 }
 
 export class ProductFacetOptionDto {

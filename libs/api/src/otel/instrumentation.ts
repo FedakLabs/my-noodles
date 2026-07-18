@@ -1,5 +1,4 @@
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 
 export type OtelOptions =
@@ -18,7 +17,13 @@ export function prepareInstrumentation(options: OtelOptions): NodeSDK | undefine
   process.env['OTEL_LOGS_EXPORTER'] = 'otlp';
 
   const sdk = new NodeSDK({
-    instrumentations: [getNodeAutoInstrumentations(), new WinstonInstrumentation()],
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        // Manual OpenTelemetryTransportV3 owns log export + camelCase traceId/spanId via the manifest.
+        // Disabling avoids a second transport and snake_case trace_id/span_id injection.
+        '@opentelemetry/instrumentation-winston': { enabled: false },
+      }),
+    ],
   });
 
   sdk.start();

@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import type { CheckoutDetailDto } from '@/api/checkouts';
+import type { Checkout } from '@/api/checkouts';
 import { useSubmitCheckout, useUpdateCheckoutDelivery, useUpdateCheckoutReceiver } from '@/api/checkouts';
 import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
 import { CheckoutDeliveryFields } from '@/components/checkout/checkout-delivery-fields';
@@ -42,7 +42,7 @@ import {
 
 type CheckoutFormProps = {
   checkoutId: string;
-  checkout: CheckoutDetailDto;
+  checkout: Checkout;
   onHoldExpired: () => void;
 };
 
@@ -73,6 +73,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     useSubmitCheckout(checkoutId);
   const session = useCheckoutSessionState({
     checkoutId,
+    checkout,
     error: submitCheckoutIsError ? submitCheckoutError : undefined,
   });
   const { trackPurchase } = useAnalyticsActions();
@@ -115,7 +116,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
 
   const isAutosaving = updateCheckoutReceiverIsPending || updateCheckoutDeliveryIsPending;
   const isSubmitBusy = isAutosaving || submitCheckoutIsPending;
-  const canSubmit = canSubmitForm && !isFieldFocused && !isSubmitBusy && checkout.items.length > 0;
+  const canSubmit = canSubmitForm && !isFieldFocused && !isSubmitBusy && checkout.order.items.length > 0;
 
   useEffect(() => {
     if (hydratedCheckoutIdRef.current === checkoutId) {
@@ -164,11 +165,11 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
           transactionId: order.id,
           valueMinor: order.totalMinor,
           currency: order.currency,
-          items: checkout.items.map((item) =>
+          items: checkout.order.items.map((item) =>
             cartLineToGa4Item({
               slug: item.productId,
-              title: item.title,
-              priceMinor: item.priceMinor,
+              title: item.titleSnapshot,
+              priceMinor: item.priceMinorSnapshot,
               qty: item.qty,
             }),
           ),
@@ -184,7 +185,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     return <CheckoutCancelledState title={t('inactive.title')} description={session.expiredDescription} />;
   }
 
-  if (session.isNotInProgress) {
+  if (session.isNotInProgressBySubmit) {
     return <Alert severity="error">{session.submitErrorMessage}</Alert>;
   }
 
@@ -277,7 +278,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
           control={form.control}
           setValue={form.setValue}
           onDeliverySave={autosaveDelivery}
-          deliveryEstimate={checkout.deliveryEstimate}
+          deliveryEstimate={checkout.deliveryEstimate ?? null}
           deliveryEstimateIsPending={updateCheckoutDeliveryIsPending}
           enabled={receiverComplete}
         />
@@ -293,11 +294,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
 
   const mobileOrderSummary = (
     <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
-      <CheckoutOrderSummary
-        checkout={checkout}
-        deliveryEstimate={checkout.deliveryEstimate}
-        footer={submitButton}
-      />
+      <CheckoutOrderSummary checkout={checkout} footer={submitButton} />
     </CheckoutOrderCard>
   );
 

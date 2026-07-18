@@ -1,10 +1,15 @@
-import { APP_LOGGER } from '@my-noodles/api-lib/logging';
+import { logger } from '@my-noodles/api-lib/logger';
 import { TransactionalRepository } from '@my-noodles/api-lib/nest';
-import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { type DataSource, IsNull, LessThanOrEqual, MoreThan, type Repository } from 'typeorm';
-import type { Logger } from 'winston';
+import {
+  type DataSource,
+  type FindOptionsOrder,
+  type FindOptionsWhere,
+  LessThanOrEqual,
+  MoreThan,
+  type Repository,
+} from 'typeorm';
 
 import { TelegramService } from '@/application/telegram';
 
@@ -24,16 +29,12 @@ import { OrderItem } from '../orders/order-item.entity';
 import { formatOrderReceiverName } from '../orders/order-receiver';
 import { OrderStatus } from '../orders/order-status';
 import { Order } from '../orders/order.entity';
-import type { OrderResponseDto } from '../orders/orders.dto';
 import { OrderInventoryChangedException } from '../orders/orders.exceptions';
 import { CheckoutCancelledReason } from './checkout-cancelled-reason';
 import { CheckoutStatus } from './checkout-status';
+import { CheckoutCalculator } from './checkout.calculator';
 import { Checkout } from './checkout.entity';
 import type {
-  CheckoutDetailDto,
-  CheckoutsListDto,
-  CheckoutStartDto,
-  CheckoutSummaryDto,
   SubmitCheckoutDto,
   UpdateCheckoutDeliveryDto,
   UpdateCheckoutReceiverDto,
@@ -46,6 +47,8 @@ import {
 
 @Injectable()
 export class CheckoutsService extends TransactionalRepository {
+  private readonly calculator = new CheckoutCalculator();
+
   constructor(
     @InjectDataSource()
     dataSource: DataSource,
@@ -65,14 +68,12 @@ export class CheckoutsService extends TransactionalRepository {
     private readonly telegramService: TelegramService,
     @Inject(DeliveryService)
     private readonly deliveryService: DeliveryService,
-    @Inject(APP_LOGGER)
-    private readonly logger: Logger,
   ) {
     super(dataSource);
   }
 
-  async startFromCart(visitorSessionId: string): Promise<CheckoutStartDto> {
-    const cartItems = await this.cartService.getCartItemsForOrder(visitorSessionId);
+  async startFromCart(visitorSessionId: string): Promise<Checkout> {
+    const cartItems = await this.cartService.getCartItems({ visitorSessionId });
     if (cartItems.length === 0) {
       throw new CartEmptyException();
     }
@@ -84,42 +85,35 @@ export class CheckoutsService extends TransactionalRepository {
     if (existingCheckout) {
       const checkout = await this.mergeCartIntoCheckout(existingCheckout, cartItems);
       await this.cartService.clearCartItems(visitorSessionId);
-      return this.toCheckoutStart(checkout);
+      return checkout;
     }
 
     const checkout = await this.createCheckoutFromCart(visitorSessionId, cartItems);
     await this.cartService.clearCartItems(visitorSessionId);
-    return this.toCheckoutStart(checkout);
+    return checkout;
   }
 
-  async listCheckouts(visitorSessionId: string, status?: CheckoutStatus): Promise<CheckoutsListDto> {
-    const checkouts = await this.checkoutsRepository.find({
-      where: {
-        visitorSessionId,
-        deletedAt: IsNull(),
-        ...(status ? { status } : {}),
-      },
-      relations: { order: { items: true } },
-      order: { updatedAt: 'DESC' },
-    });
-
-    return {
-      items: checkouts.map((checkout) => this.toCheckoutSummary(checkout)),
-    };
+  async listCheckouts(visitorSessionId: string, status?: CheckoutStatus): Promise<Checkout[]> {
+    return this.getAll({ visitorSessionId, status }, { updatedAt: 'DESC' });
   }
 
-  async getCheckout(checkoutId: string, visitorSessionId: string): Promise<CheckoutDetailDto> {
-    const checkout = await this.findVisitorCheckout(checkoutId, visitorSessionId);
-    await this.ensureCheckoutActive(checkout);
-    return await this.toCheckoutDetail(checkout);
+  async getCheckout(checkoutId: string, visitorSessionId: string): Promise<Checkout> {
+    const checkout = await this.get({ id: checkoutId, visitorSessionId });
+
+    if (checkout.isExpired) {
+      await this.cancelCheckoutRecord(checkout, CheckoutCancelledReason.Expired);
+      return this.get({ id: checkoutId, visitorSessionId });
+    }
+
+    return checkout;
   }
 
   async updateCheckoutReceiver(
     checkoutId: string,
     visitorSessionId: string,
     dto: UpdateCheckoutReceiverDto,
-  ): Promise<CheckoutDetailDto> {
-    const checkout = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+  ): Promise<Checkout> {
+    const checkout = await this.get({ id: checkoutId, visitorSessionId });
     await this.ensureCheckoutActive(checkout);
 
     const order = checkout.order;
@@ -135,15 +129,15 @@ export class CheckoutsService extends TransactionalRepository {
     }
 
     await this.ordersRepository.save(order);
-    return await this.toCheckoutDetail(await this.findVisitorCheckout(checkoutId, visitorSessionId));
+    return this.get({ id: checkoutId, visitorSessionId });
   }
 
   async updateCheckoutDelivery(
     checkoutId: string,
     visitorSessionId: string,
     dto: UpdateCheckoutDeliveryDto,
-  ): Promise<CheckoutDetailDto> {
-    const checkout = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+  ): Promise<Checkout> {
+    const checkout = await this.get({ id: checkoutId, visitorSessionId });
     await this.ensureCheckoutActive(checkout);
 
     const order = checkout.order;
@@ -156,18 +150,14 @@ export class CheckoutsService extends TransactionalRepository {
     }
 
     await this.ordersRepository.save(order);
-    return await this.toCheckoutDetail(await this.findVisitorCheckout(checkoutId, visitorSessionId));
+    return this.get({ id: checkoutId, visitorSessionId });
   }
 
-  async submitCheckout(
-    checkoutId: string,
-    visitorSessionId: string,
-    dto: SubmitCheckoutDto,
-  ): Promise<OrderResponseDto> {
-    const checkout = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+  async submitCheckout(checkoutId: string, visitorSessionId: string, dto: SubmitCheckoutDto): Promise<Order> {
+    const checkout = await this.get({ id: checkoutId, visitorSessionId });
 
     if (checkout.status === CheckoutStatus.Completed) {
-      return this.toOrderResponse(checkout.order);
+      return checkout.order;
     }
 
     await this.ensureCheckoutActive(checkout);
@@ -219,7 +209,7 @@ export class CheckoutsService extends TransactionalRepository {
       );
 
       if (!completion.affected) {
-        const current = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+        const current = await this.get({ id: checkoutId, visitorSessionId });
 
         if (current.status === CheckoutStatus.Completed) {
           return;
@@ -259,7 +249,7 @@ export class CheckoutsService extends TransactionalRepository {
           })),
         })
         .catch((error: unknown) => {
-          this.logger.error({
+          logger.error({
             msg: 'telegram.notify.failed',
             orderId: order.id,
             error: error instanceof Error ? error.message : String(error),
@@ -267,15 +257,15 @@ export class CheckoutsService extends TransactionalRepository {
         });
     });
 
-    const submitted = await this.findVisitorCheckout(checkoutId, visitorSessionId);
-    return this.toOrderResponse(submitted.order);
+    const submitted = await this.get({ id: checkoutId, visitorSessionId });
+    return submitted.order;
   }
 
-  async cancelCheckout(checkoutId: string, visitorSessionId: string): Promise<CheckoutDetailDto> {
-    const checkout = await this.findVisitorCheckout(checkoutId, visitorSessionId);
+  async cancelCheckout(checkoutId: string, visitorSessionId: string): Promise<Checkout> {
+    const checkout = await this.get({ id: checkoutId, visitorSessionId });
 
     if (checkout.status === CheckoutStatus.Cancelled) {
-      return await this.toCheckoutDetail(checkout);
+      return checkout;
     }
 
     if (checkout.status !== CheckoutStatus.InProgress) {
@@ -283,7 +273,7 @@ export class CheckoutsService extends TransactionalRepository {
     }
 
     await this.cancelCheckoutRecord(checkout, CheckoutCancelledReason.User);
-    return await this.toCheckoutDetail(await this.findVisitorCheckout(checkoutId, visitorSessionId));
+    return this.get({ id: checkoutId, visitorSessionId });
   }
 
   /** Called by CheckoutExpiryCron every 10s — do not invoke from request handlers. */
@@ -292,7 +282,6 @@ export class CheckoutsService extends TransactionalRepository {
       where: {
         status: CheckoutStatus.InProgress,
         expiresAt: LessThanOrEqual(new Date()),
-        deletedAt: IsNull(),
       },
     });
 
@@ -324,9 +313,7 @@ export class CheckoutsService extends TransactionalRepository {
       where: {
         visitorSessionId,
         status: CheckoutStatus.InProgress,
-        deletedAt: IsNull(),
       },
-      relations: { order: { items: true } },
     });
 
     if (!checkout) {
@@ -342,45 +329,55 @@ export class CheckoutsService extends TransactionalRepository {
   }
 
   private async createCheckoutFromCart(visitorSessionId: string, cartItems: CartItem[]): Promise<Checkout> {
-    const totalMinor = cartItems.reduce((sum, item) => sum + item.product.priceMinor * item.qty, 0);
-    const currency = cartItems[0]?.product.currency ?? DEFAULT_CURRENCY;
+    const firstCartItem = cartItems.at(0);
+    if (!firstCartItem) {
+      throw new CartEmptyException();
+    }
+
+    const totalMinor = this.calculator.sumLines(
+      cartItems.map((item) => ({ unitMinor: item.product.priceMinor, qty: item.qty })),
+    );
+    const currency = firstCartItem.product.currency;
 
     return this.withTransaction(async () => {
-      const savedOrder = await this.ordersRepository.save({
-        visitorSessionId,
-        firstName: null,
-        lastName: null,
-        phone: null,
-        totalMinor,
-        currency,
-        status: OrderStatus.Draft,
-        cancelledReason: null,
-      });
+      const savedOrder = await this.ordersRepository.save(
+        this.ordersRepository.create({
+          visitorSessionId,
+          totalMinor,
+          currency,
+          cancelledReason: null,
+        }),
+      );
 
       await this.orderItemsRepository.save(
-        cartItems.map((item) => ({
-          orderId: savedOrder.id,
-          productId: item.productId,
-          titleSnapshot: item.product.name.localized ?? '',
-          priceMinorSnapshot: item.product.priceMinor,
-          qty: item.qty,
-        })),
+        this.orderItemsRepository.create(
+          cartItems.map((item) => ({
+            orderId: savedOrder.id,
+            productId: item.productId,
+            titleSnapshot: item.product.name.localized ?? '',
+            priceMinorSnapshot: item.product.priceMinor,
+            qty: item.qty,
+          })),
+        ),
       );
 
       const savedCheckout = await this.checkoutsRepository.save(
         this.checkoutsRepository.create({
           orderId: savedOrder.id,
           visitorSessionId,
-          status: CheckoutStatus.InProgress,
         }),
       );
 
-      savedCheckout.order = savedOrder;
-      return savedCheckout;
+      return this.get({ id: savedCheckout.id, visitorSessionId });
     });
   }
 
   private async mergeCartIntoCheckout(checkout: Checkout, cartItems: CartItem[]): Promise<Checkout> {
+    const firstCartItem = cartItems[0];
+    if (!firstCartItem) {
+      throw new CartEmptyException();
+    }
+
     const order = checkout.order;
     const itemsByProduct = new Map(order.items.map((item) => [item.productId, item]));
 
@@ -396,32 +393,38 @@ export class CheckoutsService extends TransactionalRepository {
           continue;
         }
 
-        const savedItem = await this.orderItemsRepository.save({
-          orderId: order.id,
-          productId: cartItem.productId,
-          titleSnapshot: cartItem.product.name.localized ?? '',
-          priceMinorSnapshot: cartItem.product.priceMinor,
-          qty: cartItem.qty,
-        });
+        const savedItem = await this.orderItemsRepository.save(
+          this.orderItemsRepository.create({
+            orderId: order.id,
+            productId: cartItem.productId,
+            titleSnapshot: cartItem.product.name.localized ?? '',
+            priceMinorSnapshot: cartItem.product.priceMinor,
+            qty: cartItem.qty,
+          }),
+        );
 
         order.items.push(savedItem);
         itemsByProduct.set(cartItem.productId, savedItem);
       }
 
-      order.totalMinor = order.items.reduce((sum, item) => sum + item.priceMinorSnapshot * item.qty, 0);
-      order.currency = cartItems[0]?.product.currency ?? order.currency;
+      order.totalMinor = this.calculator.sumLines(
+        order.items.map((item) => ({ unitMinor: item.priceMinorSnapshot, qty: item.qty })),
+      );
+      order.currency = firstCartItem.product.currency;
       await this.ordersRepository.save(order);
       await this.checkoutsRepository.save(checkout);
     });
 
-    return checkout;
+    return this.attachCheckoutAggregates(checkout);
   }
 
   private async saveNewOrderDelivery(
     order: Order,
     dto: UpdateCheckoutDeliveryDto | SubmitCheckoutDto['delivery'],
   ): Promise<OrderDelivery> {
-    const saved = await this.orderDeliveriesRepository.save(createPartialDeliveryEntity(order.id, dto));
+    const saved = await this.orderDeliveriesRepository.save(
+      this.orderDeliveriesRepository.create(createPartialDeliveryEntity(order.id, dto)),
+    );
     order.delivery = saved;
     return saved;
   }
@@ -444,9 +447,11 @@ export class CheckoutsService extends TransactionalRepository {
         }
       }
 
-      const totalMinor = lines.reduce(
-        (sum, line) => sum + (priceByProduct.get(line.productId) ?? 0) * line.qty,
-        0,
+      const totalMinor = this.calculator.sumLines(
+        lines.map((line) => ({
+          unitMinor: priceByProduct.get(line.productId) ?? 0,
+          qty: line.qty,
+        })),
       );
 
       await this.ordersRepository.update({ id: order.id }, { totalMinor });
@@ -466,18 +471,10 @@ export class CheckoutsService extends TransactionalRepository {
     checkout.status = CheckoutStatus.Cancelled;
     checkout.cancelledReason = reason;
 
-    const order =
-      checkout.order?.items !== undefined
-        ? checkout.order
-        : await this.ordersRepository.findOne({
-            where: { id: checkout.orderId },
-            relations: { items: true },
-          });
-
-    if (order?.items.length) {
+    if (checkout.order.items.length) {
       await this.cartService.restoreItemsFromOrder(
         checkout.visitorSessionId,
-        order.items.map((item) => ({ productId: item.productId, qty: item.qty })),
+        checkout.order.items.map((item) => ({ productId: item.productId, qty: item.qty })),
       );
     }
   }
@@ -493,91 +490,26 @@ export class CheckoutsService extends TransactionalRepository {
     }
   }
 
-  private async findVisitorCheckout(checkoutId: string, visitorSessionId: string): Promise<Checkout> {
-    const checkout = await this.checkoutsRepository.findOne({
-      where: { id: checkoutId, visitorSessionId, deletedAt: IsNull() },
-      relations: { order: { items: true, delivery: true } },
-    });
+  private async get(where: FindOptionsWhere<Checkout>): Promise<Checkout> {
+    const checkout = await this.checkoutsRepository.findOne({ where });
 
     if (!checkout) {
-      throw new CheckoutNotFoundException(checkoutId);
+      throw new CheckoutNotFoundException(typeof where.id === 'string' ? where.id : undefined);
     }
 
-    return checkout;
+    return this.attachCheckoutAggregates(checkout);
   }
 
-  private toCheckoutSummary(checkout: Checkout): CheckoutSummaryDto {
-    const itemCount = checkout.order.items.reduce((sum, item) => sum + item.qty, 0);
-
-    return {
-      id: checkout.id,
-      orderId: checkout.orderId,
-      status: checkout.status,
-      itemCount,
-      totalMinor: checkout.order.totalMinor,
-      currency: checkout.order.currency,
-      updatedAt: checkout.updatedAt.toISOString(),
-      expiresAt: checkout.expiresAtIso,
-    };
+  private async getAll(
+    where: FindOptionsWhere<Checkout>,
+    order?: FindOptionsOrder<Checkout>,
+  ): Promise<Checkout[]> {
+    const checkouts = await this.checkoutsRepository.find({ where, order });
+    return Promise.all(checkouts.map((checkout) => this.attachCheckoutAggregates(checkout)));
   }
 
-  private toCheckoutStart(checkout: Checkout): CheckoutStartDto {
-    return {
-      id: checkout.id,
-      orderId: checkout.orderId,
-      status: checkout.status,
-      totalMinor: checkout.order?.totalMinor ?? 0,
-      currency: checkout.order?.currency ?? DEFAULT_CURRENCY,
-      createdAt: checkout.createdAt.toISOString(),
-    };
-  }
-
-  private toOrderResponse(order: Order): OrderResponseDto {
-    return {
-      id: order.id,
-      status: order.status,
-      totalMinor: order.totalMinor,
-      currency: order.currency,
-      createdAt: order.createdAt.toISOString(),
-    };
-  }
-
-  private async toCheckoutDetail(checkout: Checkout): Promise<CheckoutDetailDto> {
-    const order = checkout.order;
-
-    return {
-      id: checkout.id,
-      orderId: order.id,
-      status: checkout.status,
-      totalMinor: order.totalMinor,
-      currency: order.currency,
-      firstName: order.firstName,
-      lastName: order.lastName,
-      phone: order.phone,
-      items: order.items.map((item) => ({
-        productId: item.productId,
-        title: item.titleSnapshot,
-        priceMinor: item.priceMinorSnapshot,
-        qty: item.qty,
-      })),
-      delivery: order.delivery
-        ? {
-            provider: order.delivery.provider,
-            method: order.delivery.method,
-            city: order.delivery.city,
-            cityRef: order.delivery.cityRef,
-            warehouseNumber: order.delivery.warehouseNumber,
-            warehouseName: order.delivery.warehouseName,
-            warehouseRef: order.delivery.warehouseRef,
-            street: order.delivery.street,
-            building: order.delivery.building,
-            apartment: order.delivery.apartment,
-            notes: order.delivery.notes,
-          }
-        : null,
-      deliveryEstimate: await this.deliveryService.estimateForOrder(order),
-      createdAt: checkout.createdAt.toISOString(),
-      expiresAt: checkout.expiresAtIso,
-    };
+  private async attachCheckoutAggregates(checkout: Checkout): Promise<Checkout> {
+    checkout.deliveryEstimate = await this.deliveryService.estimateForOrder(checkout.order);
+    return this.calculator.calculateTotals(checkout);
   }
 }

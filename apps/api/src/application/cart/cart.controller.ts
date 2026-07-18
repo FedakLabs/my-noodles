@@ -12,7 +12,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
@@ -39,7 +39,6 @@ export class CartController extends LocalizedStorefrontController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get cart items and active draft checkout for the current visitor' })
   async getCart(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<CartResponseDto> {
     const visitor = await this.resolveVisitorForCart(req, res);
     return this.cartService.getCart(visitor);
@@ -47,8 +46,6 @@ export class CartController extends LocalizedStorefrontController {
 
   @Post('items')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Add a product to the cart' })
-  @ApiCreatedResponse({ type: CartResponseDto })
   @ApiException(CartProductNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
   async addItem(
     @Body() dto: AddCartItemDto,
@@ -61,8 +58,6 @@ export class CartController extends LocalizedStorefrontController {
 
   @Patch('items/:productId')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Update cart item quantity' })
-  @ApiOkResponse({ type: CartResponseDto })
   @ApiException(CartItemNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
   async setItemQty(
     @Param('productId', ParseUUIDPipe) productId: string,
@@ -76,7 +71,6 @@ export class CartController extends LocalizedStorefrontController {
 
   @Delete('items/:productId')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Remove a product from the cart' })
   async removeItem(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Req() req: Request,
@@ -88,7 +82,6 @@ export class CartController extends LocalizedStorefrontController {
 
   @Delete()
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Clear all cart items' })
   async clearCart(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<CartResponseDto> {
     const visitor = await this.resolveVisitorForCart(req, res);
     return this.cartService.clearCart(visitor);

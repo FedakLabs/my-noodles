@@ -27,7 +27,6 @@ export const siteNavLinkItems: SiteNavLinkItem[] = [
 /** Sticky app header height (px) — keep in sync with `SiteHeader` toolbar and nav overlay offsets. */
 export const SITE_HEADER_HEIGHT = 56;
 
-/** Routes that hide the global site header for a full-viewport experience. */
 export function isImmersiveRoute(pathname: string): boolean {
   return isFeedRoute(pathname);
 }

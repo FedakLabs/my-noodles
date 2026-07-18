@@ -1,5 +1,6 @@
 import {
-  type CheckoutDetailDto,
+  type Checkout,
+  CheckoutStatus,
   checkoutsControllerCancelCheckout,
   checkoutsControllerGetCheckout,
   checkoutsControllerListCheckouts,
@@ -7,31 +8,20 @@ import {
   checkoutsControllerSubmitCheckout,
   checkoutsControllerUpdateCheckoutDelivery,
   checkoutsControllerUpdateCheckoutReceiver,
-  type CheckoutsListDto,
-  type CheckoutStartDto,
-  type CheckoutSummaryDto,
-  type OrderResponseDto,
+  type Order,
   type SubmitCheckoutDto,
   type UpdateCheckoutDeliveryDto,
   type UpdateCheckoutReceiverDto,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
-export { mergeCheckoutDetail } from './checkout-merge';
+export { CheckoutStatus };
 
-export type {
-  CheckoutDetailDto,
-  CheckoutsListDto,
-  CheckoutStartDto,
-  CheckoutSummaryDto,
-  OrderResponseDto,
-  SubmitCheckoutDto,
-  UpdateCheckoutDeliveryDto,
-  UpdateCheckoutReceiverDto,
-};
+export type { Checkout, Order, SubmitCheckoutDto, UpdateCheckoutDeliveryDto, UpdateCheckoutReceiverDto };
 
 export type ListCheckoutsParams = {
-  status?: 'in_progress' | 'completed' | 'cancelled';
+  status?: CheckoutStatus;
 };
 
 export const checkoutsQueryKeys = {
@@ -40,7 +30,7 @@ export const checkoutsQueryKeys = {
   detail: (checkoutId: string) => [...checkoutsQueryKeys.all, checkoutId] as const,
 };
 
-export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<CheckoutsListDto> {
+export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<Checkout[]> {
   return requestData(
     checkoutsControllerListCheckouts({
       query: params?.status ? { status: params.status } : undefined,
@@ -48,32 +38,45 @@ export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<Chec
   );
 }
 
-export async function startCheckout(): Promise<CheckoutStartDto> {
+export async function startCheckout(): Promise<Checkout> {
   return requestData(checkoutsControllerStartCheckout());
 }
 
-export async function fetchCheckout(checkoutId: string): Promise<CheckoutDetailDto> {
+export async function fetchCheckout(checkoutId: string): Promise<Checkout> {
   return requestData(checkoutsControllerGetCheckout({ path: { id: checkoutId } }));
 }
 
 export async function updateCheckoutReceiver(
   checkoutId: string,
   body: UpdateCheckoutReceiverDto,
-): Promise<CheckoutDetailDto> {
+): Promise<Checkout> {
   return requestData(checkoutsControllerUpdateCheckoutReceiver({ path: { id: checkoutId }, body }));
 }
 
 export async function updateCheckoutDelivery(
   checkoutId: string,
   body: UpdateCheckoutDeliveryDto,
-): Promise<CheckoutDetailDto> {
+): Promise<Checkout> {
   return requestData(checkoutsControllerUpdateCheckoutDelivery({ path: { id: checkoutId }, body }));
 }
 
-export async function submitCheckout(checkoutId: string, body: SubmitCheckoutDto): Promise<OrderResponseDto> {
+export async function submitCheckout(checkoutId: string, body: SubmitCheckoutDto): Promise<Order> {
   return requestData(checkoutsControllerSubmitCheckout({ path: { id: checkoutId }, body }));
 }
 
-export async function cancelCheckout(checkoutId: string): Promise<CheckoutDetailDto> {
+export async function cancelCheckout(checkoutId: string): Promise<Checkout> {
   return requestData(checkoutsControllerCancelCheckout({ path: { id: checkoutId } }));
 }
+
+export const checkoutsQueries = {
+  list: (params?: ListCheckoutsParams) =>
+    queryOptions({
+      queryKey: checkoutsQueryKeys.list(params),
+      queryFn: () => fetchCheckouts(params),
+    }),
+  detail: (checkoutId: string) =>
+    queryOptions({
+      queryKey: checkoutsQueryKeys.detail(checkoutId),
+      queryFn: () => fetchCheckout(checkoutId),
+    }),
+};

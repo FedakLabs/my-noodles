@@ -1,6 +1,5 @@
 export type {
   PaginatedProductsDto,
-  ProductDetailDto,
+  Product,
   ProductFacetsResponseDto,
-  ProductSummaryDto,
 } from '@my-noodles/api-clients/storefront';

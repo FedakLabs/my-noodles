@@ -1,21 +1,34 @@
 'use client';
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { type CatalogViewMode, CatalogViewModeProvider, useViewMode } from '@/components/catalog-view-mode';
 import { CatalogFeedFab } from '@/components/catalog/catalog-feed-fab';
+import {
+  CatalogTitle,
+  CatalogToolbarControls,
+  CatalogToolbarProgress,
+} from '@/components/catalog/catalog-toolbar';
 import { FilterChips } from '@/components/catalog/filter-chips/filter-chips';
 import { FilterSheet } from '@/components/catalog/filter-sheet/filter-sheet';
 import { PageContainer } from '@/components/layout/page-container';
-import { useCatalogSearchParams } from '@/screens/catalog/search-params';
 
 import { CatalogInfiniteGrid } from './catalog-infinite-grid';
 import { CatalogPaginatedGrid } from './catalog-paginated-grid';
+import { useCatalogToolbarState } from './use-catalog-toolbar-state';
+
+/** Keeps the title row and toolbar row the same height so filters / grid start aligned. */
+const catalogHeaderSx = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  minHeight: 48,
+  width: '100%',
+  boxSizing: 'border-box',
+} as const;
 
 export type CatalogScreenProps = {
   initialViewMode: CatalogViewMode;
@@ -32,12 +45,11 @@ export function CatalogScreen({ initialViewMode, hasViewModePreference }: Catalo
 
 function CatalogScreenContent() {
   const t = useTranslations('catalog');
-  const { showClear, clearCatalog } = useCatalogSearchParams();
   const { isInfiniteScroll, viewMode, isViewModeResetting, clearViewModeReset } = useViewMode();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const toolbar = useCatalogToolbarState();
 
   const gridProps = {
-    onOpenFilters: () => setMobileFiltersOpen(true),
     isViewModeResetting,
     clearViewModeReset,
     viewMode,
@@ -46,38 +58,60 @@ function CatalogScreenContent() {
 
   return (
     <PageContainer>
-      <Stack spacing={2}>
-        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4">{t('title')}</Typography>
-          {showClear ? (
-            <Button size="small" onClick={clearCatalog} sx={{ flexShrink: 0 }}>
-              {t('clear')}
-            </Button>
-          ) : null}
-        </Stack>
-
-        <FilterChips />
-
-        <Box
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { mobile: 'column', desktop: 'row' },
+          gap: { mobile: 0, desktop: 3 },
+          alignItems: 'start',
+        }}
+      >
+        <Stack
+          spacing={1}
           sx={{
-            display: { mobile: 'flex', desktop: 'grid' },
-            flexDirection: { mobile: 'column' },
-            gridTemplateColumns: { desktop: 'minmax(200px, 260px) 1fr' },
-            gap: 3,
-            alignItems: 'start',
+            minWidth: 0,
+            width: { mobile: '100%', desktop: 'clamp(200px, 26%, 260px)' },
+            flexShrink: 0,
           }}
         >
+          <Box sx={catalogHeaderSx}>
+            <CatalogTitle title={toolbar.title} showClear={toolbar.showClear} onClear={toolbar.onClear} />
+          </Box>
+
           <FilterSheet drawerOpen={mobileFiltersOpen} onDrawerClose={() => setMobileFiltersOpen(false)} />
+        </Stack>
+
+        <Stack spacing={1} sx={{ minWidth: 0, flex: 1, width: { mobile: '100%' } }}>
+          <Stack sx={catalogHeaderSx}>
+            <CatalogToolbarControls
+              statusText={toolbar.statusText}
+              searchingText={toolbar.searchingText}
+              showSearchingText={toolbar.showSearchingText}
+              pagination={toolbar.pagination}
+              progressLabel={toolbar.progressLabel}
+              timing={toolbar.timing}
+              isBusy={toolbar.isBusy}
+              sort={toolbar.sort}
+              onSortChange={toolbar.onSortChange}
+              onOpenFilters={() => setMobileFiltersOpen(true)}
+              hasFiltersApplied={toolbar.hasFiltersApplied}
+            />
+            <CatalogToolbarProgress
+              progressActive={toolbar.progressActive}
+              progressLabel={toolbar.progressLabel}
+            />
+          </Stack>
 
           <Stack component="section" spacing={2} sx={{ minWidth: 0 }}>
+            <FilterChips />
             {isInfiniteScroll ? (
               <CatalogInfiniteGrid {...gridProps} />
             ) : (
               <CatalogPaginatedGrid {...gridProps} />
             )}
           </Stack>
-        </Box>
-      </Stack>
+        </Stack>
+      </Box>
 
       <CatalogFeedFab />
     </PageContainer>

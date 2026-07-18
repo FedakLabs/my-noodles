@@ -1,3 +1,4 @@
+export * from './checkout.calculator';
 export * from './checkout.entity';
 export * from './checkout-cancelled-reason';
 export * from './checkout-status';

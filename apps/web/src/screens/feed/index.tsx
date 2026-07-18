@@ -169,6 +169,7 @@ export function FeedScreen() {
                 onOpenDetails={panels.openDetails}
                 onCloseDetails={panels.closeDetails}
                 onToggleLike={handleToggleLike}
+                commentsOpen={panels.commentsOpen}
                 onOpenComments={panels.openComments}
                 onOpenLiked={panels.openLiked}
                 activeTags={activeTags}

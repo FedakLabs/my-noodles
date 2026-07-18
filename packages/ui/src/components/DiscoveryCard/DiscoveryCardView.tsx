@@ -4,11 +4,14 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import { cardShadow } from '@my-noodles/theme';
-import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
+import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, ReactNode } from 'react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import type { SkinResult } from '../../utils/skins';
-import { DISCOVERY_CARD_IMAGE_FRAME_SX } from './discovery-card-shared';
+import {
+  DISCOVERY_CARD_ACTIONS_ROW_MIN_HEIGHT,
+  DISCOVERY_CARD_IMAGE_FRAME_SX,
+} from './discovery-card-shared';
 import { discoveryCardSkinStripePseudoSx } from './discovery-card-skin-stripe';
 import { discoveryCardSkinStyle } from './discovery-card-skin-style';
 import { type DiscoveryCardViewPhase, isPreviewPhase } from './discovery-card-view-phase';
@@ -22,6 +25,8 @@ const HOVER_SCALE_TRANSITION_MS = 250;
 const PREVIEW_WIDTH = 'min(200%, calc(100vw - 32px))';
 const MORPH_GAP_PX = 12;
 const MORPH_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+/** Ignore view-toggle clicks after a drag (matches Embla `dragThreshold` default). */
+const CLICK_DRAG_THRESHOLD_PX = 10;
 
 function scrollElementToTop(element: HTMLElement): Promise<void> {
   if (element.scrollTop === 0) {
@@ -195,6 +200,7 @@ export function DiscoveryCardView({
   const morphRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const columnMediaRef = useRef<HTMLDivElement>(null);
+  const pointerDownPointRef = useRef<{ x: number; y: number } | null>(null);
   const [columnMediaSize, setColumnMediaSize] = useState(0);
   const [layoutTransitioning, setLayoutTransitioning] = useState(false);
   const [surfaceWidthAnimating, setSurfaceWidthAnimating] = useState(false);
@@ -298,7 +304,22 @@ export function DiscoveryCardView({
   const columnMediaWidth = columnMediaSize > 0 ? `${columnMediaSize}px` : '100%';
   const morphMinHeight = contentOpen && columnMediaSize > 0 ? columnMediaSize : undefined;
 
-  const handleClick = () => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    pointerDownPointRef.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    const start = pointerDownPointRef.current;
+    pointerDownPointRef.current = null;
+    // Carousel swipe can mouseup outside Embla (e.g. on meta in preview row); LCA click
+    // then reaches this handler even though Embla swallowed the in-carousel click.
+    if (start) {
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+      if (dx * dx + dy * dy > CLICK_DRAG_THRESHOLD_PX * CLICK_DRAG_THRESHOLD_PX) {
+        return;
+      }
+    }
     onClick?.();
   };
 
@@ -388,6 +409,7 @@ export function DiscoveryCardView({
       <Box
         role={cardInteractive ? 'button' : undefined}
         tabIndex={cardInteractive ? 0 : undefined}
+        onPointerDown={cardInteractive ? handlePointerDown : undefined}
         onClick={cardInteractive ? handleClick : undefined}
         onKeyDown={cardInteractive ? handleKeyDown : undefined}
         sx={{
@@ -439,7 +461,14 @@ export function DiscoveryCardView({
     >
       {placeholderHero}
       <Stack spacing={0.5}>{meta}</Stack>
-      <Box sx={{ flexShrink: 0, width: '100%', mt: 'auto', minHeight: 40 }} />
+      <Box
+        sx={{
+          flexShrink: 0,
+          width: '100%',
+          mt: 'auto',
+          minHeight: DISCOVERY_CARD_ACTIONS_ROW_MIN_HEIGHT,
+        }}
+      />
     </Stack>
   );
 

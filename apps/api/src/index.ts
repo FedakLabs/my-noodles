@@ -1,13 +1,18 @@
 import 'reflect-metadata';
 import { localeMiddleware } from '@my-noodles/api-lib/locale';
-import { AppValidationPipe, ExceptionsFilter, GracefulShutdown } from '@my-noodles/api-lib/nest';
+import { logger } from '@my-noodles/api-lib/logger';
+import {
+  AppValidationPipe,
+  ExceptionsFilter,
+  GracefulShutdown,
+  LoggingInterceptor,
+  ResponseSerializerInterceptor,
+} from '@my-noodles/api-lib/nest';
 import { clientBaggageMiddleware } from '@my-noodles/api-lib/otel';
 import { responseDelayMiddleware } from '@my-noodles/api-lib/utils';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-
-import { appLogger } from '@/infrastructure/logging';
 
 import { AppModule } from './app.module';
 import { config } from './config';
@@ -19,15 +24,11 @@ async function bootstrap() {
   // `credentials: true` + reflected origin so the storefront can send the feed session cookie cross-origin.
   app.enableCors({ origin: true, credentials: true });
 
-  app.useGlobalFilters(
-    new ExceptionsFilter(app.get(HttpAdapterHost), appLogger, {
-      appName: config.appName,
-      appVersion: config.appVersion,
-    }),
-  );
+  app.useGlobalFilters(new ExceptionsFilter(app.get(HttpAdapterHost)));
 
   app.setGlobalPrefix(API_GLOBAL_PREFIX);
   app.useGlobalPipes(new AppValidationPipe());
+  app.useGlobalInterceptors(new LoggingInterceptor(), new ResponseSerializerInterceptor(app.get(Reflector)));
   app.use(cookieParser());
   app.use(clientBaggageMiddleware);
   app.use(localeMiddleware);
@@ -52,9 +53,9 @@ async function bootstrap() {
   await app.listen(config.port);
 
   const origin = `http://localhost:${config.port}`;
-  appLogger.info({ msg: 'bootstrap.listening', origin, path: `/${API_GLOBAL_PREFIX}` });
-  appLogger.info({ msg: 'bootstrap.swagger.ui', url: `${origin}/${SWAGGER_UI_PATH}` });
-  appLogger.info({ msg: 'bootstrap.swagger.json', url: `${origin}/${SWAGGER_JSON_PATH}` });
+  logger.info({ msg: 'bootstrap.listening', origin, path: `/${API_GLOBAL_PREFIX}` });
+  logger.info({ msg: 'bootstrap.swagger.ui', url: `${origin}/${SWAGGER_UI_PATH}` });
+  logger.info({ msg: 'bootstrap.swagger.json', url: `${origin}/${SWAGGER_JSON_PATH}` });
 }
 
 void bootstrap();

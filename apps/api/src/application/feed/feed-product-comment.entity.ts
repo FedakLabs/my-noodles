@@ -1,4 +1,5 @@
-import { LocalizedColumn, type LocalizedString } from '@my-noodles/api-lib/locale';
+import { type LocalizedString } from '@my-noodles/api-lib/locale';
+import { ApiLocalizedColumn } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
@@ -24,6 +25,6 @@ export class FeedProductComment extends TimestampEntity {
   @Column({ name: 'author_name', type: 'text' })
   authorName!: string;
 
-  @LocalizedColumn()
+  @ApiLocalizedColumn()
   comment!: LocalizedString;
 }

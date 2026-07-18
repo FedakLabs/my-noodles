@@ -1,4 +1,4 @@
-export type { AddCartItemDto, CartItemDto, CartResponseDto } from '@my-noodles/api-clients/storefront';
+export type { AddCartItemDto, CartItem, CartResponseDto } from '@my-noodles/api-clients/storefront';
 
 export type CartLineInput = {
   productId: string;

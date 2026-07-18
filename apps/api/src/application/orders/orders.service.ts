@@ -6,7 +6,6 @@ import { InventoryService } from '../inventory/inventory.service';
 import { OrderCancelledReason } from './order-cancelled-reason';
 import { OrderStatus } from './order-status';
 import { Order } from './order.entity';
-import type { OrderResponseDto } from './orders.dto';
 import { OrderCancelNotAllowedException, OrderNotFoundException } from './orders.exceptions';
 
 const MANAGER_CANCELLABLE_STATUSES = new Set<OrderStatus>([
@@ -24,10 +23,9 @@ export class OrdersService {
     private readonly inventoryService: InventoryService,
   ) {}
 
-  async cancelSubmittedOrder(orderId: string, reason: OrderCancelledReason): Promise<OrderResponseDto> {
+  async cancelSubmittedOrder(orderId: string, reason: OrderCancelledReason): Promise<Order> {
     const order = await this.ordersRepository.findOne({
       where: { id: orderId },
-      relations: { items: true },
     });
 
     if (!order) {
@@ -39,7 +37,7 @@ export class OrdersService {
     }
 
     if (order.status === OrderStatus.Cancelled) {
-      return this.toResponse(order);
+      return order;
     }
 
     if (!MANAGER_CANCELLABLE_STATUSES.has(order.status)) {
@@ -52,18 +50,6 @@ export class OrdersService {
 
     order.status = OrderStatus.Cancelled;
     order.cancelledReason = reason;
-    const saved = await this.ordersRepository.save(order);
-
-    return this.toResponse(saved);
-  }
-
-  private toResponse(order: Order): OrderResponseDto {
-    return {
-      id: order.id,
-      status: order.status,
-      totalMinor: order.totalMinor,
-      currency: order.currency,
-      createdAt: order.createdAt.toISOString(),
-    };
+    return this.ordersRepository.save(order);
   }
 }

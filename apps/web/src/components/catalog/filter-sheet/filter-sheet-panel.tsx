@@ -174,7 +174,7 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
   return (
     <Stack
       sx={{
-        ...(isSidebar ? { minWidth: 0 } : { flex: 1, minHeight: 0, minWidth: 0 }),
+        ...(isSidebar ? { width: '100%', minWidth: 0 } : { flex: 1, minHeight: 0, minWidth: 0 }),
       }}
       aria-busy={productFacetsIsBusy ? true : undefined}
       aria-label={productFacetsIsInitialLoad ? t('loading') : undefined}
@@ -185,7 +185,7 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
         label={t('searching')}
         timingOptions={{ minVisibleMs: 0, showDelayMs: 0 }}
         borderRadius={isSidebar ? theme.borderRadius.discovery : 0}
-        sx={isSidebar ? { minWidth: 0 } : { flex: 1, minHeight: 0, minWidth: 0 }}
+        sx={isSidebar ? { width: '100%', minWidth: 0 } : { flex: 1, minHeight: 0, minWidth: 0 }}
       >
         <Stack
           spacing={3}

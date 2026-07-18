@@ -1,5 +1,6 @@
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { Checkout } from '../checkouts/checkout.entity';
 import { VisitorSession } from '../visitor/visitor-session.entity';
@@ -36,19 +37,35 @@ export class Order extends TimestampEntity {
   @Column({ name: 'total_minor', type: 'int' })
   totalMinor!: number;
 
+  /**
+   * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
+   * Response-only — set by `CheckoutCalculator.calculateTotals`.
+   */
+  @ApiPropertyOptional()
+  grandTotalMinor?: number;
+
   @Column({ type: 'text' })
   currency!: string;
 
   @Column({ type: 'text' })
   status!: OrderStatus;
 
+  @BeforeInsert()
+  setDefaultStatus(): void {
+    this.status = this.status || OrderStatus.Draft;
+  }
+
   @Column({ name: 'cancelled_reason', type: 'text', nullable: true })
   cancelledReason!: OrderCancelledReason | null;
 
-  @OneToOne(() => OrderDelivery, (delivery) => delivery.order, { cascade: true, nullable: true })
+  @OneToOne(() => OrderDelivery, (delivery) => delivery.order, {
+    cascade: true,
+    eager: true,
+    nullable: true,
+  })
   delivery!: OrderDelivery | null;
 
-  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
+  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })
   items!: OrderItem[];
 
   @OneToOne(() => Checkout, (checkout) => checkout.order, { nullable: true })

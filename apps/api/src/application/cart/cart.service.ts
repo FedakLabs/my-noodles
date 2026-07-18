@@ -2,13 +2,13 @@ import { TransactionalRepository } from '@my-noodles/api-lib/nest';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { type DataSource, IsNull, Repository } from 'typeorm';
+import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, Repository } from 'typeorm';
 
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';
 import type { VisitorSession } from '../visitor/visitor-session.entity';
 import { CartItem } from './cart-item.entity';
-import type { CartItemDto, CartResponseDto } from './cart.dto';
+import type { CartResponseDto } from './cart.dto';
 import {
   CartItemNotFoundException,
   CartMaxQuantityReachedException,
@@ -32,12 +32,16 @@ export class CartService extends TransactionalRepository {
   }
 
   async getCart(visitor: VisitorSession): Promise<CartResponseDto> {
-    const items = await this.loadCartItems(visitor.id);
-    const totalMinor = items.reduce((sum, item) => sum + item.priceMinor * item.qty, 0);
+    const items = await this.getCartItems({ visitorSessionId: visitor.id }, { createdAt: 'ASC' });
+    const totalMinor = items.reduce((sum, item) => sum + item.product.priceMinor * item.qty, 0);
     const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
-    const currency = items[0]?.currency ?? DEFAULT_CURRENCY;
+    const currency = items[0]?.product.currency ?? DEFAULT_CURRENCY;
 
     return { items, totalMinor, itemCount, currency };
+  }
+
+  getCartItems(where: FindOptionsWhere<CartItem>, order?: FindOptionsOrder<CartItem>): Promise<CartItem[]> {
+    return this.cartItemsRepository.find({ where, order });
   }
 
   async addItem(visitor: VisitorSession, productId: string, qty = 1): Promise<CartResponseDto> {
@@ -50,7 +54,7 @@ export class CartService extends TransactionalRepository {
       const available = await this.inventoryService.getAvailableQty(productId);
 
       const existing = await this.cartItemsRepository.findOne({
-        where: { visitorSessionId: visitor.id, productId, deletedAt: IsNull() },
+        where: { visitorSessionId: visitor.id, productId },
       });
 
       const nextQty = (existing?.qty ?? 0) + qty;
@@ -71,7 +75,7 @@ export class CartService extends TransactionalRepository {
 
   async updateItem(visitor: VisitorSession, productId: string, qty: number): Promise<CartResponseDto> {
     const existing = await this.cartItemsRepository.findOne({
-      where: { visitorSessionId: visitor.id, productId, deletedAt: IsNull() },
+      where: { visitorSessionId: visitor.id, productId },
     });
 
     if (!existing) {
@@ -92,25 +96,17 @@ export class CartService extends TransactionalRepository {
     await this.cartItemsRepository.softDelete({
       visitorSessionId: visitor.id,
       productId,
-      deletedAt: IsNull(),
     });
     return this.getCart(visitor);
   }
 
   async clearCart(visitor: VisitorSession): Promise<CartResponseDto> {
-    await this.cartItemsRepository.softDelete({ visitorSessionId: visitor.id, deletedAt: IsNull() });
+    await this.cartItemsRepository.softDelete({ visitorSessionId: visitor.id });
     return this.getCart(visitor);
   }
 
-  async getCartItemsForOrder(visitorSessionId: string): Promise<CartItem[]> {
-    return this.cartItemsRepository.find({
-      where: { visitorSessionId, deletedAt: IsNull() },
-      relations: { product: true },
-    });
-  }
-
   async clearCartItems(visitorSessionId: string): Promise<void> {
-    await this.cartItemsRepository.softDelete({ visitorSessionId, deletedAt: IsNull() });
+    await this.cartItemsRepository.softDelete({ visitorSessionId });
   }
 
   async restoreItemsFromOrder(
@@ -128,7 +124,7 @@ export class CartService extends TransactionalRepository {
         }
 
         const existing = await this.cartItemsRepository.findOne({
-          where: { visitorSessionId, productId: item.productId, deletedAt: IsNull() },
+          where: { visitorSessionId, productId: item.productId },
         });
 
         if (existing) {
@@ -155,13 +151,12 @@ export class CartService extends TransactionalRepository {
           await this.cartItemsRepository.softDelete({
             visitorSessionId,
             productId: line.productId,
-            deletedAt: IsNull(),
           });
           continue;
         }
 
         await this.cartItemsRepository.update(
-          { visitorSessionId, productId: line.productId, deletedAt: IsNull() },
+          { visitorSessionId, productId: line.productId },
           { qty: line.qty },
         );
       }
@@ -176,23 +171,5 @@ export class CartService extends TransactionalRepository {
     if (qty > available) {
       throw new CartMaxQuantityReachedException(productId, available);
     }
-  }
-
-  private async loadCartItems(visitorSessionId: string): Promise<CartItemDto[]> {
-    const rows = await this.cartItemsRepository.find({
-      where: { visitorSessionId, deletedAt: IsNull() },
-      relations: { product: true },
-      order: { createdAt: 'ASC' },
-    });
-
-    return rows.map((row) => ({
-      productId: row.productId,
-      slug: row.product.slug,
-      title: row.product.name.localized ?? '',
-      priceMinor: row.product.priceMinor,
-      currency: row.product.currency,
-      imageUrl: row.product.images[0],
-      qty: row.qty,
-    }));
   }
 }

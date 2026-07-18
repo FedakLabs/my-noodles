@@ -32,9 +32,7 @@ export function CartEmptyState({ onClose }: CartEmptyStateProps) {
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        minHeight: { xs: 280, md: '100%' },
-        px: 1,
-        py: 4,
+        flex: 1,
       }}
     >
       <Typography

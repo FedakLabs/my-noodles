@@ -12,22 +12,16 @@ import { isApiConflict } from '@/shared/api-error';
 import {
   addCartItem,
   cartMutationKeys,
+  cartQueries,
   cartQueryKeys,
   clearCart,
-  fetchCart,
   removeCartItem,
   setCartItemQty,
 } from './cart';
 import type { CartLineInput } from './types';
 
 export function useCartQuery() {
-  return formatUseQuery(
-    useQuery({
-      queryKey: cartQueryKeys.all(),
-      queryFn: fetchCart,
-    }),
-    'cart',
-  );
+  return formatUseQuery(useQuery(cartQueries.all()), 'cart');
 }
 
 export function useAddCartItem() {
@@ -80,70 +74,100 @@ export function useAddCartItem() {
   };
 }
 
+type SetCartItemQtyVariables = {
+  productId: string;
+  qty: number;
+  analyticsLine?: CartLineInput & { qty: number };
+};
+
+type RemoveCartItemVariables = {
+  productId: string;
+  analyticsLine?: CartLineInput & { qty: number };
+};
+
 export function useSetCartItemQty() {
   const queryClient = useQueryClient();
   const showCartApiError = useShowCartApiError();
 
-  return formatUseMutation(
-    useMutation({
-      mutationFn: ({
-        productId,
-        qty,
-        analyticsLine: _analyticsLine,
-      }: {
-        productId: string;
-        qty: number;
-        analyticsLine?: CartLineInput & { qty: number };
-      }) => setCartItemQty(productId, qty),
-      onSuccess: async (_cart, variables) => {
+  const mutation = useMutation({
+    mutationKey: cartMutationKeys.setItemQty(),
+    mutationFn: ({ productId, qty }: SetCartItemQtyVariables) => setCartItemQty(productId, qty),
+    onSuccess: async (_cart, variables) => {
+      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      const line = variables.analyticsLine;
+      if (!line) {
+        return;
+      }
+      if (variables.qty < line.qty) {
+        trackRemoveFromCart({ ...line, qty: line.qty - variables.qty });
+      } else if (variables.qty > line.qty) {
+        trackAddToCart(
+          {
+            productId: line.productId,
+            slug: line.slug,
+            title: line.title,
+            priceMinor: line.priceMinor,
+            currency: line.currency,
+            imageUrl: line.imageUrl,
+          },
+          variables.qty - line.qty,
+        );
+      }
+    },
+    onError: async (error) => {
+      showCartApiError(error);
+      if (isApiConflict(error)) {
         await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
-        const line = variables.analyticsLine;
-        if (!line) {
-          return;
-        }
-        if (variables.qty < line.qty) {
-          trackRemoveFromCart({ ...line, qty: line.qty - variables.qty });
-        } else if (variables.qty > line.qty) {
-          trackAddToCart(
-            {
-              productId: line.productId,
-              slug: line.slug,
-              title: line.title,
-              priceMinor: line.priceMinor,
-              currency: line.currency,
-              imageUrl: line.imageUrl,
-            },
-            variables.qty - line.qty,
-          );
-        }
-      },
-      onError: async (error) => {
-        showCartApiError(error);
-        if (isApiConflict(error)) {
-          await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
-        }
-      },
-    }),
-    'setCartItemQty',
+      }
+    },
+  });
+
+  const setCartItemQtyPendingProductIds = useMutationState({
+    filters: { mutationKey: cartMutationKeys.setItemQty(), status: 'pending' },
+    select: (entry) => (entry.state.variables as SetCartItemQtyVariables | undefined)?.productId,
+  }).filter((id): id is string => id != null);
+
+  const setCartItemQtyIsUpdatingProduct = useCallback(
+    (productId: string) => setCartItemQtyPendingProductIds.includes(productId),
+    [setCartItemQtyPendingProductIds],
   );
+
+  return {
+    ...formatUseMutation(mutation, 'setCartItemQty'),
+    setCartItemQtyPendingProductIds,
+    setCartItemQtyIsUpdatingProduct,
+  };
 }
 
 export function useRemoveCartItem() {
   const queryClient = useQueryClient();
 
-  return formatUseMutation(
-    useMutation({
-      mutationFn: ({ productId }: { productId: string; analyticsLine?: CartLineInput & { qty: number } }) =>
-        removeCartItem(productId),
-      onSuccess: async (_cart, variables) => {
-        await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
-        if (variables.analyticsLine) {
-          trackRemoveFromCart(variables.analyticsLine);
-        }
-      },
-    }),
-    'removeCartItem',
+  const mutation = useMutation({
+    mutationKey: cartMutationKeys.removeItem(),
+    mutationFn: ({ productId }: RemoveCartItemVariables) => removeCartItem(productId),
+    onSuccess: async (_cart, variables) => {
+      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      if (variables.analyticsLine) {
+        trackRemoveFromCart(variables.analyticsLine);
+      }
+    },
+  });
+
+  const removeCartItemPendingProductIds = useMutationState({
+    filters: { mutationKey: cartMutationKeys.removeItem(), status: 'pending' },
+    select: (entry) => (entry.state.variables as RemoveCartItemVariables | undefined)?.productId,
+  }).filter((id): id is string => id != null);
+
+  const removeCartItemIsRemovingProduct = useCallback(
+    (productId: string) => removeCartItemPendingProductIds.includes(productId),
+    [removeCartItemPendingProductIds],
   );
+
+  return {
+    ...formatUseMutation(mutation, 'removeCartItem'),
+    removeCartItemPendingProductIds,
+    removeCartItemIsRemovingProduct,
+  };
 }
 
 export function useClearCart() {

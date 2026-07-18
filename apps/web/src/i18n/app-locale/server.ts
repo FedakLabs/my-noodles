@@ -1,4 +1,9 @@
 import 'server-only';
 
 export { getRequestAppLocale, runWithAppLocale } from './server-context';
-export { withPageLocale } from './with-page-locale';
+export {
+  withPageLocale,
+  withPageLocaleMetadata,
+  withPageLocaleResult,
+  type WithPageLocaleProps,
+} from './with-page-locale';

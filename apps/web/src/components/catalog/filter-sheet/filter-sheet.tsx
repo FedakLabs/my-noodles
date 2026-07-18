@@ -26,6 +26,7 @@ export function FilterSheet({ drawerOpen = false, onDrawerClose }: FilterSheetPr
         aria-label={t('title')}
         sx={{
           display: layoutDisplay.desktopOnlyBlock,
+          width: '100%',
           position: 'sticky',
           top: DESKTOP_FILTER_STICKY_TOP,
           alignSelf: 'start',

@@ -1,4 +1,5 @@
-import { LocalizedColumn, type LocalizedString } from '@my-noodles/api-lib/locale';
+import { type LocalizedString } from '@my-noodles/api-lib/locale';
+import { ApiLocalizedColumn } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
 import { Column, Entity, OneToMany } from 'typeorm';
 
@@ -12,7 +13,7 @@ export class Category extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @LocalizedColumn()
+  @ApiLocalizedColumn()
   name!: LocalizedString;
 
   @Column({ type: 'text', nullable: true })

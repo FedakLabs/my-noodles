@@ -1,16 +1,17 @@
 import {
-  type FeedCommentDto,
+  type FeedProductComment,
   feedControllerComments,
   feedControllerLike,
   feedControllerLikes,
   feedControllerNext,
   feedControllerUnlike,
-  type FeedLikedItemDto,
   type FeedLikeStateDto,
   type FeedNextDto,
   type FeedNextResponseDto,
+  type Product,
 } from '@my-noodles/api-clients/storefront';
 import { requestData } from '@my-noodles/web-lib/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 
@@ -34,10 +35,25 @@ export async function unlikeFeedProduct(productId: string): Promise<FeedLikeStat
   return requestData(feedControllerUnlike({ path: { productId } }));
 }
 
-export async function fetchFeedComments(productId: string): Promise<FeedCommentDto[]> {
+export async function fetchFeedComments(productId: string): Promise<FeedProductComment[]> {
   return requestData(feedControllerComments({ path: { productId } }));
 }
 
-export async function fetchFeedLikes(): Promise<FeedLikedItemDto[]> {
+export async function fetchFeedLikes(): Promise<Product[]> {
   return requestData(feedControllerLikes());
 }
+
+export const feedQueries = {
+  likes: () =>
+    queryOptions({
+      queryKey: feedQueryKeys.likes(),
+      queryFn: fetchFeedLikes,
+      placeholderData: undefined,
+    }),
+  comments: (productId: string) =>
+    queryOptions({
+      queryKey: feedQueryKeys.comments(productId),
+      queryFn: () => fetchFeedComments(productId),
+      placeholderData: undefined,
+    }),
+};

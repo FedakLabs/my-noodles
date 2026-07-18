@@ -50,7 +50,7 @@ function createFactory() {
 describe('DeliveryService', () => {
   const { factory } = createFactory();
   const cache = new DeliveryCatalogCache();
-  const service = new DeliveryService(factory, cache, { warn: jest.fn(), error: jest.fn() } as never);
+  const service = new DeliveryService(factory, cache);
 
   it('lists all delivery providers with locale-aware labels', () => {
     LocaleContext.run('uk', () => {
@@ -99,10 +99,7 @@ describe('DeliveryService', () => {
   it('serves catalog results from cache on repeated city search', async () => {
     const { factory: localFactory } = createFactory();
     const localCache = new DeliveryCatalogCache();
-    const localService = new DeliveryService(localFactory, localCache, {
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as never);
+    const localService = new DeliveryService(localFactory, localCache);
     const adapter = localFactory.get(DeliveryProvider.NovaPoshta);
     const searchCities = jest.spyOn(adapter, 'searchCities');
 
@@ -116,10 +113,7 @@ describe('DeliveryService', () => {
   it('keeps separate city cache entries per delivery method', async () => {
     const { factory: localFactory, novaPoshtaService } = createFactory();
     const localCache = new DeliveryCatalogCache();
-    const localService = new DeliveryService(localFactory, localCache, {
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as never);
+    const localService = new DeliveryService(localFactory, localCache);
 
     await localService.searchCities(DeliveryProvider.NovaPoshta, 'ки', DeliveryMethod.Warehouse);
     await localService.searchCities(DeliveryProvider.NovaPoshta, 'ки', DeliveryMethod.Courier);

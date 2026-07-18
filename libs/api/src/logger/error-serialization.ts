@@ -1,12 +1,67 @@
-/** Max length for `attributes.error.raw` (OTel truncates long attribute values). */
 export const MAX_ERROR_RAW_LENGTH = 16_384;
 
 const MAX_CAUSE_DEPTH = 5;
 
-/**
- * Full raw error dump for `attributes.error.raw` — name/message/stack, own props, and cause.
- * Circular-safe and size-capped; no field filtering.
- */
+type HttpExceptionLike = {
+  getResponse(): unknown;
+  name: string;
+};
+
+function isHttpExceptionLike(exception: unknown): exception is HttpExceptionLike {
+  return (
+    typeof exception === 'object' &&
+    exception !== null &&
+    'getResponse' in exception &&
+    typeof (exception as HttpExceptionLike).getResponse === 'function'
+  );
+}
+
+export function resolveExceptionMessage(exception: unknown): string {
+  if (isHttpExceptionLike(exception)) {
+    const response = exception.getResponse();
+
+    if (typeof response === 'string') {
+      return response;
+    }
+
+    if (typeof response === 'object' && response !== null && 'message' in response) {
+      const message = response.message;
+
+      if (Array.isArray(message)) {
+        return message.map(String).join('; ');
+      }
+
+      return String(message);
+    }
+  }
+
+  if (exception instanceof Error) {
+    return exception.message;
+  }
+
+  return 'Unknown error';
+}
+
+export function resolveExceptionName(exception: unknown): string {
+  if (isHttpExceptionLike(exception)) {
+    return exception.name;
+  }
+
+  if (exception instanceof Error) {
+    return exception.name;
+  }
+
+  return 'Error';
+}
+
+export function resolveExceptionStack(exception: unknown): string | undefined {
+  if (exception instanceof Error && typeof exception.stack === 'string' && exception.stack.length > 0) {
+    return exception.stack;
+  }
+
+  return undefined;
+}
+
 export function serializeErrorForObservability(
   error: unknown,
   maxLen: number = MAX_ERROR_RAW_LENGTH,

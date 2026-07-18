@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState } from 'react';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 import { ProductShareMenu } from '@/components/product/product-share-menu/product-share-menu';
 import { useCartActions, useCartItemCount } from '@/hooks/cart';
 import { type FeedTagChip, feedTagLabel } from '@/hooks/feed';
@@ -20,8 +20,9 @@ const CART_ATTENTION_MS = 2_800;
 const RAIL_ICON_SIZE = 30;
 
 export type FeedActionRailProps = {
-  item: FeedItemDto;
+  item: Product;
   onToggleLike: () => void;
+  commentsOpen: boolean;
   onOpenComments: () => void;
   onOpenLiked: () => void;
   activeTags: FeedTagChip[];
@@ -35,6 +36,7 @@ export type FeedCardControlsProps = Omit<FeedActionRailProps, 'item'>;
 export function FeedActionRail({
   item,
   onToggleLike,
+  commentsOpen,
   onOpenComments,
   onOpenLiked,
   activeTags,
@@ -118,11 +120,13 @@ export function FeedActionRail({
 
         <RailButton
           label={t('actions.comments')}
-          caption={item.commentCount > 0 ? String(item.commentCount) : undefined}
+          caption={(item.commentCount ?? 0) > 0 ? String(item.commentCount) : undefined}
+          active={commentsOpen}
           compact
           onClick={onOpenComments}
+          aria-expanded={commentsOpen}
         >
-          <CommentIcon size={RAIL_ICON_SIZE} />
+          <CommentIcon filled={commentsOpen} size={RAIL_ICON_SIZE} />
         </RailButton>
 
         <Stack spacing={0.25} sx={{ alignItems: 'center', color: 'common.white' }}>

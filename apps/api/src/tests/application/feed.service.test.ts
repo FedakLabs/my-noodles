@@ -93,8 +93,8 @@ describe('FeedService', () => {
     const result = await LocaleContext.run('en', () => service.next(visitor, {}));
 
     expect(result.exhausted).toBe(false);
-    expect(result.item?.name).toBe('Fire Ramen');
-    expect(result.item?.country.name).toBe('Korea');
+    expect(LocalizedString.resolveFor(result.item!.name, 'en')).toBe('Fire Ramen');
+    expect(LocalizedString.resolveFor(result.item!.country.name, 'en')).toBe('Korea');
     expect(result.item?.commentCount).toBe(2);
     expect(result.item?.liked).toBe(true);
   });

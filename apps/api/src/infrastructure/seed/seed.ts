@@ -36,7 +36,7 @@ async function upsertBrand(repository: Repository<Brand>, name: string): Promise
     return existing;
   }
 
-  return repository.save({ slug, name, logoUrl: null, themeKey: null });
+  return repository.save(repository.create({ slug, name, logoUrl: null, themeKey: null }));
 }
 
 async function upsertCategory(
@@ -50,13 +50,15 @@ async function upsertCategory(
     return existing;
   }
 
-  return repository.save({
-    slug,
-    name: placeholderLocalized(name),
-    icon: null,
-    sortOrder,
-    themeKey: null,
-  });
+  return repository.save(
+    repository.create({
+      slug,
+      name: placeholderLocalized(name),
+      icon: null,
+      sortOrder,
+      themeKey: null,
+    }),
+  );
 }
 
 async function upsertCountry(repository: Repository<Country>, countryName: string): Promise<Country> {
@@ -66,13 +68,15 @@ async function upsertCountry(repository: Repository<Country>, countryName: strin
     return existing;
   }
 
-  return repository.save({
-    code: seed.code,
-    slug: seed.slug,
-    name: seed.name,
-    flagEmoji: seed.flagEmoji,
-    themeKey: seed.themeKey,
-  });
+  return repository.save(
+    repository.create({
+      code: seed.code,
+      slug: seed.slug,
+      name: seed.name,
+      flagEmoji: seed.flagEmoji,
+      themeKey: seed.themeKey,
+    }),
+  );
 }
 
 async function upsertCollection(
@@ -85,20 +89,22 @@ async function upsertCollection(
     return existing;
   }
 
-  return repository.save({
-    code: category.slug,
-    slug: category.slug,
-    name: category.name,
-    description: {
-      uk: `Добірка категорії «${category.name.uk}».`,
-      en: `A curated pick from «${category.name.en ?? category.name.uk}».`,
-    },
-    heroImage: null,
-    themeKey: category.themeKey,
-    sortOrder,
-    isActive: true,
-    products: [],
-  });
+  return repository.save(
+    repository.create({
+      code: category.slug,
+      slug: category.slug,
+      name: category.name,
+      description: {
+        uk: `Добірка категорії «${category.name.uk}».`,
+        en: `A curated pick from «${category.name.en ?? category.name.uk}».`,
+      },
+      heroImage: null,
+      themeKey: category.themeKey,
+      sortOrder,
+      isActive: true,
+      products: [],
+    }),
+  );
 }
 
 async function seed(dataSource: DataSource): Promise<void> {
@@ -148,26 +154,28 @@ async function seed(dataSource: DataSource): Promise<void> {
       continue;
     }
 
-    const product = await productRepository.save({
-      slug,
-      name: placeholderLocalized(row.name),
-      description: copy.description,
-      story: copy.story,
-      forWhom: copy.forWhom,
-      weight: row.weight,
-      priceMinor: row.priceMinor,
-      currency: DEFAULT_CURRENCY,
-      flavor: row.flavor,
-      allergens: [...row.allergens],
-      images: productImages(row),
-      videos: productVideos(row),
-      isTriedByUs: row.isTriedByUs,
-      quantity: row.quantity,
-      sortWeight: row.sortWeight,
-      brandId: brand.id,
-      countryId: country.id,
-      categoryId: category.id,
-    });
+    const product = await productRepository.save(
+      productRepository.create({
+        slug,
+        name: placeholderLocalized(row.name),
+        description: copy.description,
+        story: copy.story,
+        forWhom: copy.forWhom,
+        weight: row.weight,
+        priceMinor: row.priceMinor,
+        currency: DEFAULT_CURRENCY,
+        flavor: row.flavor,
+        allergens: [...row.allergens],
+        images: productImages(row),
+        videos: productVideos(row),
+        isTriedByUs: row.isTriedByUs,
+        quantity: row.quantity,
+        sortWeight: row.sortWeight,
+        brandId: brand.id,
+        countryId: country.id,
+        categoryId: category.id,
+      }),
+    );
 
     seededProducts.push({ row, product });
 

@@ -1,13 +1,13 @@
 import {
   type PaginatedProductsDto,
-  type ProductDetailDto,
+  type Product,
   type ProductFacetsResponseDto,
   productsControllerGetBySlug,
   productsControllerGetFacets,
   productsControllerList,
 } from '@my-noodles/api-clients/storefront';
-import { requestData } from '@my-noodles/web-lib/react-query';
-import type { QueryClient } from '@tanstack/react-query';
+import { pagePaginatedGetNextPageParam, requestData } from '@my-noodles/web-lib/react-query';
+import { infiniteQueryOptions, queryOptions, type QueryClient } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 import type {
@@ -20,6 +20,9 @@ import { toCatalogInfiniteListParams } from '@/screens/catalog/search-params';
 import { searchParamsToFacetsQuery, searchParamsToListQuery } from './utils';
 
 const productsQueryKeyRoot = ['products'] as const;
+
+/** Facet counts for the current filter slice — safe to reuse briefly when reopening the filter UI. */
+const PRODUCT_FACETS_STALE_TIME_MS = 60_000;
 
 export const productsQueryKeys = {
   all: withAppLocaleKey(() => productsQueryKeyRoot),
@@ -59,7 +62,6 @@ export function mergePaginatedProductsPage(
   return pageData;
 }
 
-/** Merges a catalog page into the accumulated pagination cache. */
 export async function resolvePaginatedProductsPage(
   queryClient: QueryClient,
   params: CatalogSearchParams,
@@ -89,7 +91,7 @@ export async function fetchProductsList(params: CatalogSearchParams): Promise<Pa
   return requestData(productsControllerList({ query: searchParamsToListQuery(params) }));
 }
 
-export async function fetchProductDetail(slug: string): Promise<ProductDetailDto> {
+export async function fetchProductDetail(slug: string): Promise<Product> {
   return requestData(
     productsControllerGetBySlug({
       path: { slug },
@@ -100,3 +102,29 @@ export async function fetchProductDetail(slug: string): Promise<ProductDetailDto
 export async function fetchProductFacets(params: CatalogFacetsParams): Promise<ProductFacetsResponseDto> {
   return requestData(productsControllerGetFacets({ query: searchParamsToFacetsQuery(params) }));
 }
+
+export const productsQueries = {
+  list: (params: CatalogSearchParams) =>
+    queryOptions({
+      queryKey: productsQueryKeys.list(params),
+      queryFn: () => fetchProductsList(params),
+    }),
+  detail: (slug: string) =>
+    queryOptions({
+      queryKey: productsQueryKeys.detail(slug),
+      queryFn: () => fetchProductDetail(slug),
+    }),
+  facets: (params: CatalogFacetsParams) =>
+    queryOptions({
+      queryKey: productsQueryKeys.facets(params),
+      queryFn: () => fetchProductFacets(params),
+      staleTime: PRODUCT_FACETS_STALE_TIME_MS,
+    }),
+  infiniteList: (params: CatalogInfiniteListParams) =>
+    infiniteQueryOptions({
+      queryKey: productsQueryKeys.infiniteList(params),
+      queryFn: ({ pageParam }) => fetchProductsList({ ...params, page: pageParam }),
+      initialPageParam: 1,
+      getNextPageParam: pagePaginatedGetNextPageParam<Product>(),
+    }),
+};

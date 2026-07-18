@@ -7,13 +7,7 @@ import { Brand } from '../brands/brand.entity';
 import { Category } from '../categories/category.entity';
 import { Country } from '../countries/country.entity';
 import { Product } from './product.entity';
-import type {
-  PaginatedProductsDto,
-  ProductDetailDto,
-  ProductFacetOptionDto,
-  ProductFacetsResponseDto,
-  ProductSummaryDto,
-} from './products.dto';
+import type { PaginatedProductsDto, ProductFacetOptionDto, ProductFacetsResponseDto } from './products.dto';
 import { ProductNotFoundException } from './products.exceptions';
 import type { ProductFacetFilters, ProductFilters, ProductListPagination } from './products.filters';
 import {
@@ -22,7 +16,6 @@ import {
   buildProductWhere,
   buildProductWhereForFacet,
   productFacetSelect,
-  productListRelations,
 } from './products.filters';
 
 @Injectable()
@@ -41,12 +34,11 @@ export class ProductsService {
   async list(filters: ProductFilters & ProductListPagination): Promise<PaginatedProductsDto> {
     const { items: rows, meta } = await PaginationHelper.paginate(this.productsRepository, filters, {
       where: buildProductWhere(filters),
-      relations: productListRelations,
       order: buildProductOrder(filters.sort),
     });
 
     return {
-      items: rows.map((product) => this.toSummary(product)),
+      items: rows,
       meta,
     };
   }
@@ -107,13 +99,10 @@ export class ProductsService {
     return response;
   }
 
-  async getBySlug(slug: string): Promise<ProductDetailDto> {
+  async getBySlug(slug: string): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { slug },
       relations: {
-        brand: true,
-        country: true,
-        category: true,
         alternatives: {
           brand: true,
           country: true,
@@ -126,19 +115,7 @@ export class ProductsService {
       throw new ProductNotFoundException(slug);
     }
 
-    const summary = this.toSummary(product);
-
-    return {
-      ...summary,
-      weight: product.weight,
-      description: product.description.localized,
-      story: product.story.localized,
-      forWhom: product.forWhom.localized,
-      flavor: product.flavor,
-      allergens: product.allergens,
-      videos: product.videos,
-      alternatives: (product.alternatives ?? []).map((alternative) => this.toSummary(alternative)),
-    };
+    return product;
   }
 
   private buildFacetsResponse({
@@ -228,34 +205,5 @@ export class ProductsService {
       label: labelFor(entry),
       count: counts.get(entry.slug) ?? 0,
     }));
-  }
-
-  private toSummary(product: Product): ProductSummaryDto {
-    return {
-      id: product.id,
-      slug: product.slug,
-      name: product.name.localized,
-      priceMinor: product.priceMinor,
-      currency: product.currency,
-      images: product.images,
-      inStock: product.quantity > 0,
-      isTriedByUs: product.isTriedByUs,
-      sortWeight: product.sortWeight,
-      brand: product.brand
-        ? {
-            slug: product.brand.slug,
-            name: product.brand.name,
-          }
-        : null,
-      country: {
-        slug: product.country.slug,
-        code: product.country.code,
-        name: product.country.name.localized,
-      },
-      category: {
-        slug: product.category.slug,
-        name: product.category.name.localized,
-      },
-    };
   }
 }

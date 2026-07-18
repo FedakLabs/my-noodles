@@ -1,17 +1,11 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { Column, type ColumnOptions } from 'typeorm';
 
 import { LocalizedString } from './localized-string';
 import { localizedStringTransformer } from './localized-string.transformer';
 
-type LocalizedColumnOptions = Pick<ColumnOptions, 'name' | 'nullable'>;
+export type LocalizedColumnOptions = Pick<ColumnOptions, 'name' | 'nullable'>;
 
-/**
- * TypeORM JSONB column + class-transformer metadata.
- *
- * TypeORM hydrates via `localizedStringTransformer` (not `@Type` alone).
- * `@Type(() => LocalizedString)` is included for `plainToInstance` / DTO flows.
- */
 export function LocalizedColumn(options?: LocalizedColumnOptions): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
     Column({
@@ -21,5 +15,12 @@ export function LocalizedColumn(options?: LocalizedColumnOptions): PropertyDecor
     })(target, propertyKey);
 
     Type(() => LocalizedString)(target, propertyKey);
+    Transform(
+      ({ value }: { value: unknown }) =>
+        value === null || value === undefined
+          ? null
+          : LocalizedString.from(value as LocalizedString).localized,
+      { toPlainOnly: true },
+    )(target, propertyKey);
   };
 }

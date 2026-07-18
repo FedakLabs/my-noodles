@@ -28,7 +28,6 @@ const PRODUCT_SORT_ORDER: Record<ProductSort, FindOptionsOrder<Product>> = {
 
 export type ProductListPagination = PaginationQuery;
 
-/** Multi-select facet dimensions — string[] filter keys from the shared query DTO. */
 export type ProductFacetDimension = {
   [K in keyof ProductFilterQueryDto]: NonNullable<ProductFilterQueryDto[K]> extends string[] ? K : never;
 }[keyof ProductFilterQueryDto];
@@ -55,7 +54,6 @@ export function buildProductWhereForFacet(
   return buildProductWhere(scoped);
 }
 
-/** Type-safe `find` / `count` filter — prefer over query-builder string columns. */
 export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
   const where: FindOptionsWhere<Product> = {};
 
@@ -102,12 +100,6 @@ export function buildProductOrder(sort: ProductSort = DEFAULT_PRODUCT_SORT): Fin
 export function buildProductPriceBoundsScope(filters: ProductFilters): ProductFilters {
   return filters.collection ? { collection: filters.collection } : {};
 }
-
-export const productListRelations = {
-  brand: true,
-  country: true,
-  category: true,
-} as const;
 
 export const productFacetSelect = {
   id: true,

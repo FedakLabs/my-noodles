@@ -1,27 +1,19 @@
 import { dehydrate } from '@tanstack/react-query';
-import type { Metadata } from 'next';
-import { hasLocale } from 'next-intl';
-import { setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
-import { collectionsQueryKeys, fetchCollectionDetail } from '@/api/collections';
-import { fetchProductsList, productsQueryKeys } from '@/api/products';
-import { runWithAppLocale } from '@/i18n/app-locale/server';
-import { routing } from '@/i18n/routing';
+import { collectionsQueries, fetchCollectionDetail } from '@/api/collections';
+import { productsQueries } from '@/api/products';
+import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 import { CollectionScreen } from '@/screens/collections';
-import type { LocaleSlugPageProps } from '@/shared/page-props';
+import type { LocalePageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';
 
-export async function generateMetadata({ params }: LocaleSlugPageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
+type CollectionPageProps = LocalePageProps<{ slug: string }>;
 
-  if (!hasLocale(routing.locales, locale)) {
-    return {};
-  }
-
-  const collection = await runWithAppLocale(locale, () => fetchCollectionDetail(slug));
+export const generateMetadata = withPageLocaleMetadata<CollectionPageProps>(async ({ params, locale }) => {
+  const { slug } = params;
+  const collection = await fetchCollectionDetail(slug);
 
   return buildPageMetadata({
     locale,
@@ -29,45 +21,29 @@ export async function generateMetadata({ params }: LocaleSlugPageProps): Promise
     title: collection.name ?? collection.slug,
     description: collection.description,
   });
-}
+});
 
-export default async function CollectionPage({ params }: LocaleSlugPageProps) {
-  const { locale, slug } = await params;
+async function CollectionPage({ params }: WithPageLocaleProps<CollectionPageProps>) {
+  const { slug } = params;
+  const queryClient = getQueryClient();
 
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+  await runPrefetchSafe(async () => {
+    const collection = await queryClient.fetchQuery(collectionsQueries.detail(slug));
+    const listParams = {
+      ...DEFAULT_CATALOG_FILTER_PARAMS,
+      page: 1,
+      limit: 48,
+      collection: collection.code,
+    };
 
-  setRequestLocale(locale);
-
-  return runWithAppLocale(locale, async () => {
-    const queryClient = getQueryClient();
-
-    await runPrefetchSafe(async () => {
-      const collection = await fetchCollectionDetail(slug);
-      const listParams = {
-        ...DEFAULT_CATALOG_FILTER_PARAMS,
-        page: 1,
-        limit: 48,
-        collection: collection.code,
-      };
-
-      await Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: collectionsQueryKeys.detail(slug),
-          queryFn: () => Promise.resolve(collection),
-        }),
-        queryClient.prefetchQuery({
-          queryKey: productsQueryKeys.list(listParams),
-          queryFn: () => fetchProductsList(listParams),
-        }),
-      ]);
-    });
-
-    return (
-      <QueryHydrate state={dehydrate(queryClient)}>
-        <CollectionScreen slug={slug} />
-      </QueryHydrate>
-    );
+    await queryClient.prefetchQuery(productsQueries.list(listParams));
   });
+
+  return (
+    <QueryHydrate state={dehydrate(queryClient)}>
+      <CollectionScreen slug={slug} />
+    </QueryHydrate>
+  );
 }
+
+export default withPageLocale(CollectionPage);

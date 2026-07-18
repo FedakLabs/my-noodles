@@ -11,11 +11,15 @@ const drawerPaperSx = {
   mobile: {
     maxHeight: '85dvh',
     overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
   },
   desktop: {
     width: '100%',
     maxWidth: 400,
     height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   },
 } as const;
 

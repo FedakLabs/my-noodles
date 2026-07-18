@@ -1,4 +1,3 @@
-import { LoggingModule } from '@my-noodles/api-lib/nest';
 import { prepareDataSource } from '@my-noodles/api-lib/persistence';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
@@ -16,7 +15,7 @@ import { HealthModule } from './application/health';
 import { OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
 import { config } from './config';
-import { appLogger } from './infrastructure/logging';
+import './infrastructure/logging';
 
 @Module({
   imports: [
@@ -25,11 +24,6 @@ import { appLogger } from './infrastructure/logging';
     TypeOrmModule.forRoot({
       ...prepareDataSource(config),
       autoLoadEntities: true,
-    }),
-    LoggingModule.forRoot({
-      logger: appLogger,
-      appName: config.appName,
-      appVersion: config.appVersion,
     }),
     HealthModule,
     ProductsModule,

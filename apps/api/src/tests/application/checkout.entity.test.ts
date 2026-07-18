@@ -26,25 +26,6 @@ describe('Checkout entity', () => {
     expect(entity.isExpired).toBe(false);
   });
 
-  it('exposes expiresAtIso while in progress', () => {
-    const expiresAt = new Date(Date.now() + CHECKOUT_HOLD_MS);
-    const entity = checkout({
-      status: CheckoutStatus.InProgress,
-      expiresAt,
-    });
-
-    expect(entity.expiresAtIso).toBe(expiresAt.toISOString());
-  });
-
-  it('returns null expiresAtIso when not in progress', () => {
-    const entity = checkout({
-      status: CheckoutStatus.Completed,
-      expiresAt: new Date(Date.now() + CHECKOUT_HOLD_MS),
-    });
-
-    expect(entity.expiresAtIso).toBeNull();
-  });
-
   it('sets expiresAt on insert when missing', () => {
     const entity = checkout({ status: CheckoutStatus.InProgress });
     const before = Date.now();

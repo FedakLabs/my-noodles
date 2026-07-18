@@ -10,7 +10,7 @@ import { MediaGallery, type MediaGalleryHandle } from '@my-noodles/ui';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 
-import type { FeedItemDto } from '@/api/feed';
+import type { Product } from '@/api/feed';
 import { FeedActionRail, type FeedCardControlsProps } from '@/components/feed/action-rail/feed-action-rail';
 import { feedCardSurfaceSx, feedSubtleChipSx } from '@/components/feed/feed-chrome';
 import { feedGalleryCarouselOptions } from '@/components/feed/feed-gallery-carousel-options';
@@ -23,7 +23,7 @@ import { FeedCardInteractive } from './feed-card-interactive';
 import { toFeedMediaItems } from './feed-media';
 
 type FeedCardProps = {
-  item: FeedItemDto;
+  item: Product;
   onAddTag: (type: FeedTagDimension, value: string, label: string) => void;
   detailsOpen: boolean;
   onOpenDetails: () => void;
@@ -38,7 +38,7 @@ type HashtagChip = {
   label: string;
 };
 
-function buildHashtags(item: FeedItemDto): HashtagChip[] {
+function buildHashtags(item: Product): HashtagChip[] {
   const chips: HashtagChip[] = [
     { type: 'category', slug: item.category.slug, label: item.category.name ?? item.category.slug },
     { type: 'country', slug: item.country.slug, label: item.country.name ?? item.country.slug },

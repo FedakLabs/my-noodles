@@ -1,5 +1,4 @@
 import { ApiClient } from '@my-noodles/api-lib/api-client';
-import type { Logger } from 'winston';
 
 export type TelegramClientOptions = {
   apiBaseUrl: string;
@@ -14,11 +13,8 @@ type SendMessageParams = {
 };
 
 export class TelegramApi extends ApiClient {
-  constructor(
-    private readonly settings: TelegramClientOptions,
-    logger: Logger,
-  ) {
-    super(logger);
+  constructor(private readonly settings: TelegramClientOptions) {
+    super();
   }
 
   protected getBaseUrl(): string {

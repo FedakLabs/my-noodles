@@ -4,6 +4,7 @@ describe('createAppLogger', () => {
   it('uses console transport only when OTEL is disabled', () => {
     const transports = createAppLoggerTransports({
       appName: 'my-noodles-api',
+      appVersion: 'dev',
       nodeEnv: 'local',
       otel: { enabled: false },
     });
@@ -14,6 +15,7 @@ describe('createAppLogger', () => {
   it('uses console and OTEL transports when OTEL is enabled locally', () => {
     const transports = createAppLoggerTransports({
       appName: 'my-noodles-api',
+      appVersion: 'dev',
       nodeEnv: 'local',
       otel: {
         enabled: true,
@@ -28,6 +30,7 @@ describe('createAppLogger', () => {
   it('uses OTEL transport only when OTEL is enabled outside local', () => {
     const transports = createAppLoggerTransports({
       appName: 'my-noodles-api',
+      appVersion: 'dev',
       nodeEnv: 'dev',
       otel: {
         enabled: true,
@@ -42,6 +45,7 @@ describe('createAppLogger', () => {
   it('creates a winston logger with info level', () => {
     const logger = createAppLogger({
       appName: 'my-noodles-api',
+      appVersion: 'dev',
       nodeEnv: 'local',
       otel: { enabled: false },
     });

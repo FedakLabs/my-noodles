@@ -3,8 +3,8 @@ import { AppException, HttpStatus, NotFoundException, SAMPLE_UUID } from '@my-no
 export class CheckoutNotFoundException extends NotFoundException {
   static readonly sample = new CheckoutNotFoundException(SAMPLE_UUID);
 
-  constructor(checkoutId: string) {
-    super('checkout_not_found', 'Checkout not found', { checkoutId });
+  constructor(checkoutId?: string) {
+    super('checkout_not_found', 'Checkout not found', checkoutId ? { checkoutId } : undefined);
   }
 }
 

@@ -4,6 +4,7 @@ export {
   fetchProductFacets,
   fetchProductsList,
   mergePaginatedProductsPage,
+  productsQueries,
   productsQueryKeys,
   removeCatalogProductsListQueries,
   resolvePaginatedProductsPage,
@@ -15,10 +16,5 @@ export {
   useProductsList,
   useProductsPaginatedList,
 } from './products.hooks';
-export type {
-  PaginatedProductsDto,
-  ProductDetailDto,
-  ProductFacetsResponseDto,
-  ProductSummaryDto,
-} from './types';
+export type { PaginatedProductsDto, Product, ProductFacetsResponseDto } from './types';
 export type { CatalogInfiniteListParams } from '@/screens/catalog/search-params';
