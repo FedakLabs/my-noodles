@@ -33,7 +33,7 @@ export function CheckoutScreen({ checkoutId }: CheckoutScreenProps) {
       qty: item.qty,
     })) ?? [];
 
-  useBeginCheckout(checkoutLines, session.isInProgress && checkoutLines.length > 0);
+  useBeginCheckout(checkoutLines, session.isActive && checkoutLines.length > 0);
 
   let content: ReactNode;
 
@@ -48,7 +48,7 @@ export function CheckoutScreen({ checkoutId }: CheckoutScreenProps) {
     content = <Typography color="error">{t('error')}</Typography>;
   } else if (!checkout) {
     content = <Typography color="text.secondary">{t('empty')}</Typography>;
-  } else if (session.isInProgress) {
+  } else if (session.isActive) {
     content = (
       <CheckoutForm checkoutId={checkoutId} checkout={checkout} onHoldExpired={session.onHoldExpired} />
     );

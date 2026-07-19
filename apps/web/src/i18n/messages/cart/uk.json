@@ -25,7 +25,7 @@
   "continueBrowsing": "Дивитись каталог",
   "clearCart": "Очистити корзину",
   "close": "Закрити кошик",
-  "inProgress": {
+  "active": {
     "addToCheckout": "Додати до оформлення",
     "continue": "Продовжити оформлення",
     "cancel": "Скасувати оформлення",

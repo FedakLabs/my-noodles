@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 
 export enum CheckoutStatus {
-  InProgress = 'in_progress',
+  Active = 'active',
   Completed = 'completed',
   Cancelled = 'cancelled',
 }

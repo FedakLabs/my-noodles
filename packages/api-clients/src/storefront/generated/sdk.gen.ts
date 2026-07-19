@@ -46,7 +46,14 @@ export const checkoutsControllerListCheckouts = <ThrowOnError extends boolean = 
 
 export const checkoutsControllerStartCheckout = <ThrowOnError extends boolean = false>(options?: Options<CheckoutsControllerStartCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError> => (options?.client ?? client).post<CheckoutsControllerStartCheckoutResponses, CheckoutsControllerStartCheckoutErrors, ThrowOnError>({ url: '/api/checkouts', ...options });
 
-export const checkoutsControllerCancelCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerCancelCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError> => (options.client ?? client).delete<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError>({ url: '/api/checkouts/{id}', ...options });
+export const checkoutsControllerCancelCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerCancelCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError> => (options.client ?? client).delete<CheckoutsControllerCancelCheckoutResponses, CheckoutsControllerCancelCheckoutErrors, ThrowOnError>({
+    url: '/api/checkouts/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 export const checkoutsControllerGetCheckout = <ThrowOnError extends boolean = false>(options: Options<CheckoutsControllerGetCheckoutData, ThrowOnError>): RequestResult<CheckoutsControllerGetCheckoutResponses, CheckoutsControllerGetCheckoutErrors, ThrowOnError> => (options.client ?? client).get<CheckoutsControllerGetCheckoutResponses, CheckoutsControllerGetCheckoutErrors, ThrowOnError>({ url: '/api/checkouts/{id}', ...options });
 

@@ -24,8 +24,8 @@ import type {
   UpdateCheckoutReceiverDto,
 } from './types';
 
-const inProgressListParams = {
-  status: CheckoutStatus.IN_PROGRESS,
+const activeListParams = {
+  status: CheckoutStatus.ACTIVE,
 } as const satisfies ListCheckoutsParams;
 
 export function useCheckoutsList(params?: ListCheckoutsParams, enabled = true) {
@@ -38,9 +38,9 @@ export function useCheckoutsList(params?: ListCheckoutsParams, enabled = true) {
   );
 }
 
-export function useInProgressCheckouts() {
+export function useActiveCheckouts() {
   const panelOpen = useCartPanelOpen();
-  const query = useCheckoutsList(inProgressListParams, panelOpen);
+  const query = useCheckoutsList(activeListParams, panelOpen);
 
   return {
     ...query,
@@ -61,13 +61,13 @@ export function useStartCheckout() {
       onSuccess: async () => {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
-          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(inProgressListParams) }),
+          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(activeListParams) }),
         ]);
       },
       onError: async () => {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
-          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(inProgressListParams) }),
+          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(activeListParams) }),
         ]);
       },
     }),
@@ -113,7 +113,7 @@ export function useSubmitCheckout(checkoutId: string) {
         if (isApiConflict(error)) {
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
-            queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(inProgressListParams) }),
+            queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(activeListParams) }),
           ]);
         }
       },
@@ -132,7 +132,7 @@ export function useCancelCheckout() {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
           queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
-          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(inProgressListParams) }),
+          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.list(activeListParams) }),
         ]);
       },
     }),

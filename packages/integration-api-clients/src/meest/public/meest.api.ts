@@ -1,6 +1,8 @@
 import { ApiClient } from '@my-noodles/api-lib/api-client';
 import { LocaleContext, type Locale } from '@my-noodles/api-lib/locale';
 
+import { MEEST_REGION_NAMES_UA } from './meest.regions';
+
 export type MeestClientOptions = {
   apiBaseUrl: string;
 };
@@ -80,6 +82,10 @@ export type MeestBranchRow = {
 };
 
 export class PublicMeestApi extends ApiClient {
+  private districtById: Map<string, MeestDistrictRow> | undefined;
+  private regionById: Map<string, MeestRegionRow> | undefined;
+  private geoDirectoriesPromise: Promise<void> | undefined;
+
   constructor(private readonly settings: MeestClientOptions) {
     super();
   }
@@ -88,20 +94,32 @@ export class PublicMeestApi extends ApiClient {
     return this.settings.apiBaseUrl;
   }
 
+  /**
+   * Locality search with oblast filled in when `/geo_localities` leaves `reg` empty
+   * (resolve via `d_id` → districts → regions, with a static region-name fallback).
+   */
   async searchLocalities(query: string): Promise<MeestLocalityData[]> {
     const response = await this.get<MeestApiResponse<MeestLocalityRow[]> | MeestLocalityRow[]>({
       url: '/geo_localities',
       params: { search_beginning: query },
-      headers: this.defaultHeaders(),
     });
 
-    return this.unwrapLocalities(response);
+    const localities = this.unwrapLocalities(response);
+    const needsRegionEnrichment = localities.some(
+      (locality) => !locality.reg?.trim() && Boolean(locality.d_id?.trim()),
+    );
+
+    if (!needsRegionEnrichment) {
+      return localities;
+    }
+
+    await this.ensureGeoDirectories();
+    return localities.map((locality) => this.withResolvedRegion(locality));
   }
 
   async getDistricts(): Promise<MeestDistrictRow[]> {
     const response = await this.get<MeestApiResponse<MeestDistrictRow[]> | MeestDistrictRow[]>({
       url: '/geo_districts',
-      headers: this.defaultHeaders(),
     });
 
     return this.unwrapResult(response).filter((district): district is MeestDistrictRow =>
@@ -112,7 +130,6 @@ export class PublicMeestApi extends ApiClient {
   async getRegions(): Promise<MeestRegionRow[]> {
     const response = await this.get<MeestApiResponse<MeestRegionRow[]> | MeestRegionRow[]>({
       url: '/geo_regions',
-      headers: this.defaultHeaders(),
     });
 
     return this.unwrapResult(response).filter((region): region is MeestRegionRow =>
@@ -124,17 +141,65 @@ export class PublicMeestApi extends ApiClient {
     const response = await this.get<MeestApiResponse<MeestBranchRow[]> | MeestBranchRow[]>({
       url: '/branches',
       params: { city: cityRef, lang: meestLang(), viewdata: 'full' },
-      headers: this.defaultHeaders(),
     });
 
     return this.unwrapBranches(response);
   }
 
-  private defaultHeaders() {
+  private withResolvedRegion(locality: MeestLocalityData): MeestLocalityData {
+    if (locality.reg?.trim()) {
+      return locality;
+    }
+
+    const districtId = locality.d_id?.trim();
+    if (!districtId || !this.districtById || !this.regionById) {
+      return locality;
+    }
+
+    const district = this.districtById.get(districtId);
+    const region = district ? this.regionById.get(district.region_id) : undefined;
+    const regionName = region?.ua.trim();
+    if (!regionName) {
+      return locality;
+    }
+
     return {
-      Accept: 'application/json',
-      'User-Agent': 'my-noodles-delivery/1.0',
+      ...locality,
+      reg: regionName,
+      reg_id: district?.region_id || locality.reg_id,
     };
+  }
+
+  private async ensureGeoDirectories(): Promise<void> {
+    if (this.districtById && this.regionById) {
+      return;
+    }
+
+    this.geoDirectoriesPromise ??= this.loadGeoDirectories();
+    await this.geoDirectoriesPromise;
+  }
+
+  private async loadGeoDirectories(): Promise<void> {
+    try {
+      const [districts, regions] = await Promise.all([this.getDistricts(), this.getRegions()]);
+
+      this.districtById = new Map(districts.map((district) => [district.district_id, district]));
+
+      // Prefer live `/geo_regions` when available; fall back to the static UA map
+      // because Public API currently returns status 0 / empty result for that endpoint.
+      const regionById = new Map<string, MeestRegionRow>(
+        Object.entries(MEEST_REGION_NAMES_UA).map(([region_id, ua]) => [region_id, { region_id, ua }]),
+      );
+
+      for (const region of regions) {
+        regionById.set(region.region_id, region);
+      }
+
+      this.regionById = regionById;
+    } catch (error) {
+      this.geoDirectoriesPromise = undefined;
+      throw error;
+    }
   }
 
   private unwrapLocalities(

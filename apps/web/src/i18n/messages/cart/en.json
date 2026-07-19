@@ -25,7 +25,7 @@
   "continueBrowsing": "Continue browsing",
   "clearCart": "Clear cart",
   "close": "Close cart",
-  "inProgress": {
+  "active": {
     "addToCheckout": "Add to checkout",
     "continue": "Continue checkout",
     "cancel": "Dismiss checkout",

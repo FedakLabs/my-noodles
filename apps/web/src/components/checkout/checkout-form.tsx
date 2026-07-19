@@ -232,7 +232,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
         void Promise.all([
           queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
           queryClient.invalidateQueries({
-            queryKey: checkoutsQueryKeys.list({ status: CheckoutStatus.IN_PROGRESS }),
+            queryKey: checkoutsQueryKeys.list({ status: CheckoutStatus.ACTIVE }),
           }),
         ]);
       },

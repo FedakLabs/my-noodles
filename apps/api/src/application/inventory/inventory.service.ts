@@ -134,7 +134,7 @@ export class InventoryService {
         productId: In(productIds),
         order: {
           checkout: {
-            status: CheckoutStatus.InProgress,
+            status: CheckoutStatus.Active,
             expiresAt: MoreThan(new Date()),
           },
         },

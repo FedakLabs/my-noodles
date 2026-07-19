@@ -77,7 +77,7 @@ export class CheckoutsService extends TransactionalRepository {
 
     await this.validateCartInventory(visitorSessionId, cartItems);
 
-    const existingCheckout = await this.getInProgressCheckout({
+    const existingCheckout = await this.getActiveCheckout({
       visitorSessionId,
     }).catch(catchIf({ classes: [CheckoutNotFoundException, CheckoutInactiveException] }, null));
 
@@ -97,7 +97,7 @@ export class CheckoutsService extends TransactionalRepository {
     visitorSessionId: string,
     dto: UpdateCheckoutReceiverDto,
   ): Promise<Checkout> {
-    const checkout = await this.getInProgressCheckout({ id: checkoutId, visitorSessionId });
+    const checkout = await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
 
     const order = checkout.order;
 
@@ -113,7 +113,7 @@ export class CheckoutsService extends TransactionalRepository {
 
     await this.ordersRepository.save(order);
 
-    return await this.getInProgressCheckout({ id: checkoutId, visitorSessionId });
+    return await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
   }
 
   async updateCheckoutDelivery(
@@ -121,7 +121,7 @@ export class CheckoutsService extends TransactionalRepository {
     visitorSessionId: string,
     dto: UpdateCheckoutDeliveryDto,
   ): Promise<Checkout> {
-    const checkout = await this.getInProgressCheckout({ id: checkoutId, visitorSessionId });
+    const checkout = await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
 
     const order = checkout.order;
 
@@ -134,11 +134,11 @@ export class CheckoutsService extends TransactionalRepository {
 
     await this.ordersRepository.save(order);
 
-    return await this.getInProgressCheckout({ id: checkoutId, visitorSessionId });
+    return await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
   }
 
   async submitCheckout(checkoutId: string, visitorSessionId: string, dto: SubmitCheckoutDto): Promise<Order> {
-    const checkout = await this.getInProgressCheckout({ id: checkoutId, visitorSessionId });
+    const checkout = await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
 
     const order = checkout.order;
     const inventoryLines: InventoryLine[] = order.items.map((item) => ({
@@ -201,8 +201,11 @@ export class CheckoutsService extends TransactionalRepository {
     const checkout = await this.get({
       id: checkoutId,
       visitorSessionId,
-      status: CheckoutStatus.InProgress,
     });
+
+    if (checkout.status !== CheckoutStatus.Active) {
+      throw new CheckoutInactiveException(checkout.id, checkout.status);
+    }
 
     checkout.status = CheckoutStatus.Cancelled;
     checkout.cancelledReason = reason;
@@ -218,8 +221,12 @@ export class CheckoutsService extends TransactionalRepository {
     return await this.get({ id: checkoutId, visitorSessionId });
   }
 
-  async getInProgressCheckout(where: FindOptionsWhere<Checkout>): Promise<Checkout> {
-    const checkout = await this.get({ ...where, status: CheckoutStatus.InProgress });
+  async getActiveCheckout(where: FindOptionsWhere<Checkout>): Promise<Checkout> {
+    const checkout = await this.get(where);
+
+    if (checkout.status !== CheckoutStatus.Active) {
+      throw new CheckoutInactiveException(checkout.id, checkout.status);
+    }
 
     if (checkout.isHoldElapsed) {
       const cancelled = await this.cancelCheckout(
@@ -251,7 +258,7 @@ export class CheckoutsService extends TransactionalRepository {
   async expireStaleCheckouts(): Promise<void> {
     const stale = await this.checkoutsRepository.find({
       where: {
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         expiresAt: LessThanOrEqual(new Date()),
       },
     });
@@ -410,7 +417,7 @@ export class CheckoutsService extends TransactionalRepository {
   }
 
   private async attachCheckoutAggregates(checkout: Checkout): Promise<Checkout> {
-    if (checkout.status !== CheckoutStatus.InProgress) {
+    if (checkout.status !== CheckoutStatus.Active) {
       return checkout;
     }
 

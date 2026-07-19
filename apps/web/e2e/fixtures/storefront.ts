@@ -299,7 +299,7 @@ export function createCheckoutFromCart(cart: CartResponseDto): WireCheckout {
     order,
     visitorSessionId: MOCK_IDS.visitorSession,
     visitorSession,
-    status: 'in_progress',
+    status: 'active',
     cancelledReason: null,
     completedAt: null,
     expiresAt,

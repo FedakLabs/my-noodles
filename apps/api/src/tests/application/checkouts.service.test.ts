@@ -192,7 +192,7 @@ describe('CheckoutsService', () => {
     expect(itemSave).toHaveBeenCalled();
     expect(checkoutSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         orderId: 'order-1',
         visitorSessionId: 'visitor-1',
       }),
@@ -204,7 +204,7 @@ describe('CheckoutsService', () => {
       id: 'checkout-existing',
       orderId: 'order-existing',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: futureExpiresAt(),
@@ -273,7 +273,7 @@ describe('CheckoutsService', () => {
       asCheckout({
         id: 'checkout-1',
         orderId: 'order-1',
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         updatedAt: new Date('2025-06-20T10:05:00.000Z'),
         createdAt: new Date('2025-06-20T10:00:00.000Z'),
         expiresAt,
@@ -285,12 +285,12 @@ describe('CheckoutsService', () => {
       }),
     ]);
 
-    const result = await service.listCheckouts('visitor-1', CheckoutStatus.InProgress);
+    const result = await service.listCheckouts('visitor-1', CheckoutStatus.Active);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       id: 'checkout-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       expiresAt,
       order: {
         items: [{ qty: 2 }, { qty: 1 }],
@@ -330,12 +330,12 @@ describe('CheckoutsService', () => {
     expect(result.cancelledReason).toBe('user');
   });
 
-  it('returns checkout detail when hold has elapsed but status is still in progress', async () => {
+  it('returns checkout detail when hold has elapsed but status is still active', async () => {
     const elapsed = asCheckout({
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: pastExpiresAt(),
@@ -356,7 +356,7 @@ describe('CheckoutsService', () => {
 
     const result = await service.get({ id: 'checkout-1', visitorSessionId: 'visitor-1' });
 
-    expect(result.status).toBe(CheckoutStatus.InProgress);
+    expect(result.status).toBe(CheckoutStatus.Active);
     expect(result.isHoldElapsed).toBe(true);
     expect(checkoutSave).not.toHaveBeenCalled();
   });
@@ -367,7 +367,7 @@ describe('CheckoutsService', () => {
         id: 'checkout-1',
         orderId: 'order-1',
         visitorSessionId: 'visitor-1',
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         cancelledReason: null,
         createdAt: new Date(),
         expiresAt: futureExpiresAt(),
@@ -403,7 +403,7 @@ describe('CheckoutsService', () => {
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: futureExpiresAt(),
@@ -446,7 +446,7 @@ describe('CheckoutsService', () => {
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: futureExpiresAt(),
@@ -484,6 +484,39 @@ describe('CheckoutsService', () => {
     expect(restoreItemsFromOrder).not.toHaveBeenCalled();
   });
 
+  it('rejects cancel when checkout exists but is not active', async () => {
+    checkoutsFindOne.mockResolvedValue(
+      asCheckout({
+        id: 'checkout-1',
+        orderId: 'order-1',
+        visitorSessionId: 'visitor-1',
+        status: CheckoutStatus.Completed,
+        cancelledReason: null,
+        createdAt: new Date(),
+        expiresAt: futureExpiresAt(),
+        order: {
+          id: 'order-1',
+          status: OrderStatus.New,
+          items: [],
+          delivery: null,
+          totalMinor: 1000,
+          currency: 'UAH',
+          firstName: null,
+          lastName: null,
+          phone: null,
+          createdAt: new Date(),
+        },
+      }),
+    );
+
+    await expect(
+      service.cancelCheckout('checkout-1', 'visitor-1', CheckoutCancelledReason.User),
+    ).rejects.toBeInstanceOf(CheckoutInactiveException);
+
+    expect(checkoutSave).not.toHaveBeenCalled();
+    expect(restoreItemsFromOrder).not.toHaveBeenCalled();
+  });
+
   it('no-ops stale expiry when there are no hold-elapsed checkouts', async () => {
     checkoutsFind.mockResolvedValue([]);
 
@@ -498,7 +531,7 @@ describe('CheckoutsService', () => {
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date('2020-01-01'),
       expiresAt: pastExpiresAt(),
@@ -533,7 +566,7 @@ describe('CheckoutsService', () => {
         id: 'checkout-1',
         orderId: 'order-1',
         visitorSessionId: 'visitor-1',
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         cancelledReason: null,
         createdAt: new Date(),
         expiresAt: futureExpiresAt(),
@@ -587,7 +620,7 @@ describe('CheckoutsService', () => {
           id: 'checkout-1',
           orderId: 'order-1',
           visitorSessionId: 'visitor-1',
-          status: CheckoutStatus.InProgress,
+          status: CheckoutStatus.Active,
           cancelledReason: null,
           createdAt: new Date(),
           expiresAt: futureExpiresAt(),
@@ -682,7 +715,7 @@ describe('CheckoutsService', () => {
       id: 'checkout-1',
       orderId: 'order-1',
       visitorSessionId: 'visitor-1',
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: pastExpiresAt(),

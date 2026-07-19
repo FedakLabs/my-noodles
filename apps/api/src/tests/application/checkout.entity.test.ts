@@ -10,7 +10,7 @@ function checkout(partial: Partial<Checkout>): Checkout {
 describe('Checkout entity', () => {
   it('marks past expiresAt as hold-elapsed', () => {
     const entity = checkout({
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       expiresAt: new Date(Date.now() - 1),
     });
 
@@ -42,7 +42,7 @@ describe('Checkout entity', () => {
 
   it('keeps active checkouts before expiresAt', () => {
     const entity = checkout({
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       expiresAt: new Date(Date.now() + 60_000),
     });
 
@@ -51,7 +51,7 @@ describe('Checkout entity', () => {
   });
 
   it('sets expiresAt on insert when missing', () => {
-    const entity = checkout({ status: CheckoutStatus.InProgress });
+    const entity = checkout({ status: CheckoutStatus.Active });
     const before = Date.now();
 
     entity.setDefaultExpiresAt();
@@ -62,7 +62,7 @@ describe('Checkout entity', () => {
 
   it('keeps an explicit expiresAt on insert', () => {
     const expiresAt = new Date('2020-01-01');
-    const entity = checkout({ status: CheckoutStatus.InProgress, expiresAt });
+    const entity = checkout({ status: CheckoutStatus.Active, expiresAt });
 
     entity.setDefaultExpiresAt();
 

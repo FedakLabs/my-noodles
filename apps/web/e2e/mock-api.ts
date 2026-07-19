@@ -33,12 +33,12 @@ const PORT = Number(process.env.PORT ?? 3001);
 
 let cart: CartResponseDto = emptyCart();
 let checkout: WireCheckout | null = null;
-let inProgressCheckouts: WireCheckout[] = [];
+let activeCheckouts: WireCheckout[] = [];
 
 function resetStore(): void {
   cart = emptyCart();
   checkout = null;
-  inProgressCheckouts = [];
+  activeCheckouts = [];
 }
 
 function corsHeaders(req: IncomingMessage): Record<string, string> {
@@ -161,9 +161,9 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
   if (req.method === 'GET' && pathname === '/api/checkouts') {
     const status = url.searchParams.get('status');
     const items =
-      status === 'in_progress'
-        ? inProgressCheckouts
-        : inProgressCheckouts.filter((entry) => !status || entry.status === status);
+      status === 'active'
+        ? activeCheckouts
+        : activeCheckouts.filter((entry) => !status || entry.status === status);
     sendJson(req, res, 200, items);
     return;
   }
@@ -180,7 +180,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
     }
 
     checkout = createCheckoutFromCart(cart);
-    inProgressCheckouts = [checkout];
+    activeCheckouts = [checkout];
     cart = emptyCart();
     setVisitorCookie(res);
     sendJson(req, res, 201, checkout);
@@ -208,7 +208,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
         return;
       }
       checkout = patchCheckoutReceiver(checkout, body);
-      inProgressCheckouts = checkout.status === 'in_progress' ? [checkout] : [];
+      activeCheckouts = checkout.status === 'active' ? [checkout] : [];
       sendJson(req, res, 200, checkout);
     });
     return;
@@ -221,7 +221,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
         return;
       }
       checkout = patchCheckoutDelivery(checkout, body);
-      inProgressCheckouts = checkout.status === 'in_progress' ? [checkout] : [];
+      activeCheckouts = checkout.status === 'active' ? [checkout] : [];
       sendJson(req, res, 200, checkout);
     });
     return;
@@ -235,7 +235,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
       }
       const order = submitOrder(checkout);
       checkout = { ...checkout, status: 'completed', completedAt: new Date().toISOString() };
-      inProgressCheckouts = [];
+      activeCheckouts = [];
       sendJson(req, res, 201, order);
     });
     return;
@@ -247,7 +247,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
       return;
     }
     checkout = cancelCheckout(checkout, 'user');
-    inProgressCheckouts = [];
+    activeCheckouts = [];
     sendJson(req, res, 200, checkout);
     return;
   }

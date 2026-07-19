@@ -35,7 +35,7 @@ describe('InventoryService', () => {
     );
   });
 
-  it('returns available quantity minus in_progress checkout reservations', async () => {
+  it('returns available quantity minus active checkout reservations', async () => {
     productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 10 });
     orderItemsFind.mockResolvedValue([{ productId: 'product-1', qty: 3 }]);
 
@@ -86,7 +86,7 @@ describe('InventoryService', () => {
     expect(productsSave).toHaveBeenCalledWith(product);
   });
 
-  it('filters reservations by in_progress checkout with unexpired expiresAt', async () => {
+  it('filters reservations by active checkout with unexpired expiresAt', async () => {
     productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 4 });
     orderItemsFind.mockResolvedValue([]);
 
@@ -96,7 +96,7 @@ describe('InventoryService', () => {
       { where: { order: { checkout: { status: CheckoutStatus; expiresAt: unknown } } } },
     ];
 
-    expect(findOptions.where.order.checkout.status).toBe(CheckoutStatus.InProgress);
+    expect(findOptions.where.order.checkout.status).toBe(CheckoutStatus.Active);
     expect(findOptions.where.order.checkout.expiresAt).toBeDefined();
   });
 });

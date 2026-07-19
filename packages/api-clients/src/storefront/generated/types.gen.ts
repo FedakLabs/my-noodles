@@ -231,20 +231,14 @@ export type Checkout = {
      * Response-only — set by `CheckoutsService.attachCheckoutAggregates`.
      */
     deliveryEstimate?: OrderDeliveryEstimateDto | null;
-    /**
-     * True when `expiresAt` is at or before now (clock only — ignores status).
-     */
-    isHoldElapsed: boolean;
-    /**
-     * True when the checkout was cancelled because the hold expired.
-     */
     isExpired: boolean;
+    isHoldElapsed: boolean;
     id: string;
     orderId: string;
     order: Order;
     visitorSessionId: string;
     visitorSession: VisitorSession;
-    status: 'in_progress' | 'completed' | 'cancelled';
+    status: 'active' | 'completed' | 'cancelled';
     cancelledReason: 'user' | 'expired';
     completedAt: string | null;
     expiresAt: string;
@@ -272,7 +266,7 @@ export type Order = {
 };
 
 export const CheckoutStatus = {
-    IN_PROGRESS: 'in_progress',
+    ACTIVE: 'active',
     COMPLETED: 'completed',
     CANCELLED: 'cancelled'
 } as const;
@@ -320,6 +314,14 @@ export type SubmitCheckoutDto = {
     delivery: CreateOrderDeliveryDto;
 };
 
+export const CheckoutCancelledReason = { USER: 'user', EXPIRED: 'expired' } as const;
+
+export type CheckoutCancelledReason = typeof CheckoutCancelledReason[keyof typeof CheckoutCancelledReason];
+
+export type CancelCheckoutDto = {
+    reason: CheckoutCancelledReason;
+};
+
 export type CartItem = {
     id: string;
     visitorSessionId: string;
@@ -358,7 +360,7 @@ export type AddCartItemDto = {
 
 export type SetCartItemQtyDto = {
     /**
-     * Absolute quantity to set for the cart line
+     * Absolute quantity to set for the cart line (0 removes the line)
      */
     qty: number;
 };
@@ -700,10 +702,6 @@ export type CheckoutsControllerStartCheckoutResponses = {
 };
 
 export type CheckoutsControllerStartCheckoutResponse = CheckoutsControllerStartCheckoutResponses[keyof CheckoutsControllerStartCheckoutResponses];
-
-export type CancelCheckoutDto = {
-    reason: 'user' | 'expired';
-};
 
 export type CheckoutsControllerCancelCheckoutData = {
     body: CancelCheckoutDto;

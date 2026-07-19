@@ -1,7 +1,7 @@
 /**
  * Meest Public `/geo_regions` is currently unavailable (status 0 / empty result).
  * District rows still expose stable `region_id` values — map them to UA oblast names
- * so city labels can include oblast for disambiguation.
+ * so locality `reg` can be filled when the live endpoint returns nothing.
  */
 export const MEEST_REGION_NAMES_UA: Readonly<Record<string, string>> = {
   'd15e3018-60b0-11de-be1e-0030485903e8': 'АВТОНОМНА РЕСПУБЛІКА КРИМ',

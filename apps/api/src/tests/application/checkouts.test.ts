@@ -210,7 +210,7 @@ describe('checkouts (e2e)', () => {
     expect(response.body).toMatchObject({
       id: checkoutId,
       orderId,
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       order: {
         totalMinor: 9_900,
         currency: 'UAH',
@@ -226,12 +226,12 @@ describe('checkouts (e2e)', () => {
     await request(server).post('/api/checkouts').expect(400);
   });
 
-  it('GET /api/checkouts?status=in_progress lists visitor checkouts', async () => {
+  it('GET /api/checkouts?status=active lists visitor checkouts', async () => {
     checkoutsFind.mockResolvedValue([
       asCheckout({
         id: checkoutId,
         orderId,
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         updatedAt: new Date('2025-06-20T10:05:00.000Z'),
         createdAt: new Date('2025-06-20T10:00:00.000Z'),
         expiresAt: futureExpiresAt(),
@@ -245,13 +245,13 @@ describe('checkouts (e2e)', () => {
 
     const server = apiHttpServer(app);
 
-    const response = await request(server).get('/api/checkouts?status=in_progress').expect(200);
+    const response = await request(server).get('/api/checkouts?status=active').expect(200);
 
     const body = response.body as Array<{ id: string; status: string; order: { items: unknown[] } }>;
     expect(body).toHaveLength(1);
     expect(body[0]).toMatchObject({
       id: checkoutId,
-      status: CheckoutStatus.InProgress,
+      status: CheckoutStatus.Active,
       order: { items: [{ qty: 1 }] },
     });
   });
@@ -298,7 +298,7 @@ describe('checkouts (e2e)', () => {
         id: checkoutId,
         orderId,
         visitorSessionId: visitorId,
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         cancelledReason: null,
         createdAt: new Date(),
         expiresAt: futureExpiresAt(),
@@ -334,7 +334,7 @@ describe('checkouts (e2e)', () => {
           id: checkoutId,
           orderId,
           visitorSessionId: visitorId,
-          status: CheckoutStatus.InProgress,
+          status: CheckoutStatus.Active,
           cancelledReason: null,
           createdAt: new Date(),
           expiresAt: futureExpiresAt(),
@@ -357,7 +357,7 @@ describe('checkouts (e2e)', () => {
           id: checkoutId,
           orderId,
           visitorSessionId: visitorId,
-          status: CheckoutStatus.InProgress,
+          status: CheckoutStatus.Active,
           cancelledReason: null,
           createdAt: new Date(),
           expiresAt: futureExpiresAt(),
@@ -400,7 +400,7 @@ describe('checkouts (e2e)', () => {
         id: checkoutId,
         orderId,
         visitorSessionId: visitorId,
-        status: CheckoutStatus.InProgress,
+        status: CheckoutStatus.Active,
         cancelledReason: null,
         createdAt: new Date(),
         expiresAt: futureExpiresAt(),
@@ -436,7 +436,7 @@ describe('checkouts (e2e)', () => {
           id: checkoutId,
           orderId,
           visitorSessionId: visitorId,
-          status: CheckoutStatus.InProgress,
+          status: CheckoutStatus.Active,
           cancelledReason: null,
           createdAt: new Date(),
           expiresAt: futureExpiresAt(),
@@ -459,7 +459,7 @@ describe('checkouts (e2e)', () => {
           id: checkoutId,
           orderId,
           visitorSessionId: visitorId,
-          status: CheckoutStatus.InProgress,
+          status: CheckoutStatus.Active,
           cancelledReason: null,
           createdAt: new Date(),
           expiresAt: futureExpiresAt(),

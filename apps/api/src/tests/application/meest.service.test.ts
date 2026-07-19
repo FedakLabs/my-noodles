@@ -65,34 +65,23 @@ describe('MeestService', () => {
     expect(cities).toEqual([{ ref: 'city-ivanivka', name: 'село Іванівка, Кременчуцький' }]);
   });
 
-  it('resolves oblast from d_id via geo directories when reg is empty', async () => {
+  it('uses region already filled by PublicMeestApi.searchLocalities', async () => {
     const searchLocalities = jest.fn().mockResolvedValue([
       {
         n_ua: 'Броварі',
         t_ua: 'село',
         city_id: 'city-brovary',
-        reg: '',
+        reg: 'ТЕРНОПІЛЬСЬКА',
         dis: 'Чортківський',
         d_id: 'district-chortkiv',
       },
     ]);
-    const getDistricts = jest.fn().mockResolvedValue([
-      {
-        district_id: 'district-chortkiv',
-        region_id: 'd15e302b-60b0-11de-be1e-0030485903e8',
-        ua: 'Чортківський',
-      },
-    ]);
-    // Public `/geo_regions` is currently empty — enrichment should still work via static map.
-    const getRegions = jest.fn().mockResolvedValue([]);
-    const meestApi = { searchLocalities, getDistricts, getRegions } as unknown as PublicMeestApi;
+    const meestApi = { searchLocalities } as unknown as PublicMeestApi;
 
     const service = new MeestService(meestApi);
     const cities = await service.searchCities('Броварі');
 
     expect(cities).toEqual([{ ref: 'city-brovary', name: 'село Броварі, Чортківський, ТЕРНОПІЛЬСЬКА' }]);
-    expect(getDistricts).toHaveBeenCalledTimes(1);
-    expect(getRegions).toHaveBeenCalledTimes(1);
   });
 
   it('formats warehouse name like Nova Poshta (street in name, city in address)', async () => {

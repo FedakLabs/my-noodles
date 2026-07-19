@@ -194,7 +194,7 @@ return this.withTransaction(async () => {
   const checkout = this.checkoutsRepository.create({
     orderId: savedOrder.id,
     visitorSessionId,
-    status: CheckoutStatus.InProgress,
+    status: CheckoutStatus.Active,
   });
   return this.checkoutsRepository.save(checkout);
 });
@@ -213,7 +213,7 @@ Always instantiate a new entity with `repository.create()` before passing it to 
 const checkout = checkoutRepository.create({
   orderId: order.id,
   visitorSessionId,
-  status: CheckoutStatus.InProgress,
+  status: CheckoutStatus.Active,
 });
 
 await checkoutRepository.save(checkout);

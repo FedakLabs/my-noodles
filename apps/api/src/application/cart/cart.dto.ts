@@ -26,12 +26,13 @@ export class AddCartItemDto {
 
 export class SetCartItemQtyDto {
   /**
-   * Absolute quantity to set for the cart line
+   * Absolute quantity to set for the cart line (0 removes the line)
    * @example 3
    */
   @TransformToInt()
   @IsInt()
-  @Min(1)
+  @Min(0)
+  @ApiProperty({ type: Number, minimum: 0 })
   qty!: number;
 }
 

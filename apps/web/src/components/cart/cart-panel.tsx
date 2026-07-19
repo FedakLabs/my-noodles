@@ -12,7 +12,7 @@ import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
 import { useCartQuery } from '@/api/cart';
-import { useInProgressCheckouts, useStartCheckout } from '@/api/checkouts';
+import { useActiveCheckouts, useStartCheckout } from '@/api/checkouts';
 import { type CartLine, useCartActions, useCartItems, useCartTotalMinor } from '@/hooks/cart';
 import { resolveCartErrorMessage } from '@/hooks/cart/cart-error-messages';
 import { useCurrency } from '@/hooks/currency';
@@ -31,7 +31,7 @@ export function CartPanel({ onClose }: CartPanelProps) {
   const { formatCurrency } = useCurrency();
   const items = useCartItems();
   const totalMinor = useCartTotalMinor();
-  const { checkouts: inProgressCheckouts } = useInProgressCheckouts();
+  const { checkouts: activeCheckouts } = useActiveCheckouts();
   const { cart } = useCartQuery();
   const {
     setQuantity,
@@ -107,9 +107,9 @@ export function CartPanel({ onClose }: CartPanelProps) {
         ) : null}
 
         <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2, display: 'flex', flexDirection: 'column' }}>
-          {inProgressCheckouts.length > 0 ? (
+          {activeCheckouts.length > 0 ? (
             <Stack spacing={0}>
-              {inProgressCheckouts.map((checkout) => (
+              {activeCheckouts.map((checkout) => (
                 <CartCheckoutRow key={checkout.id} checkout={checkout} onClose={onClose} />
               ))}
             </Stack>
@@ -181,7 +181,7 @@ export function CartPanel({ onClose }: CartPanelProps) {
               }
               onClick={handleStartCheckout}
             >
-              {inProgressCheckouts.length > 0 ? t('inProgress.addToCheckout') : t('checkout')}
+              {activeCheckouts.length > 0 ? t('active.addToCheckout') : t('checkout')}
             </Button>
           </Stack>
         ) : null}
@@ -245,7 +245,7 @@ function CartLineRow({
             size="small"
             aria-label={t('decrease')}
             aria-busy={isUpdating}
-            disabled={lineBusy || item.qty <= 1}
+            disabled={lineBusy}
             onClick={onDecrease}
             sx={{ width: 28, height: 28 }}
           >

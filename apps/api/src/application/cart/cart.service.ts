@@ -82,6 +82,10 @@ export class CartService extends TransactionalRepository {
       throw new CartItemNotFoundException(productId);
     }
 
+    if (qty <= 0) {
+      return await this.removeItem(visitor, productId);
+    }
+
     await this.withTransaction(async () => {
       const available = await this.inventoryService.getAvailableQty(productId);
       this.assertQtyWithinAvailable(productId, qty, available);

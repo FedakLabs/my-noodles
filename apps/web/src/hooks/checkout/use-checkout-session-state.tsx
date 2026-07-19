@@ -19,7 +19,7 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
   const queryClient = useQueryClient();
   const t = useTranslations('checkout');
 
-  const isInProgress = checkout?.status === 'in_progress';
+  const isActive = checkout?.status === 'active';
   const isCompleted = checkout?.status === 'completed';
 
   const errorCode: ApiErrorCode | undefined = error ? getApiErrorCode(error) : undefined;
@@ -48,7 +48,7 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
   }, [checkoutId, queryClient]);
 
   return {
-    isInProgress,
+    isActive,
     isCompleted,
     isExpired,
     isInventoryChanged,

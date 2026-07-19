@@ -18,7 +18,7 @@ type CartCheckoutRowProps = {
 };
 
 export function CartCheckoutRow({ checkout, onClose }: CartCheckoutRowProps) {
-  const t = useTranslations('cart.inProgress');
+  const t = useTranslations('cart.active');
   const { formatCurrency } = useCurrency();
   const { cancelCheckout, cancelCheckoutIsPending } = useCancelCheckout();
 

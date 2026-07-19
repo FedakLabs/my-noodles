@@ -13,19 +13,6 @@ export type ClientMeestApiOptions = {
 
 const DEFAULT_CLIENT_BASE_URL = 'https://api.meest.com/v3.0/openAPI';
 
-/**
- * Meest Client (openAPI) wrapper: hey-api generated SDK + {@link FetchApiClient.fetch}.
- *
- * @example
- * ```ts
- * const meest = new ClientMeestApi({
- *   token: () => process.env.MEEST_CLIENT_TOKEN,
- * });
- *
- * const session = await meest.authenticate('login', 'password');
- * const cities = await meest.searchCities('Льв%');
- * ```
- */
 export class ClientMeestApi extends FetchApiClient {
   readonly client: Client;
 
