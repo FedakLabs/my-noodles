@@ -15,13 +15,5 @@
   "muteVideo": "Вимкнути звук",
   "unmuteVideo": "Увімкнути звук",
   "share": "Поділитися товаром",
-  "shareText": "Подивись {name}!",
-  "shareNative": "Поділитися…",
-  "shareCopyLink": "Скопіювати посилання",
-  "shareLinkCopied": "Посилання скопійовано",
-  "shareLinkCopyFailed": "Не вдалося скопіювати посилання",
-  "shareTelegram": "Telegram",
-  "shareFacebook": "Facebook",
-  "shareWhatsapp": "WhatsApp",
-  "shareViber": "Viber"
+  "shareText": "Подивись {name}!"
 }

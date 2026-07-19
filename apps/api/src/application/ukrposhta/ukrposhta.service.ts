@@ -3,6 +3,7 @@ import {
   type UkrposhtaCityRow,
   type UkrposhtaPostOfficeRow,
 } from '@my-noodles/api-clients/ukrposhta';
+import { LocaleContext } from '@my-noodles/api-lib/locale';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
@@ -12,7 +13,7 @@ export class UkrposhtaService {
   constructor(@Inject(UkrposhtaApi) private readonly ukrposhtaApi: UkrposhtaApi) {}
 
   async searchCities(query: string): Promise<DeliveryCity[]> {
-    const cities = await this.ukrposhtaApi.searchCities(query);
+    const cities = await this.ukrposhtaApi.searchCities({ cityUa: query });
     const seen = new Set<string>();
 
     return cities
@@ -33,25 +34,26 @@ export class UkrposhtaService {
   }
 
   async searchWarehouses(cityRef: string, query?: string): Promise<DeliveryWarehouse[]> {
-    const offices = await this.ukrposhtaApi.getPostOffices(cityRef);
+    const offices = await this.ukrposhtaApi.getPostOffices({ cityId: cityRef });
     const normalizedQuery = query?.trim().toLowerCase();
 
     return offices
       .filter((office) => matchesUkrposhtaWarehouseQuery(office, normalizedQuery))
       .map((office) => ({
-        ref: String(office.ID),
+        ref: String(office.POSTOFFICE_ID),
         number: extractUkrposhtaWarehouseNumber(office),
-        name: office.PO_LONG?.trim() || office.PO_SHORT?.trim() || String(office.ID),
-        address: office.ADDRESS?.trim() || undefined,
+        name: office.POSTOFFICE_UA?.trim() || String(office.POSTOFFICE_ID),
+        address: formatUkrposhtaWarehouseAddress(office),
       }));
   }
 }
 
 export function formatUkrposhtaCityName(city: UkrposhtaCityRow): string {
+  const preferEn = LocaleContext.get() === 'en';
   const type = city.SHORTCITYTYPE_UA?.trim();
-  const name = city.CITY_UA.trim();
-  const region = city.REGION_UA?.trim();
-  const district = city.DISTRICT_UA?.trim();
+  const name = (preferEn ? city.CITY_EN : city.CITY_UA)?.trim() || city.CITY_UA.trim();
+  const region = (preferEn ? city.REGION_EN : city.REGION_UA)?.trim() || city.REGION_UA?.trim();
+  const district = (preferEn ? city.DISTRICT_EN : city.DISTRICT_UA)?.trim() || city.DISTRICT_UA?.trim();
   const cityLabel = type ? `${type} ${name}` : name;
 
   if (region && district && district !== region) {
@@ -66,16 +68,18 @@ export function formatUkrposhtaCityName(city: UkrposhtaCityRow): string {
 }
 
 export function extractUkrposhtaWarehouseNumber(office: UkrposhtaPostOfficeRow): string {
-  const shortName = office.PO_SHORT?.trim();
+  return String(office.POSTCODE ?? office.POSTOFFICE_ID);
+}
 
-  if (shortName) {
-    const match = shortName.match(/(\d+)/);
-    if (match?.[1]) {
-      return match[1];
-    }
+export function formatUkrposhtaWarehouseAddress(office: UkrposhtaPostOfficeRow): string | undefined {
+  const street = office.STREET_UA_VPZ?.trim();
+  const house = office.HOUSENUMBER != null ? String(office.HOUSENUMBER).trim() : '';
+
+  if (street && house) {
+    return `${street}, ${house}`;
   }
 
-  return String(office.POSTINDEX ?? office.ID);
+  return street || undefined;
 }
 
 function matchesUkrposhtaWarehouseQuery(office: UkrposhtaPostOfficeRow, query?: string): boolean {
@@ -83,7 +87,13 @@ function matchesUkrposhtaWarehouseQuery(office: UkrposhtaPostOfficeRow, query?: 
     return true;
   }
 
-  const haystack = [office.PO_SHORT, office.PO_LONG, office.POSTINDEX, office.ADDRESS]
+  const haystack = [
+    office.POSTOFFICE_UA,
+    office.POSTCODE,
+    office.STREET_UA_VPZ,
+    office.HOUSENUMBER,
+    office.TYPE_LONG,
+  ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();

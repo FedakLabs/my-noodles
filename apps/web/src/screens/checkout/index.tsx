@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 
 import { useCheckout } from '@/api/checkouts';
 import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
+import { CheckoutCompletedState } from '@/components/checkout/checkout-completed-state';
 import { CheckoutForm } from '@/components/checkout/checkout-form';
 import { PageContainer } from '@/components/layout/page-container';
 import { useBeginCheckout } from '@/hooks/analytics';
@@ -51,6 +52,8 @@ export function CheckoutScreen({ checkoutId }: CheckoutScreenProps) {
     content = (
       <CheckoutForm checkoutId={checkoutId} checkout={checkout} onHoldExpired={session.onHoldExpired} />
     );
+  } else if (session.isCompleted) {
+    content = <CheckoutCompletedState checkout={checkout} />;
   } else if (session.isExpired) {
     content = <CheckoutCancelledState title={t('inactive.title')} description={session.expiredDescription} />;
   } else {
@@ -59,8 +62,15 @@ export function CheckoutScreen({ checkoutId }: CheckoutScreenProps) {
 
   return (
     <PageContainer>
-      <Stack spacing={3} sx={{ width: '100%', maxWidth: { mobile: 480, desktop: 'none' }, mx: 'auto' }}>
-        <Typography variant="h4">{t('title')}</Typography>
+      <Stack
+        spacing={3}
+        sx={{
+          width: '100%',
+          maxWidth: session.isCompleted ? { mobile: 480, desktop: 640 } : { mobile: 480, desktop: 'none' },
+          mx: 'auto',
+        }}
+      >
+        {session.isCompleted ? null : <Typography variant="h4">{t('title')}</Typography>}
         {content}
       </Stack>
     </PageContainer>

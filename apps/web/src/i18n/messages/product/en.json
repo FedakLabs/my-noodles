@@ -15,13 +15,5 @@
   "muteVideo": "Mute video",
   "unmuteVideo": "Unmute video",
   "share": "Share product",
-  "shareText": "Check out {name}!",
-  "shareNative": "Share…",
-  "shareCopyLink": "Copy link",
-  "shareLinkCopied": "Link copied",
-  "shareLinkCopyFailed": "Could not copy link",
-  "shareTelegram": "Telegram",
-  "shareFacebook": "Facebook",
-  "shareWhatsapp": "WhatsApp",
-  "shareViber": "Viber"
+  "shareText": "Check out {name}!"
 }

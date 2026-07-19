@@ -20,6 +20,7 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
   const t = useTranslations('checkout');
 
   const isInProgress = checkout?.status === 'in_progress';
+  const isCompleted = checkout?.status === 'completed';
   const isExpiredHold = checkout?.status === 'cancelled' && checkout.cancelledReason === 'expired';
 
   const errorCode: ApiErrorCode | undefined = error ? getApiErrorCode(error) : undefined;
@@ -50,6 +51,7 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
 
   return {
     isInProgress,
+    isCompleted,
     isExpired,
     isNotInProgressBySubmit,
     isInventoryChanged,

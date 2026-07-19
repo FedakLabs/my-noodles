@@ -8,8 +8,7 @@ import { UkrposhtaService } from './ukrposhta.service';
   providers: [
     {
       provide: UkrposhtaApi,
-      useFactory: () =>
-        new UkrposhtaApi({ apiBaseUrl: ukrposhtaConfig.apiBaseUrl, apiKey: ukrposhtaConfig.apiKey }),
+      useFactory: () => new UkrposhtaApi({ apiBaseUrl: ukrposhtaConfig.apiBaseUrl }),
     },
     UkrposhtaService,
   ],

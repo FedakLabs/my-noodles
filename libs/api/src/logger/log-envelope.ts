@@ -3,7 +3,7 @@ import { context, trace } from '@opentelemetry/api';
 import { LogMetadata } from './log-metadata';
 import type { Severity } from './severity';
 
-export type TraceContext = Readonly<{
+type TraceContext = Readonly<{
   traceId?: string;
   spanId?: string;
 }>;

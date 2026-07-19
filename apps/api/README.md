@@ -24,7 +24,7 @@ docker compose up -d postgres
 cp apps/api/.env.example apps/api/.env
 # Fill required secrets in apps/api/.env:
 #   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-#   NOVA_POSHTA_API_KEY, UKRPOSHTA_API_KEY
+#   NOVA_POSHTA_API_KEY
 
 # 4. Apply migrations
 pnpm nx run api:migration:run

@@ -60,7 +60,7 @@ export class NovaPoshtaApi extends ApiClient {
     }
 
     const message = body.errors?.join('; ') ?? 'Nova Poshta API request failed';
-    throw new ApiClientException(message, status, body);
+    throw new ApiClientException(message, body, status);
   }
 
   async getCities(query: string, page = 1, limit = 50): Promise<NovaPoshtaDirectoryCityRow[]> {

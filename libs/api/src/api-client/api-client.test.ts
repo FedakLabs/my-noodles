@@ -60,7 +60,21 @@ describe('ApiClient logging', () => {
     const errorSpy = jest.spyOn(logger, 'error').mockImplementation((() => logger) as never);
 
     const client = new TestApiClient();
-    await expect(client.getJson('/missing')).rejects.toBeInstanceOf(ApiClientException);
+    const error = await client.getJson('/missing').catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(ApiClientException);
+    expect(error).toMatchObject({
+      status: 404,
+      code: 'api_client_error',
+      message: 'Not found',
+      payload: { message: 'Not found' },
+    });
+    expect((error as ApiClientException).toBody()).toEqual({
+      status: 404,
+      code: 'api_client_error',
+      message: 'Not found',
+      payload: { message: 'Not found' },
+    });
 
     expect(infoSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).not.toHaveBeenCalled();
@@ -72,10 +86,12 @@ describe('ApiClient logging', () => {
   });
 
   it('emits one outgoing ERROR manifest record when assertResponseOk fails on HTTP 200', async () => {
+    const responseBody = { success: false, errors: ['FindByString is not specified'] };
+
     globalThis.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      text: async () => JSON.stringify({ success: false, errors: ['FindByString is not specified'] }),
+      text: async () => JSON.stringify(responseBody),
     }) as unknown as typeof fetch;
 
     const infoSpy = jest.spyOn(logger, 'info').mockImplementation((() => logger) as never);
@@ -93,7 +109,7 @@ describe('ApiClient logging', () => {
           'success' in body &&
           (body as { success: unknown }).success === false
         ) {
-          throw new ApiClientException('FindByString is not specified', status, body);
+          throw new ApiClientException('FindByString is not specified', body, status);
         }
       }
 
@@ -103,7 +119,21 @@ describe('ApiClient logging', () => {
     }
 
     const client = new RpcClient();
-    await expect(client.call()).rejects.toBeInstanceOf(ApiClientException);
+    const error = await client.call().catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(ApiClientException);
+    expect(error).toMatchObject({
+      status: 200,
+      code: 'api_client_error',
+      message: 'FindByString is not specified',
+      payload: responseBody,
+    });
+    expect((error as ApiClientException).toBody()).toEqual({
+      status: 200,
+      code: 'api_client_error',
+      message: 'FindByString is not specified',
+      payload: responseBody,
+    });
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(infoSpy).not.toHaveBeenCalled();
@@ -111,6 +141,7 @@ describe('ApiClient logging', () => {
     const record = errorSpy.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(record['severity.text']).toBe('ERROR');
     expect(record['attributes.http.responseStatus']).toBe('200');
+    expect(record['attributes.error.name']).toBe('ApiClientException');
     expect(record['attributes.error.message']).toBe('FindByString is not specified');
   });
 
@@ -131,7 +162,21 @@ describe('ApiClient logging', () => {
     }
 
     const client = new RpcClient();
-    await expect(client.call()).rejects.toBeInstanceOf(ApiClientException);
+    const error = await client.call().catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(ApiClientException);
+    expect(error).toMatchObject({
+      status: 502,
+      code: 'api_client_error',
+      message: 'fetch failed',
+      payload: null,
+    });
+    expect((error as ApiClientException).toBody()).toEqual({
+      status: 502,
+      code: 'api_client_error',
+      message: 'fetch failed',
+      payload: null,
+    });
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(infoSpy).not.toHaveBeenCalled();
@@ -140,6 +185,7 @@ describe('ApiClient logging', () => {
     expect(record['severity.text']).toBe('ERROR');
     expect(record['attributes.http.requestType']).toBe('outgoing');
     expect(record['attributes.http.responseStatus']).toBeUndefined();
+    expect(record['attributes.error.name']).toBe('ApiClientException');
     expect(record['attributes.error.message']).toBe('fetch failed');
     expect(String(record.body)).toContain('POST -');
   });

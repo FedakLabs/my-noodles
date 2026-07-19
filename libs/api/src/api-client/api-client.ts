@@ -42,7 +42,9 @@ export abstract class ApiClient {
     let response: Response;
     try {
       response = await fetch(requestUrl, init);
-    } catch (error) {
+    } catch (cause) {
+      const error = new ApiClientException(this.resolveErrorMessage(cause));
+
       this.logOutgoing({
         config,
         url: this.resolveRequestUrl(config),
@@ -50,32 +52,19 @@ export abstract class ApiClient {
         error,
       });
 
-      throw new ApiClientException(this.resolveErrorMessage(error));
+      throw error;
     }
 
     const responseBody = await this.parseResponseBody(response);
     const execTimeMs = getTimingElapsedMs(config);
 
     if (!response.ok) {
-      this.logOutgoing({
-        config,
-        url: requestUrl,
-        execTimeMs,
-        responseStatus: response.status,
-        responseBody,
-        error: responseBody,
-      });
-
-      throw new ApiClientException(
+      const error = new ApiClientException(
         this.resolveErrorMessage(responseBody, response.status),
-        response.status,
         responseBody,
+        response.status,
       );
-    }
 
-    try {
-      this.assertResponseOk(responseBody, response.status);
-    } catch (error) {
       this.logOutgoing({
         config,
         url: requestUrl,
@@ -85,9 +74,27 @@ export abstract class ApiClient {
         error,
       });
 
-      throw error instanceof ApiClientException
-        ? error
-        : new ApiClientException(this.resolveErrorMessage(error), response.status, responseBody);
+      throw error;
+    }
+
+    try {
+      this.assertResponseOk(responseBody, response.status);
+    } catch (cause) {
+      const error =
+        cause instanceof ApiClientException
+          ? cause
+          : new ApiClientException(this.resolveErrorMessage(cause), responseBody, response.status);
+
+      this.logOutgoing({
+        config,
+        url: requestUrl,
+        execTimeMs,
+        responseStatus: response.status,
+        responseBody,
+        error,
+      });
+
+      throw error;
     }
 
     this.logOutgoing({

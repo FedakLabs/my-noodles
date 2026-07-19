@@ -50,7 +50,10 @@
   "success": {
     "title": "Thank you!",
     "description": "We received your order and will confirm shortly.",
-    "backToCatalog": "Back to catalog"
+    "backToCatalog": "Back to catalog",
+    "orderDetails": "Order details",
+    "share": "Share order",
+    "shareText": "My order details"
   },
   "cancelled": {
     "title": "This checkout was cancelled",

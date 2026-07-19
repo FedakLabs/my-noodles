@@ -57,11 +57,11 @@ export type WireCheckout = Omit<Checkout, 'cancelledReason' | 'order'> & {
   order: WireOrder;
 };
 
-export function holdExpiresAt(minutes = 15): string {
+function holdExpiresAt(minutes = 15): string {
   return new Date(Date.now() + minutes * 60 * 1000).toISOString();
 }
 
-export const visitorSession = {
+const visitorSession = {
   id: MOCK_IDS.visitorSession,
   feedExpiresAt: holdExpiresAt(60),
   cartExpiresAt: holdExpiresAt(60),
@@ -69,7 +69,7 @@ export const visitorSession = {
   views: [],
 } as const satisfies VisitorSession;
 
-export const brand = {
+const brand = {
   id: MOCK_IDS.brand,
   slug: 'glico',
   name: 'Glico',
@@ -78,7 +78,7 @@ export const brand = {
   products: [],
 } as const satisfies Brand;
 
-export const country = {
+const country = {
   id: MOCK_IDS.country,
   code: 'TW',
   slug: 'taiwan',
@@ -88,7 +88,7 @@ export const country = {
   products: [],
 } as const satisfies Country;
 
-export const category = {
+const category = {
   id: MOCK_IDS.category,
   slug: 'snacks',
   name: 'Снеки',
@@ -172,7 +172,7 @@ export function emptyCart(): CartResponseDto {
   };
 }
 
-export function createCartItem(qty: number, lineProduct: Product = product): CartItem {
+function createCartItem(qty: number, lineProduct: Product = product): CartItem {
   return {
     id: MOCK_IDS.cartItem,
     visitorSessionId: MOCK_IDS.visitorSession,
@@ -183,7 +183,7 @@ export function createCartItem(qty: number, lineProduct: Product = product): Car
   };
 }
 
-export function cartFromItems(items: CartItem[]): CartResponseDto {
+function cartFromItems(items: CartItem[]): CartResponseDto {
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
   const totalMinor = items.reduce((sum, item) => sum + item.product.priceMinor * item.qty, 0);
 
@@ -231,7 +231,7 @@ type DeliveryEstimateInput = {
   building?: string | null;
 };
 
-export function buildDeliveryEstimate(
+function buildDeliveryEstimate(
   delivery: DeliveryEstimateInput | null | undefined,
 ): OrderDeliveryEstimateDto | null {
   if (!delivery?.city) {

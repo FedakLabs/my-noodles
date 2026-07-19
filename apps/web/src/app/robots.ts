@@ -4,7 +4,7 @@ import { routing } from '@/i18n/routing';
 import { env } from '@/shared/env';
 import { absoluteUrl, localePath } from '@/shared/seo';
 
-const NON_INDEXABLE_PATHS = ['/checkout', '/checkout/success'] as const;
+const NON_INDEXABLE_PATHS = ['/checkout'] as const;
 
 export default function robots(): MetadataRoute.Robots {
   return {

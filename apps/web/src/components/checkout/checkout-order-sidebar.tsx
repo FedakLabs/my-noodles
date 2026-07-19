@@ -43,7 +43,11 @@ export function CheckoutOrderSidebar({ checkout, footer, sticky = false, sx }: C
       </CheckoutOrderCard>
 
       <CheckoutOrderCard aria-label={t('summaryTitle')}>
-        <CheckoutOrderSummary checkout={checkout} footer={footer} />
+        <CheckoutOrderSummary
+          checkout={checkout}
+          shippingCostMinor={checkout.deliveryEstimate?.shippingCostMinor ?? null}
+          footer={footer}
+        />
       </CheckoutOrderCard>
     </Stack>
   );

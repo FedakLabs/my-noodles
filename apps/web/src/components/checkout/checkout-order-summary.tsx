@@ -10,15 +10,15 @@ import { useCurrency } from '@/hooks/currency';
 
 type CheckoutOrderSummaryProps = {
   checkout: Checkout;
+  shippingCostMinor: number | null;
   footer?: ReactNode;
 };
 
-export function CheckoutOrderSummary({ checkout, footer }: CheckoutOrderSummaryProps) {
+export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: CheckoutOrderSummaryProps) {
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
 
   const { totalMinor, grandTotalMinor = totalMinor, currency } = checkout.order;
-  const shippingMinor = checkout.deliveryEstimate?.shippingCostMinor ?? null;
 
   return (
     <Stack spacing={1.5}>
@@ -27,13 +27,13 @@ export function CheckoutOrderSummary({ checkout, footer }: CheckoutOrderSummaryP
         <Typography variant="subtitle2">{formatCurrency(totalMinor, currency)}</Typography>
       </Stack>
 
-      {shippingMinor != null ? (
+      {shippingCostMinor != null ? (
         <>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="body2" color="text.secondary">
               {t('shipping')}
             </Typography>
-            <Typography variant="body2">{formatCurrency(shippingMinor, currency)}</Typography>
+            <Typography variant="body2">{formatCurrency(shippingCostMinor, currency)}</Typography>
           </Stack>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="subtitle2">{t('grandTotal')}</Typography>

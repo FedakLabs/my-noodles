@@ -14,5 +14,15 @@
   "language": {
     "label": "Language",
     "switchTo": "Switch language"
+  },
+  "share": {
+    "native": "Share…",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Could not copy link",
+    "telegram": "Telegram",
+    "facebook": "Facebook",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber"
   }
 }

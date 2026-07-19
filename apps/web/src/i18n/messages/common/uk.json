@@ -14,5 +14,15 @@
   "language": {
     "label": "Мова",
     "switchTo": "Змінити мову"
+  },
+  "share": {
+    "native": "Поділитися…",
+    "copyLink": "Скопіювати посилання",
+    "linkCopied": "Посилання скопійовано",
+    "linkCopyFailed": "Не вдалося скопіювати посилання",
+    "telegram": "Telegram",
+    "facebook": "Facebook",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber"
   }
 }

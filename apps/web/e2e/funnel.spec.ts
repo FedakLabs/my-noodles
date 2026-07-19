@@ -47,7 +47,9 @@ test.describe('discovery funnel', () => {
     await expect(page.getByTestId('checkout-submit')).toBeEnabled();
     await page.getByTestId('checkout-submit').click();
 
-    await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/success$`));
+    await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/[^/]+$`));
     await expect(page.getByRole('heading', { name: uk.checkout.success.title })).toBeVisible();
+    await expect(page.getByText(uk.checkout.sections.receiver)).toBeVisible();
+    await expect(page.getByText('Pocky Matcha')).toBeVisible();
   });
 });

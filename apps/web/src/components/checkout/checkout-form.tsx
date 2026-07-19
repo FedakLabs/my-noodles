@@ -9,12 +9,19 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
 import { PhoneInput } from '@my-noodles/ui';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import type { Checkout } from '@/api/checkouts';
-import { useSubmitCheckout, useUpdateCheckoutDelivery, useUpdateCheckoutReceiver } from '@/api/checkouts';
+import {
+  CheckoutStatus,
+  checkoutsQueryKeys,
+  useSubmitCheckout,
+  useUpdateCheckoutDelivery,
+  useUpdateCheckoutReceiver,
+} from '@/api/checkouts';
 import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
 import { CheckoutDeliveryFields } from '@/components/checkout/checkout-delivery-fields';
 import { CheckoutFormSection } from '@/components/checkout/checkout-form-section';
@@ -27,7 +34,6 @@ import { CheckoutOrderSummary } from '@/components/checkout/checkout-order-summa
 import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCheckoutSessionState } from '@/hooks/checkout';
 import { useViewport } from '@/hooks/layout';
-import { usePendingRouter } from '@/hooks/smooth';
 import { cartLineToGa4Item } from '@/shared/analytics';
 
 import {
@@ -66,7 +72,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   const t = useTranslations('checkout');
   const tItems = useTranslations('checkout.items');
   const { isDesktop } = useViewport();
-  const router = usePendingRouter();
+  const queryClient = useQueryClient();
   const { updateCheckoutReceiver, updateCheckoutReceiverIsPending } = useUpdateCheckoutReceiver(checkoutId);
   const { updateCheckoutDelivery, updateCheckoutDeliveryIsPending } = useUpdateCheckoutDelivery(checkoutId);
   const { submitCheckout, submitCheckoutIsPending, submitCheckoutIsError, submitCheckoutError } =
@@ -174,7 +180,24 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             }),
           ),
         });
-        router.push('/checkout/success');
+
+        queryClient.setQueryData<Checkout>(checkoutsQueryKeys.detail(checkoutId), (previous) =>
+          previous
+            ? {
+                ...previous,
+                status: CheckoutStatus.COMPLETED,
+                completedAt: previous.completedAt ?? new Date().toISOString(),
+                order,
+              }
+            : previous,
+        );
+
+        void Promise.all([
+          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
+          queryClient.invalidateQueries({
+            queryKey: checkoutsQueryKeys.list({ status: CheckoutStatus.IN_PROGRESS }),
+          }),
+        ]);
       },
     });
   };
@@ -294,7 +317,11 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
 
   const mobileOrderSummary = (
     <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
-      <CheckoutOrderSummary checkout={checkout} footer={submitButton} />
+      <CheckoutOrderSummary
+        checkout={checkout}
+        shippingCostMinor={checkout.deliveryEstimate?.shippingCostMinor ?? null}
+        footer={submitButton}
+      />
     </CheckoutOrderCard>
   );
 

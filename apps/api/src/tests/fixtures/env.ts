@@ -13,7 +13,6 @@ export const validEnv = {
   TELEGRAM_BOT_TOKEN: 'test-bot-token',
   TELEGRAM_CHAT_ID: '123456789',
   NOVA_POSHTA_API_KEY: 'test-nova-poshta-key',
-  UKRPOSHTA_API_KEY: 'test-ukrposhta-key',
 } as const;
 
 export const validOtelEnv = {
