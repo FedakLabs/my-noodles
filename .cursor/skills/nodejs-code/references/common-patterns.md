@@ -110,25 +110,25 @@ Choose the simplest sufficient access level:
 
 ## 4. External API integration
 
-**Client layer** — framework-agnostic HTTP clients live in `@my-noodles/api-clients/<provider>` and extend `ApiClient`. Nest wiring lives under `application/<provider>/` like any other feature module:
+**Client layer** — framework-agnostic HTTP clients live in `@my-noodles/integration-api-clients/*` and extend `ApiClient`. Nest wiring lives under `application/*` like any other feature module:
 
 ```text
-packages/api-clients/<provider>/
-├── <provider>.api.ts         # *Api extends ApiClient; raw upstream calls
+packages/integration-api-clients/*
+├── *.api.ts         # *Api extends ApiClient; raw upstream calls
 └── index.ts
 
-apps/api/src/application/<provider>/
-├── <provider>.config.ts      # env → base URL, auth
-├── <provider>.service.ts     # optional *Service — mapping/formatting
-├── <provider>.module.ts      # useFactory registration; exports *Service
+apps/api/src/application/*
+├── *.config.ts      # env → base URL, auth
+├── *.service.ts     # optional *Service — mapping/formatting
+├── *.module.ts      # useFactory registration; exports *Service
 └── index.ts
 ```
 
-Example: `TelegramApi` in `@my-noodles/api-clients/telegram` + `TelegramService` / `TelegramModule` in `application/telegram/`.
+Example: `TelegramApi` in `@my-noodles/integration-api-clients/telegram` + `TelegramService` / `TelegramModule` in `application/telegram/`.
 
 Setup checklist:
 
-1. **Client** — extend `ApiClient` in `packages/api-clients`; accept options only (logger is ambient on `ApiClient`); expose upstream-shaped methods (no business orchestration).
+1. **Client** — extend `ApiClient` in `packages/integration-api-clients`; accept options only (logger is ambient on `ApiClient`); expose upstream-shaped methods (no business orchestration).
 2. **Config** — secrets and base URL from env in `<provider>.config.ts` (see [code-style-guide § External API](./code-style-guide.md#10-external-api-integration)).
 3. **Service (optional)** — Nest provider; inject `*Api`; add formatting/mapping when adapters or feature services need a friendlier surface.
 4. **Module** — `useFactory` to construct `*Api` with validated config; import in the feature module that orchestrates the flow.

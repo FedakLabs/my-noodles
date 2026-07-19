@@ -57,7 +57,7 @@ export type MeestBranchRow = {
   lat?: string;
 };
 
-export class MeestApi extends ApiClient {
+export class PublicMeestApi extends ApiClient {
   constructor(private readonly settings: MeestClientOptions) {
     super();
   }

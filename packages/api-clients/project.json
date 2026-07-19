@@ -56,7 +56,6 @@
     },
     "validate": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
       "options": {
         "cwd": ".",
         "commands": [

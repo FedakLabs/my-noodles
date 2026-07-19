@@ -1,4 +1,4 @@
-import { UkrposhtaApi } from '@my-noodles/api-clients/ukrposhta';
+import { UkrposhtaApi } from '@my-noodles/integration-api-clients/ukrposhta';
 import { Module } from '@nestjs/common';
 
 import { ukrposhtaConfig } from './ukrposhta.config';

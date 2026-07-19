@@ -1,4 +1,4 @@
-import { MeestApi } from '@my-noodles/api-clients/meest';
+import { PublicMeestApi } from '@my-noodles/integration-api-clients/meest';
 import { Module } from '@nestjs/common';
 
 import { meestConfig } from './meest.config';
@@ -7,8 +7,8 @@ import { MeestService } from './meest.service';
 @Module({
   providers: [
     {
-      provide: MeestApi,
-      useFactory: () => new MeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }),
+      provide: PublicMeestApi,
+      useFactory: () => new PublicMeestApi({ apiBaseUrl: meestConfig.apiBaseUrl }),
     },
     MeestService,
   ],

@@ -1,4 +1,4 @@
-import type { NovaPoshtaApi } from '@my-noodles/api-clients/nova-poshta';
+import type { NovaPoshtaApi } from '@my-noodles/integration-api-clients/nova-poshta';
 
 import {
   formatNovaPoshtaDirectoryCityName,

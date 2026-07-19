@@ -1,0 +1,63 @@
+{
+  "name": "@my-noodles/integration-api-clients",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./meest": {
+      "import": {
+        "types": "./src/meest/index.ts",
+        "default": "./src/meest/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/meest/index.d.ts",
+        "default": "./dist/cjs/src/meest/index.js"
+      }
+    },
+    "./nova-poshta": {
+      "import": {
+        "types": "./src/nova-poshta/index.ts",
+        "default": "./src/nova-poshta/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/nova-poshta/index.d.ts",
+        "default": "./dist/cjs/src/nova-poshta/index.js"
+      }
+    },
+    "./ukrposhta": {
+      "import": {
+        "types": "./src/ukrposhta/index.ts",
+        "default": "./src/ukrposhta/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/ukrposhta/index.d.ts",
+        "default": "./dist/cjs/src/ukrposhta/index.js"
+      }
+    },
+    "./telegram": {
+      "import": {
+        "types": "./src/telegram/index.ts",
+        "default": "./src/telegram/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/telegram/index.d.ts",
+        "default": "./dist/cjs/src/telegram/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node -e \"require('node:fs').writeFileSync('dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }) + '\\n')\"",
+    "meest:generate": "openapi-ts -f ./src/meest/client/openapi-ts.config.ts",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --fix",
+    "lint-check": "oxlint",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@my-noodles/api-lib": "workspace:*"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.98.2"
+  }
+}

@@ -26,7 +26,8 @@ Mobile-first, SEO-oriented food-import storefront. Behavioral data via a slick c
 apps/web/          # Next.js App Router, MUI, next-intl, React Query
 apps/api/          # NestJS, TypeORM, Postgres
 packages/theme/    # MUI design system + country/brand skin engine
-packages/api-clients/  # OpenAPI-generated axios client + domain wrappers
+packages/api-clients/  # Storefront OpenAPI client (hey-api fetch) for apps/web
+packages/integration-api-clients/  # Backend provider clients (Meest, NP, Ukrposhta, Telegram)
 ```
 
 Stack highlights: TypeScript strict, React 19, Next.js 16, TanStack Query, MUI v9, react-hook-form + Zod, Zustand cart, NestJS + class-validator DTOs, JSONB i18n columns, ISR + View Transitions. Quality: oxlint + oxfmt.

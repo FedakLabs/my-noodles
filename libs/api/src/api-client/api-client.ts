@@ -41,7 +41,7 @@ export abstract class ApiClient {
 
     let response: Response;
     try {
-      response = await fetch(requestUrl, init);
+      response = await globalThis.fetch(requestUrl, init);
     } catch (cause) {
       const error = new ApiClientException(this.resolveErrorMessage(cause));
 
@@ -131,6 +131,11 @@ export abstract class ApiClient {
   /** Absolute URL for the request (base + path), without query params. */
   protected resolveRequestUrl(config: ApiClientRequestConfig): string {
     const path = config.url ?? '';
+
+    if (path && this.isAbsoluteUrl(path)) {
+      return path;
+    }
+
     const baseUrl = this.getBaseUrl();
 
     if (!path) {
@@ -145,6 +150,15 @@ export abstract class ApiClient {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
     return `${normalizedBase}${normalizedPath}`;
+  }
+
+  protected isAbsoluteUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** Absolute URL including query params from `config.params`. */
@@ -170,7 +184,7 @@ export abstract class ApiClient {
     return resolved.includes('?') ? `${resolved}&${query}` : `${resolved}?${query}`;
   }
 
-  private logOutgoing(params: {
+  protected logOutgoing(params: {
     config: ApiClientRequestConfig;
     url: string;
     execTimeMs: number;
@@ -183,7 +197,9 @@ export abstract class ApiClient {
     const queryParams = queryIndex === -1 ? '' : url.slice(queryIndex + 1);
     const requestBody =
       config.data !== undefined && config.method !== 'GET' && config.method !== 'HEAD'
-        ? safeJsonStringify(config.data)
+        ? typeof config.data === 'string'
+          ? config.data
+          : safeJsonStringify(config.data)
         : undefined;
     const normalizedError =
       error === undefined
@@ -208,7 +224,7 @@ export abstract class ApiClient {
     );
   }
 
-  private resolveErrorMessage(source: unknown, status?: number): string {
+  protected resolveErrorMessage(source: unknown, status?: number): string {
     if (source instanceof Error) {
       return source.message;
     }
@@ -229,8 +245,7 @@ export abstract class ApiClient {
     return String(source);
   }
 
-  private async parseResponseBody(response: Response): Promise<unknown> {
-    const text = await response.text();
+  protected parseResponseText(text: string): unknown {
     if (!text) {
       return undefined;
     }
@@ -240,5 +255,9 @@ export abstract class ApiClient {
     } catch {
       return text;
     }
+  }
+
+  protected async parseResponseBody(response: Response): Promise<unknown> {
+    return this.parseResponseText(await response.text());
   }
 }

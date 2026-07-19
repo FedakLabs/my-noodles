@@ -1,4 +1,4 @@
-import { TelegramApi } from '@my-noodles/api-clients/telegram';
+import { TelegramApi } from '@my-noodles/integration-api-clients/telegram';
 import { Module } from '@nestjs/common';
 
 import { telegramConfig } from './telegram.config';

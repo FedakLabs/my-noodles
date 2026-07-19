@@ -1,9 +1,9 @@
+import { LocaleContext } from '@my-noodles/api-lib/locale';
 import {
   UkrposhtaApi,
   type UkrposhtaCityRow,
   type UkrposhtaPostOfficeRow,
-} from '@my-noodles/api-clients/ukrposhta';
-import { LocaleContext } from '@my-noodles/api-lib/locale';
+} from '@my-noodles/integration-api-clients/ukrposhta';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';

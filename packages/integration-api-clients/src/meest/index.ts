@@ -1,6 +1,6 @@
 export {
   APP_LOCALE_TO_MEEST_LOCALE,
-  MeestApi,
+  PublicMeestApi,
   MEEST_LOCALES,
   type MeestBranchRow,
   type MeestClientOptions,
@@ -8,4 +8,5 @@ export {
   type MeestLocalizedName,
   type MeestLocalityData,
   type MeestLocalityRow,
-} from './meest.api';
+} from './public/meest.api';
+export { ClientMeestApi, type ClientMeestApiOptions } from './client/meest.api';

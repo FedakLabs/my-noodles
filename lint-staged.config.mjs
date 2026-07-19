@@ -13,6 +13,7 @@ export default {
   'packages/ui/**/*.{ts,tsx}': code('packages/ui'),
   'packages/theme/**/*.{ts,tsx}': code('packages/theme'),
   'packages/api-clients/**/*.ts': code('packages/api-clients'),
+  'packages/integration-api-clients/**/*.ts': code('packages/integration-api-clients'),
   'packages/utils/**/*.ts': code('packages/utils'),
   'libs/web/**/*.{ts,tsx}': code('libs/web'),
   'libs/api/**/*.ts': code('libs/api'),

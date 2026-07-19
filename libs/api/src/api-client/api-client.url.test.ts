@@ -37,4 +37,9 @@ describe('ApiClient URL helpers', () => {
       'https://example.com/items?limit=10&offset=0',
     );
   });
+
+  it('passes through absolute request URLs without joining the base', () => {
+    const client = new UrlTestClient('https://example.com');
+    expect(client.resolve({ url: 'https://other.example/v1/items' })).toBe('https://other.example/v1/items');
+  });
 });

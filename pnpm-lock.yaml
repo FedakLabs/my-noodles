@@ -53,12 +53,12 @@ importers:
 
   apps/api:
     dependencies:
-      '@my-noodles/api-clients':
-        specifier: workspace:*
-        version: link:../../packages/api-clients
       '@my-noodles/api-lib':
         specifier: workspace:*
         version: link:../../libs/api
+      '@my-noodles/integration-api-clients':
+        specifier: workspace:*
+        version: link:../../packages/integration-api-clients
       '@my-noodles/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -364,6 +364,12 @@ importers:
         version: 19.2.7
 
   packages/api-clients:
+    devDependencies:
+      '@hey-api/openapi-ts':
+        specifier: ^0.98.2
+        version: 0.98.2(typescript@6.0.3)
+
+  packages/integration-api-clients:
     dependencies:
       '@my-noodles/api-lib':
         specifier: workspace:*

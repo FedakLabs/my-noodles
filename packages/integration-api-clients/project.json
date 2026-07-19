@@ -1,0 +1,73 @@
+{
+  "name": "integration-api-clients",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/integration-api-clients/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib"],
+  "targets": {
+    "build": {
+      "command": "pnpm build",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "pnpm format",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+    "format-check": {
+      "command": "pnpm format-check",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+    "lint-check": {
+      "command": "pnpm lint-check",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+    "type-check": {
+      "command": "pnpm type-check",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+    "meest:generate": {
+      "command": "pnpm meest:generate",
+      "options": {
+        "cwd": "packages/integration-api-clients"
+      }
+    },
+
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace packages/integration-api-clients",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "pnpm --dir packages/integration-api-clients format",
+          "pnpm --dir packages/integration-api-clients lint",
+          "pnpm --dir packages/integration-api-clients type-check",
+          "knip --config configs/knip/knip.json --workspace packages/integration-api-clients"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

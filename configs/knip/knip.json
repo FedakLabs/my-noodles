@@ -107,15 +107,19 @@
       "ignoreDependencies": ["@emotion/react", "@emotion/styled", "@mui/material"]
     },
     "packages/api-clients": {
+      "entry": ["src/index.ts", "src/storefront/index.ts", "src/storefront/openapi-ts.config.ts"],
+      "project": ["src/**/*.ts"],
+      "ignore": ["src/**/generated/**"]
+    },
+    "packages/integration-api-clients": {
       "entry": [
-        "src/index.ts",
         "src/meest/index.ts",
         "src/nova-poshta/index.ts",
         "src/ukrposhta/index.ts",
         "src/telegram/index.ts",
-        "openapi-ts.config.ts"
+        "src/meest/client/openapi-ts.config.ts"
       ],
-      "project": ["src/**/*.ts", "openapi-ts.config.ts"],
+      "project": ["src/**/*.ts"],
       "ignore": ["src/**/generated/**"]
     },
     "packages/utils": {

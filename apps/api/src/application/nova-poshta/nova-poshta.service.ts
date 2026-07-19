@@ -1,4 +1,7 @@
-import { NovaPoshtaApi, type NovaPoshtaDirectoryCityRow } from '@my-noodles/api-clients/nova-poshta';
+import {
+  NovaPoshtaApi,
+  type NovaPoshtaDirectoryCityRow,
+} from '@my-noodles/integration-api-clients/nova-poshta';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';

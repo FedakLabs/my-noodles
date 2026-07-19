@@ -1,18 +1,18 @@
+import { LocaleContext } from '@my-noodles/api-lib/locale';
 import {
   APP_LOCALE_TO_MEEST_LOCALE,
-  MeestApi,
+  PublicMeestApi,
   type MeestBranchRow,
   type MeestLocalizedName,
   type MeestLocalityData,
-} from '@my-noodles/api-clients/meest';
-import { LocaleContext } from '@my-noodles/api-lib/locale';
+} from '@my-noodles/integration-api-clients/meest';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
 
 @Injectable()
 export class MeestService {
-  constructor(@Inject(MeestApi) private readonly meestApi: MeestApi) {}
+  constructor(@Inject(PublicMeestApi) private readonly meestApi: PublicMeestApi) {}
 
   async searchCities(query: string): Promise<DeliveryCity[]> {
     const localities = await this.meestApi.searchLocalities(query);

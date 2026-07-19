@@ -1,5 +1,5 @@
-import type { MeestApi } from '@my-noodles/api-clients/meest';
 import { LocaleContext } from '@my-noodles/api-lib/locale';
+import type { PublicMeestApi } from '@my-noodles/integration-api-clients/meest';
 
 import { MeestService } from '@/application/meest';
 
@@ -16,7 +16,7 @@ describe('MeestService', () => {
         dis: 'Київ',
       },
     ]);
-    const meestApi = { searchLocalities } as unknown as MeestApi;
+    const meestApi = { searchLocalities } as unknown as PublicMeestApi;
 
     const service = new MeestService(meestApi);
     const cities = await service.searchCities('Київ');
@@ -36,7 +36,7 @@ describe('MeestService', () => {
         zip: '79007',
       },
     ]);
-    const meestApi = { getBranches } as unknown as MeestApi;
+    const meestApi = { getBranches } as unknown as PublicMeestApi;
 
     const service = new MeestService(meestApi);
     const warehouses = await service.searchWarehouses('city-1');
@@ -64,7 +64,7 @@ describe('MeestService', () => {
           zip: '79007',
         },
       ]);
-      const meestApi = { getBranches } as unknown as MeestApi;
+      const meestApi = { getBranches } as unknown as PublicMeestApi;
 
       const service = new MeestService(meestApi);
       const warehouses = await service.searchWarehouses('city-1');
@@ -97,7 +97,7 @@ describe('MeestService', () => {
         street: { ua: 'вул. Шевченка' },
       },
     ]);
-    const meestApi = { getBranches } as unknown as MeestApi;
+    const meestApi = { getBranches } as unknown as PublicMeestApi;
 
     const service = new MeestService(meestApi);
     const warehouses = await service.searchWarehouses('city-1', 'Гребінки');

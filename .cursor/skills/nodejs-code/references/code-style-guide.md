@@ -84,11 +84,11 @@ import { OrdersService } from './orders.service';
 
 We work in an **OOP-first** style aligned with NestJS, TypeORM, and class-validator.
 
-| Use a **class**                                                            | Use a **function**                                                                                     |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Services, controllers, modules, entities, DTOs, filters, interceptors      | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`, `createAppLogger`)           |
-| Bootstrap/adapters that compose dependencies (e.g. Nest filter wiring)     | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
-| External API clients (`ApiClient` subclasses in `@my-noodles/api-clients`) | One-off validators reused across DTOs when a decorator factory is enough                               |
+| Use a **class**                                                                        | Use a **function**                                                                                     |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Services, controllers, modules, entities, DTOs, filters, interceptors                  | Pure stateless helpers with no lifecycle (e.g. `slugify`, `parseBoolean`, `createAppLogger`)           |
+| Bootstrap/adapters that compose dependencies (e.g. Nest filter wiring)                 | Small transforms where FP is clearer (e.g. `formatCurrency`, array coercions in `utils/transformers/`) |
+| External API clients (`ApiClient` subclasses in `@my-noodles/integration-api-clients`) | One-off validators reused across DTOs when a decorator factory is enough                               |
 
 Keep **pure primitives** as functions in `@my-noodles/api-lib/utils` or `apps/api/src/utils/` when they have no state and no framework coupling.
 
@@ -176,7 +176,7 @@ export class OrdersController {
 
 ### Clients
 
-- Framework-agnostic `*Api` client classes live in `@my-noodles/api-clients/<provider>` and extend `ApiClient` from `@my-noodles/api-lib/api-client`.
+- Framework-agnostic `*Api` client classes live in `@my-noodles/integration-api-clients/<provider>` and extend `ApiClient` from `@my-noodles/api-lib/api-client`.
 - Nest wiring + optional domain helpers: `application/<provider>/` (`*.config.ts`, `*.service.ts`, `*.module.ts` with `useFactory` registration).
 
 ---
@@ -721,12 +721,12 @@ export abstract class ApiClient {
 }
 ```
 
-### Provider clients (`@my-noodles/api-clients/<provider>`)
+### Provider clients (`@my-noodles/integration-api-clients/<provider>`)
 
-Framework-agnostic HTTP client classes live in **`packages/api-clients`**. Nest registers them via `useFactory` in `apps/api` (`application/<provider>/`).
+Framework-agnostic HTTP client classes live in **`packages/integration-api-clients`**. Nest registers them via `useFactory` in `apps/api` (`application/<provider>/`).
 
 ```ts
-// packages/api-clients/src/meest/meest.api.ts
+// packages/integration-api-clients/src/meest/meest.api.ts
 export class MeestApi extends ApiClient {
   constructor(private readonly settings: MeestClientOptions) {
     super();
@@ -751,10 +751,10 @@ providers: [
 
 ### OpenAPI-generated third-party clients
 
-When this API must call **another service’s HTTP API**, prefer adding the raw client under **`packages/api-clients/<provider>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** when a spec exists; otherwise hand-write an `ApiClient` subclass. Nest wiring lives in `application/<provider>/` like any other feature module:
+When this API must call **another service’s HTTP API**, prefer adding the raw client under **`packages/integration-api-clients/<provider>/`**. Generate from the upstream spec with **`@hey-api/openapi-ts`** when a spec exists; otherwise hand-write an `ApiClient` subclass. Nest wiring lives in `application/<provider>/` like any other feature module:
 
 ```text
-packages/api-clients/<provider>/
+packages/integration-api-clients/<provider>/
 ├── <provider>.api.ts      # *Api extends ApiClient; raw upstream calls
 └── index.ts
 
@@ -767,7 +767,7 @@ apps/api/src/application/<provider>/
 
 - **`*Api`** — framework-agnostic: options only, `ApiClient` subclass (ambient logger), upstream-shaped methods.
 - **`*Service` (optional)** — Nest provider in `apps/api`; injects `*Api`; exposes domain-friendly methods to feature modules/adapters.
-- Storefront OpenAPI client for the web app also lives in **`packages/api-clients/storefront`** (`@hey-api/client-fetch`).
+- Storefront OpenAPI client for the web app lives in **`packages/api-clients/storefront`** (`@hey-api/client-fetch`) — keep backend provider clients out of that package.
 
 ### Rules
 
@@ -858,28 +858,28 @@ Run: `pnpm nx run api:test` or `api:validate`.
 
 ## 16. Anti-Patterns
 
-| Anti-pattern                                                     | Do instead                                                                                                                    |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Business logic in controller                                     | Move to service                                                                                                               |
-| `@InjectRepository` in controller                                | Service only                                                                                                                  |
-| `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, …                                                                    |
-| Raw `fetch`/`axios` in controller/service without a client class | `ApiClient` subclass (`*Api`) in `@my-noodles/api-clients/<provider>`; Nest `*Service`/`*Module` in `application/<provider>/` |
-| Response DTO that mirrors the entity one-to-one                  | Return entity (or pick columns); DTO only when shape genuinely differs                                                        |
-| DTO field without class-validator                                | Add validators                                                                                                                |
-| Schema change without migration                                  | Generate migration; keep `synchronize: false`                                                                                 |
-| `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)                                                                              |
-| Entity without `created_at` / `updated_at` / `deleted_at`        | Extend `TimestampEntity`                                                                                                      |
-| Hard `repository.delete()` on catalog rows                       | `softRemove` / `softDelete` unless explicitly required                                                                        |
-| Hardcoded secrets/URLs                                           | `config.ts` + env                                                                                                             |
-| Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED`                                                                         |
-| `console.log` for diagnostics                                    | Nest `Logger` / Winston                                                                                                       |
-| God `AppModule` providers                                        | Feature `*.module.ts` per domain                                                                                              |
-| Copy-paste validator                                             | Add to `utils/validators/` and reuse                                                                                          |
-| Nest `HttpException` subclasses for domain errors                | Raw `@my-noodles/api-lib/exceptions` + `ExceptionsFilter`                                                                     |
-| Second Winston instance / Nest `Logger` in features              | Import ambient `logger` from `@my-noodles/api-lib/logger`                                                                     |
-| Deep `../../infrastructure/…` cross-layer imports                | `@/infrastructure/…` (or `@/config`, `@/application/…`)                                                                       |
-| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder barrel — e.g. `TelegramModule` from `@/application/telegram`                                                     |
-| Handler JSDoc that restates the method/route                     | Omit; add summary/`@remarks` only for non-obvious operation semantics                                                         |
+| Anti-pattern                                                     | Do instead                                                                                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Business logic in controller                                     | Move to service                                                                                                                           |
+| `@InjectRepository` in controller                                | Service only                                                                                                                              |
+| `createQueryBuilder` with raw column strings for simple filters  | `find` / `count` + `FindOptionsWhere` + `In`, `Between`, …                                                                                |
+| Raw `fetch`/`axios` in controller/service without a client class | `ApiClient` subclass (`*Api`) in `@my-noodles/integration-api-clients/<provider>`; Nest `*Service`/`*Module` in `application/<provider>/` |
+| Response DTO that mirrors the entity one-to-one                  | Return entity (or pick columns); DTO only when shape genuinely differs                                                                    |
+| DTO field without class-validator                                | Add validators                                                                                                                            |
+| Schema change without migration                                  | Generate migration; keep `synchronize: false`                                                                                             |
+| `ON DELETE CASCADE` on FKs                                       | `onDelete: 'RESTRICT'` (+ `onUpdate: 'CASCADE'`)                                                                                          |
+| Entity without `created_at` / `updated_at` / `deleted_at`        | Extend `TimestampEntity`                                                                                                                  |
+| Hard `repository.delete()` on catalog rows                       | `softRemove` / `softDelete` unless explicitly required                                                                                    |
+| Hardcoded secrets/URLs                                           | `config.ts` + env                                                                                                                         |
+| Disabling OTEL hooks in bootstrap                                | Keep instrumentation; gate export with `OTEL_ENABLED`                                                                                     |
+| `console.log` for diagnostics                                    | Nest `Logger` / Winston                                                                                                                   |
+| God `AppModule` providers                                        | Feature `*.module.ts` per domain                                                                                                          |
+| Copy-paste validator                                             | Add to `utils/validators/` and reuse                                                                                                      |
+| Nest `HttpException` subclasses for domain errors                | Raw `@my-noodles/api-lib/exceptions` + `ExceptionsFilter`                                                                                 |
+| Second Winston instance / Nest `Logger` in features              | Import ambient `logger` from `@my-noodles/api-lib/logger`                                                                                 |
+| Deep `../../infrastructure/…` cross-layer imports                | `@/infrastructure/…` (or `@/config`, `@/application/…`)                                                                                   |
+| Importing `*Module` from `foo.module` instead of barrel          | `@/…` folder barrel — e.g. `TelegramModule` from `@/application/telegram`                                                                 |
+| Handler JSDoc that restates the method/route                     | Omit; add summary/`@remarks` only for non-obvious operation semantics                                                                     |
 
 ---
 

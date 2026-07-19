@@ -1,4 +1,4 @@
-import { TelegramApi, type OrderTelegramPayload } from '@my-noodles/api-clients/telegram';
+import { TelegramApi, type OrderTelegramPayload } from '@my-noodles/integration-api-clients/telegram';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { telegramConfig } from './telegram.config';

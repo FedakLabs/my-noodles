@@ -1,4 +1,4 @@
-import { NovaPoshtaApi } from '@my-noodles/api-clients/nova-poshta';
+import { NovaPoshtaApi } from '@my-noodles/integration-api-clients/nova-poshta';
 import { Module } from '@nestjs/common';
 
 import { novaPoshtaConfig } from './nova-poshta.config';

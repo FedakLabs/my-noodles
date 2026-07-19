@@ -18,8 +18,8 @@
     "seed": "tsx src/infrastructure/seed/seed.ts"
   },
   "dependencies": {
-    "@my-noodles/api-clients": "workspace:*",
     "@my-noodles/api-lib": "workspace:*",
+    "@my-noodles/integration-api-clients": "workspace:*",
     "@my-noodles/utils": "workspace:*",
     "@nestjs/common": "11.1.27",
     "@nestjs/core": "11.1.27",
