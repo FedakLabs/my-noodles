@@ -3,7 +3,7 @@ import type { Repository } from 'typeorm';
 
 import { type FeedCommentsService, FeedService, type FeedSessionService } from '@/application/feed';
 import type { Product } from '@/application/products';
-import type { VisitorSession } from '@/application/visitor/visitor-session.entity';
+import type { VisitorSession } from '@/application/visitor-session/visitor-session.entity';
 
 import { jest } from '../jest-globals';
 

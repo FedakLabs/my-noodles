@@ -17,11 +17,11 @@ export const collectionsQueryKeys = {
 };
 
 export async function fetchCollections(): Promise<Collection[]> {
-  return requestData(collectionsControllerList());
+  return await requestData(collectionsControllerList());
 }
 
 export async function fetchCollectionDetail(slug: string): Promise<Collection> {
-  return requestData(
+  return await requestData(
     collectionsControllerGetBySlug({
       path: { slug },
     }),

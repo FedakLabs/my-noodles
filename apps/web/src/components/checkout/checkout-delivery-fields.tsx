@@ -25,20 +25,22 @@ import type { CheckoutFormData } from './validation';
 type CheckoutDeliveryFieldsProps = {
   control: Control<CheckoutFormData>;
   setValue: UseFormSetValue<CheckoutFormData>;
-  onDeliverySave: (values?: Partial<CheckoutFormData>) => void;
   deliveryEstimate: OrderDeliveryEstimateDto | null;
   deliveryEstimateIsPending?: boolean;
   enabled?: boolean;
+  showEstimate?: boolean;
 };
 
-export function canEstimateCheckoutDelivery(values: {
+export type CheckoutDeliveryEstimateInput = {
   method: DeliveryMethod;
   cityName: string;
   warehouseRef: string;
   warehouseNumber: string;
   street: string;
   building: string;
-}): boolean {
+};
+
+export function canEstimateCheckoutDelivery(values: CheckoutDeliveryEstimateInput): boolean {
   if (!values.cityName.trim()) {
     return false;
   }
@@ -48,6 +50,13 @@ export function canEstimateCheckoutDelivery(values: {
   }
 
   return Boolean(values.street.trim() && values.building.trim());
+}
+
+export function isCheckoutDeliveryEstimateLoading(
+  deliveryEstimateIsPending: boolean,
+  values: CheckoutDeliveryEstimateInput,
+): boolean {
+  return deliveryEstimateIsPending && canEstimateCheckoutDelivery(values);
 }
 
 export function CheckoutDeliveryEstimate({
@@ -161,10 +170,10 @@ function resetAfterCityChange(setValue: UseFormSetValue<CheckoutFormData>) {
 export function CheckoutDeliveryFields({
   control,
   setValue,
-  onDeliverySave,
   deliveryEstimate,
   deliveryEstimateIsPending = false,
   enabled = true,
+  showEstimate = true,
 }: CheckoutDeliveryFieldsProps) {
   const t = useTranslations('checkout');
   const { deliveryProviders, deliveryProvidersIsInitialLoad } = useDeliveryProviders();
@@ -211,16 +220,14 @@ export function CheckoutDeliveryFields({
 
   const fieldsDisabled = !enabled;
   const isWarehouse = method === DeliveryMethod.WAREHOUSE;
-  const showEstimateLoading =
-    deliveryEstimateIsPending &&
-    canEstimateCheckoutDelivery({
-      method,
-      cityName,
-      warehouseRef,
-      warehouseNumber,
-      street,
-      building,
-    });
+  const showEstimateLoading = isCheckoutDeliveryEstimateLoading(deliveryEstimateIsPending, {
+    method,
+    cityName,
+    warehouseRef,
+    warehouseNumber,
+    street,
+    building,
+  });
 
   return (
     <Stack spacing={1.5}>
@@ -301,6 +308,7 @@ export function CheckoutDeliveryFields({
             options={deliveryCities ?? []}
             openOnFocus
             disabled={fieldsDisabled}
+            getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
             getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
             isOptionEqualToValue={(option, value) => option.ref === value.ref}
             inputValue={cityInput}
@@ -339,11 +347,8 @@ export function CheckoutDeliveryFields({
               key={`checkout-warehouse-${provider}-${cityRef}`}
               size="large"
               options={deliveryWarehouses ?? []}
-              getOptionLabel={(option) =>
-                typeof option === 'string'
-                  ? option
-                  : `${option.name}${option.address ? ` — ${option.address}` : ''}`
-              }
+              getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
+              getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
               isOptionEqualToValue={(option, value) => option.ref === value.ref}
               disabled={fieldsDisabled || !cityRef}
               inputValue={warehouseInput}
@@ -358,16 +363,10 @@ export function CheckoutDeliveryFields({
                   return;
                 }
 
-                const label = `${option.name}${option.address ? ` — ${option.address}` : ''}`;
-                field.onChange(label);
+                field.onChange(option.name);
                 setWarehouseDraft(null);
                 setValue('warehouseRef', option.ref);
                 setValue('warehouseNumber', option.number);
-                onDeliverySave({
-                  warehouseName: label,
-                  warehouseRef: option.ref,
-                  warehouseNumber: option.number,
-                });
               }}
               loading={deliveryWarehousesIsFetching}
               filterOptions={(options) => options}
@@ -404,10 +403,6 @@ export function CheckoutDeliveryFields({
                 disabled={fieldsDisabled || !cityRef}
                 error={Boolean(fieldState.error)}
                 helperText={fieldState.error?.message}
-                onBlur={() => {
-                  field.onBlur();
-                  onDeliverySave();
-                }}
               />
             )}
           />
@@ -443,15 +438,17 @@ export function CheckoutDeliveryFields({
             disabled={fieldsDisabled || !cityRef}
             error={Boolean(fieldState.error)}
             helperText={fieldState.error?.message}
-            onBlur={() => {
-              field.onBlur();
-              onDeliverySave();
-            }}
           />
         )}
       />
 
-      <CheckoutDeliveryEstimate estimate={deliveryEstimate} isLoading={showEstimateLoading} method={method} />
+      {showEstimate ? (
+        <CheckoutDeliveryEstimate
+          estimate={deliveryEstimate}
+          isLoading={showEstimateLoading}
+          method={method}
+        />
+      ) : null}
     </Stack>
   );
 }

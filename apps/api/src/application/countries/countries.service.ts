@@ -12,6 +12,6 @@ export class CountriesService {
   ) {}
 
   async list(): Promise<Country[]> {
-    return this.countriesRepository.find({ order: { slug: 'ASC' } });
+    return await this.countriesRepository.find({ order: { slug: 'ASC' } });
   }
 }

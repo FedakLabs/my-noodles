@@ -5,9 +5,8 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToOne } from 't
 
 import { OrderDeliveryEstimateDto } from '../delivery/delivery.dto';
 import { Order } from '../orders/order.entity';
-import { VisitorSession } from '../visitor/visitor-session.entity';
-import { CheckoutCancelledReason } from './checkout-cancelled-reason';
-import { CheckoutStatus } from './checkout-status';
+import { VisitorSession } from '../visitor-session/visitor-session.entity';
+import { CheckoutCancelledReason, CheckoutStatus } from './checkouts.validators';
 
 /** Checkout hold — fixed from checkout creation (not sliding on PATCH/merge). */
 export const CHECKOUT_HOLD_MS = 15 * 60_000;
@@ -68,6 +67,14 @@ export class Checkout extends TimestampEntity {
   @Expose()
   @ApiProperty()
   get isExpired(): boolean {
-    return this.status === CheckoutStatus.InProgress && this.expiresAt.getTime() <= Date.now();
+    return (
+      this.status === CheckoutStatus.Cancelled && this.cancelledReason === CheckoutCancelledReason.Expired
+    );
+  }
+
+  @Expose()
+  @ApiProperty()
+  get isHoldElapsed(): boolean {
+    return this.expiresAt.getTime() <= Date.now();
   }
 }

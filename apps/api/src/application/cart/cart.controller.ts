@@ -1,24 +1,11 @@
 import { ApiException } from '@my-noodles/api-lib/nest';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Inject,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import type { Request, Response } from 'express';
 
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
-import { readVisitorSessionId, VisitorSessionService, writeVisitorSessionCookie } from '../visitor';
+import { CurrentVisitorSession, type VisitorSession, VisitorSessionService } from '../visitor-session';
 import { AddCartItemDto, CartResponseDto, SetCartItemQtyDto } from './cart.dto';
 import {
   CartItemNotFoundException,
@@ -39,9 +26,8 @@ export class CartController extends LocalizedStorefrontController {
   }
 
   @Get()
-  async getCart(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<CartResponseDto> {
-    const visitor = await this.resolveVisitorForCart(req, res);
-    return this.cartService.getCart(visitor);
+  async getCart(@CurrentVisitorSession() visitor: VisitorSession): Promise<CartResponseDto> {
+    return await this.cartService.getCart(await this.visitorService.resolveForCart(visitor));
   }
 
   @Post('items')
@@ -49,11 +35,13 @@ export class CartController extends LocalizedStorefrontController {
   @ApiException(CartProductNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
   async addItem(
     @Body() dto: AddCartItemDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @CurrentVisitorSession() visitor: VisitorSession,
   ): Promise<CartResponseDto> {
-    const visitor = await this.resolveVisitorForCart(req, res);
-    return this.cartService.addItem(visitor, dto.productId, dto.qty ?? 1);
+    return await this.cartService.addItem(
+      await this.visitorService.resolveForCart(visitor),
+      dto.productId,
+      dto.qty ?? 1,
+    );
   }
 
   @Patch('items/:productId')
@@ -62,35 +50,27 @@ export class CartController extends LocalizedStorefrontController {
   async setItemQty(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: SetCartItemQtyDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @CurrentVisitorSession() visitor: VisitorSession,
   ): Promise<CartResponseDto> {
-    const visitor = await this.resolveVisitorForCart(req, res);
-    return this.cartService.updateItem(visitor, productId, dto.qty);
+    return await this.cartService.updateItem(
+      await this.visitorService.resolveForCart(visitor),
+      productId,
+      dto.qty,
+    );
   }
 
   @Delete('items/:productId')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   async removeItem(
     @Param('productId', ParseUUIDPipe) productId: string,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @CurrentVisitorSession() visitor: VisitorSession,
   ): Promise<CartResponseDto> {
-    const visitor = await this.resolveVisitorForCart(req, res);
-    return this.cartService.removeItem(visitor, productId);
+    return await this.cartService.removeItem(await this.visitorService.resolveForCart(visitor), productId);
   }
 
   @Delete()
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
-  async clearCart(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<CartResponseDto> {
-    const visitor = await this.resolveVisitorForCart(req, res);
-    return this.cartService.clearCart(visitor);
-  }
-
-  private async resolveVisitorForCart(req: Request, res: Response) {
-    const visitor = await this.visitorService.resolve(readVisitorSessionId(req));
-    const refreshed = await this.visitorService.resolveForCart(visitor);
-    writeVisitorSessionCookie(res, refreshed.id);
-    return refreshed;
+  async clearCart(@CurrentVisitorSession() visitor: VisitorSession): Promise<CartResponseDto> {
+    return await this.cartService.clearCart(await this.visitorService.resolveForCart(visitor));
   }
 }

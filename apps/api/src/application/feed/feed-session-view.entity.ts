@@ -2,7 +2,7 @@ import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persis
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { Product } from '../products/product.entity';
-import { VisitorSession } from '../visitor/visitor-session.entity';
+import { VisitorSession } from '../visitor-session/visitor-session.entity';
 import type { FeedFilterSnapshot } from './feed.types';
 
 /**

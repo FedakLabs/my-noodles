@@ -50,6 +50,6 @@ export class OrdersService {
 
     order.status = OrderStatus.Cancelled;
     order.cancelledReason = reason;
-    return this.ordersRepository.save(order);
+    return await this.ordersRepository.save(order);
   }
 }

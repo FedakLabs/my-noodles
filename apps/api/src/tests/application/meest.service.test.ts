@@ -1,9 +1,32 @@
 import { LocaleContext } from '@my-noodles/api-lib/locale';
 import type { PublicMeestApi } from '@my-noodles/integration-api-clients/meest';
 
-import { MeestService } from '@/application/meest';
+import { extractMeestWarehouseNumber, formatMeestCityName, MeestService } from '@/application/meest';
 
 import { describe, expect, it, jest } from '../jest-globals';
+
+describe('formatMeestCityName', () => {
+  it('includes district when region is missing', () => {
+    expect(
+      formatMeestCityName({
+        type: 'село',
+        name: 'Іванівка',
+        district: 'Кременчуцький',
+      }),
+    ).toBe('село Іванівка, Кременчуцький');
+  });
+
+  it('collapses matching district and region', () => {
+    expect(
+      formatMeestCityName({
+        type: 'м.',
+        name: 'Київ',
+        district: 'Київ',
+        region: 'Київ',
+      }),
+    ).toBe('м. Київ, Київ');
+  });
+});
 
 describe('MeestService', () => {
   it('formats city name with type, district, and region', async () => {
@@ -24,7 +47,55 @@ describe('MeestService', () => {
     expect(cities).toEqual([{ ref: 'city-1', name: 'м. Київ, Київ' }]);
   });
 
-  it('formats warehouse name and address from branch fields', async () => {
+  it('includes district when region is empty on geo_localities', async () => {
+    const searchLocalities = jest.fn().mockResolvedValue([
+      {
+        n_ua: 'Іванівка',
+        t_ua: 'село',
+        city_id: 'city-ivanivka',
+        reg: '',
+        dis: 'Кременчуцький',
+      },
+    ]);
+    const meestApi = { searchLocalities } as unknown as PublicMeestApi;
+
+    const service = new MeestService(meestApi);
+    const cities = await service.searchCities('Іванівка');
+
+    expect(cities).toEqual([{ ref: 'city-ivanivka', name: 'село Іванівка, Кременчуцький' }]);
+  });
+
+  it('resolves oblast from d_id via geo directories when reg is empty', async () => {
+    const searchLocalities = jest.fn().mockResolvedValue([
+      {
+        n_ua: 'Броварі',
+        t_ua: 'село',
+        city_id: 'city-brovary',
+        reg: '',
+        dis: 'Чортківський',
+        d_id: 'district-chortkiv',
+      },
+    ]);
+    const getDistricts = jest.fn().mockResolvedValue([
+      {
+        district_id: 'district-chortkiv',
+        region_id: 'd15e302b-60b0-11de-be1e-0030485903e8',
+        ua: 'Чортківський',
+      },
+    ]);
+    // Public `/geo_regions` is currently empty — enrichment should still work via static map.
+    const getRegions = jest.fn().mockResolvedValue([]);
+    const meestApi = { searchLocalities, getDistricts, getRegions } as unknown as PublicMeestApi;
+
+    const service = new MeestService(meestApi);
+    const cities = await service.searchCities('Броварі');
+
+    expect(cities).toEqual([{ ref: 'city-brovary', name: 'село Броварі, Чортківський, ТЕРНОПІЛЬСЬКА' }]);
+    expect(getDistricts).toHaveBeenCalledTimes(1);
+    expect(getRegions).toHaveBeenCalledTimes(1);
+  });
+
+  it('formats warehouse name like Nova Poshta (street in name, city in address)', async () => {
     const getBranches = jest.fn().mockResolvedValue([
       {
         br_id: 'branch-1',
@@ -45,8 +116,79 @@ describe('MeestService', () => {
       {
         ref: 'branch-1',
         number: '10',
-        name: 'Відділення №10, Львів',
-        address: 'вул. Гребінки, 9/2, Львів, 79007',
+        name: 'Відділення №10: вул. Гребінки, 9/2',
+        address: 'Львів, вул. Гребінки, 9/2',
+      },
+    ]);
+  });
+
+  it('reads branch number from num and appends location_description', async () => {
+    expect(
+      extractMeestWarehouseNumber({
+        br_id: '0d161467-ffac-11e8-80d9-1c98ec135261',
+        num: 1,
+      }),
+    ).toBe('1');
+
+    const getBranches = jest.fn().mockResolvedValue([
+      {
+        br_id: '0d161467-ffac-11e8-80d9-1c98ec135261',
+        num: 16,
+        type_public: { ua: 'Міні-відділення +' },
+        city: { ua: 'Львів' },
+        street: { ua: 'вул. Широка' },
+        street_number: '83В',
+        zip: '79052',
+        location_description: 'Rozetka,на касі',
+      },
+    ]);
+    const meestApi = { getBranches } as unknown as PublicMeestApi;
+
+    const service = new MeestService(meestApi);
+    const warehouses = await service.searchWarehouses('city-1');
+
+    expect(warehouses).toEqual([
+      {
+        ref: '0d161467-ffac-11e8-80d9-1c98ec135261',
+        number: '16',
+        name: 'Міні-відділення + №16: вул. Широка, 83В (Rozetka,на касі)',
+        address: 'Львів, вул. Широка, 83В',
+      },
+    ]);
+  });
+
+  it('filters warehouses by location_description', async () => {
+    const getBranches = jest.fn().mockResolvedValue([
+      {
+        br_id: 'branch-1',
+        num: 200,
+        type_public: { ua: 'Міні відділення' },
+        city: { ua: 'Львів' },
+        street: { ua: 'вул. Сахарова' },
+        street_number: '45',
+        location_description: 'Тютюнова каса Сільпо',
+      },
+      {
+        br_id: 'branch-2',
+        num: 201,
+        type_public: { ua: 'Міні відділення' },
+        city: { ua: 'Львів' },
+        street: { ua: 'вул. Зелена' },
+        street_number: '147',
+        location_description: 'Rozetka, на касі',
+      },
+    ]);
+    const meestApi = { getBranches } as unknown as PublicMeestApi;
+
+    const service = new MeestService(meestApi);
+    const warehouses = await service.searchWarehouses('city-1', 'rozetka');
+
+    expect(warehouses).toEqual([
+      {
+        ref: 'branch-2',
+        number: '201',
+        name: 'Міні відділення №201: вул. Зелена, 147 (Rozetka, на касі)',
+        address: 'Львів, вул. Зелена, 147',
       },
     ]);
   });
@@ -73,8 +215,8 @@ describe('MeestService', () => {
         {
           ref: 'branch-1',
           number: '10',
-          name: 'Branch №10, Lviv',
-          address: 'Hrebinky st., 9/2, Lviv, 79007',
+          name: 'Branch №10: Hrebinky st., 9/2',
+          address: 'Lviv, Hrebinky st., 9/2',
         },
       ]);
     });
@@ -106,8 +248,8 @@ describe('MeestService', () => {
       {
         ref: 'branch-1',
         number: '10',
-        name: 'Відділення №10, Львів',
-        address: 'вул. Гребінки, Львів',
+        name: 'Відділення №10: вул. Гребінки',
+        address: 'Львів, вул. Гребінки',
       },
     ]);
   });

@@ -303,6 +303,7 @@ export function createCheckoutFromCart(cart: CartResponseDto): WireCheckout {
     cancelledReason: null,
     completedAt: null,
     expiresAt,
+    isHoldElapsed: false,
     isExpired: false,
     deliveryEstimate: null,
   };
@@ -378,6 +379,7 @@ export function cancelCheckout(
     ...checkout,
     status: 'cancelled',
     cancelledReason: reason,
+    isHoldElapsed: true,
     isExpired: reason === 'expired',
   };
 }

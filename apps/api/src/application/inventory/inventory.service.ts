@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThan, type Repository } from 'typeorm';
 
-import { CheckoutStatus } from '../checkouts/checkout-status';
+import { CheckoutStatus } from '../checkouts/checkouts.validators';
 import { OrderItem } from '../orders/order-item.entity';
 import { OrderInventoryChangedException } from '../orders/orders.exceptions';
 import { Product } from '../products/product.entity';

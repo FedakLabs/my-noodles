@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { CartItem } from '../cart/cart-item.entity';
 import { FeedSessionView } from '../feed/feed-session-view.entity';
-import { CART_IDLE_MS, FEED_IDLE_MS } from './visitor-session.cookie';
+import { CART_IDLE_MS, FEED_IDLE_MS } from './visitor-session.config';
 import { VisitorSession } from './visitor-session.entity';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class VisitorSessionService {
     }
 
     const now = Date.now();
-    return this.visitorsRepository.save(
+    return await this.visitorsRepository.save(
       this.visitorsRepository.create({
         feedExpiresAt: new Date(now + FEED_IDLE_MS),
         cartExpiresAt: new Date(now + CART_IDLE_MS),
@@ -44,7 +44,7 @@ export class VisitorSessionService {
     }
 
     visitor.feedExpiresAt = new Date(now + FEED_IDLE_MS);
-    return this.visitorsRepository.save(visitor);
+    return await this.visitorsRepository.save(visitor);
   }
 
   /** Slide cart TTL; on lapse clear cart items lazily. Checkouts are independent. */
@@ -56,7 +56,7 @@ export class VisitorSessionService {
     }
 
     visitor.cartExpiresAt = new Date(now + CART_IDLE_MS);
-    return this.visitorsRepository.save(visitor);
+    return await this.visitorsRepository.save(visitor);
   }
 
   async resetFeedViews(visitorId: string): Promise<void> {

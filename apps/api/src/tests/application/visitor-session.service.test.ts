@@ -2,7 +2,7 @@ import type { Repository } from 'typeorm';
 
 import { type CartItem } from '@/application/cart/cart-item.entity';
 import { type FeedSessionView } from '@/application/feed/feed-session-view.entity';
-import { type VisitorSession, VisitorSessionService } from '@/application/visitor';
+import { type VisitorSession, VisitorSessionService } from '@/application/visitor-session';
 
 import { jest } from '../jest-globals';
 

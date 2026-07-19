@@ -1,18 +1,18 @@
-import { type INestApplication } from '@nestjs/common';
+import { type INestApplication, type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
 import { CartService } from '@/application/cart/cart.service';
-import { CheckoutStatus } from '@/application/checkouts/checkout-status';
 import { Checkout } from '@/application/checkouts/checkout.entity';
 import { CheckoutsController } from '@/application/checkouts/checkouts.controller';
 import { CheckoutsService } from '@/application/checkouts/checkouts.service';
+import { CheckoutStatus } from '@/application/checkouts/checkouts.validators';
 import { DeliveryService } from '@/application/delivery';
 import { InventoryService } from '@/application/inventory/inventory.service';
 import { Order, OrderDelivery, OrderItem, OrderStatus } from '@/application/orders';
 import { TelegramService } from '@/application/telegram';
-import { VisitorSessionService } from '@/application/visitor';
+import { VisitorSessionMiddleware, VisitorSessionService } from '@/application/visitor-session';
 
 import { sampleProductId } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
@@ -72,14 +72,15 @@ describe('checkouts (e2e)', () => {
     clearCartItems = jest.fn().mockResolvedValue(undefined);
     visitorResolve = jest.fn().mockResolvedValue({ id: visitorId });
 
-    app = await createApiTestApp({
+    @Module({
       controllers: [CheckoutsController],
       providers: [
         CheckoutsService,
+        VisitorSessionMiddleware,
         {
           provide: DataSource,
           useValue: {
-            transaction: jest.fn(async (callback: () => Promise<unknown>) => callback()),
+            transaction: jest.fn(async (callback: () => Promise<unknown>) => await callback()),
           },
         },
         {
@@ -135,7 +136,14 @@ describe('checkouts (e2e)', () => {
           useValue: { estimateForOrder: jest.fn().mockResolvedValue(null) },
         },
       ],
-    });
+    })
+    class CheckoutsE2eModule implements NestModule {
+      configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(VisitorSessionMiddleware).forRoutes(CheckoutsController);
+      }
+    }
+
+    app = await createApiTestApp({ imports: [CheckoutsE2eModule] });
   });
 
   afterAll(async () => {
@@ -311,7 +319,10 @@ describe('checkouts (e2e)', () => {
 
     const server = apiHttpServer(app);
 
-    const response = await request(server).delete(`/api/checkouts/${checkoutId}`).expect(200);
+    const response = await request(server)
+      .delete(`/api/checkouts/${checkoutId}`)
+      .send({ reason: 'user' })
+      .expect(200);
 
     expect(response.body).toMatchObject({ status: CheckoutStatus.Cancelled });
   });

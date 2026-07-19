@@ -25,23 +25,23 @@ export const cartMutationKeys = {
 };
 
 export async function fetchCart(): Promise<CartResponseDto> {
-  return requestData(cartControllerGetCart());
+  return await requestData(cartControllerGetCart());
 }
 
 export async function addCartItem(body: AddCartItemDto): Promise<CartResponseDto> {
-  return requestData(cartControllerAddItem({ body }));
+  return await requestData(cartControllerAddItem({ body }));
 }
 
 export async function setCartItemQty(productId: string, qty: number): Promise<CartResponseDto> {
-  return requestData(cartControllerSetItemQty({ path: { productId }, body: { qty } }));
+  return await requestData(cartControllerSetItemQty({ path: { productId }, body: { qty } }));
 }
 
 export async function removeCartItem(productId: string): Promise<CartResponseDto> {
-  return requestData(cartControllerRemoveItem({ path: { productId } }));
+  return await requestData(cartControllerRemoveItem({ path: { productId } }));
 }
 
 export async function clearCart(): Promise<CartResponseDto> {
-  return requestData(cartControllerClearCart());
+  return await requestData(cartControllerClearCart());
 }
 
 export const cartQueries = {

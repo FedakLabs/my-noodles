@@ -21,7 +21,7 @@ export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnTy
     const title = product.name ?? product.slug;
     const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
 
-    return createOgImage({
+    return await createOgImage({
       eyebrow: tMetadata('title'),
       title,
       subtitle,

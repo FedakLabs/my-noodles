@@ -9,7 +9,7 @@ import { InventoryModule } from '../inventory';
 import { OrderDelivery } from '../orders/order-delivery.entity';
 import { OrderItem } from '../orders/order-item.entity';
 import { Order } from '../orders/order.entity';
-import { VisitorModule } from '../visitor';
+import { VisitorSessionModule } from '../visitor-session';
 import { CheckoutExpiryCron } from './checkout-expiry.cron';
 import { Checkout } from './checkout.entity';
 import { CheckoutsController } from './checkouts.controller';
@@ -17,7 +17,7 @@ import { CheckoutsService } from './checkouts.service';
 
 @Module({
   imports: [
-    VisitorModule,
+    VisitorSessionModule,
     CartModule,
     InventoryModule,
     DeliveryModule,

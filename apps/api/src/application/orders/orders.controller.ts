@@ -21,6 +21,6 @@ export class OrdersController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiException(OrderNotFoundException, OrderCancelNotAllowedException, OrderInventoryChangedException)
   async cancelOrder(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelOrderDto): Promise<Order> {
-    return this.ordersService.cancelSubmittedOrder(id, dto.reason);
+    return await this.ordersService.cancelSubmittedOrder(id, dto.reason);
   }
 }

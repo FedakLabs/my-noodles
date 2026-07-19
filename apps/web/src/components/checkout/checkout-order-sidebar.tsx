@@ -2,11 +2,13 @@
 
 import type { BoxProps } from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { DeliveryMethod, type OrderDeliveryEstimateDto } from '@my-noodles/api-clients/storefront';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import type { Checkout } from '@/api/checkouts';
 
+import { CheckoutDeliveryEstimate } from './checkout-delivery-fields';
 import { CheckoutOrderCard } from './checkout-order-card';
 import { CheckoutOrderItemsList } from './checkout-order-items-list';
 import { CheckoutOrderSummary } from './checkout-order-summary';
@@ -18,9 +20,20 @@ type CheckoutOrderSidebarProps = {
   footer?: ReactNode;
   sticky?: boolean;
   sx?: BoxProps['sx'];
+  deliveryEstimate?: OrderDeliveryEstimateDto | null;
+  deliveryEstimateIsLoading?: boolean;
+  deliveryMethod?: DeliveryMethod;
 };
 
-export function CheckoutOrderSidebar({ checkout, footer, sticky = false, sx }: CheckoutOrderSidebarProps) {
+export function CheckoutOrderSidebar({
+  checkout,
+  footer,
+  sticky = false,
+  sx,
+  deliveryEstimate = null,
+  deliveryEstimateIsLoading = false,
+  deliveryMethod = DeliveryMethod.WAREHOUSE,
+}: CheckoutOrderSidebarProps) {
   const t = useTranslations('checkout.items');
 
   return (
@@ -41,6 +54,12 @@ export function CheckoutOrderSidebar({ checkout, footer, sticky = false, sx }: C
       <CheckoutOrderCard aria-label={t('title')}>
         <CheckoutOrderItemsList checkout={checkout} />
       </CheckoutOrderCard>
+
+      <CheckoutDeliveryEstimate
+        estimate={deliveryEstimate}
+        isLoading={deliveryEstimateIsLoading}
+        method={deliveryMethod}
+      />
 
       <CheckoutOrderCard aria-label={t('summaryTitle')}>
         <CheckoutOrderSummary

@@ -3,7 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { Checkout } from '../checkouts/checkout.entity';
-import { VisitorSession } from '../visitor/visitor-session.entity';
+import { VisitorSession } from '../visitor-session/visitor-session.entity';
 import { OrderCancelledReason } from './order-cancelled-reason';
 import { OrderDelivery } from './order-delivery.entity';
 import { OrderItem } from './order-item.entity';

@@ -52,6 +52,9 @@ export const feedOutsideRailSx = {
   flexDirection: 'column',
 } as const;
 
+/** Desktop comments column open/close — gradual so the reel recenters smoothly. */
+export const FEED_COMMENTS_PANEL_TRANSITION_MS = 350;
+
 export const feedCommentsPanelLayoutSx = {
   flexShrink: 0,
   height: '100%',
@@ -62,6 +65,23 @@ export const feedCommentsPanelLayoutSx = {
   borderColor: 'divider',
   overflow: 'hidden',
 } as const;
+
+/** Desktop sidebar: animate max-width instead of display toggle (avoids reel jump). */
+export function feedCommentsPanelDesktopSx(theme: Theme, open: boolean) {
+  return {
+    ...feedCommentsPanelLayoutSx,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    minWidth: 0,
+    maxWidth: open ? { desktop: 300, lg: 460 } : 0,
+    borderLeftWidth: open ? 1 : 0,
+    pointerEvents: open ? ('auto' as const) : ('none' as const),
+    transition: theme.transitions.create('max-width', {
+      duration: FEED_COMMENTS_PANEL_TRANSITION_MS,
+      easing: theme.transitions.easing.easeInOut,
+    }),
+  };
+}
 
 export const feedDesktopSplitRowSx = {
   display: 'flex',

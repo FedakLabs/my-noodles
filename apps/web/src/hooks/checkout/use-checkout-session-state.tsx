@@ -21,14 +21,12 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
 
   const isInProgress = checkout?.status === 'in_progress';
   const isCompleted = checkout?.status === 'completed';
-  const isExpiredHold = checkout?.status === 'cancelled' && checkout.cancelledReason === 'expired';
 
   const errorCode: ApiErrorCode | undefined = error ? getApiErrorCode(error) : undefined;
-  const isExpiredBySubmit = errorCode === 'checkout_expired';
-  const isNotInProgressBySubmit = errorCode === 'checkout_not_in_progress';
+  const isInactiveByMutation = errorCode === 'checkout_inactive';
   const isInventoryChanged = errorCode === 'order_inventory_changed';
-  const isExpired = isExpiredHold || isExpiredBySubmit;
-  const showSubmitErrorAlert = Boolean(error) && !isExpiredBySubmit && !isNotInProgressBySubmit;
+  const isExpired = Boolean(checkout?.isExpired) || isInactiveByMutation;
+  const showSubmitErrorAlert = Boolean(error) && !isInactiveByMutation;
 
   const submitErrorMessage = isInventoryChanged ? t('submitInventoryChanged') : t('error');
 
@@ -53,7 +51,6 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
     isInProgress,
     isCompleted,
     isExpired,
-    isNotInProgressBySubmit,
     isInventoryChanged,
     showSubmitErrorAlert,
     submitErrorMessage,

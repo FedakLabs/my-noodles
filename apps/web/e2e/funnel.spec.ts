@@ -42,8 +42,6 @@ test.describe('discovery funnel', () => {
 
     await expect(page.getByText(/Орієнтовна доставка/)).toBeVisible();
 
-    // Checkout disables submit while a field/combobox is focused (autosave guard).
-    await page.getByRole('heading', { name: uk.checkout.title }).click();
     await expect(page.getByTestId('checkout-submit')).toBeEnabled();
     await page.getByTestId('checkout-submit').click();
 

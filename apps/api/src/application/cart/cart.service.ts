@@ -6,7 +6,7 @@ import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, Reposito
 
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';
-import type { VisitorSession } from '../visitor/visitor-session.entity';
+import type { VisitorSession } from '../visitor-session/visitor-session.entity';
 import { CartItem } from './cart-item.entity';
 import type { CartResponseDto } from './cart.dto';
 import {
@@ -70,7 +70,7 @@ export class CartService extends TransactionalRepository {
       }
     });
 
-    return this.getCart(visitor);
+    return await this.getCart(visitor);
   }
 
   async updateItem(visitor: VisitorSession, productId: string, qty: number): Promise<CartResponseDto> {
@@ -89,7 +89,7 @@ export class CartService extends TransactionalRepository {
       await this.cartItemsRepository.save(existing);
     });
 
-    return this.getCart(visitor);
+    return await this.getCart(visitor);
   }
 
   async removeItem(visitor: VisitorSession, productId: string): Promise<CartResponseDto> {
@@ -97,12 +97,12 @@ export class CartService extends TransactionalRepository {
       visitorSessionId: visitor.id,
       productId,
     });
-    return this.getCart(visitor);
+    return await this.getCart(visitor);
   }
 
   async clearCart(visitor: VisitorSession): Promise<CartResponseDto> {
     await this.cartItemsRepository.softDelete({ visitorSessionId: visitor.id });
-    return this.getCart(visitor);
+    return await this.getCart(visitor);
   }
 
   async clearCartItems(visitorSessionId: string): Promise<void> {

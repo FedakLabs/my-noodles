@@ -9,7 +9,7 @@ import { CartPanel } from './cart-panel';
 
 const drawerPaperSx = {
   mobile: {
-    maxHeight: '85dvh',
+    height: '80dvh',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',

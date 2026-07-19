@@ -64,7 +64,7 @@ export class NovaPoshtaApi extends ApiClient {
   }
 
   async getCities(query: string, page = 1, limit = 50): Promise<NovaPoshtaDirectoryCityRow[]> {
-    return this.apiRequest<NovaPoshtaDirectoryCityRow[]>(ADDRESS_MODEL, 'getCities', {
+    return await this.apiRequest<NovaPoshtaDirectoryCityRow[]>(ADDRESS_MODEL, 'getCities', {
       Page: page,
       Limit: limit,
       FindByString: query,
@@ -72,15 +72,19 @@ export class NovaPoshtaApi extends ApiClient {
   }
 
   async searchSettlements(query: string): Promise<NovaPoshtaSearchSettlementRow[]> {
-    return this.apiRequest<NovaPoshtaSearchSettlementRow[]>(ADDRESS_GENERAL_MODEL, 'searchSettlements', {
-      CityName: query,
-      Limit: 50,
-      Page: 1,
-    });
+    return await this.apiRequest<NovaPoshtaSearchSettlementRow[]>(
+      ADDRESS_GENERAL_MODEL,
+      'searchSettlements',
+      {
+        CityName: query,
+        Limit: 50,
+        Page: 1,
+      },
+    );
   }
 
   async getWarehouses(cityRef: string, query?: string): Promise<NovaPoshtaWarehouseRow[]> {
-    return this.apiRequest<NovaPoshtaWarehouseRow[]>(ADDRESS_GENERAL_MODEL, 'getWarehouses', {
+    return await this.apiRequest<NovaPoshtaWarehouseRow[]>(ADDRESS_GENERAL_MODEL, 'getWarehouses', {
       CityRef: cityRef,
       FindByString: query ?? '',
       Limit: 50,

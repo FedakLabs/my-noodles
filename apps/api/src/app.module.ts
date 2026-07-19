@@ -1,19 +1,20 @@
 import { prepareDataSource } from '@my-noodles/api-lib/persistence';
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CartModule } from './application/cart';
-import { CheckoutsModule } from './application/checkouts';
+import { CartController, CartModule } from './application/cart';
+import { CheckoutsController, CheckoutsModule } from './application/checkouts';
 import { CollectionsModule } from './application/collections';
 import { CountriesModule } from './application/countries';
 import { DeliveryModule } from './application/delivery';
-import { FeedModule } from './application/feed';
+import { FeedController, FeedModule } from './application/feed';
 import { HealthModule } from './application/health';
 import { OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
+import { VisitorSessionMiddleware, VisitorSessionModule } from './application/visitor-session';
 import { config } from './config';
 import './infrastructure/logging';
 
@@ -25,6 +26,7 @@ import './infrastructure/logging';
       ...prepareDataSource(config),
       autoLoadEntities: true,
     }),
+    VisitorSessionModule,
     HealthModule,
     ProductsModule,
     CollectionsModule,
@@ -37,4 +39,8 @@ import './infrastructure/logging';
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(VisitorSessionMiddleware).forRoutes(CartController, CheckoutsController, FeedController);
+  }
+}

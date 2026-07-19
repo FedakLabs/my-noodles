@@ -4,12 +4,22 @@ import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'cla
 import { IsPhone } from '@/utils/phone';
 
 import { CreateOrderDeliveryDto, UpdateOrderDeliveryDto } from '../orders/orders.dto';
-import { CheckoutStatus, IsCheckoutStatus } from './checkout-status';
+import {
+  CheckoutCancelledReason,
+  CheckoutStatus,
+  IsCheckoutCancelledReason,
+  IsCheckoutStatus,
+} from './checkouts.validators';
 
 export class ListCheckoutsQueryDto {
   @IsOptional()
   @IsCheckoutStatus()
   status?: CheckoutStatus;
+}
+
+export class CancelCheckoutDto {
+  @IsCheckoutCancelledReason()
+  reason!: CheckoutCancelledReason;
 }
 
 export class SubmitCheckoutDto {

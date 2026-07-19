@@ -23,7 +23,7 @@ export const deliveryQueryKeys = {
 };
 
 export async function fetchDeliveryProviders(): Promise<DeliveryProviderDto[]> {
-  return requestData(deliveryControllerListProviders());
+  return await requestData(deliveryControllerListProviders());
 }
 
 export async function fetchDeliveryCities(
@@ -31,7 +31,7 @@ export async function fetchDeliveryCities(
   method: DeliveryMethod,
   query?: string,
 ): Promise<DeliveryCityDto[]> {
-  return requestData(
+  return await requestData(
     deliveryControllerSearchCities({
       query: { provider, method, q: query?.trim() ?? '' },
     }),
@@ -43,7 +43,7 @@ export async function fetchDeliveryWarehouses(
   cityRef: string,
   query?: string,
 ): Promise<DeliveryWarehouseDto[]> {
-  return requestData(
+  return await requestData(
     deliveryControllerSearchWarehouses({
       query: { provider, cityRef, ...(query ? { q: query } : {}) },
     }),

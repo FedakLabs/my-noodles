@@ -26,7 +26,7 @@ async function loadOgFonts() {
     ]);
   }
 
-  return ogFontsPromise;
+  return await ogFontsPromise;
 }
 
 type CreateOgImageOptions = {

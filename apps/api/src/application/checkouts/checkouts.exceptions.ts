@@ -1,5 +1,7 @@
 import { AppException, HttpStatus, NotFoundException, SAMPLE_UUID } from '@my-noodles/api-lib/exceptions';
 
+import { CheckoutStatus } from './checkouts.validators';
+
 export class CheckoutNotFoundException extends NotFoundException {
   static readonly sample = new CheckoutNotFoundException(SAMPLE_UUID);
 
@@ -8,19 +10,12 @@ export class CheckoutNotFoundException extends NotFoundException {
   }
 }
 
-export class CheckoutExpiredException extends AppException<{ checkoutId: string }> {
-  static readonly sample = new CheckoutExpiredException(SAMPLE_UUID);
+/** Checkout exists but is no longer open for edits / submit (completed, cancelled, or hold elapsed). */
+export class CheckoutInactiveException extends AppException<{ checkoutId: string; status: CheckoutStatus }> {
+  static readonly sample = new CheckoutInactiveException(SAMPLE_UUID, CheckoutStatus.Completed);
 
-  constructor(checkoutId: string) {
-    super(HttpStatus.CONFLICT, 'checkout_expired', 'Checkout expired', { checkoutId });
-  }
-}
-
-export class CheckoutNotInProgressException extends AppException<{ checkoutId: string; status: string }> {
-  static readonly sample = new CheckoutNotInProgressException(SAMPLE_UUID, 'completed');
-
-  constructor(checkoutId: string, status: string) {
-    super(HttpStatus.CONFLICT, 'checkout_not_in_progress', 'Checkout is no longer in progress', {
+  constructor(checkoutId: string, status: CheckoutStatus) {
+    super(HttpStatus.CONFLICT, 'checkout_inactive', 'Checkout is no longer active', {
       checkoutId,
       status,
     });

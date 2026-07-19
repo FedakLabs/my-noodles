@@ -65,8 +65,8 @@ export function catchIf<T>(
   const matcher = errorMatcher(props);
   return async (error: any): Promise<T> => {
     if (matcher(error)) {
-      return typeof res === 'function' ? (res as (error: any) => T | Promise<T>)(error) : res;
+      return typeof res === 'function' ? await (res as (error: any) => T | Promise<T>)(error) : res;
     }
-    return Promise.reject(error);
+    return await Promise.reject(error);
   };
 }

@@ -10,7 +10,7 @@ class TestTransactionalRepository extends TransactionalRepository {
 
 describe('TransactionalRepository', () => {
   it('delegates withTransaction to runInTransaction', async () => {
-    const transaction = jest.fn(async (callback: () => Promise<unknown>) => callback());
+    const transaction = jest.fn(async (callback: () => Promise<unknown>) => await callback());
     const dataSource = { transaction } as never;
     const repository = new TestTransactionalRepository(dataSource);
 

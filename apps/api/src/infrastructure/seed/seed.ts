@@ -36,7 +36,7 @@ async function upsertBrand(repository: Repository<Brand>, name: string): Promise
     return existing;
   }
 
-  return repository.save(repository.create({ slug, name, logoUrl: null, themeKey: null }));
+  return await repository.save(repository.create({ slug, name, logoUrl: null, themeKey: null }));
 }
 
 async function upsertCategory(
@@ -50,7 +50,7 @@ async function upsertCategory(
     return existing;
   }
 
-  return repository.save(
+  return await repository.save(
     repository.create({
       slug,
       name: placeholderLocalized(name),
@@ -68,7 +68,7 @@ async function upsertCountry(repository: Repository<Country>, countryName: strin
     return existing;
   }
 
-  return repository.save(
+  return await repository.save(
     repository.create({
       code: seed.code,
       slug: seed.slug,
@@ -89,7 +89,7 @@ async function upsertCollection(
     return existing;
   }
 
-  return repository.save(
+  return await repository.save(
     repository.create({
       code: category.slug,
       slug: category.slug,

@@ -37,6 +37,7 @@
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
     "typescript/await-thenable": "error",
+    "typescript/return-await": ["error", "always"],
     "typescript/no-misused-spread": "off",
     "typescript/no-meaningless-void-operator": "off"
   }

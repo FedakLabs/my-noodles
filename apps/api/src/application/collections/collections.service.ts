@@ -13,7 +13,7 @@ export class CollectionsService {
   ) {}
 
   async list(): Promise<Collection[]> {
-    return this.collectionsRepository.find({
+    return await this.collectionsRepository.find({
       where: { isActive: true },
       order: { sortOrder: 'ASC', slug: 'ASC' },
     });

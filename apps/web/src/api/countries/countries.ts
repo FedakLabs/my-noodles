@@ -12,7 +12,7 @@ export const countriesQueryKeys = {
 };
 
 export async function fetchCountries(): Promise<Country[]> {
-  return requestData(countriesControllerList());
+  return await requestData(countriesControllerList());
 }
 
 export const countriesQueries = {

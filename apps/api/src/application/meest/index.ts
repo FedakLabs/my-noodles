@@ -1,3 +1,3 @@
 export { MeestConfig, meestConfig } from './meest.config';
 export { MeestModule } from './meest.module';
-export { MeestService } from './meest.service';
+export { extractMeestWarehouseNumber, formatMeestCityName, MeestService } from './meest.service';

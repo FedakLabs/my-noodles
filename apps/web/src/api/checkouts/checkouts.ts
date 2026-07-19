@@ -31,7 +31,7 @@ export const checkoutsQueryKeys = {
 };
 
 export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<Checkout[]> {
-  return requestData(
+  return await requestData(
     checkoutsControllerListCheckouts({
       query: params?.status ? { status: params.status } : undefined,
     }),
@@ -39,33 +39,38 @@ export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<Chec
 }
 
 export async function startCheckout(): Promise<Checkout> {
-  return requestData(checkoutsControllerStartCheckout());
+  return await requestData(checkoutsControllerStartCheckout());
 }
 
 export async function fetchCheckout(checkoutId: string): Promise<Checkout> {
-  return requestData(checkoutsControllerGetCheckout({ path: { id: checkoutId } }));
+  return await requestData(checkoutsControllerGetCheckout({ path: { id: checkoutId } }));
 }
 
 export async function updateCheckoutReceiver(
   checkoutId: string,
   body: UpdateCheckoutReceiverDto,
 ): Promise<Checkout> {
-  return requestData(checkoutsControllerUpdateCheckoutReceiver({ path: { id: checkoutId }, body }));
+  return await requestData(checkoutsControllerUpdateCheckoutReceiver({ path: { id: checkoutId }, body }));
 }
 
 export async function updateCheckoutDelivery(
   checkoutId: string,
   body: UpdateCheckoutDeliveryDto,
 ): Promise<Checkout> {
-  return requestData(checkoutsControllerUpdateCheckoutDelivery({ path: { id: checkoutId }, body }));
+  return await requestData(checkoutsControllerUpdateCheckoutDelivery({ path: { id: checkoutId }, body }));
 }
 
 export async function submitCheckout(checkoutId: string, body: SubmitCheckoutDto): Promise<Order> {
-  return requestData(checkoutsControllerSubmitCheckout({ path: { id: checkoutId }, body }));
+  return await requestData(checkoutsControllerSubmitCheckout({ path: { id: checkoutId }, body }));
 }
 
 export async function cancelCheckout(checkoutId: string): Promise<Checkout> {
-  return requestData(checkoutsControllerCancelCheckout({ path: { id: checkoutId } }));
+  return await requestData(
+    checkoutsControllerCancelCheckout({
+      path: { id: checkoutId },
+      body: { reason: 'user' },
+    }),
+  );
 }
 
 export const checkoutsQueries = {

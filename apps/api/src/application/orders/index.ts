@@ -2,7 +2,6 @@ export * from './order.entity';
 export * from './order-cancelled-reason';
 export * from './order-delivery.dto';
 export * from './order-delivery.entity';
-export * from './order-delivery.format';
 export * from './order-item.entity';
 export * from './order-status';
 export * from './orders.controller';

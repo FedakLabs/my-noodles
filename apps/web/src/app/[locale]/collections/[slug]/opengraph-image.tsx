@@ -18,7 +18,7 @@ export default withPageLocaleResult<CollectionOpenGraphImageProps, Awaited<Retur
       getTranslations({ locale, namespace: 'metadata' }),
     ]);
 
-    return createOgImage({
+    return await createOgImage({
       eyebrow: tMetadata('title'),
       title: collection.name ?? collection.slug,
       subtitle: collection.description ?? undefined,

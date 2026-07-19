@@ -24,23 +24,23 @@ export const feedQueryKeys = {
 };
 
 export async function fetchFeedNext(body: FeedNextDto): Promise<FeedNextResponseDto> {
-  return requestData(feedControllerNext({ body }));
+  return await requestData(feedControllerNext({ body }));
 }
 
 export async function likeFeedProduct(productId: string): Promise<FeedLikeStateDto> {
-  return requestData(feedControllerLike({ path: { productId } }));
+  return await requestData(feedControllerLike({ path: { productId } }));
 }
 
 export async function unlikeFeedProduct(productId: string): Promise<FeedLikeStateDto> {
-  return requestData(feedControllerUnlike({ path: { productId } }));
+  return await requestData(feedControllerUnlike({ path: { productId } }));
 }
 
 export async function fetchFeedComments(productId: string): Promise<FeedProductComment[]> {
-  return requestData(feedControllerComments({ path: { productId } }));
+  return await requestData(feedControllerComments({ path: { productId } }));
 }
 
 export async function fetchFeedLikes(): Promise<Product[]> {
-  return requestData(feedControllerLikes());
+  return await requestData(feedControllerLikes());
 }
 
 export const feedQueries = {

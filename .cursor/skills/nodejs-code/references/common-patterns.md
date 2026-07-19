@@ -46,6 +46,7 @@ application/products/
 ├── product.entity.ts
 ├── products.dto.ts
 ├── products.exceptions.ts
+├── products.validators.ts   # optional — domain enums + custom validators
 ├── index.ts
 └── products.test.ts
 ```
@@ -225,6 +226,10 @@ Using `create()` also applies TypeORM entity construction consistently before pe
 ---
 
 ## 6. Validators & pipes
+
+### Feature validators (`<feature>.validators.ts`)
+
+When a feature needs shared domain enums or reusable property decorators (class-validator + `@ApiProperty` / `enumName` for OpenAPI), put them in `<feature>.validators.ts` next to the DTOs — e.g. `checkouts.validators.ts` with `CheckoutStatus` and `IsCheckoutStatus()`. Keep ordinary per-field validators (`@IsString()`, `@IsUUID()`, …) on the DTO classes; use this file only when the decorator or enum is reused across DTOs/entities/services.
 
 ### Pagination (`src/utils/pagination.ts`)
 

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Product } from '../products/product.entity';
-import { VisitorModule } from '../visitor';
+import { VisitorSessionModule } from '../visitor-session';
 import { FeedCommentsService } from './feed-comments.service';
 import { FeedProductComment } from './feed-product-comment.entity';
 import { FeedSessionLike } from './feed-session-like.entity';
@@ -13,7 +13,7 @@ import { FeedService } from './feed.service';
 
 @Module({
   imports: [
-    VisitorModule,
+    VisitorSessionModule,
     TypeOrmModule.forFeature([FeedSessionLike, FeedSessionView, FeedProductComment, Product]),
   ],
   controllers: [FeedController],

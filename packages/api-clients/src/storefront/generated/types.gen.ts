@@ -231,6 +231,13 @@ export type Checkout = {
      * Response-only — set by `CheckoutsService.attachCheckoutAggregates`.
      */
     deliveryEstimate?: OrderDeliveryEstimateDto | null;
+    /**
+     * True when `expiresAt` is at or before now (clock only — ignores status).
+     */
+    isHoldElapsed: boolean;
+    /**
+     * True when the checkout was cancelled because the hold expired.
+     */
     isExpired: boolean;
     id: string;
     orderId: string;
@@ -694,8 +701,12 @@ export type CheckoutsControllerStartCheckoutResponses = {
 
 export type CheckoutsControllerStartCheckoutResponse = CheckoutsControllerStartCheckoutResponses[keyof CheckoutsControllerStartCheckoutResponses];
 
+export type CancelCheckoutDto = {
+    reason: 'user' | 'expired';
+};
+
 export type CheckoutsControllerCancelCheckoutData = {
-    body?: never;
+    body: CancelCheckoutDto;
     path: {
         id: string;
     };
@@ -716,11 +727,11 @@ export type CheckoutsControllerCancelCheckoutErrors = {
         };
     };
     /**
-     * checkout_not_in_progress
+     * checkout_inactive
      */
     409: {
         status: 409;
-        code: 'checkout_not_in_progress';
+        code: 'checkout_inactive';
         message: string;
         payload: {
             checkoutId?: string;
@@ -790,22 +801,15 @@ export type CheckoutsControllerUpdateCheckoutReceiverErrors = {
         };
     };
     /**
-     * checkout_not_in_progress, checkout_expired
+     * checkout_inactive
      */
     409: {
         status: 409;
-        code: 'checkout_not_in_progress';
+        code: 'checkout_inactive';
         message: string;
         payload: {
             checkoutId?: string;
             status?: string;
-        };
-    } | {
-        status: 409;
-        code: 'checkout_expired';
-        message: string;
-        payload: {
-            checkoutId?: string;
         };
     };
 };
@@ -840,22 +844,15 @@ export type CheckoutsControllerUpdateCheckoutDeliveryErrors = {
         };
     };
     /**
-     * checkout_not_in_progress, checkout_expired
+     * checkout_inactive
      */
     409: {
         status: 409;
-        code: 'checkout_not_in_progress';
+        code: 'checkout_inactive';
         message: string;
         payload: {
             checkoutId?: string;
             status?: string;
-        };
-    } | {
-        status: 409;
-        code: 'checkout_expired';
-        message: string;
-        payload: {
-            checkoutId?: string;
         };
     };
 };
@@ -890,22 +887,15 @@ export type CheckoutsControllerSubmitCheckoutErrors = {
         };
     };
     /**
-     * checkout_not_in_progress, checkout_expired, order_inventory_changed
+     * checkout_inactive, order_inventory_changed
      */
     409: {
         status: 409;
-        code: 'checkout_not_in_progress';
+        code: 'checkout_inactive';
         message: string;
         payload: {
             checkoutId?: string;
             status?: string;
-        };
-    } | {
-        status: 409;
-        code: 'checkout_expired';
-        message: string;
-        payload: {
-            checkoutId?: string;
         };
     } | {
         status: 409;

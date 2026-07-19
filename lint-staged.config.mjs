@@ -1,11 +1,20 @@
 const quote = (files) => files.map((f) => `"${f}"`).join(' ');
 
+/** Skip generated paths — oxlint/oxfmt ignore them and fail with "no files". */
+const lintable = (files) => files.filter((f) => !f.includes('/generated/'));
+
 const code =
   (dir, typeAware = false) =>
-  (files) => [
-    `pnpm -C ${dir} exec oxlint ${typeAware ? '--type-aware ' : ''}--fix ${quote(files)}`,
-    `oxfmt ${quote(files)}`,
-  ];
+  (files) => {
+    const forTools = lintable(files);
+    if (forTools.length === 0) {
+      return [];
+    }
+    return [
+      `pnpm -C ${dir} exec oxlint ${typeAware ? '--type-aware ' : ''}--fix ${quote(forTools)}`,
+      `oxfmt ${quote(forTools)}`,
+    ];
+  };
 
 export default {
   'apps/web/**/*.{ts,tsx}': code('apps/web', true),

@@ -4,7 +4,7 @@ import { In, Not, Repository } from 'typeorm';
 
 import { Product } from '../products/product.entity';
 import { buildProductOrder, buildProductWhere, DEFAULT_PRODUCT_SORT } from '../products/products.filters';
-import type { VisitorSession } from '../visitor/visitor-session.entity';
+import type { VisitorSession } from '../visitor-session/visitor-session.entity';
 import { FeedCommentsService } from './feed-comments.service';
 import { FeedSessionService } from './feed-session.service';
 import type { FeedFiltersDto, FeedNextDto, FeedNextResponseDto } from './feed.dto';

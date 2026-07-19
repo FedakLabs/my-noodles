@@ -1,4 +1,4 @@
-import { CheckoutStatus } from '@/application/checkouts/checkout-status';
+import { CheckoutStatus } from '@/application/checkouts/checkouts.validators';
 import { InventoryService } from '@/application/inventory/inventory.service';
 import { OrderInventoryChangedException } from '@/application/orders/orders.exceptions';
 

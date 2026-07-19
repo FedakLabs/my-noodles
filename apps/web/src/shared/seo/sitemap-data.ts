@@ -9,7 +9,7 @@ import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
 const SITEMAP_PRODUCT_PAGE_SIZE = 100;
 
 export async function fetchAllProductSlugs(locale: AppLocale = routing.defaultLocale): Promise<string[]> {
-  return runWithAppLocale(locale, async () => {
+  return await runWithAppLocale(locale, async () => {
     const slugs: string[] = [];
     let page = 1;
 
@@ -34,7 +34,7 @@ export async function fetchAllProductSlugs(locale: AppLocale = routing.defaultLo
 }
 
 export async function fetchAllCollectionSlugs(locale: AppLocale = routing.defaultLocale): Promise<string[]> {
-  return runWithAppLocale(locale, async () => {
+  return await runWithAppLocale(locale, async () => {
     const collections = await fetchCollections();
 
     return collections.map((collection) => collection.slug);

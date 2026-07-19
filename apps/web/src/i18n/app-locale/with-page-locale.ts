@@ -54,10 +54,10 @@ export function withPageLocaleResult<TProps extends LocalePageProps, TResult>(
     const localizedProps = await resolvePageLocaleProps(props);
 
     if (!localizedProps) {
-      return onInvalid((await props.params) as Awaited<TProps['params']>);
+      return await onInvalid((await props.params) as Awaited<TProps['params']>);
     }
 
-    return runWithAppLocale(localizedProps.locale, () => onValid(localizedProps));
+    return await runWithAppLocale(localizedProps.locale, () => onValid(localizedProps));
   };
 }
 

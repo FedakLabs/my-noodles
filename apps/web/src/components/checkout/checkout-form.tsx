@@ -11,7 +11,7 @@ import { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storef
 import { PhoneInput } from '@my-noodles/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import type { Checkout } from '@/api/checkouts';
@@ -23,7 +23,10 @@ import {
   useUpdateCheckoutReceiver,
 } from '@/api/checkouts';
 import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
-import { CheckoutDeliveryFields } from '@/components/checkout/checkout-delivery-fields';
+import {
+  CheckoutDeliveryFields,
+  isCheckoutDeliveryEstimateLoading,
+} from '@/components/checkout/checkout-delivery-fields';
 import { CheckoutFormSection } from '@/components/checkout/checkout-form-section';
 import { checkoutToFormValues, formValuesToSubmitCheckout } from '@/components/checkout/checkout-form-values';
 import { CheckoutHoldTimer } from '@/components/checkout/checkout-hold-timer';
@@ -34,11 +37,13 @@ import { CheckoutOrderSummary } from '@/components/checkout/checkout-order-summa
 import { useAnalyticsActions } from '@/hooks/analytics';
 import { useCheckoutSessionState } from '@/hooks/checkout';
 import { useViewport } from '@/hooks/layout';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { cartLineToGa4Item } from '@/shared/analytics';
 
 import {
   type CheckoutFormData,
   type CheckoutReceiverField,
+  type CheckoutReceiverSchema,
   createCheckoutSchemas,
   isCheckoutFormValid,
   isCheckoutReceiverComplete,
@@ -46,26 +51,30 @@ import {
   toValidReceiverFieldPatch,
 } from './validation';
 
+const AUTOSAVE_DEBOUNCE_MS = 500;
+const RECEIVER_FIELDS = [
+  'firstName',
+  'lastName',
+  'phone',
+] as const satisfies readonly CheckoutReceiverField[];
+
 type CheckoutFormProps = {
   checkoutId: string;
   checkout: Checkout;
   onHoldExpired: () => void;
 };
 
-function isCheckoutFieldTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
+function buildReceiverPatch(values: CheckoutFormData, receiverSchema: CheckoutReceiverSchema) {
+  const patch: Partial<Pick<CheckoutFormData, CheckoutReceiverField>> = {};
+
+  for (const field of RECEIVER_FIELDS) {
+    const fieldPatch = toValidReceiverFieldPatch(field, values, receiverSchema);
+    if (fieldPatch) {
+      Object.assign(patch, fieldPatch);
+    }
   }
 
-  if (target.closest('[data-testid="checkout-submit"]')) {
-    return false;
-  }
-
-  return Boolean(
-    target.closest(
-      'input, textarea, select, [role="combobox"], .MuiInputBase-root, .MuiSelect-select, .MuiAutocomplete-root',
-    ),
-  );
+  return Object.keys(patch).length > 0 ? patch : null;
 }
 
 export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFormProps) {
@@ -83,7 +92,6 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     error: submitCheckoutIsError ? submitCheckoutError : undefined,
   });
   const { trackPurchase } = useAnalyticsActions();
-  const [isFieldFocused, setIsFieldFocused] = useState(false);
 
   const { receiverSchema, deliverySchema, checkoutSchema } = useMemo(() => createCheckoutSchemas(), []);
 
@@ -110,6 +118,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   });
 
   const watchedValues = useWatch({ control: form.control });
+  const debouncedValues = useDebouncedValue(watchedValues, AUTOSAVE_DEBOUNCE_MS);
   const firstName = useWatch({ control: form.control, name: 'firstName' });
   const lastName = useWatch({ control: form.control, name: 'lastName' });
   const phone = useWatch({ control: form.control, name: 'phone' });
@@ -118,11 +127,23 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     [checkoutSchema, watchedValues],
   );
   const receiverComplete = isCheckoutReceiverComplete({ firstName, lastName, phone }, receiverSchema);
+  const deliveryMethod = watchedValues.method ?? DeliveryMethod.WAREHOUSE;
+  const deliveryEstimateIsLoading = isCheckoutDeliveryEstimateLoading(updateCheckoutDeliveryIsPending, {
+    method: deliveryMethod,
+    cityName: watchedValues.cityName ?? '',
+    warehouseRef: watchedValues.warehouseRef ?? '',
+    warehouseNumber: watchedValues.warehouseNumber ?? '',
+    street: watchedValues.street ?? '',
+    building: watchedValues.building ?? '',
+  });
   const hydratedCheckoutIdRef = useRef<string | null>(null);
+  const autosaveEnabledRef = useRef(false);
+  const lastReceiverPatchRef = useRef<string | null>(null);
+  const lastDeliveryPatchRef = useRef<string | null>(null);
 
   const isAutosaving = updateCheckoutReceiverIsPending || updateCheckoutDeliveryIsPending;
   const isSubmitBusy = isAutosaving || submitCheckoutIsPending;
-  const canSubmit = canSubmitForm && !isFieldFocused && !isSubmitBusy && checkout.order.items.length > 0;
+  const canSubmit = canSubmitForm && !isSubmitBusy && checkout.order.items.length > 0;
 
   useEffect(() => {
     if (hydratedCheckoutIdRef.current === checkoutId) {
@@ -130,35 +151,51 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     }
 
     hydratedCheckoutIdRef.current = checkoutId;
-    form.reset(checkoutToFormValues(checkout));
+    autosaveEnabledRef.current = false;
+
+    const values = checkoutToFormValues(checkout);
+    form.reset(values);
     void form.trigger();
-  }, [checkoutId, checkout, form]);
 
-  const syncFieldFocus = () => {
-    setIsFieldFocused(isCheckoutFieldTarget(document.activeElement));
-  };
+    const receiverPatch = buildReceiverPatch(values, receiverSchema);
+    lastReceiverPatchRef.current = receiverPatch ? JSON.stringify(receiverPatch) : null;
+    const deliveryPatch = toValidDeliveryPatch(values, deliverySchema);
+    lastDeliveryPatchRef.current = deliveryPatch ? JSON.stringify(deliveryPatch) : null;
+    autosaveEnabledRef.current = true;
+  }, [checkoutId, checkout, deliverySchema, form, receiverSchema]);
 
-  const autosaveReceiverField = (field: CheckoutReceiverField) => {
-    const values = form.getValues();
-    const patch = toValidReceiverFieldPatch(field, values, receiverSchema);
-
-    if (!patch) {
+  useEffect(() => {
+    if (!autosaveEnabledRef.current || hydratedCheckoutIdRef.current !== checkoutId) {
       return;
     }
 
-    updateCheckoutReceiver(patch);
-  };
+    const values = debouncedValues as CheckoutFormData;
+    const receiverPatch = buildReceiverPatch(values, receiverSchema);
 
-  const autosaveDelivery = (override?: Partial<CheckoutFormData>) => {
-    const values = { ...form.getValues(), ...override };
-    const patch = toValidDeliveryPatch(values, deliverySchema);
-
-    if (!patch) {
-      return;
+    if (receiverPatch) {
+      const receiverKey = JSON.stringify(receiverPatch);
+      if (receiverKey !== lastReceiverPatchRef.current) {
+        lastReceiverPatchRef.current = receiverKey;
+        updateCheckoutReceiver(receiverPatch);
+      }
     }
 
-    updateCheckoutDelivery(patch);
-  };
+    const deliveryPatch = toValidDeliveryPatch(values, deliverySchema);
+    if (deliveryPatch) {
+      const deliveryKey = JSON.stringify(deliveryPatch);
+      if (deliveryKey !== lastDeliveryPatchRef.current) {
+        lastDeliveryPatchRef.current = deliveryKey;
+        updateCheckoutDelivery(deliveryPatch);
+      }
+    }
+  }, [
+    checkoutId,
+    debouncedValues,
+    deliverySchema,
+    receiverSchema,
+    updateCheckoutDelivery,
+    updateCheckoutReceiver,
+  ]);
 
   const submitOrder = (data: CheckoutFormData) => {
     if (!canSubmit) {
@@ -208,10 +245,6 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     return <CheckoutCancelledState title={t('inactive.title')} description={session.expiredDescription} />;
   }
 
-  if (session.isNotInProgressBySubmit) {
-    return <Alert severity="error">{session.submitErrorMessage}</Alert>;
-  }
-
   const submitButton = (
     <Button
       type="submit"
@@ -237,16 +270,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
               name="lastName"
               control={form.control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  size="large"
-                  label={t('fields.lastName')}
-                  fullWidth
-                  onBlur={() => {
-                    field.onBlur();
-                    autosaveReceiverField('lastName');
-                  }}
-                />
+                <TextField {...field} size="large" label={t('fields.lastName')} fullWidth />
               )}
             />
           </Box>
@@ -256,16 +280,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
               name="firstName"
               control={form.control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  size="large"
-                  label={t('fields.firstName')}
-                  fullWidth
-                  onBlur={() => {
-                    field.onBlur();
-                    autosaveReceiverField('firstName');
-                  }}
-                />
+                <TextField {...field} size="large" label={t('fields.firstName')} fullWidth />
               )}
             />
           </Box>
@@ -278,13 +293,10 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             <PhoneInput
               value={field.value}
               onChange={field.onChange}
+              onBlur={field.onBlur}
               size="large"
               label={t('fields.phone')}
               fullWidth
-              onBlur={() => {
-                field.onBlur();
-                autosaveReceiverField('phone');
-              }}
             />
           )}
         />
@@ -300,10 +312,10 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
           key={checkoutId}
           control={form.control}
           setValue={form.setValue}
-          onDeliverySave={autosaveDelivery}
           deliveryEstimate={checkout.deliveryEstimate ?? null}
           deliveryEstimateIsPending={updateCheckoutDeliveryIsPending}
           enabled={receiverComplete}
+          showEstimate={!isDesktop}
         />
       </CheckoutFormSection>
     </Stack>
@@ -343,10 +355,6 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     <Stack
       component="form"
       spacing={2}
-      onFocusCapture={syncFieldFocus}
-      onBlurCapture={() => {
-        queueMicrotask(syncFieldFocus);
-      }}
       onSubmit={(event) => {
         void onSubmit(event);
       }}
@@ -361,7 +369,16 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
       >
         {mainColumn}
 
-        {isDesktop ? <CheckoutOrderSidebar checkout={checkout} footer={submitButton} sticky /> : null}
+        {isDesktop ? (
+          <CheckoutOrderSidebar
+            checkout={checkout}
+            footer={submitButton}
+            sticky
+            deliveryEstimate={checkout.deliveryEstimate ?? null}
+            deliveryEstimateIsLoading={deliveryEstimateIsLoading}
+            deliveryMethod={deliveryMethod}
+          />
+        ) : null}
       </Box>
     </Stack>
   );

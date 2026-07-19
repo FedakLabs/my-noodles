@@ -88,11 +88,11 @@ export function removeCatalogProductsListQueries(queryClient: QueryClient): void
 }
 
 export async function fetchProductsList(params: CatalogSearchParams): Promise<PaginatedProductsDto> {
-  return requestData(productsControllerList({ query: searchParamsToListQuery(params) }));
+  return await requestData(productsControllerList({ query: searchParamsToListQuery(params) }));
 }
 
 export async function fetchProductDetail(slug: string): Promise<Product> {
-  return requestData(
+  return await requestData(
     productsControllerGetBySlug({
       path: { slug },
     }),
@@ -100,7 +100,7 @@ export async function fetchProductDetail(slug: string): Promise<Product> {
 }
 
 export async function fetchProductFacets(params: CatalogFacetsParams): Promise<ProductFacetsResponseDto> {
-  return requestData(productsControllerGetFacets({ query: searchParamsToFacetsQuery(params) }));
+  return await requestData(productsControllerGetFacets({ query: searchParamsToFacetsQuery(params) }));
 }
 
 export const productsQueries = {

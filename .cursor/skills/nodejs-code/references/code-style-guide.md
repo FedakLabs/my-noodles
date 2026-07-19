@@ -67,6 +67,7 @@ import { OrdersService } from './orders.service';
   - `<feature>.entity.ts` (entity class is singular: `product.entity.ts` → `Product`)
   - `<feature>.dto.ts`
   - `<feature>.exceptions.ts`
+  - `<feature>.validators.ts` — domain enums + custom class-validator / Swagger property decorators when a feature needs them (e.g. `checkouts.validators.ts`)
   - `index.ts` (barrel)
 - Tests: co-located, e.g. `orders.test.ts`.
 - Sub-features: nested folder (e.g. `application/products/products.controller.ts` with `GET /products/filters`).

@@ -1,5 +1,5 @@
-import { CheckoutStatus } from '@/application/checkouts/checkout-status';
 import { CHECKOUT_HOLD_MS, Checkout } from '@/application/checkouts/checkout.entity';
+import { CheckoutCancelledReason, CheckoutStatus } from '@/application/checkouts/checkouts.validators';
 
 import { describe, expect, it } from '../jest-globals';
 
@@ -8,13 +8,36 @@ function checkout(partial: Partial<Checkout>): Checkout {
 }
 
 describe('Checkout entity', () => {
-  it('marks in_progress checkouts past expiresAt as expired', () => {
+  it('marks past expiresAt as hold-elapsed', () => {
     const entity = checkout({
       status: CheckoutStatus.InProgress,
       expiresAt: new Date(Date.now() - 1),
     });
 
+    expect(entity.isHoldElapsed).toBe(true);
+    expect(entity.isExpired).toBe(false);
+  });
+
+  it('marks cancelled-as-expired as expired', () => {
+    const entity = checkout({
+      status: CheckoutStatus.Cancelled,
+      cancelledReason: CheckoutCancelledReason.Expired,
+      expiresAt: new Date(Date.now() - 1),
+    });
+
+    expect(entity.isHoldElapsed).toBe(true);
     expect(entity.isExpired).toBe(true);
+  });
+
+  it('does not mark user-cancelled as expired', () => {
+    const entity = checkout({
+      status: CheckoutStatus.Cancelled,
+      cancelledReason: CheckoutCancelledReason.User,
+      expiresAt: new Date(Date.now() - 1),
+    });
+
+    expect(entity.isHoldElapsed).toBe(true);
+    expect(entity.isExpired).toBe(false);
   });
 
   it('keeps active checkouts before expiresAt', () => {
@@ -23,6 +46,7 @@ describe('Checkout entity', () => {
       expiresAt: new Date(Date.now() + 60_000),
     });
 
+    expect(entity.isHoldElapsed).toBe(false);
     expect(entity.isExpired).toBe(false);
   });
 

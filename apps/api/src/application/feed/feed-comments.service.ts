@@ -12,7 +12,7 @@ export class FeedCommentsService {
   ) {}
 
   async listForProduct(productId: string): Promise<FeedProductComment[]> {
-    return this.commentsRepository.find({
+    return await this.commentsRepository.find({
       where: { productId },
       order: { createdAt: 'ASC' },
     });

@@ -6,6 +6,7 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { layoutDisplay } from '@my-noodles/theme';
 import { iconStyle, showToast } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
@@ -23,50 +24,50 @@ type FeedLikedListProps = {
   onUnliked: (productId: string) => void;
 };
 
-export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) {
+type LikedProduct = NonNullable<ReturnType<typeof useFeedLikes>['feedLikes']>[number];
+
+const drawerPaperSx = {
+  mobile: {
+    height: '80dvh',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  desktop: {
+    width: '100%',
+    maxWidth: 380,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+} as const;
+
+type LikedListPanelProps = {
+  likes: LikedProduct[];
+  showSkeleton: boolean;
+  onClose: () => void;
+  onUnlike: (productId: string) => void;
+  onAddToCart: (product: LikedProduct) => void;
+  unlikePendingId: string | undefined;
+  unlikeIsPending: boolean;
+  isAddingProduct: (productId: string) => boolean;
+};
+
+function LikedListPanel({
+  likes,
+  showSkeleton,
+  onClose,
+  onUnlike,
+  onAddToCart,
+  unlikePendingId,
+  unlikeIsPending,
+  isAddingProduct,
+}: LikedListPanelProps) {
   const t = useTranslations('feed');
   const { formatCurrency } = useCurrency();
-  const { addCartItemAsync, addCartItemIsAddingProduct } = useAddCartItem();
-  const { feedLikes, feedLikesIsInitialLoad, feedLikesIsFetching } = useFeedLikes({ enabled: open });
-  const { unlikeFeed, unlikeFeedIsPending, unlikeFeedVariables } = useUnlikeFeedProduct();
-
-  const showSkeleton = feedLikesIsInitialLoad || feedLikesIsFetching;
-  const likes = showSkeleton ? [] : (feedLikes ?? []);
-
-  const handleUnlike = (productId: string) => {
-    unlikeFeed(productId, {
-      onSuccess: () => onUnliked(productId),
-      onError: () => showToast.error(t('likedList.removeFailed')),
-    });
-  };
-
-  const handleAddToCart = async (product: (typeof likes)[number]) => {
-    const name = product.name ?? product.slug;
-    try {
-      await addCartItemAsync({
-        productId: product.id,
-        slug: product.slug,
-        title: name,
-        priceMinor: product.priceMinor,
-        currency: product.currency,
-        imageUrl: product.images[0],
-        suppressPanelOpen: true,
-      });
-      showToast.success(t('likedList.addedToCart', { name }));
-    } catch {
-      // Cart hook onError shows inventory-specific toast.
-    }
-  };
 
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      slotProps={{
-        paper: { sx: { width: { xs: '100%', sm: 380 }, display: 'flex', flexDirection: 'column' } },
-      }}
-    >
+    <Stack sx={{ height: '100%', minHeight: 0 }}>
       <Stack
         direction="row"
         sx={{
@@ -92,8 +93,8 @@ export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) 
         ) : (
           <Stack spacing={2}>
             {likes.map((product) => {
-              const removing = unlikeFeedIsPending && unlikeFeedVariables === product.id;
-              const adding = addCartItemIsAddingProduct(product.id);
+              const removing = unlikeIsPending && unlikePendingId === product.id;
+              const adding = isAddingProduct(product.id);
               const rowBusy = removing || adding;
 
               return (
@@ -118,7 +119,7 @@ export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) 
                       aria-label={t('likedList.remove')}
                       aria-busy={removing}
                       disabled={rowBusy}
-                      onClick={() => handleUnlike(product.id)}
+                      onClick={() => onUnlike(product.id)}
                     >
                       {removing ? (
                         <CircularProgress size={18} color="inherit" aria-hidden />
@@ -131,7 +132,7 @@ export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) 
                       aria-label={t('likedList.addToCart')}
                       aria-busy={adding}
                       disabled={rowBusy}
-                      onClick={() => void handleAddToCart(product)}
+                      onClick={() => onAddToCart(product)}
                     >
                       {adding ? (
                         <CircularProgress size={18} color="inherit" aria-hidden />
@@ -146,6 +147,77 @@ export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) 
           </Stack>
         )}
       </Box>
-    </Drawer>
+    </Stack>
+  );
+}
+
+export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) {
+  const t = useTranslations('feed');
+  const { addCartItemAsync, addCartItemIsAddingProduct } = useAddCartItem();
+  const { feedLikes, feedLikesIsInitialLoad, feedLikesIsFetching } = useFeedLikes({ enabled: open });
+  const { unlikeFeed, unlikeFeedIsPending, unlikeFeedVariables } = useUnlikeFeedProduct();
+
+  const showSkeleton = feedLikesIsInitialLoad || feedLikesIsFetching;
+  const likes = showSkeleton ? [] : (feedLikes ?? []);
+
+  const handleUnlike = (productId: string) => {
+    unlikeFeed(productId, {
+      onSuccess: () => onUnliked(productId),
+      onError: () => showToast.error(t('likedList.removeFailed')),
+    });
+  };
+
+  const handleAddToCart = (product: LikedProduct) => {
+    const name = product.name ?? product.slug;
+    void addCartItemAsync({
+      productId: product.id,
+      slug: product.slug,
+      title: name,
+      priceMinor: product.priceMinor,
+      currency: product.currency,
+      imageUrl: product.images[0],
+      suppressPanelOpen: true,
+    })
+      .then(() => {
+        showToast.success(t('likedList.addedToCart', { name }));
+      })
+      .catch(() => {
+        // Cart hook onError shows inventory-specific toast.
+      });
+  };
+
+  const panelProps: LikedListPanelProps = {
+    likes,
+    showSkeleton,
+    onClose,
+    onUnlike: handleUnlike,
+    onAddToCart: handleAddToCart,
+    unlikePendingId: unlikeFeedVariables,
+    unlikeIsPending: unlikeFeedIsPending,
+    isAddingProduct: addCartItemIsAddingProduct,
+  };
+
+  return (
+    <>
+      <Drawer
+        anchor="bottom"
+        open={open}
+        onClose={onClose}
+        sx={{ display: layoutDisplay.mobileOnlyBlock }}
+        slotProps={{ paper: { sx: drawerPaperSx.mobile } }}
+      >
+        <LikedListPanel {...panelProps} />
+      </Drawer>
+
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={onClose}
+        sx={{ display: layoutDisplay.desktopOnlyBlock }}
+        slotProps={{ paper: { sx: drawerPaperSx.desktop } }}
+      >
+        <LikedListPanel {...panelProps} />
+      </Drawer>
+    </>
   );
 }

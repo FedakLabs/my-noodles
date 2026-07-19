@@ -1,4 +1,4 @@
-import { type INestApplication } from '@nestjs/common';
+import { type INestApplication, type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 
@@ -14,7 +14,12 @@ import {
 } from '@/application/feed';
 import { Order } from '@/application/orders/order.entity';
 import { Product } from '@/application/products/product.entity';
-import { VISITOR_SESSION_COOKIE, VisitorSession, VisitorSessionService } from '@/application/visitor';
+import {
+  VISITOR_SESSION_COOKIE,
+  VisitorSession,
+  VisitorSessionMiddleware,
+  VisitorSessionService,
+} from '@/application/visitor-session';
 
 import { sampleProduct, sampleProductId } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
@@ -77,13 +82,14 @@ describe('feed (e2e)', () => {
       getRawMany: jest.fn().mockResolvedValue([]),
     };
 
-    app = await createApiTestApp({
+    @Module({
       controllers: [FeedController],
       providers: [
         FeedService,
         FeedSessionService,
         FeedCommentsService,
         VisitorSessionService,
+        VisitorSessionMiddleware,
         {
           provide: getRepositoryToken(VisitorSession),
           useValue: {
@@ -133,7 +139,14 @@ describe('feed (e2e)', () => {
           useValue: { findOne: jest.fn(), save: jest.fn() },
         },
       ],
-    });
+    })
+    class FeedE2eModule implements NestModule {
+      configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(VisitorSessionMiddleware).forRoutes(FeedController);
+      }
+    }
+
+    app = await createApiTestApp({ imports: [FeedE2eModule] });
   });
 
   afterAll(async () => {

@@ -29,10 +29,11 @@ describe('createContextAwareRepository', () => {
     const defaultSave = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
     const transactionSave = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
     const dataSource = {
-      transaction: jest.fn(async (callback: (manager: unknown) => Promise<unknown>) =>
-        callback({
-          getRepository: () => ({ save: transactionSave }),
-        }),
+      transaction: jest.fn(
+        async (callback: (manager: unknown) => Promise<unknown>) =>
+          await callback({
+            getRepository: () => ({ save: transactionSave }),
+          }),
       ),
       manager: {
         getRepository: () => ({ save: defaultSave }),

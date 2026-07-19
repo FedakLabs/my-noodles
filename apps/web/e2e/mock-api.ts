@@ -188,12 +188,12 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
   }
 
   if (req.method === 'GET' && pathname === `/api/checkouts/${MOCK_IDS.checkout}`) {
-    if (!checkout || checkout.status !== 'in_progress') {
-      sendJson(req, res, 409, {
-        code: 'checkout_not_in_progress',
-        message: 'Checkout is no longer in progress',
-        status: 409,
-        payload: { checkoutId: MOCK_IDS.checkout, status: checkout?.status ?? 'cancelled' },
+    if (!checkout) {
+      sendJson(req, res, 404, {
+        code: 'checkout_not_found',
+        message: 'Checkout not found',
+        status: 404,
+        payload: { checkoutId: MOCK_IDS.checkout },
       });
       return;
     }

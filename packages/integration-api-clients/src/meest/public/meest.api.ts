@@ -33,6 +33,7 @@ export type MeestLocalityData = {
   city_id: string;
   kt?: string;
   reg?: string;
+  reg_id?: string;
   dis?: string;
   d_id?: string;
   is_delivery_in_city?: boolean;
@@ -40,9 +41,28 @@ export type MeestLocalityData = {
 
 export type MeestLocalityRow = MeestLocalityData | { data: MeestLocalityData };
 
+export type MeestDistrictRow = {
+  district_id: string;
+  region_id: string;
+  ua: string;
+  ru?: string;
+  en?: string;
+  kt?: string;
+};
+
+export type MeestRegionRow = {
+  region_id: string;
+  ua: string;
+  ru?: string;
+  en?: string;
+  kt?: string;
+};
+
 export type MeestBranchRow = {
   br_id: string;
-  num?: string;
+  /** Short list: branch UUID. Full `viewdata`: showcase number. */
+  num?: number | string;
+  /** Short list only — real branch number within the city. Absent in full `viewdata`. */
   num_showcase?: number | string;
   type_id?: string;
   city_id?: string;
@@ -53,6 +73,8 @@ export type MeestBranchRow = {
   street?: MeestLocalizedName;
   street_number?: string;
   zip?: string;
+  /** Landmark / host shop, e.g. "Rozetka, на касі", "Тютюнова каса Сільпо". Full viewdata only. */
+  location_description?: string;
   lng?: string;
   lat?: string;
 };
@@ -74,6 +96,28 @@ export class PublicMeestApi extends ApiClient {
     });
 
     return this.unwrapLocalities(response);
+  }
+
+  async getDistricts(): Promise<MeestDistrictRow[]> {
+    const response = await this.get<MeestApiResponse<MeestDistrictRow[]> | MeestDistrictRow[]>({
+      url: '/geo_districts',
+      headers: this.defaultHeaders(),
+    });
+
+    return this.unwrapResult(response).filter((district): district is MeestDistrictRow =>
+      Boolean(district.district_id && district.region_id && district.ua),
+    );
+  }
+
+  async getRegions(): Promise<MeestRegionRow[]> {
+    const response = await this.get<MeestApiResponse<MeestRegionRow[]> | MeestRegionRow[]>({
+      url: '/geo_regions',
+      headers: this.defaultHeaders(),
+    });
+
+    return this.unwrapResult(response).filter((region): region is MeestRegionRow =>
+      Boolean(region.region_id && region.ua),
+    );
   }
 
   async getBranches(cityRef: string): Promise<MeestBranchRow[]> {
