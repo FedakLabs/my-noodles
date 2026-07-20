@@ -62,7 +62,9 @@ describe('health (e2e)', () => {
   });
 
   it('GET /api/health/ready returns 503 when dependencies are not ready', async () => {
-    assertDependenciesReady.mockRejectedValueOnce(new ServiceUnavailableException('database unreachable'));
+    assertDependenciesReady.mockRejectedValueOnce(
+      new ServiceUnavailableException({ message: 'database unreachable' }),
+    );
 
     const server = app.getHttpServer() as Server;
 

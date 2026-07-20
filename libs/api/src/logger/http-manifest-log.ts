@@ -1,5 +1,6 @@
 import type { Logger } from 'winston';
 
+import { AppException } from '../exceptions';
 import { safeJsonStringify } from '../utils/safe-json-stringify';
 import {
   resolveExceptionMessage,
@@ -109,16 +110,26 @@ function buildManifestRecord(core: ManifestRecordCore): HttpManifestLogRecord {
     Object.assign(attributes, extraAttributes);
   }
 
-  if (severity.text === 'ERROR' && error !== undefined) {
-    attributes['attributes.error.name'] = resolveExceptionName(error);
-    attributes['attributes.error.message'] = rawErrorMessage ?? 'Unknown error';
+  if (error !== undefined) {
+    const causeForMeta =
+      error instanceof AppException && error.internal instanceof Error ? error.internal : error;
+    const internal = error instanceof AppException && error.internal != null ? error.internal : undefined;
 
-    const stack = resolveExceptionStack(error);
-    if (stack) {
-      attributes['attributes.error.stack'] = stack;
+    if (severity.text === 'ERROR') {
+      attributes['attributes.error.name'] = resolveExceptionName(causeForMeta);
+      attributes['attributes.error.message'] = resolveExceptionMessage(causeForMeta) ?? 'Unknown error';
+
+      const stack = resolveExceptionStack(causeForMeta);
+      if (stack) {
+        attributes['attributes.error.stack'] = stack;
+      }
     }
 
-    attributes['attributes.error.raw'] = serializeErrorForObservability(error);
+    if (internal !== undefined) {
+      attributes['attributes.error.raw'] = serializeErrorForObservability(internal);
+    } else if (severity.text === 'ERROR') {
+      attributes['attributes.error.raw'] = serializeErrorForObservability(error);
+    }
   }
 
   const baseBody = `${method} ${statusPart} ${Math.round(execTimeMs)}ms ${url}`;

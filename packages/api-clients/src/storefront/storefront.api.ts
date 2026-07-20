@@ -81,6 +81,7 @@ export class StorefrontApi {
     this.apiClient.setConfig({
       baseUrl: options.baseUrl,
       throwOnError: true,
+      responseStyle: 'data',
       // Send the feed session cookie on cross-origin storefront requests.
       credentials: 'include',
     });

@@ -13,6 +13,12 @@ const PROVIDER_LABELS: Record<DeliveryProvider, string> = {
   [DeliveryProvider.Meest]: 'Meest',
 };
 
+const METHOD_LABELS: Record<DeliveryMethod, string> = {
+  [DeliveryMethod.Warehouse]: 'відділення',
+  [DeliveryMethod.Courier]: "кур'єр",
+  [DeliveryMethod.Custom]: 'інший спосіб',
+};
+
 @Injectable()
 export class TelegramService {
   constructor(@Inject(TelegramApi) private readonly telegramApi: TelegramApi) {}
@@ -72,15 +78,21 @@ export class TelegramService {
     }
 
     const provider = PROVIDER_LABELS[delivery.provider];
-    const methodLabel = delivery.method === DeliveryMethod.Warehouse ? 'відділення' : "кур'єр";
-    const lines = [`${provider} (${methodLabel})`, delivery.city];
+    const methodLabel = METHOD_LABELS[delivery.method];
+    const lines = [`${provider} (${methodLabel})`, delivery.city].filter(Boolean);
 
-    if (delivery.method === DeliveryMethod.Warehouse) {
+    if (delivery.postalCode) {
+      lines.push(`Індекс: ${delivery.postalCode}`);
+    }
+
+    if (delivery.method === DeliveryMethod.Warehouse || delivery.method === DeliveryMethod.Custom) {
       const warehouseParts = [delivery.warehouseNumber, delivery.warehouseName].filter(Boolean);
       if (warehouseParts.length > 0) {
         lines.push(`Відділення: ${warehouseParts.join(' — ')}`);
       }
-    } else {
+    }
+
+    if (delivery.method === DeliveryMethod.Courier || delivery.method === DeliveryMethod.Custom) {
       const addressParts = [
         delivery.street,
         delivery.building,

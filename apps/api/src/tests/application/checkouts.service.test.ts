@@ -151,8 +151,8 @@ describe('CheckoutsService', () => {
     estimateFromDelivery = jest.fn().mockResolvedValue({
       estimatedDeliveryAt: '2025-06-23T10:00:00.000Z',
       estimatedDaysMin: 2,
-      estimatedDaysMax: 3,
-      shippingCostMinor: 6_500,
+      estimatedDaysMax: 4,
+      shippingCostMinor: 9_000,
     });
     applyEstimateSnapshot = jest.fn();
 
@@ -177,6 +177,9 @@ describe('CheckoutsService', () => {
       } as unknown as InventoryService,
       { sendOrderNotification: telegramSend } as never,
       { estimateForOrder, canEstimate, estimateFromDelivery, applyEstimateSnapshot } as never,
+      {
+        isAvailableForProvider: jest.fn().mockReturnValue(true),
+      } as never,
     );
   });
 
@@ -689,7 +692,7 @@ describe('CheckoutsService', () => {
     expect(estimateFromDelivery).toHaveBeenCalled();
     expect(applyEstimateSnapshot).toHaveBeenCalledWith(
       expect.objectContaining({ city: 'Київ', warehouseNumber: '1' }),
-      expect.objectContaining({ estimatedDaysMin: 2, estimatedDaysMax: 3, shippingCostMinor: 6_500 }),
+      expect.objectContaining({ estimatedDaysMin: 2, estimatedDaysMax: 4, shippingCostMinor: 9_000 }),
     );
     expect(telegramSend).toHaveBeenCalled();
   });

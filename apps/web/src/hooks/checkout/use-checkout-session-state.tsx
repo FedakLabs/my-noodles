@@ -4,8 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect } from 'react';
 
-import { cartQueryKeys } from '@/api/cart';
-import { type Checkout, checkoutsQueryKeys } from '@/api/checkouts';
+import { cartQueries } from '@/api/cart';
+import { type Checkout, checkoutsQueries } from '@/api/checkouts';
 import { Link } from '@/i18n/navigation';
 import { type ApiErrorCode, getApiErrorCode } from '@/shared/api-error';
 
@@ -36,14 +36,14 @@ export function useCheckoutSessionState({ checkoutId, checkout, error }: UseChec
 
   useEffect(() => {
     if (isExpired) {
-      void queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      void queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
     }
   }, [isExpired, queryClient]);
 
   const onHoldExpired = useCallback(() => {
     void Promise.all([
-      queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
-      queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
+      queryClient.invalidateQueries({ queryKey: checkoutsQueries.detail(checkoutId).queryKey }),
+      queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey }),
     ]);
   }, [checkoutId, queryClient]);
 

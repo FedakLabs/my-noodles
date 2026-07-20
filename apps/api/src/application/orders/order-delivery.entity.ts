@@ -32,6 +32,9 @@ export class OrderDelivery extends TimestampEntity {
   @Column({ name: 'city_ref', type: 'text', nullable: true })
   cityRef!: string | null;
 
+  @Column({ name: 'postal_code', type: 'text', nullable: true })
+  postalCode!: string | null;
+
   @Column({ name: 'warehouse_number', type: 'text', nullable: true })
   warehouseNumber!: string | null;
 

@@ -67,13 +67,14 @@ describe('ApiClient logging', () => {
       status: 404,
       code: 'api_client_error',
       message: 'Not found',
-      payload: { message: 'Not found' },
+      payload: null,
+      internal: { message: 'Not found' },
     });
     expect((error as ApiClientException).toBody()).toEqual({
       status: 404,
       code: 'api_client_error',
       message: 'Not found',
-      payload: { message: 'Not found' },
+      payload: null,
     });
 
     expect(infoSpy).toHaveBeenCalledTimes(1);
@@ -83,6 +84,7 @@ describe('ApiClient logging', () => {
     expect(record['severity.text']).toBe('INFO');
     expect(record['attributes.http.responseStatus']).toBe('404');
     expect(record['attributes.http.requestType']).toBe('outgoing');
+    expect(JSON.parse(record['attributes.error.raw'] as string)).toEqual({ message: 'Not found' });
   });
 
   it('emits one outgoing ERROR manifest record when assertResponseOk fails on HTTP 200', async () => {
@@ -109,7 +111,11 @@ describe('ApiClient logging', () => {
           'success' in body &&
           (body as { success: unknown }).success === false
         ) {
-          throw new ApiClientException('FindByString is not specified', body, status);
+          throw new ApiClientException({
+            message: 'FindByString is not specified',
+            status,
+            internal: body,
+          });
         }
       }
 
@@ -126,13 +132,14 @@ describe('ApiClient logging', () => {
       status: 200,
       code: 'api_client_error',
       message: 'FindByString is not specified',
-      payload: responseBody,
+      payload: null,
+      internal: responseBody,
     });
     expect((error as ApiClientException).toBody()).toEqual({
       status: 200,
       code: 'api_client_error',
       message: 'FindByString is not specified',
-      payload: responseBody,
+      payload: null,
     });
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
@@ -143,6 +150,7 @@ describe('ApiClient logging', () => {
     expect(record['attributes.http.responseStatus']).toBe('200');
     expect(record['attributes.error.name']).toBe('ApiClientException');
     expect(record['attributes.error.message']).toBe('FindByString is not specified');
+    expect(JSON.parse(record['attributes.error.raw'] as string)).toEqual(responseBody);
   });
 
   it('emits one outgoing ERROR manifest record on network failure', async () => {
@@ -177,6 +185,7 @@ describe('ApiClient logging', () => {
       message: 'fetch failed',
       payload: null,
     });
+    expect((error as ApiClientException).internal).toBeInstanceOf(Error);
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(infoSpy).not.toHaveBeenCalled();
@@ -185,7 +194,7 @@ describe('ApiClient logging', () => {
     expect(record['severity.text']).toBe('ERROR');
     expect(record['attributes.http.requestType']).toBe('outgoing');
     expect(record['attributes.http.responseStatus']).toBeUndefined();
-    expect(record['attributes.error.name']).toBe('ApiClientException');
+    expect(record['attributes.error.name']).toBe('Error');
     expect(record['attributes.error.message']).toBe('fetch failed');
     expect(String(record.body)).toContain('POST -');
   });

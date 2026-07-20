@@ -1,4 +1,3 @@
-import { LocaleContext } from '@my-noodles/api-lib/locale';
 import type { PublicMeestApi } from '@my-noodles/integration-api-clients/meest';
 
 import { extractMeestWarehouseNumber, formatMeestCityName, MeestService } from '@/application/meest';
@@ -182,33 +181,50 @@ describe('MeestService', () => {
     ]);
   });
 
-  it('prefers English branch labels when locale is en', async () => {
-    await LocaleContext.run('en', async () => {
-      const getBranches = jest.fn().mockResolvedValue([
-        {
-          br_id: 'branch-1',
-          num_showcase: 10,
-          type_public: { ua: 'Відділення', en: 'Branch' },
-          city: { ua: 'Львів', en: 'Lviv' },
-          street: { ua: 'вул. Гребінки', en: 'Hrebinky st.' },
-          street_number: '9/2',
-          zip: '79007',
-        },
-      ]);
-      const meestApi = { getBranches } as unknown as PublicMeestApi;
+  it('translates Latin city query to Cyrillic before calling the API', async () => {
+    const searchLocalities = jest.fn().mockResolvedValue([
+      {
+        n_ua: 'Київ',
+        t_ua: 'м.',
+        city_id: 'city-1',
+        reg: 'Київ',
+        dis: 'Київ',
+      },
+    ]);
+    const meestApi = { searchLocalities } as unknown as PublicMeestApi;
 
-      const service = new MeestService(meestApi);
-      const warehouses = await service.searchWarehouses('city-1');
+    const service = new MeestService(meestApi);
+    const cities = await service.searchCities('Kyiv');
 
-      expect(warehouses).toEqual([
-        {
-          ref: 'branch-1',
-          number: '10',
-          name: 'Branch №10: Hrebinky st., 9/2',
-          address: 'Lviv, Hrebinky st., 9/2',
-        },
-      ]);
-    });
+    expect(searchLocalities).toHaveBeenCalledWith('Київ');
+    expect(cities).toEqual([{ ref: 'city-1', name: 'м. Київ, Київ' }]);
+  });
+
+  it('always prefers Ukrainian branch labels', async () => {
+    const getBranches = jest.fn().mockResolvedValue([
+      {
+        br_id: 'branch-1',
+        num_showcase: 10,
+        type_public: { ua: 'Відділення', en: 'Branch' },
+        city: { ua: 'Львів', en: 'Lviv' },
+        street: { ua: 'вул. Гребінки', en: 'Hrebinky st.' },
+        street_number: '9/2',
+        zip: '79007',
+      },
+    ]);
+    const meestApi = { getBranches } as unknown as PublicMeestApi;
+
+    const service = new MeestService(meestApi);
+    const warehouses = await service.searchWarehouses('city-1');
+
+    expect(warehouses).toEqual([
+      {
+        ref: 'branch-1',
+        number: '10',
+        name: 'Відділення №10: вул. Гребінки, 9/2',
+        address: 'Львів, вул. Гребінки, 9/2',
+      },
+    ]);
   });
 
   it('filters warehouses by query across localized fields', async () => {

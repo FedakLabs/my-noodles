@@ -1,14 +1,14 @@
-export {
-  APP_LOCALE_TO_MEEST_LOCALE,
-  PublicMeestApi,
-  MEEST_LOCALES,
-  type MeestBranchRow,
-  type MeestClientOptions,
-  type MeestDistrictRow,
-  type MeestLocale,
-  type MeestLocalizedName,
-  type MeestLocalityData,
-  type MeestLocalityRow,
-  type MeestRegionRow,
-} from './public/meest.api';
+export { MEEST_LOCALES } from './public/meest.api.config';
+export type {
+  MeestBranchRow,
+  MeestClientOptions,
+  MeestDistrictRow,
+  MeestLocale,
+  MeestLocalizedName,
+  MeestLocalityData,
+  MeestLocalityRow,
+  MeestRegionRow,
+} from './public/meest.api.dto';
+
+export { PublicMeestApi } from './public/meest.api';
 export { ClientMeestApi, type ClientMeestApiOptions } from './client/meest.api';

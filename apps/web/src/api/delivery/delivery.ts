@@ -8,65 +8,54 @@ import {
   type DeliveryProviderDto,
   type DeliveryWarehouseDto,
 } from '@my-noodles/api-clients/storefront';
-import { requestData } from '@my-noodles/web-lib/react-query';
-import { queryOptions } from '@tanstack/react-query';
+import { queryOptions, type QueryClient } from '@tanstack/react-query';
+
+import { withAppLocaleKey } from '@/i18n/app-locale';
 
 export type { DeliveryCityDto, DeliveryProviderDto, DeliveryWarehouseDto };
 
-export const deliveryQueryKeys = {
-  all: ['delivery'] as const,
-  providers: () => [...deliveryQueryKeys.all, 'providers'] as const,
-  cities: (provider: DeliveryProvider, method: DeliveryMethod, query: string) =>
-    [...deliveryQueryKeys.all, 'cities', provider, method, query] as const,
-  warehouses: (provider: DeliveryProvider, cityRef: string, query?: string) =>
-    [...deliveryQueryKeys.all, 'warehouses', provider, cityRef, query ?? ''] as const,
-};
-
-export async function fetchDeliveryProviders(): Promise<DeliveryProviderDto[]> {
-  return await requestData(deliveryControllerListProviders());
-}
-
-export async function fetchDeliveryCities(
-  provider: DeliveryProvider,
-  method: DeliveryMethod,
-  query?: string,
-): Promise<DeliveryCityDto[]> {
-  return await requestData(
-    deliveryControllerSearchCities({
-      query: { provider, method, q: query?.trim() ?? '' },
-    }),
-  );
-}
-
-export async function fetchDeliveryWarehouses(
-  provider: DeliveryProvider,
-  cityRef: string,
-  query?: string,
-): Promise<DeliveryWarehouseDto[]> {
-  return await requestData(
-    deliveryControllerSearchWarehouses({
-      query: { provider, cityRef, ...(query ? { q: query } : {}) },
-    }),
-  );
-}
-
 export const deliveryQueries = {
+  rootKey: ['delivery'] as const,
+  /** Locale-prefixed root — for invalidate/remove; do not pass to useQuery. */
+  all: () =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => deliveryQueries.rootKey)(),
+    }),
   providers: () =>
     queryOptions({
-      queryKey: deliveryQueryKeys.providers(),
-      queryFn: fetchDeliveryProviders,
+      queryKey: withAppLocaleKey(() => [...deliveryQueries.rootKey, 'providers'] as const)(),
+      queryFn: () => deliveryControllerListProviders(),
       staleTime: 60 * 60_000,
     }),
   cities: (provider: DeliveryProvider, method: DeliveryMethod, query: string) =>
     queryOptions({
-      queryKey: deliveryQueryKeys.cities(provider, method, query),
-      queryFn: () => fetchDeliveryCities(provider, method, query),
+      queryKey: withAppLocaleKey(
+        () => [...deliveryQueries.rootKey, 'cities', provider, method, query] as const,
+      )(),
+      queryFn: () =>
+        deliveryControllerSearchCities({
+          query: { provider, method, q: query.trim() },
+        }),
       staleTime: 5 * 60_000,
+      placeholderData: undefined,
     }),
-  warehouses: (provider: DeliveryProvider, cityRef: string, query?: string) =>
+  warehouses: (provider: DeliveryProvider, method: DeliveryMethod, cityRef: string, query?: string) =>
     queryOptions({
-      queryKey: deliveryQueryKeys.warehouses(provider, cityRef, query),
-      queryFn: () => fetchDeliveryWarehouses(provider, cityRef, query),
+      queryKey: withAppLocaleKey(
+        () => [...deliveryQueries.rootKey, 'warehouses', provider, method, cityRef, query ?? ''] as const,
+      )(),
+      queryFn: () =>
+        deliveryControllerSearchWarehouses({
+          query: { provider, cityRef, ...(query ? { q: query } : {}) },
+        }),
       staleTime: 5 * 60_000,
+      placeholderData: undefined,
     }),
 };
+
+/** Drops cached city/warehouse searches for the active locale; keeps providers. */
+export function removeDeliverySearchQueries(queryClient: QueryClient): void {
+  const rootKey = deliveryQueries.all().queryKey;
+  queryClient.removeQueries({ queryKey: [...rootKey, 'cities'], exact: false });
+  queryClient.removeQueries({ queryKey: [...rootKey, 'warehouses'], exact: false });
+}

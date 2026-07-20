@@ -1,0 +1,7 @@
+{
+  "extends": ["./tsconfig.json", "../../configs/typescript/node.json"],
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

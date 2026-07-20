@@ -146,10 +146,20 @@ export const productFacets = {
   },
 } as const satisfies ProductFacetsResponseDto;
 
+const catalogMethods: DeliveryProviderDto['methods'] = [
+  { id: 'warehouse', label: 'Відділення або поштомат' },
+  { id: 'courier', label: "Кур'єр" },
+  { id: 'custom', label: 'Інший спосіб' },
+];
+
 export const deliveryProviders = [
-  { id: 'nova-poshta', label: 'Нова Пошта' },
-  { id: 'meest', label: 'Meest' },
-  { id: 'ukrposhta', label: 'Укрпошта' },
+  { id: 'nova-poshta', label: 'Нова Пошта', methods: catalogMethods },
+  { id: 'meest', label: 'Meest', methods: catalogMethods },
+  {
+    id: 'ukrposhta',
+    label: 'Укрпошта',
+    methods: [{ id: 'custom', label: 'Інший спосіб' }],
+  },
 ] as const satisfies readonly DeliveryProviderDto[];
 
 export const deliveryCities = [
@@ -247,16 +257,16 @@ function buildDeliveryEstimate(
   }
 
   const providerRates: Record<string, number> = {
-    'nova-poshta': 6500,
-    meest: 7500,
-    ukrposhta: 5500,
+    'nova-poshta': 9000,
+    meest: 7000,
+    ukrposhta: 6500,
   };
 
   return {
     estimatedDeliveryAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     estimatedDaysMin: 2,
-    estimatedDaysMax: 3,
-    shippingCostMinor: providerRates[delivery.provider ?? 'nova-poshta'] ?? 6500,
+    estimatedDaysMax: 4,
+    shippingCostMinor: providerRates[delivery.provider ?? 'nova-poshta'] ?? 9000,
   };
 }
 
@@ -337,6 +347,7 @@ export function patchCheckoutDelivery(checkout: WireCheckout, body: UpdateChecko
     method: body.method ?? previous?.method ?? 'warehouse',
     city: body.city ?? previous?.city ?? null,
     cityRef: body.cityRef ?? previous?.cityRef ?? null,
+    postalCode: body.postalCode ?? previous?.postalCode ?? null,
     warehouseNumber: body.warehouseNumber ?? previous?.warehouseNumber ?? null,
     warehouseName: body.warehouseName ?? previous?.warehouseName ?? null,
     warehouseRef: body.warehouseRef ?? previous?.warehouseRef ?? null,

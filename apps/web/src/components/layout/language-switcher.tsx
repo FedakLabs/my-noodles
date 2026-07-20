@@ -23,11 +23,15 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher({ onSwitched, sx }: LanguageSwitcherProps) {
   const t = useTranslations('common.language');
   const menuId = useId();
-  const { switchLocale, options, locale } = useSwitchLocale();
+  const { switchLocale, options, locale, isSwitching } = useSwitchLocale();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = anchorEl != null;
 
   const openMenu = (event: MouseEvent<HTMLElement>) => {
+    if (isSwitching) {
+      return;
+    }
+
     setAnchorEl(event.currentTarget);
   };
 
@@ -36,6 +40,10 @@ export function LanguageSwitcher({ onSwitched, sx }: LanguageSwitcherProps) {
   };
 
   const handleSelect = (nextLocale: AppLocale) => {
+    if (isSwitching) {
+      return;
+    }
+
     switchLocale(nextLocale);
     closeMenu();
     onSwitched?.();
@@ -92,6 +100,8 @@ export function LanguageSwitcher({ onSwitched, sx }: LanguageSwitcherProps) {
     <>
       <ListItemButton
         onClick={openMenu}
+        disabled={isSwitching}
+        aria-busy={isSwitching || undefined}
         aria-label={t('switchTo')}
         aria-controls={open ? menuId : undefined}
         aria-haspopup="true"

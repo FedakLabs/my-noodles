@@ -9,15 +9,7 @@ import { useShowCartApiError } from '@/hooks/cart/use-show-cart-api-error';
 import { trackAddToCart, trackRemoveFromCart } from '@/shared/analytics';
 import { isApiConflict } from '@/shared/api-error';
 
-import {
-  addCartItem,
-  cartMutationKeys,
-  cartQueries,
-  cartQueryKeys,
-  clearCart,
-  removeCartItem,
-  setCartItemQty,
-} from './cart';
+import { cartMutations, cartQueries } from './cart';
 import type { CartLineInput } from './types';
 
 export function useCartQuery() {
@@ -28,12 +20,14 @@ export function useAddCartItem() {
   const queryClient = useQueryClient();
   const openPanelIfFirstAdd = useCartStore((state) => state.openPanelIfFirstAdd);
   const showCartApiError = useShowCartApiError();
+  const addItem = cartMutations.addItem();
 
   const mutation = useMutation({
-    mutationKey: cartMutationKeys.addItem(),
-    mutationFn: ({ productId, qty = 1 }: CartLineInput) => addCartItem({ productId, qty }),
+    ...addItem,
+    mutationFn: ({ productId, qty = 1 }: CartLineInput, context) =>
+      addItem.mutationFn!({ productId, qty }, context),
     onSuccess: async (cart, variables) => {
-      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       if (!variables.suppressPanelOpen) {
         openPanelIfFirstAdd(cart.itemCount === variables.qty);
       }
@@ -52,13 +46,13 @@ export function useAddCartItem() {
     onError: async (error) => {
       showCartApiError(error);
       if (isApiConflict(error)) {
-        await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+        await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       }
     },
   });
 
   const addCartItemPendingProductIds = useMutationState({
-    filters: { mutationKey: cartMutationKeys.addItem(), status: 'pending' },
+    filters: { mutationKey: addItem.mutationKey, status: 'pending' },
     select: (entry) => (entry.state.variables as CartLineInput | undefined)?.productId,
   }).filter((id): id is string => id != null);
 
@@ -88,12 +82,14 @@ type RemoveCartItemVariables = {
 export function useSetCartItemQty() {
   const queryClient = useQueryClient();
   const showCartApiError = useShowCartApiError();
+  const setItemQty = cartMutations.setItemQty();
 
   const mutation = useMutation({
-    mutationKey: cartMutationKeys.setItemQty(),
-    mutationFn: ({ productId, qty }: SetCartItemQtyVariables) => setCartItemQty(productId, qty),
+    ...setItemQty,
+    mutationFn: ({ productId, qty }: SetCartItemQtyVariables, context) =>
+      setItemQty.mutationFn!({ productId, qty }, context),
     onSuccess: async (_cart, variables) => {
-      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       const line = variables.analyticsLine;
       if (!line) {
         return;
@@ -117,13 +113,13 @@ export function useSetCartItemQty() {
     onError: async (error) => {
       showCartApiError(error);
       if (isApiConflict(error)) {
-        await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+        await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       }
     },
   });
 
   const setCartItemQtyPendingProductIds = useMutationState({
-    filters: { mutationKey: cartMutationKeys.setItemQty(), status: 'pending' },
+    filters: { mutationKey: setItemQty.mutationKey, status: 'pending' },
     select: (entry) => (entry.state.variables as SetCartItemQtyVariables | undefined)?.productId,
   }).filter((id): id is string => id != null);
 
@@ -141,12 +137,14 @@ export function useSetCartItemQty() {
 
 export function useRemoveCartItem() {
   const queryClient = useQueryClient();
+  const removeItem = cartMutations.removeItem();
 
   const mutation = useMutation({
-    mutationKey: cartMutationKeys.removeItem(),
-    mutationFn: ({ productId }: RemoveCartItemVariables) => removeCartItem(productId),
+    ...removeItem,
+    mutationFn: ({ productId }: RemoveCartItemVariables, context) =>
+      removeItem.mutationFn!({ productId }, context),
     onSuccess: async (_cart, variables) => {
-      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+      await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       if (variables.analyticsLine) {
         trackRemoveFromCart(variables.analyticsLine);
       }
@@ -154,7 +152,7 @@ export function useRemoveCartItem() {
   });
 
   const removeCartItemPendingProductIds = useMutationState({
-    filters: { mutationKey: cartMutationKeys.removeItem(), status: 'pending' },
+    filters: { mutationKey: removeItem.mutationKey, status: 'pending' },
     select: (entry) => (entry.state.variables as RemoveCartItemVariables | undefined)?.productId,
   }).filter((id): id is string => id != null);
 
@@ -175,10 +173,9 @@ export function useClearCart() {
 
   return formatUseMutation(
     useMutation({
-      mutationKey: cartMutationKeys.clearCart(),
-      mutationFn: clearCart,
+      ...cartMutations.clearCart(),
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+        await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
       },
     }),
     'clearCart',

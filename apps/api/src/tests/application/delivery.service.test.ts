@@ -1,11 +1,13 @@
 import { LocaleContext } from '@my-noodles/api-lib/locale';
 
 import { DeliveryCatalogCache } from '@/application/delivery/delivery-catalog.cache';
+import { DeliveryMethodsService } from '@/application/delivery/delivery-methods.service';
 import { DeliveryService } from '@/application/delivery/delivery.service';
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
 import { DeliveryProviderFactory } from '@/application/delivery/providers/delivery-provider.factory';
 import { MeestDeliveryAdapter } from '@/application/delivery/providers/meest.adapter';
 import { NovaPoshtaDeliveryAdapter } from '@/application/delivery/providers/nova-poshta.adapter';
+import { StubDeliveryEstimate } from '@/application/delivery/providers/stub-delivery.estimate';
 import { UkrposhtaDeliveryAdapter } from '@/application/delivery/providers/ukrposhta.adapter';
 import { DeliveryMethod, DeliveryProvider } from '@/application/orders';
 
@@ -36,11 +38,13 @@ function createFactory() {
     searchWarehouses: jest.fn(() => Promise.resolve(stubWarehouses)),
   };
 
+  const stubEstimate = new StubDeliveryEstimate();
+
   return {
     factory: new DeliveryProviderFactory(
-      new NovaPoshtaDeliveryAdapter(novaPoshtaService as never),
-      new MeestDeliveryAdapter(meestService as never),
-      new UkrposhtaDeliveryAdapter(ukrposhtaService as never),
+      new NovaPoshtaDeliveryAdapter(novaPoshtaService as never, stubEstimate),
+      new MeestDeliveryAdapter(meestService as never, stubEstimate),
+      new UkrposhtaDeliveryAdapter(ukrposhtaService as never, stubEstimate),
     ),
     novaPoshtaService,
     meestService,
@@ -50,27 +54,68 @@ function createFactory() {
 describe('DeliveryService', () => {
   const { factory } = createFactory();
   const cache = new DeliveryCatalogCache();
-  const service = new DeliveryService(factory, cache);
+  const deliveryMethodsService = new DeliveryMethodsService();
+  const service = new DeliveryService(factory, cache, deliveryMethodsService);
 
-  it('lists all delivery providers with locale-aware labels', () => {
+  it('lists all delivery providers with locale-aware labels and available methods', () => {
     LocaleContext.run('uk', () => {
       expect(service.listProviders()).toEqual([
-        { id: DeliveryProvider.NovaPoshta, label: 'Нова Пошта' },
-        { id: DeliveryProvider.Meest, label: 'Meest' },
-        { id: DeliveryProvider.Ukrposhta, label: 'Укрпошта' },
+        {
+          id: DeliveryProvider.NovaPoshta,
+          label: 'Нова Пошта',
+          methods: [
+            { id: DeliveryMethod.Warehouse, label: 'Відділення або поштомат' },
+            { id: DeliveryMethod.Courier, label: "Кур'єр" },
+            { id: DeliveryMethod.Custom, label: 'Інший спосіб' },
+          ],
+        },
+        {
+          id: DeliveryProvider.Meest,
+          label: 'Meest',
+          methods: [
+            { id: DeliveryMethod.Warehouse, label: 'Відділення або поштомат' },
+            { id: DeliveryMethod.Courier, label: "Кур'єр" },
+            { id: DeliveryMethod.Custom, label: 'Інший спосіб' },
+          ],
+        },
+        {
+          id: DeliveryProvider.Ukrposhta,
+          label: 'Укрпошта',
+          methods: [{ id: DeliveryMethod.Custom, label: 'Інший спосіб' }],
+        },
       ]);
     });
 
     LocaleContext.run('en', () => {
       expect(service.listProviders()).toEqual([
-        { id: DeliveryProvider.NovaPoshta, label: 'Nova Poshta' },
-        { id: DeliveryProvider.Meest, label: 'Meest' },
-        { id: DeliveryProvider.Ukrposhta, label: 'Ukrposhta' },
+        {
+          id: DeliveryProvider.NovaPoshta,
+          label: 'Nova Poshta',
+          methods: [
+            { id: DeliveryMethod.Warehouse, label: 'Branch or parcel locker' },
+            { id: DeliveryMethod.Courier, label: 'Courier' },
+            { id: DeliveryMethod.Custom, label: 'Other arrangement' },
+          ],
+        },
+        {
+          id: DeliveryProvider.Meest,
+          label: 'Meest',
+          methods: [
+            { id: DeliveryMethod.Warehouse, label: 'Branch or parcel locker' },
+            { id: DeliveryMethod.Courier, label: 'Courier' },
+            { id: DeliveryMethod.Custom, label: 'Other arrangement' },
+          ],
+        },
+        {
+          id: DeliveryProvider.Ukrposhta,
+          label: 'Ukrposhta',
+          methods: [{ id: DeliveryMethod.Custom, label: 'Other arrangement' }],
+        },
       ]);
     });
   });
 
-  it('returns empty cities without a query of at least 2 characters', async () => {
+  it('returns empty cities for a blank query', async () => {
     const cities = await service.searchCities(DeliveryProvider.NovaPoshta, '', DeliveryMethod.Warehouse);
 
     expect(cities).toEqual([]);
@@ -99,7 +144,7 @@ describe('DeliveryService', () => {
   it('serves catalog results from cache on repeated city search', async () => {
     const { factory: localFactory } = createFactory();
     const localCache = new DeliveryCatalogCache();
-    const localService = new DeliveryService(localFactory, localCache);
+    const localService = new DeliveryService(localFactory, localCache, deliveryMethodsService);
     const adapter = localFactory.get(DeliveryProvider.NovaPoshta);
     const searchCities = jest.spyOn(adapter, 'searchCities');
 
@@ -113,7 +158,7 @@ describe('DeliveryService', () => {
   it('keeps separate city cache entries per delivery method', async () => {
     const { factory: localFactory, novaPoshtaService } = createFactory();
     const localCache = new DeliveryCatalogCache();
-    const localService = new DeliveryService(localFactory, localCache);
+    const localService = new DeliveryService(localFactory, localCache, deliveryMethodsService);
 
     await localService.searchCities(DeliveryProvider.NovaPoshta, 'ки', DeliveryMethod.Warehouse);
     await localService.searchCities(DeliveryProvider.NovaPoshta, 'ки', DeliveryMethod.Courier);
@@ -163,6 +208,24 @@ describe('DeliveryService', () => {
         }),
       ).toBe(false);
     });
+
+    it('requires only city for custom method', () => {
+      expect(
+        service.canEstimate({
+          provider: DeliveryProvider.Ukrposhta,
+          method: DeliveryMethod.Custom,
+          city: 'Київ',
+        }),
+      ).toBe(true);
+
+      expect(
+        service.canEstimate({
+          provider: DeliveryProvider.Ukrposhta,
+          method: DeliveryMethod.Custom,
+          city: '  ',
+        }),
+      ).toBe(false);
+    });
   });
 
   it('estimates warehouse delivery for Nova Poshta', async () => {
@@ -178,12 +241,12 @@ describe('DeliveryService', () => {
     );
 
     expect(estimate.estimatedDaysMin).toBe(2);
-    expect(estimate.estimatedDaysMax).toBe(3);
-    expect(estimate.shippingCostMinor).toBe(6_500);
+    expect(estimate.estimatedDaysMax).toBe(4);
+    expect(estimate.shippingCostMinor).toBe(9_000);
     expect(estimate.estimatedDeliveryAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  it('adds extra days for Meest warehouse delivery', async () => {
+  it('estimates Meest warehouse with the same under-promised day range', async () => {
     const estimate = await service.estimateFromDelivery(
       {
         provider: DeliveryProvider.Meest,
@@ -195,8 +258,25 @@ describe('DeliveryService', () => {
       1,
     );
 
-    expect(estimate.estimatedDaysMin).toBe(3);
+    expect(estimate.estimatedDaysMin).toBe(2);
     expect(estimate.estimatedDaysMax).toBe(4);
+    expect(estimate.shippingCostMinor).toBe(7_000);
+  });
+
+  it('estimates Ukrposhta custom with a wider under-promised day range', async () => {
+    const estimate = await service.estimateFromDelivery(
+      {
+        provider: DeliveryProvider.Ukrposhta,
+        method: DeliveryMethod.Custom,
+        city: 'Київ',
+      },
+      new Date('2025-06-20T10:00:00.000Z'),
+      1,
+    );
+
+    expect(estimate.estimatedDaysMin).toBe(3);
+    expect(estimate.estimatedDaysMax).toBe(6);
+    expect(estimate.shippingCostMinor).toBe(6_500);
   });
 
   it('returns null when order delivery is incomplete', async () => {

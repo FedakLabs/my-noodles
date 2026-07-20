@@ -137,14 +137,24 @@ export const DeliveryProvider = {
 
 export type DeliveryProvider = typeof DeliveryProvider[keyof typeof DeliveryProvider];
 
-export type DeliveryProviderDto = {
-    id: DeliveryProvider;
+export const DeliveryMethod = {
+    WAREHOUSE: 'warehouse',
+    COURIER: 'courier',
+    CUSTOM: 'custom'
+} as const;
+
+export type DeliveryMethod = typeof DeliveryMethod[keyof typeof DeliveryMethod];
+
+export type DeliveryMethodDto = {
+    id: DeliveryMethod;
     label: string;
 };
 
-export const DeliveryMethod = { WAREHOUSE: 'warehouse', COURIER: 'courier' } as const;
-
-export type DeliveryMethod = typeof DeliveryMethod[keyof typeof DeliveryMethod];
+export type DeliveryProviderDto = {
+    id: DeliveryProvider;
+    methods: Array<DeliveryMethodDto>;
+    label: string;
+};
 
 export type DeliveryCityDto = {
     ref: string;
@@ -198,9 +208,10 @@ export type OrderDelivery = {
     orderId: string;
     order: Order;
     provider: 'nova-poshta' | 'ukrposhta' | 'meest';
-    method: 'warehouse' | 'courier';
+    method: 'warehouse' | 'courier' | 'custom';
     city: string | null;
     cityRef: string | null;
+    postalCode: string | null;
     warehouseNumber: string | null;
     warehouseName: string | null;
     warehouseRef: string | null;
@@ -284,6 +295,7 @@ export type UpdateCheckoutDeliveryDto = {
     method?: DeliveryMethod;
     city?: string;
     cityRef?: string;
+    postalCode?: string;
     warehouseNumber?: string;
     warehouseName?: string;
     warehouseRef?: string;
@@ -296,8 +308,9 @@ export type UpdateCheckoutDeliveryDto = {
 export type CreateOrderDeliveryDto = {
     provider: DeliveryProvider;
     method: DeliveryMethod;
-    city: string;
-    cityRef: string;
+    city?: string;
+    cityRef?: string;
+    postalCode?: string;
     warehouseNumber?: string;
     warehouseName?: string;
     warehouseRef?: string;

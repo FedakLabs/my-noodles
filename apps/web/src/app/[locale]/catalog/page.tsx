@@ -2,7 +2,7 @@ import { dehydrate } from '@tanstack/react-query';
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 
-import { fetchProductsList, productsQueries, resolvePaginatedProductsPage } from '@/api/products';
+import { productsQueries, resolvePaginatedProductsPage } from '@/api/products';
 import {
   CATALOG_VIEW_MODE_COOKIE,
   isCatalogViewMode,
@@ -41,7 +41,7 @@ async function CatalogPage({ searchParams }: WithPageLocaleProps<CatalogPageProp
 
   await runPrefetchSafe(async () => {
     if (initialViewMode === 'pagination') {
-      const pageData = await fetchProductsList(searchParamsParsed);
+      const pageData = await queryClient.fetchQuery(productsQueries.list(searchParamsParsed));
       const { merged, storageKey } = await resolvePaginatedProductsPage(
         queryClient,
         searchParamsParsed,

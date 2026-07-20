@@ -304,13 +304,12 @@ Input/query DTOs (`CreateOrderDto`, `ListProductsQueryDto`) stay mandatory for v
 
 ### Raw base + presets (`@my-noodles/api-lib/exceptions`)
 
-Framework-agnostic — **not** Nest `HttpException` subclasses. Body shape for every error:
+Framework-agnostic — **not** Nest `HttpException` subclasses. Construct with an options object; HTTP body is always `{ status, code, message, payload }` via `toBody()`.
 
-```ts
-{
-  (status, code, message, payload);
-}
-```
+| Field      | Role                                                                                                  |
+| ---------- | ----------------------------------------------------------------------------------------------------- |
+| `payload`  | Hand-managed, client-safe data included in `toBody()`                                                 |
+| `internal` | Server-only raw/debug details — never in the HTTP body; feeds `attributes.error.raw` in manifest logs |
 
 Presets: `BadRequestException`, `NotFoundException`, `ConflictException`, `TooManyRequestsException`, `ServiceUnavailableException`, `ServerSideException`, `ValidationException`.
 
@@ -323,22 +322,31 @@ import { AppException, HttpStatus, NotFoundException } from '@my-noodles/api-lib
 
 export class CheckoutNotFoundException extends NotFoundException {
   constructor(checkoutId: string) {
-    super('checkout_not_found', 'Checkout not found', { checkoutId });
+    super({
+      code: 'checkout_not_found',
+      message: 'Checkout not found',
+      payload: { checkoutId },
+    });
   }
 }
 
-export class CheckoutExpiredException extends AppException<{ checkoutId: string }> {
+export class CheckoutExpiredException extends AppException {
   constructor(checkoutId: string) {
-    super(HttpStatus.CONFLICT, 'checkout_expired', 'Checkout expired', { checkoutId });
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'checkout_expired',
+      message: 'Checkout expired',
+      payload: { checkoutId },
+    });
   }
 }
 ```
 
-Use the matching preset when sufficient: `BadRequestException`, `ConflictException`, `NotFoundException`, `TooManyRequestsException`.
+Use the matching preset when sufficient: `BadRequestException`, `ConflictException`, `NotFoundException`, `TooManyRequestsException`. Put provider/upstream dumps in `internal`, not `payload`.
 
 ### Custom filter (Nest coupling lives here only)
 
-`ExceptionsFilter` (`exceptions.filter.ts`) catches everything, maps Nest built-ins (ValidationPipe, route 404, throttler 429, …) and unknown errors into our body, logs, and replies via `httpAdapter.reply()`. Register globally in bootstrap / test apps — do **not** wrap domain exceptions in Nest `HttpException`.
+`ExceptionsFilter` (`exceptions.filter.ts`) catches everything, maps Nest built-ins (ValidationPipe, route 404, throttler 429, …) and unknown errors into `AppException` (unknown → `ServerSideException` with original in `internal`), logs the wrapped exception, and replies via `httpAdapter.reply(toBody())`. Register globally in bootstrap / test apps — do **not** wrap domain exceptions in Nest `HttpException`.
 
 ### Wrapping external errors
 

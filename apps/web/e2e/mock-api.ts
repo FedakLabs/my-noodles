@@ -143,10 +143,7 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
 
   if (req.method === 'GET' && pathname === '/api/delivery/cities') {
     const query = (url.searchParams.get('q') ?? '').trim().toLowerCase();
-    const cities =
-      query.length >= 2
-        ? deliveryCities.filter((city) => city.name.toLowerCase().includes(query))
-        : deliveryCities.slice(0, 5);
+    const cities = query ? deliveryCities.filter((city) => city.name.toLowerCase().includes(query)) : [];
     sendJson(req, res, 200, cities);
     return;
   }

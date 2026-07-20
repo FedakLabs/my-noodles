@@ -12,6 +12,7 @@ export function checkoutToFormValues(checkout: Checkout): CheckoutFormData {
     provider: delivery?.provider ?? DeliveryProvider.NOVA_POSHTA,
     cityName: delivery?.city ?? '',
     cityRef: delivery?.cityRef ?? '',
+    postalCode: delivery?.postalCode ?? '',
     warehouseRef: delivery?.warehouseRef ?? '',
     warehouseName: delivery?.warehouseName ?? '',
     warehouseNumber: delivery?.warehouseNumber ?? '',

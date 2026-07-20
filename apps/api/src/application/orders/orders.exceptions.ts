@@ -1,18 +1,28 @@
 import { AppException, HttpStatus, SAMPLE_UUID } from '@my-noodles/api-lib/exceptions';
 
-export class OrderNotFoundException extends AppException<{ orderId: string }> {
+export class OrderNotFoundException extends AppException {
   static readonly sample = new OrderNotFoundException(SAMPLE_UUID);
 
   constructor(orderId: string) {
-    super(HttpStatus.NOT_FOUND, 'order_not_found', 'Order not found', { orderId });
+    super({
+      status: HttpStatus.NOT_FOUND,
+      code: 'order_not_found',
+      message: 'Order not found',
+      payload: { orderId },
+    });
   }
 }
 
-export class OrderCancelNotAllowedException extends AppException<{ status: string }> {
+export class OrderCancelNotAllowedException extends AppException {
   static readonly sample = new OrderCancelNotAllowedException('draft');
 
   constructor(status: string) {
-    super(HttpStatus.CONFLICT, 'order_cancel_not_allowed', 'Order cannot be cancelled', { status });
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'order_cancel_not_allowed',
+      message: 'Order cannot be cancelled',
+      payload: { status },
+    });
   }
 }
 
@@ -20,6 +30,10 @@ export class OrderInventoryChangedException extends AppException {
   static readonly sample = new OrderInventoryChangedException();
 
   constructor() {
-    super(HttpStatus.CONFLICT, 'order_inventory_changed', 'Order details changed due to inventory update');
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'order_inventory_changed',
+      message: 'Order details changed due to inventory update',
+    });
   }
 }

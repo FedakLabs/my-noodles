@@ -8,7 +8,6 @@ type LocaleSyncProps = {
   locale: AppLocale;
 };
 
-/** Syncs route locale into Zustand before sibling children render (SSR + client navigations). */
 export function LocaleSync({ locale }: LocaleSyncProps) {
   const { locale: currentLocale, setLocale } = useLocaleStore.getState();
   if (currentLocale !== locale) {

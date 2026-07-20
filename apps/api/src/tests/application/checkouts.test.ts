@@ -8,7 +8,7 @@ import { Checkout } from '@/application/checkouts/checkout.entity';
 import { CheckoutsController } from '@/application/checkouts/checkouts.controller';
 import { CheckoutsService } from '@/application/checkouts/checkouts.service';
 import { CheckoutStatus } from '@/application/checkouts/checkouts.validators';
-import { DeliveryService } from '@/application/delivery';
+import { DeliveryMethodsService, DeliveryService } from '@/application/delivery';
 import { InventoryService } from '@/application/inventory/inventory.service';
 import { Order, OrderDelivery, OrderItem, OrderStatus } from '@/application/orders';
 import { TelegramService } from '@/application/telegram';
@@ -134,6 +134,10 @@ describe('checkouts (e2e)', () => {
         {
           provide: DeliveryService,
           useValue: { estimateForOrder: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: DeliveryMethodsService,
+          useValue: { isAvailableForProvider: jest.fn().mockReturnValue(true) },
         },
       ],
     })

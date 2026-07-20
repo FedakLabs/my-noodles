@@ -86,16 +86,16 @@ describe('TelegramService', () => {
           notes: null,
           estimatedDeliveryAt: new Date('2025-06-22T00:00:00.000Z'),
           estimatedDaysMin: 2,
-          estimatedDaysMax: 3,
-          shippingCostMinor: 6_500,
+          estimatedDaysMax: 4,
+          shippingCostMinor: 9_000,
         } as OrderDelivery,
       }),
     );
 
     const text = String(sendMessage.mock.calls[0]?.[0]?.text);
     expect(text).toContain('Орієнтовна доставка');
-    expect(text).toContain('2–3 дн.');
-    expect(text).toContain('Вартість доставки: 65.00 грн');
+    expect(text).toContain('2–4 дн.');
+    expect(text).toContain('Вартість доставки: 90.00 грн');
   });
 
   it('swallows telegram API failures', async () => {

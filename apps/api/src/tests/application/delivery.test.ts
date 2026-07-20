@@ -1,7 +1,7 @@
 import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
-import { DeliveryController, DeliveryService } from '@/application/delivery';
+import { DeliveryController, DeliveryMethodsService, DeliveryService } from '@/application/delivery';
 import { DeliveryCatalogCache } from '@/application/delivery/delivery-catalog.cache';
 import { DeliveryProviderFactory } from '@/application/delivery/providers/delivery-provider.factory';
 import { MeestDeliveryAdapter } from '@/application/delivery/providers/meest.adapter';
@@ -31,6 +31,7 @@ describe('delivery (e2e)', () => {
       controllers: [DeliveryController],
       providers: [
         DeliveryService,
+        DeliveryMethodsService,
         DeliveryCatalogCache,
         DeliveryProviderFactory,
         NovaPoshtaDeliveryAdapter,
@@ -69,13 +70,33 @@ describe('delivery (e2e)', () => {
     await app.close();
   });
 
-  it('GET /delivery/providers returns all providers', async () => {
+  it('GET /delivery/providers returns all providers with available methods', async () => {
     const response = await request(apiHttpServer(app)).get('/api/delivery/providers').expect(200);
 
     expect(response.body).toEqual([
-      { id: 'nova-poshta', label: 'Нова Пошта' },
-      { id: 'meest', label: 'Meest' },
-      { id: 'ukrposhta', label: 'Укрпошта' },
+      {
+        id: 'nova-poshta',
+        label: 'Нова Пошта',
+        methods: [
+          { id: 'warehouse', label: 'Відділення або поштомат' },
+          { id: 'courier', label: "Кур'єр" },
+          { id: 'custom', label: 'Інший спосіб' },
+        ],
+      },
+      {
+        id: 'meest',
+        label: 'Meest',
+        methods: [
+          { id: 'warehouse', label: 'Відділення або поштомат' },
+          { id: 'courier', label: "Кур'єр" },
+          { id: 'custom', label: 'Інший спосіб' },
+        ],
+      },
+      {
+        id: 'ukrposhta',
+        label: 'Укрпошта',
+        methods: [{ id: 'custom', label: 'Інший спосіб' }],
+      },
     ]);
   });
 

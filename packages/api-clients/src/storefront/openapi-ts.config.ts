@@ -1,7 +1,8 @@
 import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-  input: 'http://localhost:3001/api/docs-json',
+  /** Prefer checked-in OpenAPI so generation does not require a running API. */
+  input: '../../apps/api/src/openapi/openapi.json',
   /** Relative to package root (`pnpm --dir packages/api-clients …`). */
   output: 'src/storefront/generated',
   plugins: [
@@ -11,9 +12,11 @@ export default defineConfig({
     },
     {
       name: '@hey-api/client-fetch',
+      throwOnError: true,
     },
     {
       name: '@hey-api/sdk',
+      responseStyle: 'data',
       operations: {
         strategy: 'flat',
       },

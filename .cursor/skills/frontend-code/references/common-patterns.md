@@ -127,8 +127,70 @@ Server-side field errors: map API 400 to `form.setError` when the backend return
 
 **Location:** `src/api/[feature]/` — import from **`@/api/[feature]`** (the module `index.ts`), not from `*.hooks.ts` / `*.ts` directly.
 
-- **`[feature].ts`** — query-key factories + optional mutation-key factories + async fetchers (importable from Server Components for prefetch)
-- **`[feature].hooks.ts`** — `'use client'` hooks only; wrap results with `formatUseQuery` / `formatUseMutation`
+- **`[feature].ts`** — `*Queries` / `*Mutations` via `queryOptions` / `mutationOptions` with **`queryFn` / `mutationFn` calling the generated SDK** (no parallel `fetchX` helpers). Importable from Server Components for prefetch via `queryClient.fetchQuery(featureQueries.detail(id))`. Imperative reuse: `featureMutations.create().mutationFn!(vars, { client, meta: undefined, mutationKey })` (TanStack `MutationFunction` requires the context arg). No parallel `*QueryKeys` — use `.queryKey` / `.mutationKey` on demand. Key-only entries (e.g. `all`, cache storage keys) omit `queryFn` and must not be passed to `useQuery`.
+- **`[feature].hooks.ts`** — `'use client'` hooks only; spread `*Mutations.*()` / `*Queries.*()` and wrap results with `formatUseQuery` / `formatUseMutation`. Override `mutationFn` only when variables carry extra UI/analytics fields beyond the API body (forward the RQ `context` into `.mutationFn!(…, context)`).
+
+### Query / mutation key shape
+
+Think of the feature cache as a **tree**: one trunk (`rootKey`), then branches (`list`, `detail`, …). Locale is wrapped once at the leaf (`withAppLocaleKey`), never hand-duplicated in every string.
+
+| Piece         | Role                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| `rootKey`     | Trunk only — `['notes']`. Children build with `[...notesQueries.rootKey, 'detail', id]`        |
+| `all()`       | Trunk + locale — prefix invalidate/remove everything under the feature. **Not** for `useQuery` |
+| Child entries | Full `queryOptions` / `infiniteQueryOptions` for one fetch                                     |
+| Mutations     | Same trunk: `rootKey: notesQueries.rootKey`, then `[...notesMutations.rootKey, 'create']`      |
+
+**Why `all().queryKey` and not bare `rootKey`?** Cached keys look like `['uk', 'notes', 'detail', '1']`. Invalidating `['notes']` misses them (prefix match starts at index 0). Invalidating `notesQueries.all().queryKey` → `['uk', 'notes']` hits every notes query for the active locale.
+
+```ts
+// notes.ts — one trunk, then branches (server-safe; no React hooks)
+export const notesQueries = {
+  rootKey: ['notes'] as const,
+  all: () =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => notesQueries.rootKey)(),
+    }),
+  list: () =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => [...notesQueries.rootKey, 'list'] as const)(),
+      queryFn: () => notesControllerList(),
+    }),
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => [...notesQueries.rootKey, 'detail', id] as const)(),
+      queryFn: () => notesControllerGetById({ path: { id } }),
+    }),
+};
+
+export const notesMutations = {
+  rootKey: notesQueries.rootKey,
+  create: () =>
+    mutationOptions({
+      mutationKey: [...notesMutations.rootKey, 'create'] as const,
+      mutationFn: (body: CreateNoteDto) => notesControllerCreate({ body }),
+    }),
+};
+```
+
+```ts
+// notes.hooks.ts — after create, wipe the whole notes tree (list + every detail)
+export function useCreateNote() {
+  const queryClient = useQueryClient();
+
+  return formatUseMutation(
+    useMutation({
+      ...notesMutations.create(),
+      onSuccess: async () => {
+        // ✅ ['uk', 'notes'] — refreshes list and details
+        await queryClient.invalidateQueries({ queryKey: notesQueries.all().queryKey });
+        // ❌ notesQueries.rootKey → ['notes'] — matches nothing in the cache
+      },
+    }),
+    'createNote',
+  );
+}
+```
 
 ### Types: generated DTOs first
 
@@ -143,55 +205,6 @@ Use generated models from `packages/api-clients/*` in hooks, screens, and compon
 - Deliberately hiding fields the UI must never see
 
 Do **not** add `*ViewModel` duplicates of our own DTOs — that creates drift with no benefit.
-
-```ts
-// products.ts — server-safe fetchers + query keys (no React hooks)
-import { productsControllerList, type PaginatedProductsDto } from '@my-noodles/api-clients/storefront';
-
-import type { CatalogSearchParams } from '@/screens/catalog/search-params';
-
-export const productsQueryKeys = {
-  all: ['products'] as const,
-  list: (params: CatalogSearchParams, locale: AppLocale) =>
-    [...productsQueryKeys.all, 'list', locale, params] as const,
-};
-
-export async function fetchProductsList(params: CatalogSearchParams): Promise<PaginatedProductsDto> {
-  return productsControllerList({ query: {...map params to query} });
-}
-```
-
-```ts
-// cart.ts — mutation keys only when needed (e.g. useMutationState for concurrent in-flight adds)
-export const cartMutationKeys = {
-  all: ['cart'] as const,
-  addItem: () => ['cart', 'addItem'] as const,
-};
-```
-
-```ts
-// cart.hooks.ts — mutation key + invalidate + concurrent pending tracking
-export function useAddCartItem() {
-  const mutation = useMutation({
-    mutationKey: cartMutationKeys.addItem(),
-    mutationFn: ({ productId, qty = 1 }: CartLineInput) => addCartItem({ productId, qty }),
-    onSuccess: async (cart, variables) => {
-      await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
-      openPanelIfFirstAdd(cart.itemCount === variables.qty);
-    },
-  });
-
-  const addCartItemPendingProductIds = useMutationState({
-    filters: { mutationKey: cartMutationKeys.addItem(), status: 'pending' },
-    select: (entry) => (entry.state.variables as CartLineInput | undefined)?.productId,
-  }).filter((id): id is string => id != null);
-
-  return {
-    ...formatUseMutation(mutation, 'addCartItem'),
-    addCartItemIsAddingProduct: (productId) => addCartItemPendingProductIds.includes(productId),
-  };
-}
-```
 
 **Hook result naming** — use `formatUseQuery` / `formatUseMutation` from `@my-noodles/web-lib/react-query` so destructuring is prefixed (`products`, `productsIsPending`, `productsIsInitialLoad`, `createOrder`, `createOrderIsPending`, …).
 

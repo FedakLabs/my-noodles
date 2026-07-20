@@ -2,28 +2,38 @@ import type { HttpStatusCode } from './http-status';
 
 export const SAMPLE_UUID = '00000000-0000-4000-8000-000000000001';
 
-export type AppErrorBody<T = null> = Readonly<{
+export type AppExceptionInit = Readonly<{
   status: HttpStatusCode;
   code: string;
   message: string;
-  payload: T;
+  payload?: unknown;
+  internal?: unknown;
+}>;
+
+export type AppErrorBody = Readonly<{
+  status: HttpStatusCode;
+  code: string;
+  message: string;
+  payload: unknown;
 }>;
 
 /** Framework-agnostic API error — Nest maps and serializes via ExceptionsFilter. */
-export class AppException<T = null> extends Error {
+export class AppException extends Error {
   readonly status: HttpStatusCode;
   readonly code: string;
-  readonly payload: T;
+  readonly payload: unknown;
+  readonly internal: unknown;
 
-  constructor(status: HttpStatusCode, code: string, message: string, payload?: T) {
+  constructor({ status, code, message, payload, internal }: AppExceptionInit) {
     super(message);
     this.name = new.target.name;
     this.status = status;
     this.code = code;
-    this.payload = (payload ?? null) as T;
+    this.payload = payload ?? null;
+    this.internal = internal ?? null;
   }
 
-  toBody(): AppErrorBody<T> {
+  toBody(): AppErrorBody {
     return {
       status: this.status,
       code: this.code,

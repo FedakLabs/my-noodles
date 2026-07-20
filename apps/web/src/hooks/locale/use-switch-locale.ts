@@ -1,28 +1,32 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
+import { useNavigationPendingActions, useNavigationRawPending } from '@/hooks/smooth';
 import { LOCALE_OPTIONS } from '@/i18n/locales';
-import { usePathname, useRouter } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/routing';
 
 import { useAppLocale, useLocaleStore } from './locale-store';
-import { switchAppLocale } from './switch-locale';
 
 export function useSwitchLocale() {
   const locale = useAppLocale();
-  const setLocale = useLocaleStore((state) => state.setLocale);
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const storeSwitchLocale = useLocaleStore((state) => state.switchLocale);
+  const { registerTransitionPending } = useNavigationPendingActions();
+  const isSwitching = useNavigationRawPending();
+  const switchStartedRef = useRef(false);
 
   const switchLocale = useCallback(
     (next: AppLocale) => {
-      switchAppLocale(next, locale, pathname, searchParams, router, setLocale);
+      if (next === locale || switchStartedRef.current || isSwitching) {
+        return;
+      }
+
+      switchStartedRef.current = true;
+      registerTransitionPending(true);
+      storeSwitchLocale(next);
     },
-    [locale, pathname, router, searchParams, setLocale],
+    [isSwitching, locale, registerTransitionPending, storeSwitchLocale],
   );
 
-  return { locale, switchLocale, options: LOCALE_OPTIONS };
+  return { locale, isSwitching, switchLocale, options: LOCALE_OPTIONS };
 }

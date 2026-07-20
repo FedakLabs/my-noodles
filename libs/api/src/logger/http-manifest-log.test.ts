@@ -1,3 +1,4 @@
+import { AppException, HttpStatus, ServerSideException } from '../exceptions';
 import { buildIngoingHttpManifestLog, buildOutgoingHttpManifestLog } from './http-manifest-log';
 import { LogMetadata } from './log-metadata';
 
@@ -176,6 +177,52 @@ describe('buildIngoingHttpManifestLog', () => {
     const raw = JSON.parse(record['attributes.error.raw']!) as { name: string; message: string };
     expect(raw.name).toBe('Error');
     expect(raw.message).toBe('test');
+  });
+
+  it('writes AppException.internal to error.raw and prefers Error cause for name/message/stack', () => {
+    const cause = Object.assign(new Error('fk violation'), { code: '23503' });
+    const error = new ServerSideException({ internal: cause });
+    const record = buildIngoingHttpManifestLog({
+      method: 'GET',
+      url: '/api/health',
+      responseStatus: 500,
+      execTimeMs: 2,
+      error,
+      sanitizedMessage: error.message,
+      responseBody: error.toBody(),
+    });
+
+    expect(record['attributes.error.name']).toBe('Error');
+    expect(record['attributes.error.message']).toBe('fk violation');
+    expect(record['attributes.error.stack']).toContain('fk violation');
+    expect(JSON.parse(record['attributes.error.raw']!)).toMatchObject({
+      message: 'fk violation',
+      code: '23503',
+    });
+    expect(record['attributes.http.responseBody']).toBe(JSON.stringify(error.toBody()));
+    expect(error.toBody()).not.toHaveProperty('internal');
+  });
+
+  it('emits error.raw from internal on INFO when AppException carries non-Error internal', () => {
+    const internal = { message: 'Not found' };
+    const error = new AppException({
+      status: HttpStatus.NOT_FOUND,
+      code: 'api_client_error',
+      message: 'Not found',
+      internal,
+    });
+    const record = buildIngoingHttpManifestLog({
+      method: 'GET',
+      url: '/api/health',
+      responseStatus: 404,
+      execTimeMs: 2,
+      error,
+      responseBody: error.toBody(),
+    });
+
+    expect(record['severity.text']).toBe('INFO');
+    expect(record['attributes.error.name']).toBeUndefined();
+    expect(JSON.parse(record['attributes.error.raw']!)).toEqual(internal);
   });
 
   it('adds client and ip attributes when present', () => {

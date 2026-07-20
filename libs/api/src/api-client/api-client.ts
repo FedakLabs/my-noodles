@@ -43,7 +43,10 @@ export abstract class ApiClient {
     try {
       response = await globalThis.fetch(requestUrl, init);
     } catch (cause) {
-      const error = new ApiClientException(this.resolveErrorMessage(cause));
+      const error = new ApiClientException({
+        message: this.resolveErrorMessage(cause),
+        internal: cause,
+      });
 
       this.logOutgoing({
         config,
@@ -59,11 +62,11 @@ export abstract class ApiClient {
     const execTimeMs = getTimingElapsedMs(config);
 
     if (!response.ok) {
-      const error = new ApiClientException(
-        this.resolveErrorMessage(responseBody, response.status),
-        responseBody,
-        response.status,
-      );
+      const error = new ApiClientException({
+        message: this.resolveErrorMessage(responseBody, response.status),
+        status: response.status,
+        internal: responseBody,
+      });
 
       this.logOutgoing({
         config,
@@ -83,7 +86,11 @@ export abstract class ApiClient {
       const error =
         cause instanceof ApiClientException
           ? cause
-          : new ApiClientException(this.resolveErrorMessage(cause), responseBody, response.status);
+          : new ApiClientException({
+              message: this.resolveErrorMessage(cause),
+              status: response.status,
+              internal: responseBody,
+            });
 
       this.logOutgoing({
         config,

@@ -1,3 +1,8 @@
+export const MEEST_LOCALES = ['ua', 'ru', 'en'] as const;
+
+/** 0 = effectively disabled until we tune load; directories can be re-enabled later. */
+export const MEEST_GEO_DIRECTORY_TTL_SECONDS = 0;
+
 /**
  * Meest Public `/geo_regions` is currently unavailable (status 0 / empty result).
  * District rows still expose stable `region_id` values — map them to UA oblast names

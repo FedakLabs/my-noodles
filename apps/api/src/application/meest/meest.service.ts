@@ -1,11 +1,10 @@
-import { LocaleContext } from '@my-noodles/api-lib/locale';
 import {
-  APP_LOCALE_TO_MEEST_LOCALE,
   PublicMeestApi,
   type MeestBranchRow,
   type MeestLocalizedName,
   type MeestLocalityData,
 } from '@my-noodles/integration-api-clients/meest';
+import { hasLatin, latinToUk } from '@my-noodles/translit';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { DeliveryCity, DeliveryWarehouse } from '@/application/delivery/delivery.types';
@@ -59,7 +58,7 @@ export class MeestService {
   constructor(@Inject(PublicMeestApi) private readonly meestApi: PublicMeestApi) {}
 
   async searchCities(query: string): Promise<DeliveryCity[]> {
-    const localities = await this.meestApi.searchLocalities(query);
+    const localities = await this.meestApi.searchLocalities(this.toSearchQuery(query));
     const seen = new Set<string>();
 
     return localities
@@ -79,10 +78,9 @@ export class MeestService {
 
   async searchWarehouses(cityRef: string, query?: string): Promise<DeliveryWarehouse[]> {
     const branches = await this.meestApi.getBranches(cityRef);
-    const normalizedQuery = query?.trim().toLowerCase();
 
     return branches
-      .filter((branch) => this.matchesWarehouseQuery(branch, normalizedQuery))
+      .filter((branch) => this.matchesWarehouseQuery(branch, query))
       .map((branch) => {
         const number = extractMeestWarehouseNumber(branch);
 
@@ -95,8 +93,15 @@ export class MeestService {
       });
   }
 
+  private toSearchQuery(query: string): string {
+    if (!hasLatin(query)) {
+      return query;
+    }
+
+    return latinToUk(query);
+  }
+
   private formatCityName(locality: MeestLocalityData): string {
-    // geo_localities has no lang filter / English name; keep Ukrainian primary fields.
     // Region enrichment (empty `reg`) is handled inside PublicMeestApi.searchLocalities.
     return formatMeestCityName({
       type: locality.t_ua?.trim() || undefined,
@@ -154,14 +159,12 @@ export class MeestService {
       return undefined;
     }
 
-    const lang = APP_LOCALE_TO_MEEST_LOCALE[LocaleContext.get()];
-    const primary = name[lang]?.trim();
-
-    return primary || name.ua?.trim() || name.en?.trim() || name.ru?.trim() || undefined;
+    return name.ua?.trim() || name.en?.trim() || name.ru?.trim() || undefined;
   }
 
   private matchesWarehouseQuery(branch: MeestBranchRow, query?: string): boolean {
-    if (!query) {
+    const trimmed = query?.trim();
+    if (!trimmed) {
       return true;
     }
 
@@ -178,6 +181,9 @@ export class MeestService {
       .join(' ')
       .toLowerCase();
 
-    return haystack.includes(query);
+    // Keep the original (for Latin landmarks like "Rozetka") and UA transliteration (for streets).
+    const needles = new Set([trimmed.toLowerCase(), this.toSearchQuery(trimmed).toLowerCase()]);
+
+    return [...needles].some((needle) => haystack.includes(needle));
   }
 }

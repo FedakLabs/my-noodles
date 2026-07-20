@@ -1,0 +1,29 @@
+{
+  "name": "@my-noodles/translit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --fix",
+    "lint-check": "oxlint",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@jest/globals": "29.7.0",
+    "@my-noodles/jest-config": "workspace:*",
+    "@types/jest": "29.5.14",
+    "@types/node": "22.15.3",
+    "jest": "29.7.0",
+    "ts-jest": "29.3.2"
+  }
+}

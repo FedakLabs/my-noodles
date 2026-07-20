@@ -3,16 +3,16 @@
 import { formatUseMutation, formatUseQuery } from '@my-noodles/web-lib/react-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { feedQueries, feedQueryKeys, likeFeedProduct, unlikeFeedProduct } from './feed';
+import { feedMutations, feedQueries } from './feed';
 
 export function useLikeFeedProduct() {
   const queryClient = useQueryClient();
 
   return formatUseMutation(
     useMutation({
-      mutationFn: likeFeedProduct,
+      ...feedMutations.like(),
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() });
+        await queryClient.invalidateQueries({ queryKey: feedQueries.likes().queryKey });
       },
     }),
     'likeFeed',
@@ -24,9 +24,9 @@ export function useUnlikeFeedProduct() {
 
   return formatUseMutation(
     useMutation({
-      mutationFn: unlikeFeedProduct,
+      ...feedMutations.unlike(),
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: feedQueryKeys.likes() });
+        await queryClient.invalidateQueries({ queryKey: feedQueries.likes().queryKey });
       },
     }),
     'unlikeFeed',

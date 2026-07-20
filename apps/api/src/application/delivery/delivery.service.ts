@@ -6,6 +6,8 @@ import { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { OrderDelivery } from '../orders/order-delivery.entity';
 import type { Order } from '../orders/order.entity';
 import { DeliveryCatalogCache } from './delivery-catalog.cache';
+import { DeliveryMethodsService } from './delivery-methods.service';
+import type { DeliveryProviderDto } from './delivery.dto';
 import type {
   DeliveryAddressSnapshot,
   DeliveryCity,
@@ -20,22 +22,24 @@ const PROVIDER_LABELS: Record<DeliveryProvider, LocalizedString> = {
   [DeliveryProvider.Meest]: new LocalizedString({ uk: 'Meest', en: 'Meest' }),
 };
 
+function localizedLabel(labels: LocalizedString): string {
+  return (labels.localized ?? labels.uk) as string;
+}
+
 @Injectable()
 export class DeliveryService {
   constructor(
     @Inject(DeliveryProviderFactory) private readonly providerFactory: DeliveryProviderFactory,
     @Inject(DeliveryCatalogCache) private readonly catalogCache: DeliveryCatalogCache,
+    @Inject(DeliveryMethodsService) private readonly deliveryMethodsService: DeliveryMethodsService,
   ) {}
 
-  listProviders(): { id: DeliveryProvider; label: string }[] {
-    return this.providerFactory.list().map((adapter) => {
-      const labels = PROVIDER_LABELS[adapter.provider];
-
-      return {
-        id: adapter.provider,
-        label: (labels.localized ?? labels.uk) as string,
-      };
-    });
+  listProviders(): DeliveryProviderDto[] {
+    return this.providerFactory.list().map((adapter) => ({
+      id: adapter.provider,
+      label: localizedLabel(PROVIDER_LABELS[adapter.provider]),
+      methods: this.deliveryMethodsService.listForProvider(adapter.provider),
+    }));
   }
 
   async searchCities(
@@ -44,7 +48,7 @@ export class DeliveryService {
     method: DeliveryMethod,
   ): Promise<DeliveryCity[]> {
     const normalizedQuery = query.trim();
-    if (normalizedQuery.length < 2) {
+    if (!normalizedQuery) {
       return [];
     }
 
@@ -76,6 +80,10 @@ export class DeliveryService {
   canEstimate(delivery: DeliveryAddressSnapshot): boolean {
     if (!delivery.city?.trim()) {
       return false;
+    }
+
+    if (delivery.method === DeliveryMethod.Custom) {
+      return true;
     }
 
     if (delivery.method === DeliveryMethod.Warehouse) {

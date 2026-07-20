@@ -5,44 +5,72 @@ import type { FieldValidationError } from './validation-error';
 export const SERVICE_UNAVAILABLE_FALLBACK_MESSAGE = 'Internal server error';
 export const SERVER_SIDE_FALLBACK_MESSAGE = 'Internal server error';
 
-export class BadRequestException extends AppException<Record<string, unknown> | null> {
-  constructor(code: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.BAD_REQUEST, code, message, payload ?? null);
+type PresetExceptionInit = Readonly<{
+  code: string;
+  message: string;
+  payload?: unknown;
+  internal?: unknown;
+}>;
+
+export class BadRequestException extends AppException {
+  constructor(init: PresetExceptionInit) {
+    super({ status: HttpStatus.BAD_REQUEST, ...init });
   }
 }
 
-export class NotFoundException extends AppException<Record<string, unknown> | null> {
-  constructor(code: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.NOT_FOUND, code, message, payload ?? null);
+export class NotFoundException extends AppException {
+  constructor(init: PresetExceptionInit) {
+    super({ status: HttpStatus.NOT_FOUND, ...init });
   }
 }
 
-export class ConflictException extends AppException<Record<string, unknown> | null> {
-  constructor(code: string, message: string, payload?: Record<string, unknown>) {
-    super(HttpStatus.CONFLICT, code, message, payload ?? null);
+export class ConflictException extends AppException {
+  constructor(init: PresetExceptionInit) {
+    super({ status: HttpStatus.CONFLICT, ...init });
   }
 }
 
 export class TooManyRequestsException extends AppException {
-  constructor(message: string = 'Too many requests') {
-    super(HttpStatus.TOO_MANY_REQUESTS, 'too_many_requests', message);
+  constructor(init: { message?: string; internal?: unknown } = {}) {
+    super({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      code: 'too_many_requests',
+      message: init.message ?? 'Too many requests',
+      internal: init.internal,
+    });
   }
 }
 
 export class ServiceUnavailableException extends AppException {
-  constructor(message: string = SERVICE_UNAVAILABLE_FALLBACK_MESSAGE) {
-    super(HttpStatus.SERVICE_UNAVAILABLE, 'service_unavailable', message);
+  constructor(init: { message?: string; internal?: unknown } = {}) {
+    super({
+      status: HttpStatus.SERVICE_UNAVAILABLE,
+      code: 'service_unavailable',
+      message: init.message ?? SERVICE_UNAVAILABLE_FALLBACK_MESSAGE,
+      internal: init.internal,
+    });
   }
 }
 
 export class ServerSideException extends AppException {
-  constructor(message: string = SERVER_SIDE_FALLBACK_MESSAGE) {
-    super(HttpStatus.INTERNAL_SERVER_ERROR, 'internal_server_error', message);
+  constructor(init: { message?: string; internal?: unknown } = {}) {
+    super({
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      code: 'internal_server_error',
+      message: init.message ?? SERVER_SIDE_FALLBACK_MESSAGE,
+      internal: init.internal,
+    });
   }
 }
 
-export class ValidationException extends AppException<{ fields: FieldValidationError[] }> {
-  constructor(fields: FieldValidationError[]) {
-    super(HttpStatus.BAD_REQUEST, 'validation_failed', 'Validation failed', { fields });
+export class ValidationException extends AppException {
+  constructor(init: { fields: FieldValidationError[]; internal?: unknown }) {
+    super({
+      status: HttpStatus.BAD_REQUEST,
+      code: 'validation_failed',
+      message: 'Validation failed',
+      payload: { fields: init.fields },
+      internal: init.internal,
+    });
   }
 }

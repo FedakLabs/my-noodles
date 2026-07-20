@@ -51,4 +51,32 @@ describe('mapDeliveryDtoToEntity', () => {
       apartment: null,
     });
   });
+
+  it('keeps warehouse and address fields for custom delivery', () => {
+    const entity = mapDeliveryDtoToEntity('order-1', {
+      provider: DeliveryProvider.Ukrposhta,
+      method: DeliveryMethod.Custom,
+      city: 'Львів',
+      postalCode: '79000',
+      warehouseNumber: '12',
+      warehouseName: 'Відділення №12',
+      street: 'Шевченка',
+      building: '5',
+      apartment: '2',
+    });
+
+    expect(entity).toMatchObject({
+      provider: DeliveryProvider.Ukrposhta,
+      method: DeliveryMethod.Custom,
+      city: 'Львів',
+      cityRef: null,
+      postalCode: '79000',
+      warehouseNumber: '12',
+      warehouseName: 'Відділення №12',
+      warehouseRef: null,
+      street: 'Шевченка',
+      building: '5',
+      apartment: '2',
+    });
+  });
 });

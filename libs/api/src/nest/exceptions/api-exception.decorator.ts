@@ -3,10 +3,10 @@ import { ApiResponse } from '@nestjs/swagger';
 
 import { AppException } from '../../exceptions';
 
-type DocumentedException = { readonly sample: AppException<unknown> };
+type DocumentedException = { readonly sample: AppException };
 
 export function ApiException(...exceptions: DocumentedException[]) {
-  const byStatus = new Map<number, AppException<unknown>[]>();
+  const byStatus = new Map<number, AppException[]>();
 
   for (const { sample } of exceptions) {
     byStatus.set(sample.status, [...(byStatus.get(sample.status) ?? []), sample]);

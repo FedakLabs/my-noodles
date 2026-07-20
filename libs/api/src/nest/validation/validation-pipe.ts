@@ -9,7 +9,7 @@ export class AppValidationPipe extends ValidationPipe {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
-      exceptionFactory: (errors) => new ValidationException(flattenValidationErrors(errors)),
+      exceptionFactory: (errors) => new ValidationException({ fields: flattenValidationErrors(errors) }),
     });
   }
 }

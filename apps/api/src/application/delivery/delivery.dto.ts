@@ -9,11 +9,21 @@ import {
 } from '../orders/order-delivery.dto';
 import type { DeliveryCity, DeliveryWarehouse } from './delivery.types';
 
+export class DeliveryMethodDto {
+  @ApiProperty({ enum: DeliveryMethod, enumName: 'DeliveryMethod' })
+  id!: DeliveryMethod;
+
+  label!: string;
+}
+
 export class DeliveryProviderDto {
   @ApiProperty({ enum: DeliveryProvider, enumName: 'DeliveryProvider' })
   id!: DeliveryProvider;
 
   label!: string;
+
+  @ApiProperty({ type: [DeliveryMethodDto] })
+  methods!: DeliveryMethodDto[];
 }
 
 export class DeliveryCityDto implements DeliveryCity {

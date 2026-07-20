@@ -1,8 +1,9 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { fetchFeedNext, type Product } from '@/api/feed';
+import { feedMutations, type Product } from '@/api/feed';
 import { type FeedFilters, useFeedTagsStore } from '@/hooks/feed';
 
 function getFeedFilters(): FeedFilters {
@@ -40,12 +41,10 @@ const NAV_LOCK_MS = 500;
  * Client-side pager buffer: back/forward within loaded items is in-memory (no request).
  * `POST /feed/next` fires only when advancing past the buffer end, carrying the just-left
  * product's dwell. Changing filters resets the buffer and refetches from scratch.
- *
- * Calls `fetchFeedNext` directly (not React Query) so every advance hits the network with
- * the current `previousProduct` — no mutation `data` reuse or query-key staleness.
  */
 export function useFeedPager(): FeedPager {
   const filters = useFeedTagsStore((state) => state.filters);
+  const { mutateAsync: fetchFeedNext } = useMutation(feedMutations.next());
 
   const [items, setItems] = useState<Product[]>([]);
   const [index, setIndex] = useState(0);
@@ -108,7 +107,7 @@ export function useFeedPager(): FeedPager {
         }
       }
     },
-    [dwellSince, markActive],
+    [dwellSince, fetchFeedNext, markActive],
   );
 
   const reloadFromScratch = useCallback(() => {
@@ -147,7 +146,7 @@ export function useFeedPager(): FeedPager {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchFeedNext]);
 
   const filtersKey = JSON.stringify(filters);
   useEffect(() => {
@@ -240,7 +239,7 @@ export function useFeedPager(): FeedPager {
         }
       }
     })();
-  }, [markActive]);
+  }, [fetchFeedNext, markActive]);
 
   const retry = useCallback(() => {
     skipFilterReloadRef.current = true;

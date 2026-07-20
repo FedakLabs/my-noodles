@@ -1,6 +1,6 @@
 import { dehydrate } from '@tanstack/react-query';
 
-import { fetchProductDetail, productsQueries } from '@/api/products';
+import { productsQueries } from '@/api/products';
 import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
 import { ProductScreen } from '@/screens/product';
 import type { LocalePageProps } from '@/shared/page-props';
@@ -11,7 +11,7 @@ type ProductPageProps = LocalePageProps<{ slug: string }>;
 
 export const generateMetadata = withPageLocaleMetadata<ProductPageProps>(async ({ params, locale }) => {
   const { slug } = params;
-  const product = await fetchProductDetail(slug);
+  const product = await getQueryClient().fetchQuery(productsQueries.detail(slug));
 
   return buildPageMetadata({
     locale,

@@ -9,21 +9,15 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { DeliveryMethod, DeliveryProvider } from '@my-noodles/api-clients/storefront';
 import { PhoneInput } from '@my-noodles/ui';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import type { Checkout } from '@/api/checkouts';
-import {
-  CheckoutStatus,
-  checkoutsQueryKeys,
-  useSubmitCheckout,
-  useUpdateCheckoutDelivery,
-  useUpdateCheckoutReceiver,
-} from '@/api/checkouts';
+import { useSubmitCheckout, useUpdateCheckoutDelivery, useUpdateCheckoutReceiver } from '@/api/checkouts';
 import { CheckoutCancelledState } from '@/components/checkout/checkout-cancelled-state';
 import {
+  canEstimateCheckoutDelivery,
   CheckoutDeliveryFields,
   isCheckoutDeliveryEstimateLoading,
 } from '@/components/checkout/checkout-delivery-fields';
@@ -81,7 +75,6 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   const t = useTranslations('checkout');
   const tItems = useTranslations('checkout.items');
   const { isDesktop } = useViewport();
-  const queryClient = useQueryClient();
   const { updateCheckoutReceiver, updateCheckoutReceiverIsPending } = useUpdateCheckoutReceiver(checkoutId);
   const { updateCheckoutDelivery, updateCheckoutDeliveryIsPending } = useUpdateCheckoutDelivery(checkoutId);
   const { submitCheckout, submitCheckoutIsPending, submitCheckoutIsError, submitCheckoutError } =
@@ -107,6 +100,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
       provider: DeliveryProvider.NOVA_POSHTA,
       cityName: '',
       cityRef: '',
+      postalCode: '',
       warehouseRef: '',
       warehouseName: '',
       warehouseNumber: '',
@@ -128,14 +122,20 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
   );
   const receiverComplete = isCheckoutReceiverComplete({ firstName, lastName, phone }, receiverSchema);
   const deliveryMethod = watchedValues.method ?? DeliveryMethod.WAREHOUSE;
-  const deliveryEstimateIsLoading = isCheckoutDeliveryEstimateLoading(updateCheckoutDeliveryIsPending, {
+  const deliveryEstimateInput = {
     method: deliveryMethod,
     cityName: watchedValues.cityName ?? '',
     warehouseRef: watchedValues.warehouseRef ?? '',
     warehouseNumber: watchedValues.warehouseNumber ?? '',
     street: watchedValues.street ?? '',
     building: watchedValues.building ?? '',
-  });
+  };
+  const canEstimateDelivery = canEstimateCheckoutDelivery(deliveryEstimateInput);
+  const activeDeliveryEstimate = canEstimateDelivery ? (checkout.deliveryEstimate ?? null) : null;
+  const deliveryEstimateIsLoading = isCheckoutDeliveryEstimateLoading(
+    updateCheckoutDeliveryIsPending,
+    deliveryEstimateInput,
+  );
   const hydratedCheckoutIdRef = useRef<string | null>(null);
   const autosaveEnabledRef = useRef(false);
   const lastReceiverPatchRef = useRef<string | null>(null);
@@ -217,24 +217,6 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             }),
           ),
         });
-
-        queryClient.setQueryData<Checkout>(checkoutsQueryKeys.detail(checkoutId), (previous) =>
-          previous
-            ? {
-                ...previous,
-                status: CheckoutStatus.COMPLETED,
-                completedAt: previous.completedAt ?? new Date().toISOString(),
-                order,
-              }
-            : previous,
-        );
-
-        void Promise.all([
-          queryClient.invalidateQueries({ queryKey: checkoutsQueryKeys.detail(checkoutId) }),
-          queryClient.invalidateQueries({
-            queryKey: checkoutsQueryKeys.list({ status: CheckoutStatus.ACTIVE }),
-          }),
-        ]);
       },
     });
   };
@@ -331,7 +313,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
       <CheckoutOrderSummary
         checkout={checkout}
-        shippingCostMinor={checkout.deliveryEstimate?.shippingCostMinor ?? null}
+        shippingCostMinor={activeDeliveryEstimate?.shippingCostMinor ?? null}
         footer={submitButton}
       />
     </CheckoutOrderCard>
@@ -374,7 +356,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             checkout={checkout}
             footer={submitButton}
             sticky
-            deliveryEstimate={checkout.deliveryEstimate ?? null}
+            deliveryEstimate={activeDeliveryEstimate}
             deliveryEstimateIsLoading={deliveryEstimateIsLoading}
             deliveryMethod={deliveryMethod}
           />

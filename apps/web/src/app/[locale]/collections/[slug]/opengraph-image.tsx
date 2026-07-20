@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 
-import { fetchCollectionDetail } from '@/api/collections';
+import { collectionsQueries } from '@/api/collections';
 import { withPageLocaleResult } from '@/i18n/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
+import { getQueryClient } from '@/shared/query-client';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 
 export const size = OG_IMAGE_SIZE;
@@ -14,7 +15,7 @@ export default withPageLocaleResult<CollectionOpenGraphImageProps, Awaited<Retur
   async ({ params, locale }) => {
     const { slug } = params;
     const [collection, tMetadata] = await Promise.all([
-      fetchCollectionDetail(slug),
+      getQueryClient().fetchQuery(collectionsQueries.detail(slug)),
       getTranslations({ locale, namespace: 'metadata' }),
     ]);
 
@@ -32,7 +33,7 @@ export const generateImageMetadata = withPageLocaleResult<
   Array<{ alt: string }>
 >(
   async ({ params }) => {
-    const collection = await fetchCollectionDetail(params.slug);
+    const collection = await getQueryClient().fetchQuery(collectionsQueries.detail(params.slug));
 
     return [{ alt: collection.name ?? collection.slug }];
   },

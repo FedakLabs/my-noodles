@@ -2,14 +2,14 @@
 
 import type { PaginatedProductsDto, Product } from '@my-noodles/api-clients/storefront';
 import { formatUseInfiniteQuery, formatUseQuery } from '@my-noodles/web-lib/react-query';
-import { type InfiniteData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import type { CatalogFacetsParams, CatalogSearchParams } from '@/screens/catalog/search-params';
 import type { CatalogInfiniteListParams } from '@/screens/catalog/search-params';
 import { toCatalogInfiniteListParams } from '@/screens/catalog/search-params';
 
-import { productsQueries, productsQueryKeys, resolvePaginatedProductsPage } from './products';
+import { productsQueries, resolvePaginatedProductsPage } from './products';
 
 type QueryEnabledOptions = {
   enabled?: boolean;
@@ -28,7 +28,7 @@ export function useProductsList(params: CatalogSearchParams, options?: QueryEnab
 export function useProductsPaginatedList(params: CatalogSearchParams, options?: QueryEnabledOptions) {
   const queryClient = useQueryClient();
   const listParams = useMemo(() => toCatalogInfiniteListParams(params), [params]);
-  const storageKey = productsQueryKeys.paginatedAccumulated(listParams);
+  const storageKey = productsQueries.paginatedAccumulated(listParams).queryKey;
 
   return formatUseQuery(
     useQuery({
@@ -42,13 +42,7 @@ export function useProductsPaginatedList(params: CatalogSearchParams, options?: 
 
 export function useProductsInfiniteList(params: CatalogInfiniteListParams, options?: QueryEnabledOptions) {
   return formatUseInfiniteQuery<PaginatedProductsDto, Product, Error, 'products'>(
-    useInfiniteQuery<
-      PaginatedProductsDto,
-      Error,
-      InfiniteData<PaginatedProductsDto>,
-      ReturnType<typeof productsQueryKeys.infiniteList>,
-      number
-    >({
+    useInfiniteQuery({
       ...productsQueries.infiniteList(params),
       enabled: options?.enabled ?? true,
     }),

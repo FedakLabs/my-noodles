@@ -1,49 +1,22 @@
 import { ApiClient, ApiClientException } from '@my-noodles/api-lib/api-client';
 
-export type NovaPoshtaClientOptions = {
-  apiBaseUrl: string;
-  apiKey: string;
-};
+import { NOVA_POSHTA_ADDRESS_GENERAL_MODEL, NOVA_POSHTA_ADDRESS_MODEL } from './nova-poshta.api.config';
+import type {
+  NovaPoshtaClientOptions,
+  NovaPoshtaDirectoryCityRow,
+  NovaPoshtaResponse,
+  NovaPoshtaSearchSettlementRow,
+  NovaPoshtaWarehouseRow,
+} from './nova-poshta.api.dto';
 
-const ADDRESS_MODEL = 'Address';
-const ADDRESS_GENERAL_MODEL = 'AddressGeneral';
-
-export type NovaPoshtaResponse<T = unknown> = {
-  success: boolean;
-  data: T;
-  errors?: string[];
-  warnings?: string[];
-  info?: string[];
-  messageCodes?: string[];
-  errorCodes?: string[];
-  warningCodes?: string[];
-  infoCodes?: string[];
-};
-
-export type NovaPoshtaSettlementAddress = {
-  Ref: string;
-  Present: string;
-  DeliveryCity: string;
-};
-
-export type NovaPoshtaSearchSettlementRow = {
-  Addresses?: NovaPoshtaSettlementAddress[];
-};
-
-export type NovaPoshtaDirectoryCityRow = {
-  Ref: string;
-  Description: string;
-  SettlementTypeDescription?: string;
-  RegionsDescription?: string;
-  AreaDescription?: string;
-};
-
-export type NovaPoshtaWarehouseRow = {
-  Ref: string;
-  Number: string;
-  Description: string;
-  ShortAddress?: string;
-};
+export type {
+  NovaPoshtaClientOptions,
+  NovaPoshtaDirectoryCityRow,
+  NovaPoshtaResponse,
+  NovaPoshtaSearchSettlementRow,
+  NovaPoshtaSettlementAddress,
+  NovaPoshtaWarehouseRow,
+} from './nova-poshta.api.dto';
 
 export class NovaPoshtaApi extends ApiClient {
   constructor(private readonly settings: NovaPoshtaClientOptions) {
@@ -60,11 +33,11 @@ export class NovaPoshtaApi extends ApiClient {
     }
 
     const message = body.errors?.join('; ') ?? 'Nova Poshta API request failed';
-    throw new ApiClientException(message, body, status);
+    throw new ApiClientException({ message, status, internal: body });
   }
 
   async getCities(query: string, page = 1, limit = 50): Promise<NovaPoshtaDirectoryCityRow[]> {
-    return await this.apiRequest<NovaPoshtaDirectoryCityRow[]>(ADDRESS_MODEL, 'getCities', {
+    return await this.apiRequest<NovaPoshtaDirectoryCityRow[]>(NOVA_POSHTA_ADDRESS_MODEL, 'getCities', {
       Page: page,
       Limit: limit,
       FindByString: query,
@@ -73,7 +46,7 @@ export class NovaPoshtaApi extends ApiClient {
 
   async searchSettlements(query: string): Promise<NovaPoshtaSearchSettlementRow[]> {
     return await this.apiRequest<NovaPoshtaSearchSettlementRow[]>(
-      ADDRESS_GENERAL_MODEL,
+      NOVA_POSHTA_ADDRESS_GENERAL_MODEL,
       'searchSettlements',
       {
         CityName: query,
@@ -84,13 +57,17 @@ export class NovaPoshtaApi extends ApiClient {
   }
 
   async getWarehouses(cityRef: string, query?: string): Promise<NovaPoshtaWarehouseRow[]> {
-    return await this.apiRequest<NovaPoshtaWarehouseRow[]>(ADDRESS_GENERAL_MODEL, 'getWarehouses', {
-      CityRef: cityRef,
-      FindByString: query ?? '',
-      Limit: 50,
-      Page: 1,
-      Language: 'UA',
-    });
+    return await this.apiRequest<NovaPoshtaWarehouseRow[]>(
+      NOVA_POSHTA_ADDRESS_GENERAL_MODEL,
+      'getWarehouses',
+      {
+        CityRef: cityRef,
+        FindByString: query ?? '',
+        Limit: 50,
+        Page: 1,
+        Language: 'UA',
+      },
+    );
   }
 
   private async apiRequest<T>(

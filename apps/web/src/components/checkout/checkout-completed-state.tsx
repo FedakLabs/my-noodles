@@ -46,8 +46,15 @@ export function CheckoutCompletedState({ checkout }: CheckoutCompletedStateProps
 
   const { order } = checkout;
   const delivery = order.delivery;
-  const providerLabel =
-    deliveryProviders?.find((provider) => provider.id === delivery?.provider)?.label ?? delivery?.provider;
+  const selectedProvider = deliveryProviders?.find((provider) => provider.id === delivery?.provider);
+  const providerLabel = selectedProvider?.label ?? delivery?.provider;
+  const methodLabel =
+    selectedProvider?.methods.find((item) => item.id === delivery?.method)?.label ??
+    (delivery?.method === DeliveryMethod.WAREHOUSE
+      ? t('delivery.methods.warehouse')
+      : delivery?.method === DeliveryMethod.COURIER
+        ? t('delivery.methods.courier')
+        : t('delivery.methods.custom'));
 
   const warehouseLabel = delivery?.warehouseName
     ? delivery.warehouseNumber
@@ -100,24 +107,19 @@ export function CheckoutCompletedState({ checkout }: CheckoutCompletedStateProps
           <Stack spacing={1.5}>
             <Typography variant="subtitle1">{t('sections.delivery')}</Typography>
             <DetailRow label={t('fields.provider')} value={providerLabel} />
-            <DetailRow
-              label={t('fields.method')}
-              value={
-                delivery.method === DeliveryMethod.WAREHOUSE
-                  ? t('delivery.methods.warehouse')
-                  : t('delivery.methods.courier')
-              }
-            />
+            <DetailRow label={t('fields.method')} value={methodLabel} />
             <DetailRow label={t('fields.city')} value={delivery.city} />
-            {delivery.method === DeliveryMethod.WAREHOUSE ? (
+            <DetailRow label={t('fields.postalCode')} value={delivery.postalCode} />
+            {delivery.method === DeliveryMethod.WAREHOUSE || delivery.method === DeliveryMethod.CUSTOM ? (
               <DetailRow label={t('fields.branch')} value={warehouseLabel} />
-            ) : (
+            ) : null}
+            {delivery.method === DeliveryMethod.COURIER || delivery.method === DeliveryMethod.CUSTOM ? (
               <>
                 <DetailRow label={t('fields.street')} value={delivery.street} />
                 <DetailRow label={t('fields.building')} value={delivery.building} />
                 <DetailRow label={t('fields.apartment')} value={delivery.apartment} />
               </>
-            )}
+            ) : null}
             <DetailRow label={t('fields.notes')} value={delivery.notes} />
 
             {estimatedDeliveryAt || (estimatedDaysMin != null && estimatedDaysMax != null) ? (

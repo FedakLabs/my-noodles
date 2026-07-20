@@ -12,15 +12,36 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { DeliveryMethod, type OrderDeliveryEstimateDto } from '@my-noodles/api-clients/storefront';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { type Control, Controller, type UseFormSetValue, useWatch } from 'react-hook-form';
 
 import type { DeliveryCityDto, DeliveryWarehouseDto } from '@/api/delivery';
-import { useDeliveryCities, useDeliveryProviders, useDeliveryWarehouses } from '@/api/delivery';
+import {
+  DELIVERY_SEARCH_MIN_LENGTH,
+  removeDeliverySearchQueries,
+  useDeliveryCities,
+  useDeliveryProviders,
+  useDeliveryWarehouses,
+} from '@/api/delivery';
 import { formatEstimateDeliveryDate } from '@/components/checkout/delivery';
 
+import {
+  canEstimateCheckoutDelivery,
+  deliveryAutocompleteEmptyText,
+  isCheckoutDeliveryEstimateLoading,
+  resetAfterCityChange,
+  resetAfterMethodChange,
+  resetAfterProviderChange,
+} from './checkout-delivery-fields.utils';
 import type { CheckoutFormData } from './validation';
+
+export {
+  canEstimateCheckoutDelivery,
+  isCheckoutDeliveryEstimateLoading,
+  type CheckoutDeliveryEstimateInput,
+} from './checkout-delivery-fields.utils';
 
 type CheckoutDeliveryFieldsProps = {
   control: Control<CheckoutFormData>;
@@ -30,34 +51,6 @@ type CheckoutDeliveryFieldsProps = {
   enabled?: boolean;
   showEstimate?: boolean;
 };
-
-export type CheckoutDeliveryEstimateInput = {
-  method: DeliveryMethod;
-  cityName: string;
-  warehouseRef: string;
-  warehouseNumber: string;
-  street: string;
-  building: string;
-};
-
-export function canEstimateCheckoutDelivery(values: CheckoutDeliveryEstimateInput): boolean {
-  if (!values.cityName.trim()) {
-    return false;
-  }
-
-  if (values.method === DeliveryMethod.WAREHOUSE) {
-    return Boolean(values.warehouseRef.trim() || values.warehouseNumber.trim());
-  }
-
-  return Boolean(values.street.trim() && values.building.trim());
-}
-
-export function isCheckoutDeliveryEstimateLoading(
-  deliveryEstimateIsPending: boolean,
-  values: CheckoutDeliveryEstimateInput,
-): boolean {
-  return deliveryEstimateIsPending && canEstimateCheckoutDelivery(values);
-}
 
 export function CheckoutDeliveryEstimate({
   estimate,
@@ -94,9 +87,16 @@ export function CheckoutDeliveryEstimate({
   }
 
   if (!estimate) {
+    const pendingMessage =
+      method === DeliveryMethod.COURIER
+        ? t('estimatePendingCourier')
+        : method === DeliveryMethod.CUSTOM
+          ? t('estimatePendingCustom')
+          : t('estimatePending');
+
     return (
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-        {method === DeliveryMethod.COURIER ? t('estimatePendingCourier') : t('estimatePending')}
+        {pendingMessage}
       </Typography>
     );
   }
@@ -129,44 +129,6 @@ export function CheckoutDeliveryEstimate({
   );
 }
 
-function clearCityFields(setValue: UseFormSetValue<CheckoutFormData>) {
-  setValue('cityRef', '');
-  setValue('cityName', '');
-}
-
-function clearWarehouseFields(setValue: UseFormSetValue<CheckoutFormData>) {
-  setValue('warehouseRef', '');
-  setValue('warehouseName', '');
-  setValue('warehouseNumber', '');
-}
-
-function clearCourierFields(setValue: UseFormSetValue<CheckoutFormData>) {
-  setValue('street', '');
-  setValue('building', '');
-  setValue('apartment', '');
-}
-
-function clearAddressFields(setValue: UseFormSetValue<CheckoutFormData>) {
-  clearWarehouseFields(setValue);
-  clearCourierFields(setValue);
-  setValue('notes', '');
-}
-
-function resetAfterProviderChange(setValue: UseFormSetValue<CheckoutFormData>) {
-  setValue('method', DeliveryMethod.WAREHOUSE);
-  clearCityFields(setValue);
-  clearAddressFields(setValue);
-}
-
-function resetAfterMethodChange(setValue: UseFormSetValue<CheckoutFormData>) {
-  clearCityFields(setValue);
-  clearAddressFields(setValue);
-}
-
-function resetAfterCityChange(setValue: UseFormSetValue<CheckoutFormData>) {
-  clearAddressFields(setValue);
-}
-
 export function CheckoutDeliveryFields({
   control,
   setValue,
@@ -176,6 +138,7 @@ export function CheckoutDeliveryFields({
   showEstimate = true,
 }: CheckoutDeliveryFieldsProps) {
   const t = useTranslations('checkout');
+  const queryClient = useQueryClient();
   const { deliveryProviders, deliveryProvidersIsInitialLoad } = useDeliveryProviders();
 
   const method = useWatch({ control, name: 'method' });
@@ -193,6 +156,12 @@ export function CheckoutDeliveryFields({
   const cityInput = cityDraft ?? cityName;
   const warehouseInput = warehouseDraft ?? warehouseName;
 
+  const selectedProvider = (deliveryProviders ?? []).find((item) => item.id === provider);
+  const availableMethods = selectedProvider?.methods ?? [];
+  const isCustom = method === DeliveryMethod.CUSTOM;
+  const isWarehouse = method === DeliveryMethod.WAREHOUSE;
+  const usesCatalog = !isCustom;
+
   useEffect(() => {
     if (!cityName) {
       setCityDraft(null);
@@ -205,29 +174,43 @@ export function CheckoutDeliveryFields({
     }
   }, [warehouseName]);
 
-  const { deliveryCities, deliveryCitiesIsFetching } = useDeliveryCities(
+  useEffect(() => {
+    const methods = selectedProvider?.methods;
+    if (!methods?.length) {
+      return;
+    }
+
+    if (methods.some((item) => item.id === method)) {
+      return;
+    }
+
+    setValue('method', methods[0]!.id);
+    resetAfterMethodChange(setValue);
+    removeDeliverySearchQueries(queryClient);
+    setCityDraft(null);
+    setWarehouseDraft(null);
+  }, [method, selectedProvider, setValue, queryClient]);
+
+  const { deliveryCities, deliveryCitiesIsFetching, deliveryCitiesIsError } = useDeliveryCities(
     provider,
     method,
     cityInput,
-    enabled,
+    enabled && usesCatalog,
   );
-  const { deliveryWarehouses, deliveryWarehousesIsFetching } = useDeliveryWarehouses(
-    provider,
-    cityRef || null,
-    warehouseInput,
-    enabled && method === DeliveryMethod.WAREHOUSE,
-  );
+  const { deliveryWarehouses, deliveryWarehousesIsFetching, deliveryWarehousesIsError } =
+    useDeliveryWarehouses(provider, method, cityRef || null, warehouseInput, enabled && isWarehouse);
 
   const fieldsDisabled = !enabled;
-  const isWarehouse = method === DeliveryMethod.WAREHOUSE;
-  const showEstimateLoading = isCheckoutDeliveryEstimateLoading(deliveryEstimateIsPending, {
+  const estimateInput = {
     method,
     cityName,
     warehouseRef,
     warehouseNumber,
     street,
     building,
-  });
+  };
+  const canEstimate = canEstimateCheckoutDelivery(estimateInput);
+  const showEstimateLoading = isCheckoutDeliveryEstimateLoading(deliveryEstimateIsPending, estimateInput);
 
   return (
     <Stack spacing={1.5}>
@@ -250,8 +233,13 @@ export function CheckoutDeliveryFields({
                   return;
                 }
 
+                const nextMethods =
+                  (deliveryProviders ?? []).find((item) => item.id === nextProvider)?.methods ?? [];
+                const nextMethod = nextMethods[0]?.id ?? DeliveryMethod.WAREHOUSE;
+
                 field.onChange(nextProvider);
-                resetAfterProviderChange(setValue);
+                resetAfterProviderChange(setValue, nextMethod);
+                removeDeliverySearchQueries(queryClient);
                 setCityDraft(null);
                 setWarehouseDraft(null);
               }}
@@ -277,7 +265,7 @@ export function CheckoutDeliveryFields({
               size="large"
               labelId="checkout-method-label"
               label={t('fields.method')}
-              disabled={fieldsDisabled}
+              disabled={fieldsDisabled || availableMethods.length === 0}
               onChange={(event) => {
                 const nextMethod = event.target.value;
 
@@ -287,95 +275,91 @@ export function CheckoutDeliveryFields({
 
                 field.onChange(nextMethod);
                 resetAfterMethodChange(setValue);
+                removeDeliverySearchQueries(queryClient);
                 setCityDraft(null);
                 setWarehouseDraft(null);
               }}
             >
-              <MenuItem value={DeliveryMethod.WAREHOUSE}>{t('delivery.methods.warehouse')}</MenuItem>
-              <MenuItem value={DeliveryMethod.COURIER}>{t('delivery.methods.courier')}</MenuItem>
+              {availableMethods.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.label}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         )}
       />
 
-      <Controller
-        name="cityName"
-        control={control}
-        render={({ field }) => (
-          <Autocomplete
-            key={`checkout-city-${provider}-${method}`}
-            size="large"
-            options={deliveryCities ?? []}
-            openOnFocus
-            disabled={fieldsDisabled}
-            getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
-            getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
-            isOptionEqualToValue={(option, value) => option.ref === value.ref}
-            inputValue={cityInput}
-            onInputChange={(_event, value) => {
-              setCityDraft(value);
-              field.onChange(value);
-              setValue('cityRef', '');
-              resetAfterCityChange(setValue);
-              setWarehouseDraft(null);
-            }}
-            onChange={(_event, option: DeliveryCityDto | null) => {
-              if (!option) {
-                return;
-              }
-
-              field.onChange(option.name);
-              setCityDraft(null);
-              setValue('cityRef', option.ref);
-              resetAfterCityChange(setValue);
-              setWarehouseDraft(null);
-            }}
-            loading={deliveryCitiesIsFetching}
-            filterOptions={(options) => options}
-            noOptionsText={t('delivery.cityHint')}
-            renderInput={(params) => <TextField {...params} size="large" label={t('fields.city')} />}
-          />
-        )}
-      />
-
-      {isWarehouse ? (
-        <Controller
-          name="warehouseName"
-          control={control}
-          render={({ field }) => (
-            <Autocomplete
-              key={`checkout-warehouse-${provider}-${cityRef}`}
-              size="large"
-              options={deliveryWarehouses ?? []}
-              getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
-              getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
-              isOptionEqualToValue={(option, value) => option.ref === value.ref}
-              disabled={fieldsDisabled || !cityRef}
-              inputValue={warehouseInput}
-              onInputChange={(_event, value) => {
-                setWarehouseDraft(value);
-                field.onChange(value);
-                setValue('warehouseRef', '');
-                setValue('warehouseNumber', '');
-              }}
-              onChange={(_event, option: DeliveryWarehouseDto | null) => {
-                if (!option) {
-                  return;
-                }
-
-                field.onChange(option.name);
-                setWarehouseDraft(null);
-                setValue('warehouseRef', option.ref);
-                setValue('warehouseNumber', option.number);
-              }}
-              loading={deliveryWarehousesIsFetching}
-              filterOptions={(options) => options}
-              renderInput={(params) => <TextField {...params} size="large" label={t('fields.branch')} />}
-            />
-          )}
-        />
-      ) : (
+      {isCustom ? (
         <>
+          <Typography variant="body2" color="text.secondary">
+            {t('delivery.customHint')}
+          </Typography>
+
+          <Controller
+            name="cityName"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                size="large"
+                fullWidth
+                label={t('fields.city')}
+                disabled={fieldsDisabled}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="postalCode"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                size="large"
+                fullWidth
+                label={t('fields.postalCode')}
+                disabled={fieldsDisabled}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="warehouseNumber"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                size="large"
+                fullWidth
+                label={t('fields.branchNumber')}
+                disabled={fieldsDisabled}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="warehouseName"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                size="large"
+                fullWidth
+                label={t('fields.branchName')}
+                disabled={fieldsDisabled}
+                error={Boolean(fieldState.error)}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+
           <Controller
             name="street"
             control={control}
@@ -385,12 +369,13 @@ export function CheckoutDeliveryFields({
                 size="large"
                 fullWidth
                 label={t('fields.street')}
-                disabled={fieldsDisabled || !cityRef}
+                disabled={fieldsDisabled}
                 error={Boolean(fieldState.error)}
                 helperText={fieldState.error?.message}
               />
             )}
           />
+
           <Controller
             name="building"
             control={control}
@@ -400,12 +385,13 @@ export function CheckoutDeliveryFields({
                 size="large"
                 fullWidth
                 label={t('fields.building')}
-                disabled={fieldsDisabled || !cityRef}
+                disabled={fieldsDisabled}
                 error={Boolean(fieldState.error)}
                 helperText={fieldState.error?.message}
               />
             )}
           />
+
           <Controller
             name="apartment"
             control={control}
@@ -415,12 +401,161 @@ export function CheckoutDeliveryFields({
                 size="large"
                 fullWidth
                 label={t('fields.apartment')}
-                disabled={fieldsDisabled || !cityRef}
+                disabled={fieldsDisabled}
                 error={Boolean(fieldState.error)}
                 helperText={fieldState.error?.message}
               />
             )}
           />
+        </>
+      ) : (
+        <>
+          <Controller
+            name="cityName"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                key={`checkout-city-${provider}-${method}`}
+                size="large"
+                options={cityInput.trim().length >= DELIVERY_SEARCH_MIN_LENGTH ? (deliveryCities ?? []) : []}
+                openOnFocus
+                disabled={fieldsDisabled}
+                getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
+                getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
+                isOptionEqualToValue={(option, value) => option.ref === value.ref}
+                inputValue={cityInput}
+                onInputChange={(_event, value) => {
+                  setCityDraft(value);
+                  field.onChange(value);
+                  setValue('cityRef', '');
+                  resetAfterCityChange(setValue);
+                  setWarehouseDraft(null);
+                }}
+                onChange={(_event, option: DeliveryCityDto | null) => {
+                  if (!option) {
+                    return;
+                  }
+
+                  field.onChange(option.name);
+                  setCityDraft(null);
+                  setValue('cityRef', option.ref);
+                  resetAfterCityChange(setValue);
+                  setWarehouseDraft(null);
+                }}
+                loading={deliveryCitiesIsFetching}
+                loadingText={t('delivery.searchLoading')}
+                filterOptions={(options) => options}
+                noOptionsText={deliveryAutocompleteEmptyText({
+                  input: cityInput,
+                  isError: deliveryCitiesIsError,
+                  minLength: DELIVERY_SEARCH_MIN_LENGTH,
+                  startTyping: t('delivery.searchStartTyping', { min: DELIVERY_SEARCH_MIN_LENGTH }),
+                  notFound: (query) => t('delivery.searchNotFound', { query }),
+                  error: t('delivery.searchError'),
+                })}
+                renderInput={(params) => <TextField {...params} size="large" label={t('fields.city')} />}
+              />
+            )}
+          />
+
+          {isWarehouse ? (
+            <Controller
+              name="warehouseName"
+              control={control}
+              render={({ field }) => (
+                <Autocomplete
+                  key={`checkout-warehouse-${provider}-${cityRef}`}
+                  size="large"
+                  options={
+                    warehouseInput.trim().length >= DELIVERY_SEARCH_MIN_LENGTH
+                      ? (deliveryWarehouses ?? [])
+                      : []
+                  }
+                  getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
+                  getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
+                  isOptionEqualToValue={(option, value) => option.ref === value.ref}
+                  disabled={fieldsDisabled || !cityRef}
+                  inputValue={warehouseInput}
+                  onInputChange={(_event, value) => {
+                    setWarehouseDraft(value);
+                    field.onChange(value);
+                    setValue('warehouseRef', '');
+                    setValue('warehouseNumber', '');
+                  }}
+                  onChange={(_event, option: DeliveryWarehouseDto | null) => {
+                    if (!option) {
+                      return;
+                    }
+
+                    field.onChange(option.name);
+                    setWarehouseDraft(null);
+                    setValue('warehouseRef', option.ref);
+                    setValue('warehouseNumber', option.number);
+                  }}
+                  loading={deliveryWarehousesIsFetching}
+                  loadingText={t('delivery.searchLoading')}
+                  filterOptions={(options) => options}
+                  noOptionsText={deliveryAutocompleteEmptyText({
+                    input: warehouseInput,
+                    isError: deliveryWarehousesIsError,
+                    minLength: DELIVERY_SEARCH_MIN_LENGTH,
+                    startTyping: t('delivery.branchHint', { min: DELIVERY_SEARCH_MIN_LENGTH }),
+                    notFound: (query) => t('delivery.searchNotFound', { query }),
+                    error: t('delivery.searchError'),
+                  })}
+                  renderInput={(params) => <TextField {...params} size="large" label={t('fields.branch')} />}
+                />
+              )}
+            />
+          ) : (
+            <>
+              <Controller
+                name="street"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    size="large"
+                    fullWidth
+                    label={t('fields.street')}
+                    disabled={fieldsDisabled || !cityRef}
+                    error={Boolean(fieldState.error)}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="building"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    size="large"
+                    fullWidth
+                    label={t('fields.building')}
+                    disabled={fieldsDisabled || !cityRef}
+                    error={Boolean(fieldState.error)}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="apartment"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    size="large"
+                    fullWidth
+                    label={t('fields.apartment')}
+                    disabled={fieldsDisabled || !cityRef}
+                    error={Boolean(fieldState.error)}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+            </>
+          )}
         </>
       )}
 
@@ -435,7 +570,7 @@ export function CheckoutDeliveryFields({
             multiline
             minRows={2}
             label={t('fields.notes')}
-            disabled={fieldsDisabled || !cityRef}
+            disabled={fieldsDisabled || (!isCustom && !cityRef)}
             error={Boolean(fieldState.error)}
             helperText={fieldState.error?.message}
           />
@@ -444,7 +579,7 @@ export function CheckoutDeliveryFields({
 
       {showEstimate ? (
         <CheckoutDeliveryEstimate
-          estimate={deliveryEstimate}
+          estimate={canEstimate ? deliveryEstimate : null}
           isLoading={showEstimateLoading}
           method={method}
         />

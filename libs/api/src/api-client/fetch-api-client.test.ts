@@ -67,7 +67,8 @@ describe('FetchApiClient.fetch', () => {
     expect(error).toMatchObject({
       status: 404,
       message: 'Not found',
-      payload: { message: 'Not found' },
+      payload: null,
+      internal: { message: 'Not found' },
     });
     expect(infoSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).not.toHaveBeenCalled();
@@ -99,7 +100,11 @@ describe('FetchApiClient.fetch', () => {
           'success' in body &&
           (body as { success: unknown }).success === false
         ) {
-          throw new ApiClientException('FindByString is not specified', body, status);
+          throw new ApiClientException({
+            message: 'FindByString is not specified',
+            status,
+            internal: body,
+          });
         }
       }
     }
@@ -111,7 +116,8 @@ describe('FetchApiClient.fetch', () => {
     expect(error).toMatchObject({
       status: 200,
       message: 'FindByString is not specified',
-      payload: responseBody,
+      payload: null,
+      internal: responseBody,
     });
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(infoSpy).not.toHaveBeenCalled();

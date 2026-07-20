@@ -1,18 +1,28 @@
 import { AppException, HttpStatus, SAMPLE_UUID } from '@my-noodles/api-lib/exceptions';
 
-export class CartProductNotFoundException extends AppException<{ productId: string }> {
+export class CartProductNotFoundException extends AppException {
   static readonly sample = new CartProductNotFoundException(SAMPLE_UUID);
 
   constructor(productId: string) {
-    super(HttpStatus.NOT_FOUND, 'cart_product_not_found', 'Product not found for cart', { productId });
+    super({
+      status: HttpStatus.NOT_FOUND,
+      code: 'cart_product_not_found',
+      message: 'Product not found for cart',
+      payload: { productId },
+    });
   }
 }
 
-export class CartItemNotFoundException extends AppException<{ productId: string }> {
+export class CartItemNotFoundException extends AppException {
   static readonly sample = new CartItemNotFoundException(SAMPLE_UUID);
 
   constructor(productId: string) {
-    super(HttpStatus.NOT_FOUND, 'cart_item_not_found', 'Cart item not found', { productId });
+    super({
+      status: HttpStatus.NOT_FOUND,
+      code: 'cart_item_not_found',
+      message: 'Cart item not found',
+      payload: { productId },
+    });
   }
 }
 
@@ -20,23 +30,37 @@ export class CartEmptyException extends AppException {
   static readonly sample = new CartEmptyException();
 
   constructor() {
-    super(HttpStatus.BAD_REQUEST, 'cart_empty', 'Cart is empty');
+    super({
+      status: HttpStatus.BAD_REQUEST,
+      code: 'cart_empty',
+      message: 'Cart is empty',
+    });
   }
 }
 
-export class CartProductOutOfStockException extends AppException<{ productId: string }> {
+export class CartProductOutOfStockException extends AppException {
   static readonly sample = new CartProductOutOfStockException(SAMPLE_UUID);
 
   constructor(productId: string) {
-    super(HttpStatus.CONFLICT, 'cart_product_out_of_stock', 'Product out of stock', { productId });
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'cart_product_out_of_stock',
+      message: 'Product out of stock',
+      payload: { productId },
+    });
   }
 }
 
-export class CartMaxQuantityReachedException extends AppException<{ productId: string; maxQty: number }> {
+export class CartMaxQuantityReachedException extends AppException {
   static readonly sample = new CartMaxQuantityReachedException(SAMPLE_UUID, 10);
 
   constructor(productId: string, maxQty: number) {
-    super(HttpStatus.CONFLICT, 'cart_max_quantity_reached', 'Max quantity reached', { productId, maxQty });
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'cart_max_quantity_reached',
+      message: 'Max quantity reached',
+      payload: { productId, maxQty },
+    });
   }
 }
 
@@ -44,6 +68,10 @@ export class CartInventoryChangedException extends AppException {
   static readonly sample = new CartInventoryChangedException();
 
   constructor() {
-    super(HttpStatus.CONFLICT, 'cart_inventory_changed', 'Cart inventory changed since last update');
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'cart_inventory_changed',
+      message: 'Cart inventory changed since last update',
+    });
   }
 }

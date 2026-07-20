@@ -24,6 +24,10 @@
       "types": "./dist/api-client/index.d.ts",
       "default": "./dist/api-client/index.js"
     },
+    "./cache": {
+      "types": "./dist/cache/index.d.ts",
+      "default": "./dist/cache/index.js"
+    },
     "./exceptions": {
       "types": "./dist/exceptions/index.d.ts",
       "default": "./dist/exceptions/index.js"

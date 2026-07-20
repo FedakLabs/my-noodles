@@ -131,6 +131,10 @@
       "project": ["src/**/*.ts"],
       "ignoreDependencies": ["@tanstack/react-query", "react"]
     },
+    "libs/translit": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
     "libs/api": {
       "entry": [
         "src/index.ts",

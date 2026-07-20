@@ -13,8 +13,9 @@ import {
   type UpdateCheckoutDeliveryDto,
   type UpdateCheckoutReceiverDto,
 } from '@my-noodles/api-clients/storefront';
-import { requestData } from '@my-noodles/web-lib/react-query';
-import { queryOptions } from '@tanstack/react-query';
+import { mutationOptions, queryOptions } from '@tanstack/react-query';
+
+import { withAppLocaleKey } from '@/i18n/app-locale';
 
 export { CheckoutStatus };
 
@@ -24,64 +25,60 @@ export type ListCheckoutsParams = {
   status?: CheckoutStatus;
 };
 
-export const checkoutsQueryKeys = {
-  all: ['checkouts'] as const,
-  list: (params?: ListCheckoutsParams) => [...checkoutsQueryKeys.all, 'list', params ?? {}] as const,
-  detail: (checkoutId: string) => [...checkoutsQueryKeys.all, checkoutId] as const,
-};
-
-export async function fetchCheckouts(params?: ListCheckoutsParams): Promise<Checkout[]> {
-  return await requestData(
-    checkoutsControllerListCheckouts({
-      query: params?.status ? { status: params.status } : undefined,
-    }),
-  );
-}
-
-export async function startCheckout(): Promise<Checkout> {
-  return await requestData(checkoutsControllerStartCheckout());
-}
-
-export async function fetchCheckout(checkoutId: string): Promise<Checkout> {
-  return await requestData(checkoutsControllerGetCheckout({ path: { id: checkoutId } }));
-}
-
-export async function updateCheckoutReceiver(
-  checkoutId: string,
-  body: UpdateCheckoutReceiverDto,
-): Promise<Checkout> {
-  return await requestData(checkoutsControllerUpdateCheckoutReceiver({ path: { id: checkoutId }, body }));
-}
-
-export async function updateCheckoutDelivery(
-  checkoutId: string,
-  body: UpdateCheckoutDeliveryDto,
-): Promise<Checkout> {
-  return await requestData(checkoutsControllerUpdateCheckoutDelivery({ path: { id: checkoutId }, body }));
-}
-
-export async function submitCheckout(checkoutId: string, body: SubmitCheckoutDto): Promise<Order> {
-  return await requestData(checkoutsControllerSubmitCheckout({ path: { id: checkoutId }, body }));
-}
-
-export async function cancelCheckout(checkoutId: string): Promise<Checkout> {
-  return await requestData(
-    checkoutsControllerCancelCheckout({
-      path: { id: checkoutId },
-      body: { reason: 'user' },
-    }),
-  );
-}
-
 export const checkoutsQueries = {
+  rootKey: ['checkouts'] as const,
+  /** Locale-prefixed root — for invalidate/remove; do not pass to useQuery. */
+  all: () =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => checkoutsQueries.rootKey)(),
+    }),
   list: (params?: ListCheckoutsParams) =>
     queryOptions({
-      queryKey: checkoutsQueryKeys.list(params),
-      queryFn: () => fetchCheckouts(params),
+      queryKey: withAppLocaleKey(() => [...checkoutsQueries.rootKey, 'list', params ?? {}] as const)(),
+      queryFn: () =>
+        checkoutsControllerListCheckouts({
+          query: params?.status ? { status: params.status } : undefined,
+        }),
     }),
   detail: (checkoutId: string) =>
     queryOptions({
-      queryKey: checkoutsQueryKeys.detail(checkoutId),
-      queryFn: () => fetchCheckout(checkoutId),
+      queryKey: withAppLocaleKey(() => [...checkoutsQueries.rootKey, checkoutId] as const)(),
+      queryFn: () => checkoutsControllerGetCheckout({ path: { id: checkoutId } }),
+    }),
+};
+
+export const checkoutsMutations = {
+  rootKey: checkoutsQueries.rootKey,
+  start: () =>
+    mutationOptions({
+      mutationKey: [...checkoutsMutations.rootKey, 'start'] as const,
+      mutationFn: () => checkoutsControllerStartCheckout(),
+    }),
+  updateReceiver: (checkoutId: string) =>
+    mutationOptions({
+      mutationKey: [...checkoutsMutations.rootKey, 'updateReceiver', checkoutId] as const,
+      mutationFn: (body: UpdateCheckoutReceiverDto) =>
+        checkoutsControllerUpdateCheckoutReceiver({ path: { id: checkoutId }, body }),
+    }),
+  updateDelivery: (checkoutId: string) =>
+    mutationOptions({
+      mutationKey: [...checkoutsMutations.rootKey, 'updateDelivery', checkoutId] as const,
+      mutationFn: (body: UpdateCheckoutDeliveryDto) =>
+        checkoutsControllerUpdateCheckoutDelivery({ path: { id: checkoutId }, body }),
+    }),
+  submit: (checkoutId: string) =>
+    mutationOptions({
+      mutationKey: [...checkoutsMutations.rootKey, 'submit', checkoutId] as const,
+      mutationFn: (body: SubmitCheckoutDto) =>
+        checkoutsControllerSubmitCheckout({ path: { id: checkoutId }, body }),
+    }),
+  cancel: () =>
+    mutationOptions({
+      mutationKey: [...checkoutsMutations.rootKey, 'cancel'] as const,
+      mutationFn: (checkoutId: string) =>
+        checkoutsControllerCancelCheckout({
+          path: { id: checkoutId },
+          body: { reason: 'user' },
+        }),
     }),
 };

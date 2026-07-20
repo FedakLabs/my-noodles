@@ -5,49 +5,41 @@ import {
   cartControllerGetCart,
   cartControllerRemoveItem,
   cartControllerSetItemQty,
-  type CartResponseDto,
 } from '@my-noodles/api-clients/storefront';
-import { requestData } from '@my-noodles/web-lib/react-query';
-import { queryOptions } from '@tanstack/react-query';
+import { mutationOptions, queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 
-export const cartQueryKeys = {
-  all: withAppLocaleKey(() => ['cart'] as const),
-};
-
-export const cartMutationKeys = {
-  all: ['cart'] as const,
-  addItem: () => ['cart', 'addItem'] as const,
-  setItemQty: () => ['cart', 'setItemQty'] as const,
-  removeItem: () => ['cart', 'removeItem'] as const,
-  clearCart: () => ['cart', 'clearCart'] as const,
-};
-
-export async function fetchCart(): Promise<CartResponseDto> {
-  return await requestData(cartControllerGetCart());
-}
-
-export async function addCartItem(body: AddCartItemDto): Promise<CartResponseDto> {
-  return await requestData(cartControllerAddItem({ body }));
-}
-
-export async function setCartItemQty(productId: string, qty: number): Promise<CartResponseDto> {
-  return await requestData(cartControllerSetItemQty({ path: { productId }, body: { qty } }));
-}
-
-export async function removeCartItem(productId: string): Promise<CartResponseDto> {
-  return await requestData(cartControllerRemoveItem({ path: { productId } }));
-}
-
-export async function clearCart(): Promise<CartResponseDto> {
-  return await requestData(cartControllerClearCart());
-}
-
 export const cartQueries = {
+  rootKey: ['cart'] as const,
   all: () =>
     queryOptions({
-      queryKey: cartQueryKeys.all(),
-      queryFn: fetchCart,
+      queryKey: withAppLocaleKey(() => cartQueries.rootKey)(),
+      queryFn: () => cartControllerGetCart(),
+    }),
+};
+
+export const cartMutations = {
+  rootKey: cartQueries.rootKey,
+  addItem: () =>
+    mutationOptions({
+      mutationKey: [...cartMutations.rootKey, 'addItem'] as const,
+      mutationFn: (body: AddCartItemDto) => cartControllerAddItem({ body }),
+    }),
+  setItemQty: () =>
+    mutationOptions({
+      mutationKey: [...cartMutations.rootKey, 'setItemQty'] as const,
+      mutationFn: ({ productId, qty }: { productId: string; qty: number }) =>
+        cartControllerSetItemQty({ path: { productId }, body: { qty } }),
+    }),
+  removeItem: () =>
+    mutationOptions({
+      mutationKey: [...cartMutations.rootKey, 'removeItem'] as const,
+      mutationFn: ({ productId }: { productId: string }) => cartControllerRemoveItem({ path: { productId } }),
+    }),
+  clearCart: () =>
+    mutationOptions({
+      mutationKey: [...cartMutations.rootKey, 'clearCart'] as const,
+      mutationFn: () => cartControllerClearCart(),
     }),
 };

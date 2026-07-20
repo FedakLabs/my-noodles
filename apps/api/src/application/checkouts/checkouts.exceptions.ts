@@ -6,18 +6,27 @@ export class CheckoutNotFoundException extends NotFoundException {
   static readonly sample = new CheckoutNotFoundException(SAMPLE_UUID);
 
   constructor(checkoutId?: string) {
-    super('checkout_not_found', 'Checkout not found', checkoutId ? { checkoutId } : undefined);
+    super({
+      code: 'checkout_not_found',
+      message: 'Checkout not found',
+      payload: checkoutId ? { checkoutId } : undefined,
+    });
   }
 }
 
 /** Checkout exists but is no longer open for edits / submit (completed, cancelled, or hold elapsed). */
-export class CheckoutInactiveException extends AppException<{ checkoutId: string; status: CheckoutStatus }> {
+export class CheckoutInactiveException extends AppException {
   static readonly sample = new CheckoutInactiveException(SAMPLE_UUID, CheckoutStatus.Completed);
 
   constructor(checkoutId: string, status: CheckoutStatus) {
-    super(HttpStatus.CONFLICT, 'checkout_inactive', 'Checkout is no longer active', {
-      checkoutId,
-      status,
+    super({
+      status: HttpStatus.CONFLICT,
+      code: 'checkout_inactive',
+      message: 'Checkout is no longer active',
+      payload: {
+        checkoutId,
+        status,
+      },
     });
   }
 }

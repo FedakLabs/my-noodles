@@ -10,6 +10,7 @@ export enum DeliveryProvider {
 export enum DeliveryMethod {
   Warehouse = 'warehouse',
   Courier = 'courier',
+  Custom = 'custom',
 }
 
 export function IsDeliveryProvider(): PropertyDecorator {

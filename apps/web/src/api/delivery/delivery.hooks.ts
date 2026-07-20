@@ -8,8 +8,9 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 import { deliveryQueries } from './delivery';
 
-const CITY_MIN_QUERY = 2;
 const SEARCH_DEBOUNCE_MS = 300;
+/** Minimum characters before city/warehouse search hits the API. */
+export const DELIVERY_SEARCH_MIN_LENGTH = 3;
 
 export function useDeliveryProviders() {
   return formatUseQuery(useQuery(deliveryQueries.providers()), 'deliveryProviders');
@@ -21,8 +22,11 @@ export function useDeliveryCities(
   query: string,
   enabled = true,
 ) {
-  const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
-  const searching = debouncedQuery.length >= CITY_MIN_QUERY;
+  const liveQuery = query.trim();
+  const debouncedQuery = useDebouncedValue(liveQuery, SEARCH_DEBOUNCE_MS);
+  // Live below threshold must disable immediately — debounce can still hold a previous search string.
+  const searching =
+    liveQuery.length >= DELIVERY_SEARCH_MIN_LENGTH && debouncedQuery.length >= DELIVERY_SEARCH_MIN_LENGTH;
 
   return formatUseQuery(
     useQuery({
@@ -35,16 +39,20 @@ export function useDeliveryCities(
 
 export function useDeliveryWarehouses(
   provider: DeliveryProvider,
+  method: DeliveryMethod,
   cityRef: string | null,
   query: string,
   enabled = true,
 ) {
-  const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
-  const queryEnabled = enabled && Boolean(cityRef);
+  const liveQuery = query.trim();
+  const debouncedQuery = useDebouncedValue(liveQuery, SEARCH_DEBOUNCE_MS);
+  const searching =
+    liveQuery.length >= DELIVERY_SEARCH_MIN_LENGTH && debouncedQuery.length >= DELIVERY_SEARCH_MIN_LENGTH;
+  const queryEnabled = enabled && Boolean(cityRef) && searching;
 
   return formatUseQuery(
     useQuery({
-      ...deliveryQueries.warehouses(provider, cityRef ?? '', debouncedQuery || undefined),
+      ...deliveryQueries.warehouses(provider, method, cityRef ?? '', debouncedQuery),
       enabled: queryEnabled,
     }),
     'deliveryWarehouses',

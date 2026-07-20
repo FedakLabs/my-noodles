@@ -12,13 +12,13 @@ export class HealthService {
 
   async assertDependenciesReady(): Promise<void> {
     if (!this.dataSource.isInitialized) {
-      throw new ServiceUnavailableException('database not initialized');
+      throw new ServiceUnavailableException({ message: 'database not initialized' });
     }
 
     try {
       await this.dataSource.query('SELECT 1');
     } catch {
-      throw new ServiceUnavailableException('database unreachable');
+      throw new ServiceUnavailableException({ message: 'database unreachable' });
     }
   }
 }

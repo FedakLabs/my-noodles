@@ -1,42 +1,26 @@
 import {
-  type Collection,
   collectionsControllerGetBySlug,
   collectionsControllerList,
 } from '@my-noodles/api-clients/storefront';
-import { requestData } from '@my-noodles/web-lib/react-query';
 import { queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
 
-const collectionsQueryKeyRoot = ['collections'] as const;
-
-export const collectionsQueryKeys = {
-  all: collectionsQueryKeyRoot,
-  list: withAppLocaleKey(() => [...collectionsQueryKeyRoot, 'list'] as const),
-  detail: withAppLocaleKey((slug: string) => [...collectionsQueryKeyRoot, 'detail', slug] as const),
-};
-
-export async function fetchCollections(): Promise<Collection[]> {
-  return await requestData(collectionsControllerList());
-}
-
-export async function fetchCollectionDetail(slug: string): Promise<Collection> {
-  return await requestData(
-    collectionsControllerGetBySlug({
-      path: { slug },
-    }),
-  );
-}
-
 export const collectionsQueries = {
+  rootKey: ['collections'] as const,
+  /** Locale-prefixed root — for invalidate/remove; do not pass to useQuery. */
+  all: () =>
+    queryOptions({
+      queryKey: withAppLocaleKey(() => collectionsQueries.rootKey)(),
+    }),
   list: () =>
     queryOptions({
-      queryKey: collectionsQueryKeys.list(),
-      queryFn: () => fetchCollections(),
+      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'list'] as const)(),
+      queryFn: () => collectionsControllerList(),
     }),
   detail: (slug: string) =>
     queryOptions({
-      queryKey: collectionsQueryKeys.detail(slug),
-      queryFn: () => fetchCollectionDetail(slug),
+      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'detail', slug] as const)(),
+      queryFn: () => collectionsControllerGetBySlug({ path: { slug } }),
     }),
 };

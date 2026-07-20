@@ -27,10 +27,7 @@
 ```ts
 // ✅ explicit generics on hooks
 export function useProductsList(filters: ProductListFilters) {
-  return useQuery({
-    queryKey: productsQueryKeys.list(filters),
-    queryFn: () => productsApi.listProducts(filters).then((r) => r.data),
-  });
+  return useQuery(productsQueries.list(filters));
 }
 ```
 
@@ -66,8 +63,9 @@ export function useProductsList(filters: ProductListFilters) {
 ### Server data → TanStack Query
 
 - Hooks in `apps/web/src/api/[feature]/`
-- Hierarchical **query-key factories** in `[feature].ts` (e.g. `productsQueryKeys`)
-- **Mutation-key factories** in the same file when a mutation needs a stable `mutationKey` (e.g. concurrent adds + `useMutationState`, cross-component pending UI) — e.g. `cartMutationKeys.addItem()`. Do not scatter magic strings; omit `mutationKey` when the default anonymous mutation is enough.
+- **`queryOptions` / `mutationOptions` factories** in `[feature].ts` — single place for key + config; use `.queryKey` / `.mutationKey` on demand. No parallel `*QueryKeys` objects.
+- Shared **`rootKey`** trunk per feature; children spread from it. Locale via `withAppLocaleKey` at the options boundary. Prefix invalidate with `featureQueries.all().queryKey`, never bare `rootKey` (see common-patterns § Query / mutation key shape).
+- Stable `mutationKey` via `mutationOptions` when needed (e.g. `useMutationState`); reuse the queries `rootKey`. Omit `mutationKey` when the default anonymous mutation is enough.
 - Server Components: prefetch with the same keys → `HydrationBoundary`
 
 ### Mutations → prefer `mutate`
@@ -118,20 +116,20 @@ After a mutation, **prefer `queryClient.invalidateQueries({ queryKey })`** so ev
 ```tsx
 // ✅ default — await so isPending covers mutation + refetch
 onSuccess: async () => {
-  await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+  await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
 },
 
 // ✅ multiple keys — await all refetches before mutation settles
 onSuccess: async () => {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() }),
-    queryClient.invalidateQueries({ queryKey: ordersQueryKeys.checkout(orderId) }),
+    queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey }),
+    queryClient.invalidateQueries({ queryKey: checkoutsQueries.detail(checkoutId).queryKey }),
   ]);
 },
 
 // ✅ mutation response still available for side effects after cache is fresh
 onSuccess: async (cart, variables) => {
-  await queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+  await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
   openPanelIfFirstAdd(cart.itemCount === variables.qty);
 },
 ```
@@ -139,7 +137,7 @@ onSuccess: async (cart, variables) => {
 ```tsx
 // ❌ fire-and-forget — mutation settles before refetch; spinner clears too early
 onSuccess: () => {
-  void queryClient.invalidateQueries({ queryKey: cartQueryKeys.all() });
+  void queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
 },
 ```
 
@@ -261,7 +259,7 @@ Each **`[layer]/[feature]/`** folder is a **module**. The **`index.ts`** is the 
 // ✅ screens, components, app pages
 import { useCreateOrder } from '@/api/orders';
 import { useCartActions } from '@/hooks/cart';
-import { fetchProductsList, productsQueryKeys } from '@/api/products';
+import { fetchProductsList, productsQueries } from '@/api/products';
 
 // ❌ deep imports into module internals
 import { useCreateOrder } from '@/api/orders/orders.hooks';

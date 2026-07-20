@@ -1,47 +1,67 @@
-import { DeliveryMethod, DeliveryProvider } from '../../orders/order-delivery.dto';
-import { computeShippingCostMinor } from '../delivery-shipping.config';
+import { Injectable } from '@nestjs/common';
+
+import type { DeliveryMethod } from '../../orders/order-delivery.dto';
 import type { DeliveryEstimate, DeliveryEstimateInput } from '../delivery.types';
 
-const DISPATCH_CUTOFF_HOUR = 14;
-
-const PROVIDER_EXTRA_DAYS: Record<DeliveryProvider, number> = {
-  [DeliveryProvider.NovaPoshta]: 0,
-  [DeliveryProvider.Meest]: 1,
-  [DeliveryProvider.Ukrposhta]: 1,
+/**
+ * Per-method stub estimate knobs. Edit inside each concrete adapter when tariffs/SLA change.
+ *
+ * Shown ETA = transit + under-promise buffer (under-promise, over-deliver).
+ */
+export type StubEstimateMethodConfig = {
+  /** Provider-typical transit before under-promise buffer. */
+  transitDaysMin: number;
+  transitDaysMax: number;
+  /** Flat shipping in UAH kopiyky. */
+  shippingCostMinor: number;
 };
 
-export function computeStubEstimate(input: DeliveryEstimateInput): DeliveryEstimate {
-  const extraDays = PROVIDER_EXTRA_DAYS[input.provider];
-  const isWarehouse = input.method === DeliveryMethod.Warehouse;
-  const estimatedDaysMin = (isWarehouse ? 2 : 1) + extraDays;
-  const estimatedDaysMax = (isWarehouse ? 3 : 2) + extraDays;
+/** Orders at or after this local hour dispatch the next calendar day. */
+const DISPATCH_CUTOFF_HOUR = 14;
 
-  const now = new Date();
-  const dispatchDate = resolveDispatchDate(input.orderCreatedAt, now);
-  const estimatedDeliveryAt = addCalendarDays(dispatchDate, estimatedDaysMin);
+/** Extra calendar days added on top of provider transit. */
+const UNDER_PROMISE_DAYS = { min: 1, max: 2 } as const;
 
-  return {
-    estimatedDeliveryAt: estimatedDeliveryAt.toISOString(),
-    estimatedDaysMin,
-    estimatedDaysMax,
-    shippingCostMinor: computeShippingCostMinor(input.provider, input.method),
-  };
-}
+/**
+ * Shared stub estimate algorithm. Adapters inject this and pass their own method pricing table.
+ */
+@Injectable()
+export class StubDeliveryEstimate {
+  estimate(
+    input: DeliveryEstimateInput,
+    byMethod: Record<DeliveryMethod, StubEstimateMethodConfig>,
+  ): Promise<DeliveryEstimate> {
+    const row = byMethod[input.method];
+    const estimatedDaysMin = row.transitDaysMin + UNDER_PROMISE_DAYS.min;
+    const estimatedDaysMax = row.transitDaysMax + UNDER_PROMISE_DAYS.max;
 
-function resolveDispatchDate(orderCreatedAt: Date, now: Date): Date {
-  const reference = now.getTime() > orderCreatedAt.getTime() ? now : orderCreatedAt;
-  const dispatch = new Date(reference);
-  dispatch.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const dispatchDate = this.resolveDispatchDate(input.orderCreatedAt, now);
+    const estimatedDeliveryAt = this.addCalendarDays(dispatchDate, estimatedDaysMin);
 
-  if (reference.getHours() >= DISPATCH_CUTOFF_HOUR) {
-    dispatch.setDate(dispatch.getDate() + 1);
+    return Promise.resolve({
+      estimatedDeliveryAt: estimatedDeliveryAt.toISOString(),
+      estimatedDaysMin,
+      estimatedDaysMax,
+      shippingCostMinor: row.shippingCostMinor,
+    });
   }
 
-  return dispatch;
-}
+  private resolveDispatchDate(orderCreatedAt: Date, now: Date): Date {
+    const reference = now.getTime() > orderCreatedAt.getTime() ? now : orderCreatedAt;
+    const dispatch = new Date(reference);
+    dispatch.setHours(0, 0, 0, 0);
 
-function addCalendarDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
+    if (reference.getHours() >= DISPATCH_CUTOFF_HOUR) {
+      dispatch.setDate(dispatch.getDate() + 1);
+    }
+
+    return dispatch;
+  }
+
+  private addCalendarDays(date: Date, days: number): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
 }

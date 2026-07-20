@@ -7,19 +7,22 @@ export function mapDeliveryDtoToEntity(
   dto: CreateOrderDeliveryDto,
 ): Omit<OrderDelivery, 'id' | 'order' | 'createdAt' | 'updatedAt' | 'deletedAt'> {
   const isWarehouse = dto.method === DeliveryMethod.Warehouse;
+  const isCourier = dto.method === DeliveryMethod.Courier;
+  const isCustom = dto.method === DeliveryMethod.Custom;
 
   return {
     orderId,
     provider: dto.provider,
     method: dto.method,
-    city: dto.city,
+    city: dto.city?.trim() || null,
     cityRef: dto.cityRef ?? null,
-    warehouseNumber: isWarehouse ? (dto.warehouseNumber ?? null) : null,
-    warehouseName: isWarehouse ? (dto.warehouseName ?? null) : null,
-    warehouseRef: isWarehouse ? (dto.warehouseRef ?? null) : null,
-    street: isWarehouse ? null : (dto.street ?? null),
-    building: isWarehouse ? null : (dto.building ?? null),
-    apartment: isWarehouse ? null : (dto.apartment ?? null),
+    postalCode: dto.postalCode?.trim() || null,
+    warehouseNumber: isWarehouse || isCustom ? (dto.warehouseNumber ?? null) : null,
+    warehouseName: isWarehouse || isCustom ? (dto.warehouseName ?? null) : null,
+    warehouseRef: isWarehouse || isCustom ? (dto.warehouseRef ?? null) : null,
+    street: isCourier || isCustom ? (dto.street ?? null) : null,
+    building: isCourier || isCustom ? (dto.building ?? null) : null,
+    apartment: isCourier || isCustom ? (dto.apartment ?? null) : null,
     notes: dto.notes ?? null,
     estimatedDeliveryAt: null,
     estimatedDaysMin: null,
@@ -40,6 +43,9 @@ export function mergeDeliveryDtoToEntity(entity: OrderDelivery, dto: UpdateOrder
   }
   if (dto.cityRef !== undefined) {
     entity.cityRef = dto.cityRef ?? null;
+  }
+  if (dto.postalCode !== undefined) {
+    entity.postalCode = dto.postalCode ?? null;
   }
   if (dto.warehouseNumber !== undefined) {
     entity.warehouseNumber = dto.warehouseNumber ?? null;
@@ -76,6 +82,7 @@ export function createPartialDeliveryEntity(
     method,
     city: dto.city ?? null,
     cityRef: dto.cityRef ?? null,
+    postalCode: dto.postalCode ?? null,
     warehouseNumber: dto.warehouseNumber ?? null,
     warehouseName: dto.warehouseName ?? null,
     warehouseRef: dto.warehouseRef ?? null,

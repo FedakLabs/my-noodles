@@ -57,7 +57,7 @@ export class ClientMeestApi extends FetchApiClient {
       payload.messageDetails ||
       'Meest Client API request failed';
 
-    throw new ApiClientException(message, body, status);
+    throw new ApiClientException({ message, status, internal: body });
   }
 
   /** POST /auth — exchange credentials for an API token. */

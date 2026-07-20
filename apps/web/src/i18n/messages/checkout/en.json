@@ -20,7 +20,10 @@
     "provider": "Delivery service",
     "method": "Delivery type",
     "city": "City",
+    "postalCode": "Postal code",
     "branch": "Pickup point",
+    "branchNumber": "Branch number",
+    "branchName": "Branch name",
     "street": "Street",
     "building": "Building",
     "apartment": "Apartment",
@@ -32,15 +35,21 @@
     "deliveryLocked": "Add your last name, first name, and phone first — then choose delivery"
   },
   "delivery": {
-    "cityHint": "Start typing to search cities",
-    "branchHint": "Choose a branch or parcel locker",
+    "searchStartTyping": "Type at least {min} characters to search",
+    "searchNotFound": "No results for “{query}”",
+    "searchLoading": "Searching…",
+    "searchError": "Could not load results. Please try again.",
+    "branchHint": "Type at least {min} characters to find a branch or parcel locker",
     "branchDisabled": "Select a city first",
     "methods": {
       "warehouse": "Pickup point or parcel locker",
-      "courier": "Courier to address"
+      "courier": "Courier to address",
+      "custom": "Other arrangement"
     },
+    "customHint": "Add any delivery details you already know — city, branch, or address. If something’s missing, we’ll reach out to arrange the rest.",
     "estimatePending": "Choose city and pickup point to see delivery timing",
     "estimatePendingCourier": "Choose city and enter street and building to see delivery timing",
+    "estimatePendingCustom": "Add a city when you can — we’ll show delivery timing then",
     "estimateLabel": "Estimated delivery",
     "estimateCalculating": "Working out timing and cost — just a few seconds",
     "estimateDateLabel": "Date:",

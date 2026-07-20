@@ -39,7 +39,7 @@ export class ExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const appException = this.toAppException(exception);
 
-    this.exceptionLog.log(ctx.getRequest<Request>(), exception, {
+    this.exceptionLog.log(ctx.getRequest<Request>(), appException, {
       statusCode: appException.status,
       responseBody: appException.toBody(),
       sanitizedMessage: appException.message,
@@ -47,7 +47,7 @@ export class ExceptionsFilter implements ExceptionFilter {
     httpAdapter.reply(ctx.getResponse(), appException.toBody(), appException.status);
   }
 
-  private toAppException(exception: unknown): AppException<unknown> {
+  private toAppException(exception: unknown): AppException {
     if (exception instanceof AppException) {
       return exception;
     }
@@ -56,30 +56,49 @@ export class ExceptionsFilter implements ExceptionFilter {
       return this.fromNest(exception);
     }
 
-    return new ServerSideException();
+    return new ServerSideException({ internal: exception });
   }
 
-  private fromNest(exception: HttpException): AppException<unknown> {
+  private fromNest(exception: HttpException): AppException {
     const response = exception.getResponse();
     const message = extractNestMessage(response);
 
     if (exception instanceof NestBadRequestException) {
-      return new BadRequestException('bad_request', message || 'Bad Request');
+      return new BadRequestException({
+        code: 'bad_request',
+        message: message || 'Bad Request',
+        internal: exception,
+      });
     }
 
     if (exception instanceof NestNotFoundException) {
-      return new AppNotFoundException('not_found', message || 'Not found');
+      return new AppNotFoundException({
+        code: 'not_found',
+        message: message || 'Not found',
+        internal: exception,
+      });
     }
 
     if (isThrottlerException(exception)) {
-      return new TooManyRequestsException(message || 'Too many requests');
+      return new TooManyRequestsException({
+        message: message || 'Too many requests',
+        internal: exception,
+      });
     }
 
     if (exception instanceof NestServiceUnavailableException) {
-      return new ServiceUnavailableException(message || undefined);
+      return new ServiceUnavailableException({
+        message: message || undefined,
+        internal: exception,
+      });
     }
 
-    return new AppException(exception.getStatus(), 'request_failed', message || 'Request failed');
+    return new AppException({
+      status: exception.getStatus(),
+      code: 'request_failed',
+      message: message || 'Request failed',
+      internal: exception,
+    });
   }
 }
 

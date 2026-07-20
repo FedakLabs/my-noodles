@@ -15,6 +15,8 @@ import { TelegramService } from '@/application/telegram';
 import type { CartItem } from '../cart/cart-item.entity';
 import { CartEmptyException, CartInventoryChangedException } from '../cart/cart.exceptions';
 import { CartService } from '../cart/cart.service';
+import { DeliveryMethodsService } from '../delivery/delivery-methods.service';
+import { InvalidDeliveryMethodForProviderException } from '../delivery/delivery.exceptions';
 import { DeliveryService } from '../delivery/delivery.service';
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { OrderDelivery } from '../orders/order-delivery.entity';
@@ -60,6 +62,8 @@ export class CheckoutsService extends TransactionalRepository {
     private readonly telegramService: TelegramService,
     @Inject(DeliveryService)
     private readonly deliveryService: DeliveryService,
+    @Inject(DeliveryMethodsService)
+    private readonly deliveryMethodsService: DeliveryMethodsService,
   ) {
     super(dataSource);
   }
@@ -139,6 +143,10 @@ export class CheckoutsService extends TransactionalRepository {
 
   async submitCheckout(checkoutId: string, visitorSessionId: string, dto: SubmitCheckoutDto): Promise<Order> {
     const checkout = await this.getActiveCheckout({ id: checkoutId, visitorSessionId });
+
+    if (!this.deliveryMethodsService.isAvailableForProvider(dto.delivery.provider, dto.delivery.method)) {
+      throw new InvalidDeliveryMethodForProviderException(dto.delivery.provider, dto.delivery.method);
+    }
 
     const order = checkout.order;
     const inventoryLines: InventoryLine[] = order.items.map((item) => ({

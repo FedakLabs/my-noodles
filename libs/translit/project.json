@@ -1,0 +1,56 @@
+{
+  "name": "translit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/translit/src",
+  "projectType": "library",
+  "tags": ["scope:libs", "type:lib", "platform:node"],
+  "targets": {
+    "build": {
+      "command": "pnpm build",
+      "options": { "cwd": "libs/translit" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "pnpm format",
+      "options": { "cwd": "libs/translit" }
+    },
+    "format-check": {
+      "command": "pnpm format-check",
+      "options": { "cwd": "libs/translit" }
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "options": { "cwd": "libs/translit" }
+    },
+    "lint-check": {
+      "command": "pnpm lint-check",
+      "options": { "cwd": "libs/translit" }
+    },
+    "type-check": {
+      "command": "pnpm type-check",
+      "options": { "cwd": "libs/translit" }
+    },
+    "test": {
+      "command": "pnpm test",
+      "options": { "cwd": "libs/translit" }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace libs/translit",
+      "options": { "cwd": "." }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "pnpm --dir libs/translit format",
+          "pnpm --dir libs/translit lint",
+          "pnpm --dir libs/translit type-check",
+          "pnpm --dir libs/translit test",
+          "knip --config configs/knip/knip.json --workspace libs/translit"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

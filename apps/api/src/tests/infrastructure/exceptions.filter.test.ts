@@ -108,7 +108,7 @@ describe('ExceptionsFilter', () => {
     const filter = createFilter(reply);
 
     filter.catch(
-      new AppException(HttpStatus.NOT_FOUND, 'not_found', 'Not found'),
+      new AppException({ status: HttpStatus.NOT_FOUND, code: 'not_found', message: 'Not found' }),
       createHost(createRequest(performance.now() - 3)),
     );
 
@@ -132,6 +132,37 @@ describe('ExceptionsFilter', () => {
     );
   });
 
+  it('keeps internal off the HTTP body while writing it to error.raw', () => {
+    const reply = jest.fn();
+    const filter = createFilter(reply);
+    const internal = { providerStatus: 503, detail: 'upstream timeout' };
+
+    filter.catch(
+      new AppException({
+        status: HttpStatus.BAD_GATEWAY,
+        code: 'upstream_failed',
+        message: 'Upstream failed',
+        payload: { reason: 'temporary' },
+        internal,
+      }),
+      createHost(createRequest(performance.now() - 2)),
+    );
+
+    expect(reply).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        status: HttpStatus.BAD_GATEWAY,
+        code: 'upstream_failed',
+        message: 'Upstream failed',
+        payload: { reason: 'temporary' },
+      },
+      HttpStatus.BAD_GATEWAY,
+    );
+
+    const logged = errorSpy.mock.calls[0]?.[0] as { 'attributes.error.raw': string };
+    expect(JSON.parse(logged['attributes.error.raw'])).toEqual(internal);
+  });
+
   it('maps Nest BadRequestException to BadRequestException', () => {
     const reply = jest.fn();
     const filter = createFilter(reply);
@@ -147,7 +178,10 @@ describe('ExceptionsFilter', () => {
 
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
-      new BadRequestException('bad_request', 'phone must be a valid phone number').toBody(),
+      new BadRequestException({
+        code: 'bad_request',
+        message: 'phone must be a valid phone number',
+      }).toBody(),
       HttpStatus.BAD_REQUEST,
     );
   });
@@ -163,7 +197,7 @@ describe('ExceptionsFilter', () => {
 
     expect(reply).toHaveBeenCalledWith(
       expect.anything(),
-      new NotFoundException('not_found', 'Cannot GET /api/missing').toBody(),
+      new NotFoundException({ code: 'not_found', message: 'Cannot GET /api/missing' }).toBody(),
       HttpStatus.NOT_FOUND,
     );
   });

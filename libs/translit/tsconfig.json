@@ -1,0 +1,9 @@
+{
+  "extends": "../../configs/typescript/library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*.ts"]
+}

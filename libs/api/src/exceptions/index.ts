@@ -1,4 +1,4 @@
-export { type AppErrorBody, AppException, SAMPLE_UUID } from './app.exception';
+export { type AppErrorBody, type AppExceptionInit, AppException, SAMPLE_UUID } from './app.exception';
 export {
   BadRequestException,
   ConflictException,

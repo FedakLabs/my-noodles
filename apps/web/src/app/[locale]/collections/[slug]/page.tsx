@@ -1,6 +1,6 @@
 import { dehydrate } from '@tanstack/react-query';
 
-import { collectionsQueries, fetchCollectionDetail } from '@/api/collections';
+import { collectionsQueries } from '@/api/collections';
 import { productsQueries } from '@/api/products';
 import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
 import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
@@ -13,7 +13,7 @@ type CollectionPageProps = LocalePageProps<{ slug: string }>;
 
 export const generateMetadata = withPageLocaleMetadata<CollectionPageProps>(async ({ params, locale }) => {
   const { slug } = params;
-  const collection = await fetchCollectionDetail(slug);
+  const collection = await getQueryClient().fetchQuery(collectionsQueries.detail(slug));
 
   return buildPageMetadata({
     locale,

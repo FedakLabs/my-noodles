@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 
-import { fetchProductDetail } from '@/api/products';
+import { productsQueries } from '@/api/products';
 import { withPageLocaleResult } from '@/i18n/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
+import { getQueryClient } from '@/shared/query-client';
 import { createOgImage, OG_IMAGE_CONTENT_TYPE, OG_IMAGE_SIZE } from '@/shared/seo/og-image';
 import { formatCurrency } from '@/utils/format-currency';
 
@@ -15,7 +16,7 @@ export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnTy
   async ({ params, locale }) => {
     const { slug } = params;
     const [product, tMetadata] = await Promise.all([
-      fetchProductDetail(slug),
+      getQueryClient().fetchQuery(productsQueries.detail(slug)),
       getTranslations({ locale, namespace: 'metadata' }),
     ]);
     const title = product.name ?? product.slug;
@@ -32,7 +33,7 @@ export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnTy
 
 export const generateImageMetadata = withPageLocaleResult<ProductOpenGraphImageProps, Array<{ alt: string }>>(
   async ({ params }) => {
-    const product = await fetchProductDetail(params.slug);
+    const product = await getQueryClient().fetchQuery(productsQueries.detail(params.slug));
 
     return [{ alt: product.name ?? product.slug }];
   },
