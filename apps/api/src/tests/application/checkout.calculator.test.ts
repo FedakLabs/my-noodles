@@ -46,4 +46,22 @@ describe('CheckoutCalculator', () => {
 
     expect(checkout.order.grandTotalMinor).toBe(10_550);
   });
+
+  it('keeps grandTotalMinor as products total when estimate has null shipping cost', () => {
+    const checkout = Object.assign(new Checkout(), {
+      deliveryEstimate: {
+        estimatedDeliveryAt: '2026-07-20T00:00:00.000Z',
+        estimatedDaysMin: 1,
+        estimatedDaysMax: 2,
+        shippingCostMinor: null,
+      },
+      order: Object.assign(new Order(), {
+        totalMinor: 9_900,
+      }),
+    });
+
+    calculator.calculateTotals(checkout);
+
+    expect(checkout.order.grandTotalMinor).toBe(9_900);
+  });
 });

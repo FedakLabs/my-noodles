@@ -313,7 +313,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
     <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
       <CheckoutOrderSummary
         checkout={checkout}
-        shippingCostMinor={activeDeliveryEstimate?.shippingCostMinor ?? null}
+        shippingCostMinor={activeDeliveryEstimate?.shippingCostMinor}
         footer={submitButton}
       />
     </CheckoutOrderCard>

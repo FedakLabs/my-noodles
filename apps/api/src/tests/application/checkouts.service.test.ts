@@ -152,7 +152,7 @@ describe('CheckoutsService', () => {
       estimatedDeliveryAt: '2025-06-23T10:00:00.000Z',
       estimatedDaysMin: 2,
       estimatedDaysMax: 4,
-      shippingCostMinor: 9_000,
+      shippingCostMinor: null,
     });
     applyEstimateSnapshot = jest.fn();
 
@@ -692,7 +692,7 @@ describe('CheckoutsService', () => {
     expect(estimateFromDelivery).toHaveBeenCalled();
     expect(applyEstimateSnapshot).toHaveBeenCalledWith(
       expect.objectContaining({ city: 'Київ', warehouseNumber: '1' }),
-      expect.objectContaining({ estimatedDaysMin: 2, estimatedDaysMax: 4, shippingCostMinor: 9_000 }),
+      expect.objectContaining({ estimatedDaysMin: 2, estimatedDaysMax: 4, shippingCostMinor: null }),
     );
     expect(telegramSend).toHaveBeenCalled();
   });

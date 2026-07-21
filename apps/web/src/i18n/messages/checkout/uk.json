@@ -8,6 +8,7 @@
     "total": "Загалом",
     "products": "Товари",
     "shipping": "Доставка",
+    "shippingCarrierTariff": "За тарифами перевізника",
     "grandTotal": "До сплати",
     "summaryTitle": "Підсумок",
     "expandList": "Показати ще {count}",
@@ -51,7 +52,7 @@
     "estimatePendingCourier": "Обери місто та вкажи вулицю і будинок, щоб побачити орієнтовну дату доставки",
     "estimatePendingCustom": "Додай місто, коли зможеш — тоді покажемо орієнтовну доставку",
     "estimateLabel": "Орієнтовна доставка",
-    "estimateCalculating": "Зараз порахуємо дату та вартість — зачекай кілька секунд",
+    "estimateCalculating": "Зараз порахуємо орієнтовну дату — зачекай кілька секунд",
     "estimateDateLabel": "Дата:",
     "estimateTermLabel": "Термін:",
     "estimateTerm": "{daysMin}–{daysMax} робочих днів від відправки"

@@ -10,7 +10,12 @@ import { useCurrency } from '@/hooks/currency';
 
 type CheckoutOrderSummaryProps = {
   checkout: Checkout;
-  shippingCostMinor: number | null;
+  /**
+   * `undefined` — no estimate yet (hide shipping + grand total).
+   * `null` — estimate with unknown cost (carrier tariff copy).
+   * `number` — known shipping in minor units.
+   */
+  shippingCostMinor: number | null | undefined;
   footer?: ReactNode;
 };
 
@@ -19,6 +24,7 @@ export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: Ch
   const { formatCurrency } = useCurrency();
 
   const { totalMinor, grandTotalMinor = totalMinor, currency } = checkout.order;
+  const showShipping = shippingCostMinor !== undefined;
 
   return (
     <Stack spacing={1.5}>
@@ -27,13 +33,17 @@ export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: Ch
         <Typography variant="subtitle2">{formatCurrency(totalMinor, currency)}</Typography>
       </Stack>
 
-      {shippingCostMinor != null ? (
+      {showShipping ? (
         <>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="body2" color="text.secondary">
               {t('shipping')}
             </Typography>
-            <Typography variant="body2">{formatCurrency(shippingCostMinor, currency)}</Typography>
+            <Typography variant="body2">
+              {shippingCostMinor != null
+                ? formatCurrency(shippingCostMinor, currency)
+                : t('shippingCarrierTariff')}
+            </Typography>
           </Stack>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="subtitle2">{t('grandTotal')}</Typography>

@@ -170,9 +170,9 @@ export type DeliveryWarehouseDto = {
 
 export type OrderDeliveryEstimateDto = {
     estimatedDeliveryAt: string;
+    shippingCostMinor: number | null;
     estimatedDaysMin: number;
     estimatedDaysMax: number;
-    shippingCostMinor: number;
 };
 
 export type FeedSessionLike = {

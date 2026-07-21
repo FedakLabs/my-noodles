@@ -256,17 +256,11 @@ function buildDeliveryEstimate(
     return null;
   }
 
-  const providerRates: Record<string, number> = {
-    'nova-poshta': 9000,
-    meest: 7000,
-    ukrposhta: 6500,
-  };
-
   return {
     estimatedDeliveryAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     estimatedDaysMin: 2,
     estimatedDaysMax: 4,
-    shippingCostMinor: providerRates[delivery.provider ?? 'nova-poshta'] ?? 9000,
+    shippingCostMinor: null,
   };
 }
 

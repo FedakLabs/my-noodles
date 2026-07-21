@@ -155,7 +155,10 @@ export function CheckoutCompletedState({ checkout }: CheckoutCompletedStateProps
       </CheckoutOrderCard>
 
       <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
-        <CheckoutOrderSummary checkout={checkout} shippingCostMinor={delivery?.shippingCostMinor ?? null} />
+        <CheckoutOrderSummary
+          checkout={checkout}
+          shippingCostMinor={delivery ? delivery.shippingCostMinor : undefined}
+        />
       </CheckoutOrderCard>
     </Stack>
   );

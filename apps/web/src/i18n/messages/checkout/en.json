@@ -8,6 +8,7 @@
     "total": "Total",
     "products": "Products",
     "shipping": "Delivery",
+    "shippingCarrierTariff": "Per carrier rates",
     "grandTotal": "Total",
     "summaryTitle": "Summary",
     "expandList": "Show {count} more",
@@ -51,7 +52,7 @@
     "estimatePendingCourier": "Choose city and enter street and building to see delivery timing",
     "estimatePendingCustom": "Add a city when you can — we’ll show delivery timing then",
     "estimateLabel": "Estimated delivery",
-    "estimateCalculating": "Working out timing and cost — just a few seconds",
+    "estimateCalculating": "Working out delivery timing — just a few seconds",
     "estimateDateLabel": "Date:",
     "estimateTermLabel": "Timeline:",
     "estimateTerm": "{daysMin}–{daysMax} business days from dispatch"

@@ -16,7 +16,7 @@ export type DeliveryEstimate = {
   estimatedDeliveryAt: string;
   estimatedDaysMin: number;
   estimatedDaysMax: number;
-  shippingCostMinor: number;
+  shippingCostMinor: number | null;
 };
 
 export type DeliveryEstimateInput = {
