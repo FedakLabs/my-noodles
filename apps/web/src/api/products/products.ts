@@ -21,27 +21,29 @@ import { searchParamsToFacetsQuery, searchParamsToListQuery } from './utils';
 /** Facet counts for the current filter slice — safe to reuse briefly when reopening the filter UI. */
 const PRODUCT_FACETS_STALE_TIME_MS = 60_000;
 
+export type PaginatedProductsMergeMode = 'replace' | 'append';
+
 export function mergePaginatedProductsPage(
   cached: PaginatedProductsDto | undefined,
   pageData: PaginatedProductsDto,
   page: number,
-  limit: number,
+  mode: PaginatedProductsMergeMode = 'replace',
 ): PaginatedProductsDto {
-  const cachedItems = cached?.items ?? [];
-
-  if (page * limit > cachedItems.length) {
-    const existingIds = new Set(cachedItems.map((item) => item.id));
-    return {
-      ...pageData,
-      items: [...cachedItems, ...pageData.items.filter((item) => !existingIds.has(item.id))],
-      meta: {
-        ...pageData.meta,
-        page,
-      },
-    };
+  if (mode === 'replace') {
+    return pageData;
   }
 
-  return pageData;
+  const cachedItems = cached?.items ?? [];
+  const existingIds = new Set(cachedItems.map((item) => item.id));
+
+  return {
+    ...pageData,
+    items: [...cachedItems, ...pageData.items.filter((item) => !existingIds.has(item.id))],
+    meta: {
+      ...pageData.meta,
+      page,
+    },
+  };
 }
 
 export const productsQueries = {
@@ -88,6 +90,7 @@ export async function resolvePaginatedProductsPage(
   queryClient: QueryClient,
   params: CatalogSearchParams,
   pageData?: PaginatedProductsDto,
+  mode: PaginatedProductsMergeMode = 'replace',
 ): Promise<{
   merged: PaginatedProductsDto;
   storageKey: ReturnType<typeof productsQueries.paginatedAccumulated>['queryKey'];
@@ -98,7 +101,7 @@ export async function resolvePaginatedProductsPage(
     queryClient.getQueryData<PaginatedProductsDto>(productsQueries.list(params).queryKey) ??
     (await queryClient.fetchQuery(productsQueries.list(params)));
   const cached = queryClient.getQueryData<PaginatedProductsDto>(storageKey);
-  const merged = mergePaginatedProductsPage(cached, resolvedPageData, params.page, params.limit);
+  const merged = mergePaginatedProductsPage(cached, resolvedPageData, params.page, mode);
 
   queryClient.setQueryData(storageKey, merged);
   return { merged, storageKey };

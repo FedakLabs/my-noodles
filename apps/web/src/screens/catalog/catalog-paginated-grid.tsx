@@ -22,22 +22,21 @@ export function CatalogPaginatedGrid({
   const t = useTranslations('catalog');
   const { params, setParams } = useCatalogSearchParams();
   const previousPageRef = useRef(params.page);
-  const skipScrollOnPageChangeRef = useRef(false);
 
   const {
     products: paginatedProducts,
     productsIsInitialLoad,
     productsIsError,
     productsIsBusy,
-    productsIsFetching,
+    loadMore,
+    isLoadingMore,
+    hasMore,
   } = useProductsPaginatedList(params);
 
   const displayItems = paginatedProducts?.items ?? [];
   const totalCount = paginatedProducts?.meta.total ?? 0;
   const pageCount = Math.max(Math.ceil(totalCount / params.limit), 1);
-  const hasMorePages = params.page < pageCount;
-  const isLoadMoreFetching = productsIsFetching && params.page * params.limit > displayItems.length;
-  const showLoadMore = hasMorePages || isLoadMoreFetching;
+  const showLoadMore = hasMore || isLoadingMore;
   const isInitialLoad = productsIsInitialLoad && displayItems.length === 0;
   const showSkeleton = isViewModeResetting || isInitialLoad;
   const gridProducts = catalogGridProducts(showSkeleton, displayItems);
@@ -55,21 +54,14 @@ export function CatalogPaginatedGrid({
       return;
     }
 
-    if (skipScrollOnPageChangeRef.current) {
-      skipScrollOnPageChangeRef.current = false;
-      previousPageRef.current = params.page;
-      return;
-    }
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
     previousPageRef.current = params.page;
   }, [params.page]);
 
   const handleLoadMore = () => {
-    const nextPage = params.page + 1;
-    skipScrollOnPageChangeRef.current = true;
+    const nextPage = Math.floor(displayItems.length / params.limit) + 1;
     trackCatalogLoadMore(nextPage, displayItems.length);
-    void setParams({ page: nextPage });
+    void loadMore();
   };
 
   useViewItemList('catalog', listTitle, displayItems, !showSkeleton && !productsIsError, viewMode);
@@ -96,7 +88,7 @@ export function CatalogPaginatedGrid({
       paginationLoadMore={
         showLoadMore && !showSkeleton
           ? {
-              isLoading: isLoadMoreFetching,
+              isLoading: isLoadingMore,
               onLoadMore: handleLoadMore,
             }
           : undefined

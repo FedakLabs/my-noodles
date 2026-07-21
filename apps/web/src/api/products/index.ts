@@ -1,6 +1,7 @@
 export { DEFAULT_PRODUCT_SORT, PRODUCT_SORT_OPTIONS } from './constants';
 export {
   mergePaginatedProductsPage,
+  type PaginatedProductsMergeMode,
   productsQueries,
   removeCatalogProductsListQueries,
   resolvePaginatedProductsPage,

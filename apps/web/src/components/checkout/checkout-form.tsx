@@ -217,6 +217,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             }),
           ),
         });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
     });
   };

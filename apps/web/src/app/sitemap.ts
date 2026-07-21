@@ -5,7 +5,7 @@ import { routing } from '@/i18n/routing';
 import { absoluteUrl, localePath } from '@/shared/seo';
 import { fetchAllCollectionSlugs, fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
 
-const STATIC_INDEXABLE_PATHS = ['', '/catalog', '/contacts'] as const;
+const STATIC_INDEXABLE_PATHS = ['', '/catalog', '/collections', '/contacts'] as const;
 
 function buildStaticSitemapEntries(locale: AppLocale): MetadataRoute.Sitemap {
   return STATIC_INDEXABLE_PATHS.map((pathname) => ({

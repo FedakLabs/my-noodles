@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import { type Theme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { DeliveryMethod, type OrderDeliveryEstimateDto } from '@my-noodles/api-clients/storefront';
@@ -42,6 +43,17 @@ export {
   isCheckoutDeliveryEstimateLoading,
   type CheckoutDeliveryEstimateInput,
 } from './checkout-delivery-fields.utils';
+
+/** Options stay below the field; listbox capped below MUI’s default 40vh. */
+const DELIVERY_AUTOCOMPLETE_SLOT_PROPS = {
+  popper: {
+    placement: 'bottom-start' as const,
+    modifiers: [{ name: 'flip', enabled: false }],
+  },
+  listbox: {
+    sx: (theme: Theme) => ({ maxHeight: theme.spacing(36) }),
+  },
+};
 
 type CheckoutDeliveryFieldsProps = {
   control: Control<CheckoutFormData>;
@@ -420,6 +432,7 @@ export function CheckoutDeliveryFields({
                 options={cityInput.trim().length >= DELIVERY_SEARCH_MIN_LENGTH ? (deliveryCities ?? []) : []}
                 openOnFocus
                 disabled={fieldsDisabled}
+                slotProps={DELIVERY_AUTOCOMPLETE_SLOT_PROPS}
                 getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
                 getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
                 isOptionEqualToValue={(option, value) => option.ref === value.ref}
@@ -471,6 +484,7 @@ export function CheckoutDeliveryFields({
                       ? (deliveryWarehouses ?? [])
                       : []
                   }
+                  slotProps={DELIVERY_AUTOCOMPLETE_SLOT_PROPS}
                   getOptionKey={(option) => (typeof option === 'string' ? option : option.ref)}
                   getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
                   isOptionEqualToValue={(option, value) => option.ref === value.ref}
