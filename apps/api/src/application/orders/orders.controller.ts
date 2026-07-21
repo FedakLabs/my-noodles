@@ -1,8 +1,9 @@
 import { ApiException } from '@my-noodles/api-lib/nest';
-import { Body, Controller, Inject, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
+import { CurrentVisitorSession, type VisitorSession } from '../visitor-session';
 import { Order } from './order.entity';
 import { CancelOrderDto } from './orders.dto';
 import {
@@ -16,6 +17,15 @@ import { OrdersService } from './orders.service';
 @Controller('orders')
 export class OrdersController {
   constructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}
+
+  @Get(':id')
+  @ApiException(OrderNotFoundException)
+  async getOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentVisitorSession() visitor: VisitorSession,
+  ): Promise<Order> {
+    return await this.ordersService.getForVisitor(id, visitor.id);
+  }
 
   @Post(':id/cancel')
   @Throttle({ default: { limit: 10, ttl: 60_000 } })

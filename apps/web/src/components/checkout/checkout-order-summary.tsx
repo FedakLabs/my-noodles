@@ -5,11 +5,11 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import type { Checkout } from '@/api/checkouts';
+import type { Order } from '@/api/orders';
 import { useCurrency } from '@/hooks/currency';
 
 type CheckoutOrderSummaryProps = {
-  checkout: Checkout;
+  order: Order;
   /**
    * `undefined` — no estimate yet (hide shipping + grand total).
    * `null` — estimate with unknown cost (carrier tariff copy).
@@ -19,11 +19,11 @@ type CheckoutOrderSummaryProps = {
   footer?: ReactNode;
 };
 
-export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: CheckoutOrderSummaryProps) {
+export function CheckoutOrderSummary({ order, shippingCostMinor, footer }: CheckoutOrderSummaryProps) {
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
 
-  const { totalMinor, grandTotalMinor = totalMinor, currency } = checkout.order;
+  const { totalMinor, grandTotalMinor = totalMinor, currency } = order;
   const showShipping = shippingCostMinor !== undefined;
 
   return (

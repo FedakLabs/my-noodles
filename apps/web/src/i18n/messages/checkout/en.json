@@ -60,10 +60,24 @@
   "success": {
     "title": "Thank you!",
     "description": "We received your order and will confirm shortly.",
+    "bookmarkHint": "You can check status on the order page — save it for later 😎",
+    "catalogHint": "Or head back to the <catalog>catalog</catalog> to pick something else tasty.",
+    "goToOrder": "Go to order",
+    "redirectCountdown": "in {seconds}s",
     "backToCatalog": "Back to catalog",
     "orderDetails": "Order details",
     "share": "Share order",
-    "shareText": "My order details"
+    "shareText": "My order details",
+    "statusProgress": "Order status",
+    "status": {
+      "new": "New",
+      "confirmed": "Confirmed",
+      "sent": "Sent",
+      "arrived": "Arrived",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "returned": "Returned"
+    }
   },
   "cancelled": {
     "title": "This checkout was cancelled",

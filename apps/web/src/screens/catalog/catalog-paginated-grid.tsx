@@ -59,7 +59,7 @@ export function CatalogPaginatedGrid({
   }, [params.page]);
 
   const handleLoadMore = () => {
-    const nextPage = Math.floor(displayItems.length / params.limit) + 1;
+    const nextPage = (paginatedProducts?.meta.page ?? params.page) + 1;
     trackCatalogLoadMore(nextPage, displayItems.length);
     void loadMore();
   };

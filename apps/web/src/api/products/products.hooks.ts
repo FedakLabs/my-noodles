@@ -43,20 +43,22 @@ export function useProductsPaginatedList(params: CatalogSearchParams, options?: 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const products = query.data;
-  const hasMore = (products?.items.length ?? 0) < (products?.meta.total ?? 0);
+  const lastLoadedPage = products?.meta.page ?? params.page;
+  const pageCount = Math.max(Math.ceil((products?.meta.total ?? 0) / params.limit), 1);
+  const hasMore = lastLoadedPage < pageCount;
 
   const loadMore = useCallback(async () => {
     const current =
       queryClient.getQueryData<PaginatedProductsDto>(displayQueryKey) ??
       queryClient.getQueryData<PaginatedProductsDto>(storageKey);
-    const loadedCount = current?.items.length ?? 0;
+    const loadedThroughPage = current?.meta.page ?? params.page;
     const total = current?.meta.total ?? 0;
+    const totalPages = Math.max(Math.ceil(total / params.limit), 1);
+    const nextPage = loadedThroughPage + 1;
 
-    if (loadedCount === 0 || loadedCount >= total || isLoadingMore) {
+    if (!current || nextPage > totalPages || isLoadingMore) {
       return;
     }
-
-    const nextPage = Math.floor(loadedCount / params.limit) + 1;
 
     setIsLoadingMore(true);
     try {

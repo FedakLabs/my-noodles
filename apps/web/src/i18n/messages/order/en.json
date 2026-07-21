@@ -1,0 +1,6 @@
+{
+  "title": "Order",
+  "loading": "Loading order…",
+  "empty": "Order not found.",
+  "error": "Could not load order. Please try again."
+}

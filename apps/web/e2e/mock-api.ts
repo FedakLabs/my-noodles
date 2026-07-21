@@ -231,10 +231,29 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
         return;
       }
       const order = submitOrder(checkout);
-      checkout = { ...checkout, status: 'completed', completedAt: new Date().toISOString() };
+      checkout = {
+        ...checkout,
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+        order: { ...order, checkout: null },
+      };
       activeCheckouts = [];
       sendJson(req, res, 201, order);
     });
+    return;
+  }
+
+  if (req.method === 'GET' && pathname === `/api/orders/${MOCK_IDS.order}`) {
+    if (!checkout || checkout.status !== 'completed') {
+      sendJson(req, res, 404, {
+        code: 'order_not_found',
+        message: 'Order not found',
+        status: 404,
+        payload: { orderId: MOCK_IDS.order },
+      });
+      return;
+    }
+    sendJson(req, res, 200, checkout.order);
     return;
   }
 
