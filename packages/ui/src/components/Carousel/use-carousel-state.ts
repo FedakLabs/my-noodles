@@ -6,12 +6,14 @@ import { useCallback, useEffect, useState } from 'react';
 import type { CarouselContextValue } from './carousel-context';
 
 type CarouselOptions = Parameters<typeof useEmblaCarousel>[0];
+type CarouselPlugins = Parameters<typeof useEmblaCarousel>[1];
 
 export function useCarouselState(
   options?: CarouselOptions,
   onSelect?: (index: number) => void,
+  plugins?: CarouselPlugins,
 ): Pick<CarouselContextValue, 'emblaRef' | 'emblaApi' | 'selectedIndex' | 'scrollTo'> {
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
+  const [emblaRef, emblaApi] = useEmblaCarousel(options, plugins);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const handleSelect = useCallback(() => {

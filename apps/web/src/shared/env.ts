@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const gtmIdSchema = z.string().regex(/^GTM-[A-Z0-9]+$/);
 const ga4IdSchema = z.string().regex(/^G-[A-Z0-9]+$/);
+const landingVariantSchema = z.enum(['a', 'b', 'c']);
 
 const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z.url({ message: 'NEXT_PUBLIC_API_URL must be a valid URL' }),
@@ -18,6 +19,11 @@ const envSchema = z.object({
     .optional()
     .transform((value) => value?.trim() || undefined)
     .pipe(z.union([z.undefined(), ga4IdSchema])),
+  LANDING_VARIANT: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() || undefined)
+    .pipe(z.union([z.undefined(), landingVariantSchema])),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -27,4 +33,5 @@ export const env: Env = envSchema.parse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
   NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
+  LANDING_VARIANT: process.env.LANDING_VARIANT,
 });

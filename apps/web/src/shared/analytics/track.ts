@@ -116,6 +116,17 @@ export function trackClickTelegramOrder() {
   pushCustomEvent('click_telegram_order');
 }
 
+export type LandingVariantTrack = 'a' | 'b' | 'c';
+
+export type LandingVariantSourceTrack = 'query' | 'env' | 'cookie' | 'assigned';
+
+export function trackLandingVariant(variant: LandingVariantTrack, source: LandingVariantSourceTrack) {
+  pushCustomEvent('landing_variant_assigned', {
+    landing_variant: variant,
+    landing_variant_source: source,
+  });
+}
+
 export function trackCatalogBrowseMode(mode: CatalogBrowseMode, source: CatalogBrowseModeSource) {
   pushCustomEvent('catalog_browse_mode', {
     catalog_browse_mode: mode,

@@ -4,5 +4,6 @@ declare namespace NodeJS {
     NEXT_PUBLIC_SITE_URL?: string;
     NEXT_PUBLIC_GTM_ID?: string;
     NEXT_PUBLIC_GA4_ID?: string;
+    LANDING_VARIANT?: string;
   }
 }

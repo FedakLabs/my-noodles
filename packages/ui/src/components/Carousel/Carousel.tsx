@@ -10,6 +10,7 @@ import { useCarouselState } from './use-carousel-state';
 import { type CarouselStoryNavConfig, useCarouselStoryNav } from './use-carousel-story-nav';
 
 type CarouselOptions = Parameters<typeof useEmblaCarousel>[0];
+type CarouselPlugins = Parameters<typeof useEmblaCarousel>[1];
 
 export type { CarouselStoryNavConfig };
 
@@ -17,6 +18,7 @@ export type CarouselProps = {
   children: ReactNode;
   ariaLabel: string;
   options?: CarouselOptions;
+  plugins?: CarouselPlugins;
   onSelect?: (index: number) => void;
   storyNav?: CarouselStoryNavConfig;
   sx?: SxProps<Theme>;
@@ -58,8 +60,8 @@ function CarouselRoot({
   );
 }
 
-export function Carousel({ children, ariaLabel, options, onSelect, storyNav, sx }: CarouselProps) {
-  const carousel = useCarouselState(options, onSelect);
+export function Carousel({ children, ariaLabel, options, plugins, onSelect, storyNav, sx }: CarouselProps) {
+  const carousel = useCarouselState(options, onSelect, plugins);
 
   return (
     <CarouselContext.Provider value={carousel}>

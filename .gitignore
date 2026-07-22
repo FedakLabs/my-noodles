@@ -3,6 +3,8 @@ openapi.json
 node_modules/
 .pnpm-store/
 
+.playwright-mcp/
+
 mcp.json
 
 # build outputs

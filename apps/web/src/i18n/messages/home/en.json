@@ -1,4 +1,69 @@
 {
   "title": "Tasty discoveries from around the world",
-  "description": "Explore imported snacks — pick a country, a flavor, and add to cart."
+  "description": "Explore imported snacks — pick a country, a flavor, and add to cart.",
+  "shared": {
+    "triedByUsBadge": "We've tried it",
+    "telegramCta": "Message us on Telegram",
+    "telegramHandle": "@my_noodles",
+    "exploreCatalog": "Browse catalog",
+    "exploreCollections": "Browse collections",
+    "exploreFeed": "Open the feed",
+    "startExploring": "Start exploring"
+  },
+  "variants": {
+    "a": {
+      "heroHeadline": "Everything looks so tasty — what should you try today?",
+      "heroCta": "Start exploring",
+      "humanTruth": "We remove the fear of picking the wrong thing — with honest descriptions, mood-based collections, and snacks we've tried ourselves.",
+      "doorsTitle": "Three ways to find your new favorite",
+      "doorsCollectionsTitle": "Collections",
+      "doorsCollectionsBody": "Mood shelves — from viral snacks to tastes around the world.",
+      "doorsCatalogTitle": "Catalog",
+      "doorsCatalogBody": "Filter by country, brand, and what we've already tried.",
+      "doorsFeedTitle": "Feed",
+      "doorsFeedBody": "Full-screen discoveries — swipe, like, save.",
+      "triedTitle": "We've tried it ourselves",
+      "triedCount": "{count} snacks we've already tasted",
+      "worldTitle": "Tastes from around the world",
+      "worldBody": "Pick a country — and jump straight into its catalog.",
+      "ctaHeadline": "Ready for a little adventure?",
+      "ctaBody": "Jump into the feed or catalog — or just say hi.",
+      "doorCatalogChipAll": "All"
+    },
+    "b": {
+      "heroHeadline": "Choose your door",
+      "heroSubline": "Drag, tap, feel — three living paths to a new taste.",
+      "portalCollections": "Collections",
+      "portalCatalog": "Catalog",
+      "portalFeed": "Feed",
+      "feelItTitle": "Feel how it works",
+      "surpriseTitle": "Surprise me",
+      "surpriseCta": "Show me something new",
+      "surpriseLoading": "Finding a discovery…",
+      "surpriseError": "Feed was busy — here's something we've tried.",
+      "trustTitle": "Why you can trust us",
+      "trustHonesty": "Honest taste notes",
+      "trustTried": "Tried by us",
+      "trustCurated": "Mood-curated shelves",
+      "worldTitle": "Countries at your fingertips",
+      "ctaHeadline": "Pick a door — and step in",
+      "ctaBody": "Or message us on Telegram if you want a nudge."
+    },
+    "c": {
+      "heroSwipeCue": "Swipe up to explore",
+      "heroFallbackLine": "New tastes are waiting for you",
+      "dockTitle": "This is our discovery reel",
+      "dockBody": "Full-screen flavors — now in your pocket.",
+      "moodsTitle": "Three moods, three ways",
+      "moodsCollections": "Collections",
+      "moodsCatalog": "Catalog",
+      "moodsFeed": "Feed",
+      "honestyTitle": "Honest about taste",
+      "worldTitle": "Countries & moods",
+      "ctaHeadline": "Start the reel",
+      "ctaBody": "Or browse the catalog — and find your next favorite.",
+      "ctaFeed": "Start the reel",
+      "productLine": "{name} — {country}"
+    }
+  }
 }
