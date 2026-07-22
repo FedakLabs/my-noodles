@@ -5,6 +5,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AdminOrdersModule } from './application/admin';
+import { AuthModule } from './application/auth';
 import { CartController, CartModule } from './application/cart';
 import { CheckoutsController, CheckoutsModule } from './application/checkouts';
 import { CollectionsModule } from './application/collections';
@@ -14,6 +16,7 @@ import { FeedController, FeedModule } from './application/feed';
 import { HealthModule } from './application/health';
 import { OrdersController, OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
+import { UsersModule } from './application/users';
 import { VisitorSessionMiddleware, VisitorSessionModule } from './application/visitor-session';
 import { config } from './config';
 import './infrastructure/logging';
@@ -27,6 +30,7 @@ import './infrastructure/logging';
       autoLoadEntities: true,
     }),
     VisitorSessionModule,
+    UsersModule,
     HealthModule,
     ProductsModule,
     CollectionsModule,
@@ -36,6 +40,8 @@ import './infrastructure/logging';
     OrdersModule,
     FeedModule,
     CartModule,
+    AuthModule,
+    AdminOrdersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

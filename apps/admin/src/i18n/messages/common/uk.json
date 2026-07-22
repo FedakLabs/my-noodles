@@ -1,0 +1,18 @@
+{
+  "appTitle": "my-noodles admin",
+  "nav": {
+    "orders": "Замовлення"
+  },
+  "actions": {
+    "back": "Назад",
+    "logOut": "Вийти",
+    "previous": "Назад",
+    "next": "Далі",
+    "search": "Пошук",
+    "copy": "Копіювати",
+    "copied": "Скопійовано"
+  },
+  "states": {
+    "loading": "Завантаження…"
+  }
+}

@@ -8,7 +8,6 @@ import {
   type CheckoutsControllerSubmitCheckoutError,
   type CheckoutsControllerUpdateCheckoutDeliveryError,
   type CheckoutsControllerUpdateCheckoutReceiverError,
-  type OrdersControllerCancelOrderError,
 } from '@my-noodles/api-clients/storefront';
 
 type StorefrontApiError =
@@ -19,8 +18,7 @@ type StorefrontApiError =
   | CheckoutsControllerGetCheckoutError
   | CheckoutsControllerUpdateCheckoutReceiverError
   | CheckoutsControllerUpdateCheckoutDeliveryError
-  | CheckoutsControllerSubmitCheckoutError
-  | OrdersControllerCancelOrderError;
+  | CheckoutsControllerSubmitCheckoutError;
 
 export type ApiErrorCode = Extract<StorefrontApiError, { code: string }>['code'];
 

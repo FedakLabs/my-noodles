@@ -1,15 +1,18 @@
 import 'reflect-metadata';
+import { PasswordHasher } from '@my-noodles/api-lib/auth';
 import { createAppDataSource } from '@my-noodles/api-lib/persistence';
 import { slugify } from '@my-noodles/api-lib/utils';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { type DataSource, type Repository } from 'typeorm';
 
+import { authConfig } from '@/application/auth';
 import { Brand } from '@/application/brands';
 import { Category } from '@/application/categories';
 import { Collection } from '@/application/collections';
 import { Country } from '@/application/countries';
 import { FeedProductComment } from '@/application/feed';
 import { Product } from '@/application/products';
+import { User } from '@/application/users';
 import { config } from '@/config';
 
 import { buildFeedCommentSeeds } from './feed-seed-data';
@@ -107,9 +110,26 @@ async function upsertCollection(
   );
 }
 
+async function upsertAdminUser(repository: Repository<User>): Promise<User> {
+  const email = authConfig.adminEmail.toLowerCase();
+  const existing = await repository.findOne({ where: { email } });
+  const passwordHash = await new PasswordHasher().hash(authConfig.adminPassword);
+
+  if (existing) {
+    existing.passwordHash = passwordHash;
+    return await repository.save(existing);
+  }
+
+  return await repository.save(repository.create({ email, passwordHash }));
+}
+
 async function seed(dataSource: DataSource): Promise<void> {
+  const userRepository = dataSource.getRepository(User);
+  const admin = await upsertAdminUser(userRepository);
+  console.log(`Admin user ready: ${admin.email}`);
+
   if (PRODUCT_SEEDS.length === 0) {
-    console.log('No product seeds defined — skipping seed.');
+    console.log('No product seeds defined — skipping product seed.');
     return;
   }
 

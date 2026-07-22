@@ -1,0 +1,11 @@
+{
+  "title": "Вхід в адмінку",
+  "subtitle": "Увійдіть, щоб керувати замовленнями.",
+  "email": "Email",
+  "password": "Пароль",
+  "signIn": "Увійти",
+  "signingIn": "Вхід…",
+  "errors": {
+    "invalidCredentials": "Невірний email або пароль"
+  }
+}

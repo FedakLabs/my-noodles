@@ -35,6 +35,41 @@ export {
   useCarouselContext,
 } from './components/Carousel';
 export {
+  CopyableField,
+  type CopyableFieldProps,
+  type CopyableStyledText,
+  CopyButton,
+  type CopyButtonProps,
+} from './components/CopyableField';
+export {
+  createColumnHelper,
+  createSelectionColumn,
+  type CreateSelectionColumnLabels,
+  DataTable,
+  type DataTableColumnAlign,
+  type DataTableColumnHeaderProps,
+  type DataTableColumnMeta,
+  type DataTablePaginationLabels,
+  type DataTablePaginationProps,
+  type DataTableProps,
+  type DataTableRowProps,
+  DataTableColumnHeader,
+  DataTablePagination,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useDataTable,
+  type ColumnDef,
+  type PaginationState,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
+  type Table,
+  type UseDataTableOptions,
+} from './components/DataTable';
+export {
   DISCOVERY_CARD_VIEW_TRANSITION_MS,
   DiscoveryCard,
   type DiscoveryCardActionsProps,
@@ -66,6 +101,19 @@ export {
   type MediaGalleryVideoLabels,
   resolvePrimaryMediaItem,
 } from './components/MediaGallery';
+export {
+  Modal,
+  type ModalBodyProps,
+  type ModalFooterAlign,
+  type ModalFooterProps,
+  type ModalHeaderProps,
+  type ModalMaxWidth,
+  type ModalProps,
+  type ModalRef,
+  type ModalScrollableProps,
+  type UseModalResult,
+  useModal,
+} from './components/Modal';
 export { PhoneInput, type PhoneInputProps } from './components/PhoneInput';
 export { PriceRangeSlider, type PriceRangeSliderProps } from './components/PriceRangeSlider';
 export { StableLinearProgress, type StableLinearProgressProps } from './components/StableLinearProgress';

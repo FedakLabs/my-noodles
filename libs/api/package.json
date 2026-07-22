@@ -60,9 +60,17 @@
       "types": "./dist/locale/index.d.ts",
       "default": "./dist/locale/index.js"
     },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    },
     "./nest": {
       "types": "./dist/nest/index.d.ts",
       "default": "./dist/nest/index.js"
+    },
+    "./nest/auth": {
+      "types": "./dist/nest/auth/index.d.ts",
+      "default": "./dist/nest/auth/index.js"
     },
     "./express": {
       "types": "./dist/express/index.d.ts",
@@ -87,6 +95,7 @@
     "class-validator": "0.15.1",
     "dotenv": "16.4.7",
     "http-status-codes": "^2.3.0",
+    "jose": "^6.2.4",
     "libphonenumber-js": "^1.13.7",
     "winston": "3.19.0"
   },

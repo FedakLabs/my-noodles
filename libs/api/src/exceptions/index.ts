@@ -8,6 +8,7 @@ export {
   ServerSideException,
   ServiceUnavailableException,
   TooManyRequestsException,
+  UnauthorizedException,
   ValidationException,
 } from './http.exceptions';
 export { HttpStatus, type HttpStatusCode } from './http-status';

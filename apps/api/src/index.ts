@@ -11,12 +11,25 @@ import {
 import { clientBaggageMiddleware } from '@my-noodles/api-lib/otel';
 import { responseDelayMiddleware } from '@my-noodles/api-lib/utils';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { config } from './config';
-import { API_GLOBAL_PREFIX, SWAGGER_JSON_PATH, SWAGGER_UI_PATH } from './configs/api';
+import {
+  API_GLOBAL_PREFIX,
+  SWAGGER_ADMIN_JSON_PATH,
+  SWAGGER_ADMIN_UI_PATH,
+  SWAGGER_AUTH_JSON_PATH,
+  SWAGGER_AUTH_UI_PATH,
+  SWAGGER_JSON_PATH,
+  SWAGGER_UI_PATH,
+} from './configs/api';
+import {
+  createAdminOpenApiDocument,
+  createAuthOpenApiDocument,
+  createStorefrontOpenApiDocument,
+} from './openapi/openapi-documents';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -35,15 +48,41 @@ async function bootstrap() {
   app.use(
     responseDelayMiddleware({
       responseDelayMs: config.responseDelayMs,
-      skipPaths: [`/${API_GLOBAL_PREFIX}/health`, `/${SWAGGER_UI_PATH}`, `/${SWAGGER_JSON_PATH}`],
+      skipPaths: [
+        `/${API_GLOBAL_PREFIX}/health`,
+        `/${SWAGGER_UI_PATH}`,
+        `/${SWAGGER_JSON_PATH}`,
+        `/${SWAGGER_ADMIN_UI_PATH}`,
+        `/${SWAGGER_ADMIN_JSON_PATH}`,
+        `/${SWAGGER_AUTH_UI_PATH}`,
+        `/${SWAGGER_AUTH_JSON_PATH}`,
+      ],
     }),
   );
 
-  const swaggerDocument = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder().setTitle(config.appName).setVersion(config.appVersion).build(),
-  );
-  SwaggerModule.setup(SWAGGER_UI_PATH, app, swaggerDocument, { jsonDocumentUrl: SWAGGER_JSON_PATH });
+  const storefrontDocument = createStorefrontOpenApiDocument(app);
+  const adminDocument = createAdminOpenApiDocument(app);
+  const authDocument = createAuthOpenApiDocument(app);
+
+  SwaggerModule.setup(SWAGGER_UI_PATH, app, storefrontDocument, {
+    explorer: true,
+    swaggerOptions: {
+      urls: [
+        { name: 'Storefront', url: `/${SWAGGER_JSON_PATH}` },
+        { name: 'Admin', url: `/${SWAGGER_ADMIN_JSON_PATH}` },
+        { name: 'Auth', url: `/${SWAGGER_AUTH_JSON_PATH}` },
+      ],
+    },
+    jsonDocumentUrl: SWAGGER_JSON_PATH,
+  });
+
+  SwaggerModule.setup(SWAGGER_ADMIN_UI_PATH, app, adminDocument, {
+    jsonDocumentUrl: SWAGGER_ADMIN_JSON_PATH,
+  });
+
+  SwaggerModule.setup(SWAGGER_AUTH_UI_PATH, app, authDocument, {
+    jsonDocumentUrl: SWAGGER_AUTH_JSON_PATH,
+  });
 
   new GracefulShutdown(app, {
     timeoutMs: config.shutdownTimeoutMs,
@@ -56,6 +95,8 @@ async function bootstrap() {
   logger.info({ msg: 'bootstrap.listening', origin, path: `/${API_GLOBAL_PREFIX}` });
   logger.info({ msg: 'bootstrap.swagger.ui', url: `${origin}/${SWAGGER_UI_PATH}` });
   logger.info({ msg: 'bootstrap.swagger.json', url: `${origin}/${SWAGGER_JSON_PATH}` });
+  logger.info({ msg: 'bootstrap.swagger.admin.json', url: `${origin}/${SWAGGER_ADMIN_JSON_PATH}` });
+  logger.info({ msg: 'bootstrap.swagger.auth.json', url: `${origin}/${SWAGGER_AUTH_JSON_PATH}` });
 }
 
 void bootstrap();

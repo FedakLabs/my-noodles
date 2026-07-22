@@ -23,11 +23,31 @@
         "types": "./dist/cjs/src/storefront/index.d.ts",
         "default": "./dist/cjs/src/storefront/index.js"
       }
+    },
+    "./admin": {
+      "import": {
+        "types": "./src/admin/index.ts",
+        "default": "./src/admin/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/admin/index.d.ts",
+        "default": "./dist/cjs/src/admin/index.js"
+      }
+    },
+    "./auth": {
+      "import": {
+        "types": "./src/auth/index.ts",
+        "default": "./src/auth/index.ts"
+      },
+      "require": {
+        "types": "./dist/cjs/src/auth/index.d.ts",
+        "default": "./dist/cjs/src/auth/index.js"
+      }
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node -e \"require('node:fs').writeFileSync('dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }) + '\\n')\"",
-    "api:generate": "openapi-ts -f ./src/storefront/openapi-ts.config.ts",
+    "api:generate": "openapi-ts -f ./src/storefront/openapi-ts.config.ts && openapi-ts -f ./src/admin/openapi-ts.config.ts && openapi-ts -f ./src/auth/openapi-ts.config.ts",
     "format": "oxfmt",
     "format-check": "oxfmt --check",
     "lint": "oxlint --fix",

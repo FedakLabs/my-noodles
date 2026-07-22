@@ -9,6 +9,7 @@
   "scripts": {
     "prepare": "husky",
     "dev:web": "nx run web:dev",
+    "dev:admin": "nx run admin:dev",
     "dev:api": "nx run api:dev",
     "dev:ui": "nx run ui:storybook",
     "build": "nx run-many -t build",

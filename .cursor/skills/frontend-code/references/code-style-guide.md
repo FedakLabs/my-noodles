@@ -56,6 +56,30 @@ export function useProductsList(filters: ProductListFilters) {
 - Pass-through `...props` to root when building reusable pieces
 - Composition over deep prop drilling — context only when already established in the feature
 
+### Refs — no `forwardRef`
+
+React 19 treats `ref` as an ordinary prop on function components, so the special `forwardRef` wrapper is obsolete: it added indirection without giving `ref` the same status as other props. Declare `ref` on the props type and use it directly (with `useImperativeHandle` when exposing an imperative handle). Do not introduce new `forwardRef` usage; prefer converting existing call sites when you touch them.
+
+```tsx
+// ✅ React 19 — ref is a normal prop
+export function CancelOrderModal({ ref }: { ref?: Ref<CancelOrderModalRef> }) {
+  return (
+    <Modal ref={ref} maxWidth="sm">
+      …
+    </Modal>
+  );
+}
+
+// ❌ stale — forwardRef is unnecessary on React 19
+export const CancelOrderModal = forwardRef<CancelOrderModalRef>(function CancelOrderModal(_props, ref) {
+  return (
+    <Modal ref={ref} maxWidth="sm">
+      …
+    </Modal>
+  );
+});
+```
+
 ---
 
 ## State Management
@@ -339,3 +363,4 @@ Grounded in how `apps/web` is actually structured. When in doubt, grep the neare
 | `mutateAsync` for fire-and-forget writes or `.then()` shims                               | `mutate` for single-flight callbacks; `mutateAsync` when you need a Promise per call (concurrent toasts, multi-step flows) (see [Mutations → prefer `mutate`](#mutations--prefer-mutate)) |
 | Global fixed loading indicator for route-local refetch                                    | Contextual feedback near updating content (toolbar + grid veil, filter panel dim)                                                                                                         |
 | `data-testid` on every element                                                            | Roles/labels first; test ids for ambiguous actions                                                                                                                                        |
+| `forwardRef` for passing or exposing refs                                                 | React 19 `ref` as a normal prop (+ `useImperativeHandle` when needed) (see [Refs — no `forwardRef`](#refs--no-forwardref))                                                                |

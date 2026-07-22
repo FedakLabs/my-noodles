@@ -3,13 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 
 import { InventoryService } from '@/application/inventory/inventory.service';
-import {
-  Order,
-  OrderCancelledReason,
-  OrdersController,
-  OrdersService,
-  OrderStatus,
-} from '@/application/orders';
+import { Order, OrdersController, OrdersService, OrderStatus } from '@/application/orders';
 import {
   VisitorSessionMiddleware,
   VisitorSessionService,
@@ -23,7 +17,6 @@ describe('orders (e2e)', () => {
   let app: INestApplication;
   let ordersFindOne: jest.Mock;
   let orderSave: jest.Mock;
-  let restoreOnCancel: jest.Mock;
   let visitorResolve: jest.Mock;
 
   const orderId = '44444444-4444-4444-8444-444444444444';
@@ -32,7 +25,6 @@ describe('orders (e2e)', () => {
   beforeAll(async () => {
     ordersFindOne = jest.fn();
     orderSave = jest.fn();
-    restoreOnCancel = jest.fn().mockResolvedValue(undefined);
     visitorResolve = jest.fn().mockResolvedValue({ id: visitorId });
 
     @Module({
@@ -46,7 +38,7 @@ describe('orders (e2e)', () => {
         },
         {
           provide: InventoryService,
-          useValue: { restoreOnCancel },
+          useValue: { restoreOnCancel: jest.fn() },
         },
         {
           provide: VisitorSessionService,
@@ -106,40 +98,5 @@ describe('orders (e2e)', () => {
       .get(`/api/orders/${orderId}`)
       .set('Cookie', `${VISITOR_SESSION_COOKIE}=${visitorId}`)
       .expect(404);
-  });
-
-  it('POST /api/orders/:id/cancel cancels a submitted order', async () => {
-    ordersFindOne.mockResolvedValue({
-      id: orderId,
-      status: OrderStatus.New,
-      cancelledReason: null,
-      totalMinor: 9_900,
-      currency: 'UAH',
-      createdAt: new Date('2025-06-20T10:00:00.000Z'),
-      items: [{ productId: 'product-1', qty: 1 }],
-    });
-
-    const response = await request(apiHttpServer(app))
-      .post(`/api/orders/${orderId}/cancel`)
-      .set('Cookie', `${VISITOR_SESSION_COOKIE}=${visitorId}`)
-      .send({ reason: OrderCancelledReason.OutOfStock })
-      .expect(201);
-
-    expect(response.body).toMatchObject({ id: orderId, status: OrderStatus.Cancelled });
-    expect(restoreOnCancel).toHaveBeenCalled();
-  });
-
-  it('POST /api/orders/:id/cancel returns 409 for draft orders', async () => {
-    ordersFindOne.mockResolvedValue({
-      id: orderId,
-      status: OrderStatus.Draft,
-      items: [],
-    });
-
-    await request(apiHttpServer(app))
-      .post(`/api/orders/${orderId}/cancel`)
-      .set('Cookie', `${VISITOR_SESSION_COOKIE}=${visitorId}`)
-      .send({ reason: OrderCancelledReason.CustomerRequest })
-      .expect(409);
   });
 });

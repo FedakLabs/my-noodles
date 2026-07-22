@@ -4,6 +4,8 @@ export * from './order-delivery.dto';
 export * from './order-delivery.entity';
 export * from './order-item.entity';
 export * from './order-status';
+export * from './order-status-history.entity';
+export * from './order-status-transitions';
 export * from './orders.controller';
 export * from './orders.dto';
 export * from './orders.exceptions';

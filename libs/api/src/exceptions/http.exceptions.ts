@@ -18,6 +18,12 @@ export class BadRequestException extends AppException {
   }
 }
 
+export class UnauthorizedException extends AppException {
+  constructor(init: PresetExceptionInit) {
+    super({ status: HttpStatus.UNAUTHORIZED, ...init });
+  }
+}
+
 export class NotFoundException extends AppException {
   constructor(init: PresetExceptionInit) {
     super({ status: HttpStatus.NOT_FOUND, ...init });

@@ -1,0 +1,383 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [401],
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["invalid_credentials"],
+                      "example": "invalid_credentials"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid email or password"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_credentials": {
+                    "summary": "Invalid email or password",
+                    "value": {
+                      "status": 401,
+                      "code": "invalid_credentials",
+                      "message": "Invalid email or password",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_refresh_token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [401],
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["invalid_refresh_token"],
+                      "example": "invalid_refresh_token"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Refresh token is invalid or expired"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_refresh_token": {
+                    "summary": "Refresh token is invalid or expired",
+                    "value": {
+                      "status": 401,
+                      "code": "invalid_refresh_token",
+                      "message": "Refresh token is invalid or expired",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "user_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["user_not_found"],
+                      "example": "user_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                },
+                "examples": {
+                  "user_not_found": {
+                    "summary": "User not found",
+                    "value": {
+                      "status": 404,
+                      "code": "user_not_found",
+                      "message": "User not found",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Auth"]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [401],
+                      "example": 401
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["unauthorized"],
+                      "example": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                },
+                "examples": {
+                  "unauthorized": {
+                    "summary": "Unauthorized",
+                    "value": {
+                      "status": 401,
+                      "code": "unauthorized",
+                      "message": "Unauthorized",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "user_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["user_not_found"],
+                      "example": "user_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                },
+                "examples": {
+                  "user_not_found": {
+                    "summary": "User not found",
+                    "value": {
+                      "status": 404,
+                      "code": "user_not_found",
+                      "message": "User not found",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Auth"]
+      }
+    }
+  },
+  "info": {
+    "title": "my-noodles-api — Auth",
+    "description": "",
+    "version": "dev",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["accessToken", "refreshToken", "expiresAt"]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["refreshToken"]
+      },
+      "AuthMeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "email"]
+      }
+    }
+  }
+}

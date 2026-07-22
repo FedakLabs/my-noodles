@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
-import { IsOrderCancelledReason, OrderCancelledReason } from './order-cancelled-reason';
 import { DeliveryMethod, DeliveryProvider, IsDeliveryMethod, IsDeliveryProvider } from './order-delivery.dto';
 
 function isCustomDelivery(delivery: { method?: DeliveryMethod }): boolean {
@@ -159,9 +158,4 @@ export class CreateOrderDeliveryDto {
   @IsString()
   @MaxLength(300)
   notes?: string;
-}
-
-export class CancelOrderDto {
-  @IsOrderCancelledReason()
-  reason!: OrderCancelledReason;
 }

@@ -1,0 +1,68 @@
+{
+  "name": "admin",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/admin/src",
+  "projectType": "application",
+  "tags": ["scope:admin", "type:app"],
+  "targets": {
+    "dev": {
+      "command": "pnpm dev",
+      "options": { "cwd": "apps/admin" }
+    },
+    "build": {
+      "command": "pnpm build",
+      "options": { "cwd": "apps/admin" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "pnpm format",
+      "options": { "cwd": "apps/admin" }
+    },
+    "format-check": {
+      "command": "pnpm format-check",
+      "options": { "cwd": "apps/admin" }
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "dependsOn": [{ "projects": "api-clients", "target": "build" }],
+      "options": { "cwd": "apps/admin" }
+    },
+    "lint-check": {
+      "command": "pnpm lint-check",
+      "dependsOn": [{ "projects": "api-clients", "target": "build" }],
+      "options": { "cwd": "apps/admin" }
+    },
+    "type-check": {
+      "command": "pnpm type-check",
+      "dependsOn": [{ "projects": "api-clients", "target": "build" }],
+      "options": { "cwd": "apps/admin" }
+    },
+    "test": {
+      "command": "pnpm test",
+      "options": { "cwd": "apps/admin" }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace apps/admin",
+      "options": { "cwd": "." }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": "api-clients", "target": "build" }],
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "pnpm --dir apps/admin format",
+          "pnpm --dir apps/admin lint",
+          "pnpm --dir apps/admin type-check",
+          "pnpm --dir apps/admin test",
+          "knip --config configs/knip/knip.json --workspace apps/admin"
+        ],
+        "parallel": false
+      }
+    },
+    "generate:clients": {
+      "command": "pnpm generate:clients",
+      "options": { "cwd": "apps/admin" }
+    }
+  }
+}

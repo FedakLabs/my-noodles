@@ -20,6 +20,11 @@
     "type-check"
   ],
   "workspaces": {
+    "apps/admin": {
+      "entry": ["index.html", "src/main.tsx", "vite.config.ts"],
+      "project": ["src/**/*.{ts,tsx}", "vite.config.ts", "vitest.config.ts"],
+      "ignoreDependencies": ["@emotion/react", "@emotion/styled", "@mui/material"]
+    },
     "apps/web": {
       "entry": [
         "next.config.ts",
@@ -107,7 +112,15 @@
       "ignoreDependencies": ["@emotion/react", "@emotion/styled", "@mui/material"]
     },
     "packages/api-clients": {
-      "entry": ["src/index.ts", "src/storefront/index.ts", "src/storefront/openapi-ts.config.ts"],
+      "entry": [
+        "src/index.ts",
+        "src/storefront/index.ts",
+        "src/storefront/openapi-ts.config.ts",
+        "src/admin/index.ts",
+        "src/admin/openapi-ts.config.ts",
+        "src/auth/index.ts",
+        "src/auth/openapi-ts.config.ts"
+      ],
       "project": ["src/**/*.ts"],
       "ignore": ["src/**/generated/**"]
     },
@@ -150,7 +163,9 @@
         "src/transformers/index.ts",
         "src/validators/index.ts",
         "src/locale/index.ts",
+        "src/auth/index.ts",
         "src/nest/index.ts",
+        "src/nest/auth/index.ts",
         "src/express/index.ts"
       ],
       "project": ["src/**/*.ts"],

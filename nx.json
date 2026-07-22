@@ -42,6 +42,7 @@
         "default",
         "^default",
         "{workspaceRoot}/configs/vitest/**",
+        "{workspaceRoot}/configs/vite/**",
         "{workspaceRoot}/configs/jest/**"
       ],
       "cache": true

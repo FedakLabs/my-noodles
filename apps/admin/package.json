@@ -1,0 +1,46 @@
+{
+  "name": "admin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "format": "oxfmt",
+    "format-check": "oxfmt --check",
+    "lint": "oxlint --type-aware --fix",
+    "lint-check": "oxlint --type-aware",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "generate:clients": "nx run api-clients:api:generate"
+  },
+  "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.0",
+    "@mui/material": "9.1.1",
+    "@my-noodles/api-clients": "workspace:*",
+    "@my-noodles/theme": "workspace:*",
+    "@my-noodles/ui": "workspace:*",
+    "@my-noodles/utils": "workspace:*",
+    "@my-noodles/web-lib": "workspace:*",
+    "@tanstack/react-query": "5.101.0",
+    "@tanstack/react-router": "1.170.18",
+    "@tanstack/react-table": "8.21.3",
+    "i18next": "^26.3.6",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-i18next": "^17.0.10",
+    "zod": "4.4.3",
+    "zustand": "5.0.14"
+  },
+  "devDependencies": {
+    "@my-noodles/vite-config": "workspace:*",
+    "@my-noodles/vitest-config": "workspace:*",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "6.0.3",
+    "vite": "8.0.16",
+    "vitest": "4.1.9"
+  }
+}

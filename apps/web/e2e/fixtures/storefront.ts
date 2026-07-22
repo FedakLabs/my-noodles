@@ -282,6 +282,7 @@ export function createCheckoutFromCart(cart: CartResponseDto): WireCheckout {
 
   const order: WireOrder = {
     id: MOCK_IDS.order,
+    createdAt: new Date().toISOString(),
     visitorSessionId: MOCK_IDS.visitorSession,
     visitorSession,
     firstName: null,

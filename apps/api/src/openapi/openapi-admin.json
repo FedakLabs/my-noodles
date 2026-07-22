@@ -1,0 +1,2091 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/admin/orders": {
+      "get": {
+        "operationId": "AdminOrdersController_listOrders",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Matches order id prefix, full name prefix, or phone prefix.",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdFrom",
+            "required": false,
+            "in": "query",
+            "description": "Inclusive UTC calendar day start (`YYYY-MM-DD`).",
+            "schema": {
+              "format": "date",
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdTo",
+            "required": false,
+            "in": "query",
+            "description": "Inclusive UTC calendar day end (`YYYY-MM-DD`).",
+            "schema": {
+              "format": "date",
+              "example": "2026-12-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminOrdersListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "order_created_date_range_invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [400],
+                      "example": 400
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_created_date_range_invalid"],
+                      "example": "order_created_date_range_invalid"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "createdFrom must be on or before createdTo"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "createdFrom": {
+                          "type": "string",
+                          "example": "2026-02-01"
+                        },
+                        "createdTo": {
+                          "type": "string",
+                          "example": "2026-01-01"
+                        }
+                      },
+                      "example": {
+                        "createdFrom": "2026-02-01",
+                        "createdTo": "2026-01-01"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_created_date_range_invalid": {
+                    "summary": "createdFrom must be on or before createdTo",
+                    "value": {
+                      "status": 400,
+                      "code": "order_created_date_range_invalid",
+                      "message": "createdFrom must be on or before createdTo",
+                      "payload": {
+                        "createdFrom": "2026-02-01",
+                        "createdTo": "2026-01-01"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}": {
+      "get": {
+        "operationId": "AdminOrdersController_getOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/confirm": {
+      "post": {
+        "operationId": "AdminOrdersController_confirmOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/send": {
+      "post": {
+        "operationId": "AdminOrdersController_sendOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/arrive": {
+      "post": {
+        "operationId": "AdminOrdersController_arriveOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/complete": {
+      "post": {
+        "operationId": "AdminOrdersController_completeOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/cancel": {
+      "post": {
+        "operationId": "AdminOrdersController_cancelOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_cancel_not_allowed, order_inventory_changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [409],
+                          "example": 409
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["order_cancel_not_allowed"],
+                          "example": "order_cancel_not_allowed"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Order cannot be cancelled"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "example": "draft"
+                            }
+                          },
+                          "example": {
+                            "status": "draft"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [409],
+                          "example": 409
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["order_inventory_changed"],
+                          "example": "order_inventory_changed"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Order details changed due to inventory update"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "nullable": true,
+                          "example": null
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "order_cancel_not_allowed": {
+                    "summary": "Order cannot be cancelled",
+                    "value": {
+                      "status": 409,
+                      "code": "order_cancel_not_allowed",
+                      "message": "Order cannot be cancelled",
+                      "payload": {
+                        "status": "draft"
+                      }
+                    }
+                  },
+                  "order_inventory_changed": {
+                    "summary": "Order details changed due to inventory update",
+                    "value": {
+                      "status": 409,
+                      "code": "order_inventory_changed",
+                      "message": "Order details changed due to inventory update",
+                      "payload": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/return": {
+      "post": {
+        "operationId": "AdminOrdersController_returnOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    },
+    "/api/admin/orders/{id}/archive": {
+      "post": {
+        "operationId": "AdminOrdersController_archiveOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "order_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_not_found"],
+                      "example": "order_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "status": 404,
+                      "code": "order_not_found",
+                      "message": "Order not found",
+                      "payload": {
+                        "orderId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "order_transition_not_allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [409],
+                      "example": 409
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["order_transition_not_allowed"],
+                      "example": "order_transition_not_allowed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Order status transition is not allowed"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "example": "new"
+                        },
+                        "to": {
+                          "type": "string",
+                          "example": "completed"
+                        }
+                      },
+                      "example": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "order_transition_not_allowed": {
+                    "summary": "Order status transition is not allowed",
+                    "value": {
+                      "status": 409,
+                      "code": "order_transition_not_allowed",
+                      "message": "Order status transition is not allowed",
+                      "payload": {
+                        "from": "new",
+                        "to": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Orders"]
+      }
+    }
+  },
+  "info": {
+    "title": "my-noodles-api — Admin",
+    "description": "",
+    "version": "dev",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "Brand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": ["id", "slug", "name", "logoUrl", "themeKey", "products"]
+      },
+      "Country": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "flagEmoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": ["name", "id", "code", "slug", "flagEmoji", "themeKey", "products"]
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": ["name", "id", "slug", "icon", "sortOrder", "themeKey", "products"]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "heroImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "id",
+          "code",
+          "slug",
+          "heroImage",
+          "themeKey",
+          "sortOrder",
+          "isActive",
+          "products"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "story": {
+            "type": "string",
+            "nullable": true
+          },
+          "forWhom": {
+            "type": "string",
+            "nullable": true
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "liked": {
+            "type": "boolean"
+          },
+          "commentCount": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "flavor": {
+            "type": "object"
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isTriedByUs": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "sortWeight": {
+            "type": "number"
+          },
+          "brandId": {
+            "type": "string",
+            "nullable": true
+          },
+          "brand": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Brand"
+              }
+            ]
+          },
+          "countryId": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "alternativeOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "story",
+          "forWhom",
+          "inStock",
+          "id",
+          "slug",
+          "weight",
+          "priceMinor",
+          "currency",
+          "flavor",
+          "allergens",
+          "images",
+          "videos",
+          "isTriedByUs",
+          "quantity",
+          "sortWeight",
+          "brandId",
+          "brand",
+          "countryId",
+          "country",
+          "categoryId",
+          "category",
+          "alternatives",
+          "alternativeOf",
+          "collections"
+        ]
+      },
+      "FeedSessionLike": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "visitorSessionId": {
+            "type": "string"
+          },
+          "visitorSession": {
+            "$ref": "#/components/schemas/VisitorSession"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": ["id", "visitorSessionId", "visitorSession", "productId", "product"]
+      },
+      "FeedSessionView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "visitorSessionId": {
+            "type": "string"
+          },
+          "visitorSession": {
+            "$ref": "#/components/schemas/VisitorSession"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "dwellMs": {
+            "type": "number"
+          },
+          "filters": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": ["id", "visitorSessionId", "visitorSession", "productId", "product", "dwellMs", "filters"]
+      },
+      "VisitorSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "feedExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cartExpiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "likes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedSessionLike"
+            }
+          },
+          "views": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedSessionView"
+            }
+          }
+        },
+        "required": ["id", "feedExpiresAt", "cartExpiresAt", "likes", "views"]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "titleSnapshot": {
+            "type": "string"
+          },
+          "priceMinorSnapshot": {
+            "type": "number"
+          },
+          "qty": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "order",
+          "productId",
+          "product",
+          "titleSnapshot",
+          "priceMinorSnapshot",
+          "qty"
+        ]
+      },
+      "OrderDeliveryEstimateDto": {
+        "type": "object",
+        "properties": {
+          "estimatedDeliveryAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingCostMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "estimatedDaysMin": {
+            "type": "number"
+          },
+          "estimatedDaysMax": {
+            "type": "number"
+          }
+        },
+        "required": ["estimatedDeliveryAt", "shippingCostMinor", "estimatedDaysMin", "estimatedDaysMax"]
+      },
+      "Checkout": {
+        "type": "object",
+        "properties": {
+          "deliveryEstimate": {
+            "nullable": true,
+            "description": "Live delivery estimate for the current checkout draft.\nResponse-only — set by `CheckoutsService.attachCheckoutAggregates`.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderDeliveryEstimateDto"
+              }
+            ]
+          },
+          "isExpired": {
+            "type": "boolean"
+          },
+          "isHoldElapsed": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "visitorSessionId": {
+            "type": "string"
+          },
+          "visitorSession": {
+            "$ref": "#/components/schemas/VisitorSession"
+          },
+          "status": {
+            "enum": ["active", "completed", "cancelled"],
+            "type": "string"
+          },
+          "cancelledReason": {
+            "nullable": true,
+            "enum": ["user", "expired"],
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "isExpired",
+          "isHoldElapsed",
+          "id",
+          "orderId",
+          "order",
+          "visitorSessionId",
+          "visitorSession",
+          "status",
+          "cancelledReason",
+          "completedAt",
+          "expiresAt"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "grandTotalMinor": {
+            "type": "number",
+            "description": "Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.\nResponse-only — set by `CheckoutCalculator.calculateTotals`."
+          },
+          "availableTransitions": {
+            "description": "Admin responses only — allowed next statuses for transition UI.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "new",
+                "confirmed",
+                "sent",
+                "arrived",
+                "completed",
+                "cancelled",
+                "returned",
+                "archived"
+              ]
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "visitorSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "visitorSession": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VisitorSession"
+              }
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "new",
+              "confirmed",
+              "sent",
+              "arrived",
+              "completed",
+              "cancelled",
+              "returned",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "cancelledReason": {
+            "nullable": true,
+            "enum": ["customer_request", "out_of_stock"],
+            "type": "string"
+          },
+          "delivery": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderDelivery"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "checkout": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Checkout"
+              }
+            ]
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "visitorSessionId",
+          "visitorSession",
+          "firstName",
+          "lastName",
+          "phone",
+          "totalMinor",
+          "currency",
+          "status",
+          "cancelledReason",
+          "delivery",
+          "items",
+          "checkout"
+        ]
+      },
+      "OrderDelivery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "provider": {
+            "enum": ["nova-poshta", "ukrposhta", "meest"],
+            "type": "string"
+          },
+          "method": {
+            "enum": ["warehouse", "courier", "custom"],
+            "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "cityRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "street": {
+            "type": "string",
+            "nullable": true
+          },
+          "building": {
+            "type": "string",
+            "nullable": true
+          },
+          "apartment": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDeliveryAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDaysMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "estimatedDaysMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "shippingCostMinor": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "order",
+          "provider",
+          "method",
+          "city",
+          "cityRef",
+          "postalCode",
+          "warehouseNumber",
+          "warehouseName",
+          "warehouseRef",
+          "street",
+          "building",
+          "apartment",
+          "notes",
+          "estimatedDeliveryAt",
+          "estimatedDaysMin",
+          "estimatedDaysMax",
+          "shippingCostMinor"
+        ]
+      },
+      "AdminOrderListMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "currentTotal": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": ["total", "currentTotal", "page", "limit"]
+      },
+      "AdminOrdersListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminOrderListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "new",
+          "confirmed",
+          "sent",
+          "arrived",
+          "completed",
+          "cancelled",
+          "returned",
+          "archived"
+        ]
+      },
+      "OrderCancelledReason": {
+        "type": "string",
+        "enum": ["customer_request", "out_of_stock"]
+      },
+      "CancelOrderDto": {
+        "type": "object",
+        "properties": {
+          "cancelledReason": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderCancelledReason"
+              }
+            ]
+          }
+        },
+        "required": ["cancelledReason"]
+      }
+    }
+  }
+}

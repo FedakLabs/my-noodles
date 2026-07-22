@@ -256,11 +256,16 @@ export type Checkout = {
 };
 
 export type Order = {
+    createdAt: string;
     /**
      * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
      * Response-only — set by `CheckoutCalculator.calculateTotals`.
      */
     grandTotalMinor?: number;
+    /**
+     * Admin responses only — allowed next statuses for transition UI.
+     */
+    availableTransitions?: Array<'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived'>;
     id: string;
     visitorSessionId: string | null;
     visitorSession: VisitorSession | null;
@@ -376,14 +381,6 @@ export type SetCartItemQtyDto = {
      * Absolute quantity to set for the cart line (0 removes the line)
      */
     qty: number;
-};
-
-export const OrderCancelledReason = { CUSTOMER_REQUEST: 'customer_request', OUT_OF_STOCK: 'out_of_stock' } as const;
-
-export type OrderCancelledReason = typeof OrderCancelledReason[keyof typeof OrderCancelledReason];
-
-export type CancelOrderDto = {
-    reason: OrderCancelledReason;
 };
 
 export type FeedPreviousProductDto = {
@@ -1125,55 +1122,6 @@ export type OrdersControllerGetOrderResponses = {
 };
 
 export type OrdersControllerGetOrderResponse = OrdersControllerGetOrderResponses[keyof OrdersControllerGetOrderResponses];
-
-export type OrdersControllerCancelOrderData = {
-    body: CancelOrderDto;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/orders/{id}/cancel';
-};
-
-export type OrdersControllerCancelOrderErrors = {
-    /**
-     * order_not_found
-     */
-    404: {
-        status: 404;
-        code: 'order_not_found';
-        message: string;
-        payload: {
-            orderId?: string;
-        };
-    };
-    /**
-     * order_cancel_not_allowed, order_inventory_changed
-     */
-    409: {
-        status: 409;
-        code: 'order_cancel_not_allowed';
-        message: string;
-        payload: {
-            status?: string;
-        };
-    } | {
-        status: 409;
-        code: 'order_inventory_changed';
-        message: string;
-        payload: {
-            [key: string]: unknown;
-        } | null;
-    };
-};
-
-export type OrdersControllerCancelOrderError = OrdersControllerCancelOrderErrors[keyof OrdersControllerCancelOrderErrors];
-
-export type OrdersControllerCancelOrderResponses = {
-    201: Order;
-};
-
-export type OrdersControllerCancelOrderResponse = OrdersControllerCancelOrderResponses[keyof OrdersControllerCancelOrderResponses];
 
 export type FeedControllerNextData = {
     body: FeedNextDto;

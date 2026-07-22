@@ -1,5 +1,5 @@
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { Checkout } from '../checkouts/checkout.entity';
@@ -8,9 +8,13 @@ import { OrderCancelledReason } from './order-cancelled-reason';
 import { OrderDelivery } from './order-delivery.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderStatus } from './order-status';
+import { OrderStatusHistory } from './order-status-history.entity';
 
 @Entity({ name: 'orders' })
 export class Order extends TimestampEntity {
+  @ApiProperty({ type: String, format: 'date-time' })
+  declare createdAt: Date;
+
   @UuidV7PrimaryColumn()
   id!: string;
 
@@ -44,6 +48,10 @@ export class Order extends TimestampEntity {
   @ApiPropertyOptional()
   grandTotalMinor?: number;
 
+  /** Admin responses only — allowed next statuses for transition UI. */
+  @ApiPropertyOptional({ enum: OrderStatus, isArray: true })
+  availableTransitions?: OrderStatus[];
+
   @Column({ type: 'text' })
   currency!: string;
 
@@ -67,6 +75,9 @@ export class Order extends TimestampEntity {
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })
   items!: OrderItem[];
+
+  @OneToMany(() => OrderStatusHistory, (entry) => entry.order)
+  statusHistory!: OrderStatusHistory[];
 
   @OneToOne(() => Checkout, (checkout) => checkout.order, { nullable: true })
   checkout!: Checkout | null;
