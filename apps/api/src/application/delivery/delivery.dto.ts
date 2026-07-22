@@ -75,5 +75,6 @@ export class OrderDeliveryEstimateDto {
 
   estimatedDaysMax!: number;
 
-  shippingCostMinor!: number;
+  @ApiProperty({ nullable: true, type: Number })
+  shippingCostMinor!: number | null;
 }

@@ -10,7 +10,7 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
   const meest = new MeestDeliveryAdapter({} as never, stubEstimate);
   const ukrposhta = new UkrposhtaDeliveryAdapter({} as never, stubEstimate);
 
-  it('uses per-adapter warehouse shipping rates', async () => {
+  it('uses per-adapter warehouse ETA stubs with unknown shipping cost', async () => {
     const orderCreatedAt = new Date('2025-06-20T10:00:00.000Z');
 
     await expect(
@@ -24,7 +24,7 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
       expect.objectContaining({
         estimatedDaysMin: 2,
         estimatedDaysMax: 4,
-        shippingCostMinor: 9_000,
+        shippingCostMinor: null,
       }),
     );
 
@@ -39,7 +39,7 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
       expect.objectContaining({
         estimatedDaysMin: 2,
         estimatedDaysMax: 4,
-        shippingCostMinor: 7_000,
+        shippingCostMinor: null,
       }),
     );
 
@@ -54,12 +54,12 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
       expect.objectContaining({
         estimatedDaysMin: 3,
         estimatedDaysMax: 6,
-        shippingCostMinor: 6_500,
+        shippingCostMinor: null,
       }),
     );
   });
 
-  it('uses per-adapter courier rates', async () => {
+  it('keeps courier ETA stubs with unknown shipping cost', async () => {
     const orderCreatedAt = new Date('2025-06-20T10:00:00.000Z');
 
     await expect(
@@ -69,7 +69,7 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
         orderCreatedAt,
         itemCount: 1,
       }),
-    ).resolves.toEqual(expect.objectContaining({ shippingCostMinor: 15_000 }));
+    ).resolves.toEqual(expect.objectContaining({ shippingCostMinor: null }));
 
     await expect(
       meest.estimate({
@@ -78,6 +78,6 @@ describe('StubDeliveryEstimate (via provider adapters)', () => {
         orderCreatedAt,
         itemCount: 1,
       }),
-    ).resolves.toEqual(expect.objectContaining({ shippingCostMinor: 12_000 }));
+    ).resolves.toEqual(expect.objectContaining({ shippingCostMinor: null }));
   });
 });

@@ -170,9 +170,9 @@ export type DeliveryWarehouseDto = {
 
 export type OrderDeliveryEstimateDto = {
     estimatedDeliveryAt: string;
+    shippingCostMinor: number | null;
     estimatedDaysMin: number;
     estimatedDaysMax: number;
-    shippingCostMinor: number;
 };
 
 export type FeedSessionLike = {
@@ -269,7 +269,7 @@ export type Order = {
     phone: string | null;
     totalMinor: number;
     currency: string;
-    status: 'draft' | 'new' | 'confirmed' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+    status: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
     cancelledReason: 'customer_request' | 'out_of_stock';
     delivery: OrderDelivery | null;
     items: Array<OrderItem>;
@@ -1094,6 +1094,37 @@ export type CartControllerSetItemQtyResponses = {
 };
 
 export type CartControllerSetItemQtyResponse = CartControllerSetItemQtyResponses[keyof CartControllerSetItemQtyResponses];
+
+export type OrdersControllerGetOrderData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/orders/{id}';
+};
+
+export type OrdersControllerGetOrderErrors = {
+    /**
+     * order_not_found
+     */
+    404: {
+        status: 404;
+        code: 'order_not_found';
+        message: string;
+        payload: {
+            orderId?: string;
+        };
+    };
+};
+
+export type OrdersControllerGetOrderError = OrdersControllerGetOrderErrors[keyof OrdersControllerGetOrderErrors];
+
+export type OrdersControllerGetOrderResponses = {
+    200: Order;
+};
+
+export type OrdersControllerGetOrderResponse = OrdersControllerGetOrderResponses[keyof OrdersControllerGetOrderResponses];
 
 export type OrdersControllerCancelOrderData = {
     body: CancelOrderDto;

@@ -8,7 +8,7 @@ import { cardShadow } from '@my-noodles/theme';
 import { iconStyle, showToast } from '@my-noodles/ui';
 import ShareIcon from '@my-noodles/ui/icons/share.svg';
 import { useTranslations } from 'next-intl';
-import { useId, useMemo, useState } from 'react';
+import { useId, useState, type MouseEvent } from 'react';
 
 import {
   buildSocialShareUrl,
@@ -18,14 +18,13 @@ import {
   type SocialShareTarget,
 } from '@/shared/share/social-share';
 
-type ShareOptionKey = 'native' | 'copyLink' | 'telegram' | 'facebook' | 'whatsapp' | 'viber';
+type ShareOptionKey = 'copyLink' | 'telegram' | 'facebook' | 'whatsapp' | 'viber';
 
 type ShareOption =
-  | { kind: 'native'; labelKey: ShareOptionKey }
   | { kind: 'copy'; labelKey: ShareOptionKey }
   | { kind: 'social'; target: SocialShareTarget; labelKey: ShareOptionKey };
 
-const SOCIAL_SHARE_OPTIONS: ShareOption[] = [
+const SHARE_OPTIONS: ShareOption[] = [
   { kind: 'copy', labelKey: 'copyLink' },
   { kind: 'social', target: 'telegram', labelKey: 'telegram' },
   { kind: 'social', target: 'facebook', labelKey: 'facebook' },
@@ -47,31 +46,26 @@ export function ShareMenu({ shareUrl, shareTitle, shareText, ariaLabel, iconSize
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = anchorEl != null;
 
-  const shareOptions = useMemo(() => {
-    const options = [...SOCIAL_SHARE_OPTIONS];
-
-    if (canUseNativeShare()) {
-      options.unshift({ kind: 'native', labelKey: 'native' });
-    }
-
-    return options;
-  }, []);
-
   const handleClose = () => setAnchorEl(null);
 
-  const handleOptionClick = async (option: ShareOption) => {
-    if (option.kind === 'native') {
-      handleClose();
+  const handleButtonClick = async (event: MouseEvent<HTMLElement>) => {
+    const button = event.currentTarget;
+
+    if (canUseNativeShare()) {
       try {
         await nativeShare({ title: shareTitle, text: shareText, url: shareUrl });
+        return;
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           return;
         }
       }
-      return;
     }
 
+    setAnchorEl(button);
+  };
+
+  const handleOptionClick = async (option: ShareOption) => {
     if (option.kind === 'copy') {
       handleClose();
       const copied = await copyToClipboard(shareUrl);
@@ -96,7 +90,9 @@ export function ShareMenu({ shareUrl, shareTitle, shareText, ariaLabel, iconSize
         aria-controls={open ? menuId : undefined}
         aria-haspopup="true"
         aria-expanded={open ? true : undefined}
-        onClick={(event) => setAnchorEl(event.currentTarget)}
+        onClick={(event) => {
+          void handleButtonClick(event);
+        }}
         sx={{ color: open ? 'primary.main' : 'inherit', p: 0.25, flexShrink: 0 }}
       >
         <ShareIcon aria-hidden style={iconStyle({ size: iconSize, color: 'inherit' })} />
@@ -123,7 +119,7 @@ export function ShareMenu({ shareUrl, shareTitle, shareText, ariaLabel, iconSize
           },
         }}
       >
-        {shareOptions.map((option) => (
+        {SHARE_OPTIONS.map((option) => (
           <MenuItem key={option.labelKey} onClick={() => void handleOptionClick(option)} sx={{ py: 1.25 }}>
             <ListItemText primary={t(option.labelKey)} />
           </MenuItem>

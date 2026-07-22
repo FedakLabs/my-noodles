@@ -9,23 +9,23 @@ import { StubDeliveryEstimate, type StubEstimateMethodConfig } from './stub-deli
 
 /**
  * Stub estimate knobs (Ukraine-wide ≤2 kg).
- * Source: Meest intercity ≤2 кг 70 ₴ from 01.03.2026; кур’єр +50 ₴.
+ * Shipping cost is null until real carrier tariffs are wired — storefront shows carrier-rate copy.
  */
 const MEEST_ESTIMATE_BY_METHOD: Record<DeliveryMethod, StubEstimateMethodConfig> = {
   [DeliveryMethod.Warehouse]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 7_000,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Courier]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 12_000,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Custom]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 7_000,
+    shippingCostMinor: null,
   },
 };
 

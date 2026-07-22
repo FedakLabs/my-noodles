@@ -217,6 +217,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
             }),
           ),
         });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       },
     });
   };
@@ -305,15 +306,15 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
 
   const mobileOrderItems = (
     <CheckoutOrderCard aria-label={tItems('title')}>
-      <CheckoutOrderItemsList checkout={checkout} />
+      <CheckoutOrderItemsList order={checkout.order} />
     </CheckoutOrderCard>
   );
 
   const mobileOrderSummary = (
     <CheckoutOrderCard aria-label={tItems('summaryTitle')}>
       <CheckoutOrderSummary
-        checkout={checkout}
-        shippingCostMinor={activeDeliveryEstimate?.shippingCostMinor ?? null}
+        order={checkout.order}
+        shippingCostMinor={activeDeliveryEstimate?.shippingCostMinor}
         footer={submitButton}
       />
     </CheckoutOrderCard>

@@ -5,20 +5,26 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import type { Checkout } from '@/api/checkouts';
+import type { Order } from '@/api/orders';
 import { useCurrency } from '@/hooks/currency';
 
 type CheckoutOrderSummaryProps = {
-  checkout: Checkout;
-  shippingCostMinor: number | null;
+  order: Order;
+  /**
+   * `undefined` — no estimate yet (hide shipping + grand total).
+   * `null` — estimate with unknown cost (carrier tariff copy).
+   * `number` — known shipping in minor units.
+   */
+  shippingCostMinor: number | null | undefined;
   footer?: ReactNode;
 };
 
-export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: CheckoutOrderSummaryProps) {
+export function CheckoutOrderSummary({ order, shippingCostMinor, footer }: CheckoutOrderSummaryProps) {
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
 
-  const { totalMinor, grandTotalMinor = totalMinor, currency } = checkout.order;
+  const { totalMinor, grandTotalMinor = totalMinor, currency } = order;
+  const showShipping = shippingCostMinor !== undefined;
 
   return (
     <Stack spacing={1.5}>
@@ -27,13 +33,17 @@ export function CheckoutOrderSummary({ checkout, shippingCostMinor, footer }: Ch
         <Typography variant="subtitle2">{formatCurrency(totalMinor, currency)}</Typography>
       </Stack>
 
-      {shippingCostMinor != null ? (
+      {showShipping ? (
         <>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="body2" color="text.secondary">
               {t('shipping')}
             </Typography>
-            <Typography variant="body2">{formatCurrency(shippingCostMinor, currency)}</Typography>
+            <Typography variant="body2">
+              {shippingCostMinor != null
+                ? formatCurrency(shippingCostMinor, currency)
+                : t('shippingCarrierTariff')}
+            </Typography>
           </Stack>
           <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
             <Typography variant="subtitle2">{t('grandTotal')}</Typography>

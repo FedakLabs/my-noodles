@@ -52,7 +52,7 @@ export function CheckoutOrderSidebar({
       }}
     >
       <CheckoutOrderCard aria-label={t('title')}>
-        <CheckoutOrderItemsList checkout={checkout} />
+        <CheckoutOrderItemsList order={checkout.order} />
       </CheckoutOrderCard>
 
       <CheckoutDeliveryEstimate
@@ -63,8 +63,8 @@ export function CheckoutOrderSidebar({
 
       <CheckoutOrderCard aria-label={t('summaryTitle')}>
         <CheckoutOrderSummary
-          checkout={checkout}
-          shippingCostMinor={deliveryEstimate?.shippingCostMinor ?? null}
+          order={checkout.order}
+          shippingCostMinor={deliveryEstimate?.shippingCostMinor}
           footer={footer}
         />
       </CheckoutOrderCard>

@@ -8,6 +8,7 @@
     "total": "Загалом",
     "products": "Товари",
     "shipping": "Доставка",
+    "shippingCarrierTariff": "За тарифами перевізника",
     "grandTotal": "До сплати",
     "summaryTitle": "Підсумок",
     "expandList": "Показати ще {count}",
@@ -51,7 +52,7 @@
     "estimatePendingCourier": "Обери місто та вкажи вулицю і будинок, щоб побачити орієнтовну дату доставки",
     "estimatePendingCustom": "Додай місто, коли зможеш — тоді покажемо орієнтовну доставку",
     "estimateLabel": "Орієнтовна доставка",
-    "estimateCalculating": "Зараз порахуємо дату та вартість — зачекай кілька секунд",
+    "estimateCalculating": "Зараз порахуємо орієнтовну дату — зачекай кілька секунд",
     "estimateDateLabel": "Дата:",
     "estimateTermLabel": "Термін:",
     "estimateTerm": "{daysMin}–{daysMax} робочих днів від відправки"
@@ -59,10 +60,24 @@
   "success": {
     "title": "Дякуємо!",
     "description": "Замовлення отримано — скоро зв'яжемось для підтвердження.",
+    "bookmarkHint": "Статус можна перевіряти на сторінці замовлення — збережи її собі 😎",
+    "catalogHint": "Або повернись до <catalog>каталогу</catalog>, щоб обрати ще щось смачне.",
+    "goToOrder": "Перейти до замовлення",
+    "redirectCountdown": "через {seconds} с",
     "backToCatalog": "Повернутись до каталогу",
     "orderDetails": "Деталі замовлення",
     "share": "Поділитися замовленням",
-    "shareText": "Деталі мого замовлення"
+    "shareText": "Деталі мого замовлення",
+    "statusProgress": "Статус замовлення",
+    "status": {
+      "new": "Нове",
+      "confirmed": "Підтверджено",
+      "sent": "Відправлено",
+      "arrived": "Прибуло",
+      "completed": "Завершено",
+      "cancelled": "Скасовано",
+      "returned": "Повернено"
+    }
   },
   "cancelled": {
     "title": "Замовлення скасовано",

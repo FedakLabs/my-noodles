@@ -9,24 +9,24 @@ import { StubDeliveryEstimate, type StubEstimateMethodConfig } from './stub-deli
 
 /**
  * Stub estimate knobs (Ukraine-wide small parcel).
- * Source: Укрпошта Пріоритетний / дрібний по Україні 65 ₴.
+ * Shipping cost is null until real carrier tariffs are wired — storefront shows carrier-rate copy.
  * Storefront exposes Custom only; Warehouse/Courier mirror Custom for lookup safety.
  */
 const UKRPOSHTA_ESTIMATE_BY_METHOD: Record<DeliveryMethod, StubEstimateMethodConfig> = {
   [DeliveryMethod.Warehouse]: {
     transitDaysMin: 2,
     transitDaysMax: 4,
-    shippingCostMinor: 6_500,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Courier]: {
     transitDaysMin: 2,
     transitDaysMax: 4,
-    shippingCostMinor: 6_500,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Custom]: {
     transitDaysMin: 2,
     transitDaysMax: 4,
-    shippingCostMinor: 6_500,
+    shippingCostMinor: null,
   },
 };
 

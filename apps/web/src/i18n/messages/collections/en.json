@@ -1,4 +1,8 @@
 {
+  "title": "Collections",
+  "description": "Curated snack picks — choose a mood and discover new flavors.",
+  "listLoading": "Loading collections…",
+  "listEmpty": "No collections yet",
   "loading": "Loading…",
   "error": "Couldn't load this collection",
   "empty": "Collection not found"

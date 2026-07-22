@@ -21,6 +21,8 @@ import metadataEn from './metadata/en.json';
 import metadataUk from './metadata/uk.json';
 import notFoundEn from './notFound/en.json';
 import notFoundUk from './notFound/uk.json';
+import orderEn from './order/en.json';
+import orderUk from './order/uk.json';
 import productEn from './product/en.json';
 import productUk from './product/uk.json';
 
@@ -36,6 +38,7 @@ export const ukMessages = {
   home: homeUk,
   metadata: metadataUk,
   notFound: notFoundUk,
+  order: orderUk,
   product: productUk,
 } as const;
 
@@ -53,6 +56,7 @@ export const enMessages = {
   home: homeEn,
   metadata: metadataEn,
   notFound: notFoundEn,
+  order: orderEn,
   product: productEn,
 } satisfies Messages;
 

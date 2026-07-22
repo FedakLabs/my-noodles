@@ -26,6 +26,35 @@ describe('OrdersService', () => {
     );
   });
 
+  it('returns an order for the owning visitor and sets grandTotalMinor', async () => {
+    const order = {
+      id: 'order-1',
+      visitorSessionId: 'visitor-1',
+      status: OrderStatus.New,
+      totalMinor: 9_900,
+      currency: 'UAH',
+      delivery: { shippingCostMinor: 650 },
+      items: [{ productId: 'product-1', qty: 1 }],
+    };
+
+    ordersFindOne.mockResolvedValue(order);
+
+    const result = await service.getForVisitor('order-1', 'visitor-1');
+
+    expect(ordersFindOne).toHaveBeenCalledWith({
+      where: { id: 'order-1', visitorSessionId: 'visitor-1' },
+    });
+    expect(result.grandTotalMinor).toBe(10_550);
+  });
+
+  it('throws when visitor-scoped order is missing', async () => {
+    ordersFindOne.mockResolvedValue(null);
+
+    await expect(service.getForVisitor('order-1', 'visitor-other')).rejects.toBeInstanceOf(
+      OrderNotFoundException,
+    );
+  });
+
   it('cancels a submitted order and restores inventory', async () => {
     const order = {
       id: 'order-1',

@@ -6,6 +6,7 @@ import { DeliveryCatalogCache } from '@/application/delivery/delivery-catalog.ca
 import { DeliveryProviderFactory } from '@/application/delivery/providers/delivery-provider.factory';
 import { MeestDeliveryAdapter } from '@/application/delivery/providers/meest.adapter';
 import { NovaPoshtaDeliveryAdapter } from '@/application/delivery/providers/nova-poshta.adapter';
+import { StubDeliveryEstimate } from '@/application/delivery/providers/stub-delivery.estimate';
 import { UkrposhtaDeliveryAdapter } from '@/application/delivery/providers/ukrposhta.adapter';
 import { MeestService } from '@/application/meest';
 import { NovaPoshtaService } from '@/application/nova-poshta';
@@ -34,6 +35,7 @@ describe('delivery (e2e)', () => {
         DeliveryMethodsService,
         DeliveryCatalogCache,
         DeliveryProviderFactory,
+        StubDeliveryEstimate,
         NovaPoshtaDeliveryAdapter,
         MeestDeliveryAdapter,
         UkrposhtaDeliveryAdapter,

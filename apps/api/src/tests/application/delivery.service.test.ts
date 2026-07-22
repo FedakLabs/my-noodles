@@ -242,7 +242,7 @@ describe('DeliveryService', () => {
 
     expect(estimate.estimatedDaysMin).toBe(2);
     expect(estimate.estimatedDaysMax).toBe(4);
-    expect(estimate.shippingCostMinor).toBe(9_000);
+    expect(estimate.shippingCostMinor).toBeNull();
     expect(estimate.estimatedDeliveryAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
@@ -260,7 +260,7 @@ describe('DeliveryService', () => {
 
     expect(estimate.estimatedDaysMin).toBe(2);
     expect(estimate.estimatedDaysMax).toBe(4);
-    expect(estimate.shippingCostMinor).toBe(7_000);
+    expect(estimate.shippingCostMinor).toBeNull();
   });
 
   it('estimates Ukrposhta custom with a wider under-promised day range', async () => {
@@ -276,7 +276,7 @@ describe('DeliveryService', () => {
 
     expect(estimate.estimatedDaysMin).toBe(3);
     expect(estimate.estimatedDaysMax).toBe(6);
-    expect(estimate.shippingCostMinor).toBe(6_500);
+    expect(estimate.shippingCostMinor).toBeNull();
   });
 
   it('returns null when order delivery is incomplete', async () => {

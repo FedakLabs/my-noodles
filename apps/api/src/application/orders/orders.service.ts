@@ -11,6 +11,7 @@ import { OrderCancelNotAllowedException, OrderNotFoundException } from './orders
 const MANAGER_CANCELLABLE_STATUSES = new Set<OrderStatus>([
   OrderStatus.New,
   OrderStatus.Confirmed,
+  OrderStatus.Sent,
   OrderStatus.Arrived,
 ]);
 
@@ -22,6 +23,22 @@ export class OrdersService {
     @Inject(InventoryService)
     private readonly inventoryService: InventoryService,
   ) {}
+
+  async getForVisitor(orderId: string, visitorSessionId: string): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId, visitorSessionId },
+    });
+
+    if (!order) {
+      throw new OrderNotFoundException(orderId);
+    }
+
+    const shippingCostMinor = order.delivery?.shippingCostMinor;
+    order.grandTotalMinor =
+      shippingCostMinor != null ? order.totalMinor + shippingCostMinor : order.totalMinor;
+
+    return order;
+  }
 
   async cancelSubmittedOrder(orderId: string, reason: OrderCancelledReason): Promise<Order> {
     const order = await this.ordersRepository.findOne({

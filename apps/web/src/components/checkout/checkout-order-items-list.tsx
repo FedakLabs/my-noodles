@@ -8,22 +8,16 @@ import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import type { Checkout } from '@/api/checkouts';
+import type { Order } from '@/api/orders';
 import { useCurrency } from '@/hooks/currency';
 
-type CheckoutLineItem = Checkout['order']['items'][number];
+type OrderLineItem = Order['items'][number];
 
 type CheckoutOrderItemsListProps = {
-  checkout: Checkout;
+  order: Order;
 };
 
-function CheckoutOrderLine({
-  item,
-  currency,
-}: {
-  item: CheckoutLineItem;
-  currency: Checkout['order']['currency'];
-}) {
+function CheckoutOrderLine({ item, currency }: { item: OrderLineItem; currency: Order['currency'] }) {
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
 
@@ -42,12 +36,12 @@ function CheckoutOrderLine({
   );
 }
 
-export function CheckoutOrderItemsList({ checkout }: CheckoutOrderItemsListProps) {
+export function CheckoutOrderItemsList({ order }: CheckoutOrderItemsListProps) {
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
   const [expanded, setExpanded] = useState(false);
 
-  const [firstItem, ...restItems] = checkout.order.items;
+  const [firstItem, ...restItems] = order.items;
   const hasMoreItems = restItems.length > 0;
 
   return (
@@ -56,7 +50,7 @@ export function CheckoutOrderItemsList({ checkout }: CheckoutOrderItemsListProps
 
       {firstItem ? (
         <Stack spacing={1}>
-          <CheckoutOrderLine item={firstItem} currency={checkout.order.currency} />
+          <CheckoutOrderLine item={firstItem} currency={order.currency} />
 
           {hasMoreItems ? (
             <Collapse in={expanded} timeout="auto" sx={{ width: '100%' }}>
@@ -72,7 +66,7 @@ export function CheckoutOrderItemsList({ checkout }: CheckoutOrderItemsListProps
                 }}
               >
                 {restItems.map((item) => (
-                  <CheckoutOrderLine key={item.productId} item={item} currency={checkout.order.currency} />
+                  <CheckoutOrderLine key={item.productId} item={item} currency={order.currency} />
                 ))}
               </Stack>
             </Collapse>
@@ -93,9 +87,7 @@ export function CheckoutOrderItemsList({ checkout }: CheckoutOrderItemsListProps
 
       <Stack direction="row" sx={{ justifyContent: 'space-between', pt: 0.5 }}>
         <Typography variant="subtitle2">{t('total')}</Typography>
-        <Typography variant="subtitle2">
-          {formatCurrency(checkout.order.totalMinor, checkout.order.currency)}
-        </Typography>
+        <Typography variant="subtitle2">{formatCurrency(order.totalMinor, order.currency)}</Typography>
       </Stack>
     </Stack>
   );

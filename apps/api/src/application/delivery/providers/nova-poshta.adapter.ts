@@ -9,23 +9,23 @@ import { StubDeliveryEstimate, type StubEstimateMethodConfig } from './stub-deli
 
 /**
  * Stub estimate knobs (Ukraine-wide ≤2 kg).
- * Source: https://novaposhta.ua/shipping-cost/ from 13.04.2026 — мала до 2 кг 90 ₴; кур’єр +60 ₴.
+ * Shipping cost is null until real carrier tariffs are wired — storefront shows carrier-rate copy.
  */
 const NOVA_POSHTA_ESTIMATE_BY_METHOD: Record<DeliveryMethod, StubEstimateMethodConfig> = {
   [DeliveryMethod.Warehouse]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 9_000,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Courier]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 15_000,
+    shippingCostMinor: null,
   },
   [DeliveryMethod.Custom]: {
     transitDaysMin: 1,
     transitDaysMax: 2,
-    shippingCostMinor: 9_000,
+    shippingCostMinor: null,
   },
 };
 

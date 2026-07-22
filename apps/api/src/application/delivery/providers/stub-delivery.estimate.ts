@@ -12,8 +12,8 @@ export type StubEstimateMethodConfig = {
   /** Provider-typical transit before under-promise buffer. */
   transitDaysMin: number;
   transitDaysMax: number;
-  /** Flat shipping in UAH kopiyky. */
-  shippingCostMinor: number;
+  /** Flat shipping in UAH kopiyky, or null when carrier tariff is unknown. */
+  shippingCostMinor: number | null;
 };
 
 /** Orders at or after this local hour dispatch the next calendar day. */
