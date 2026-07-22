@@ -35,7 +35,7 @@ export function SiteLogo({
   return (
     <Stack
       component={Link}
-      href="/"
+      href="/catalog"
       direction="row"
       spacing={1}
       onClick={onNavigate}

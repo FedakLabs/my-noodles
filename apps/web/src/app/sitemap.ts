@@ -5,13 +5,13 @@ import { routing } from '@/i18n/routing';
 import { absoluteUrl, localePath } from '@/shared/seo';
 import { fetchAllCollectionSlugs, fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
 
-const STATIC_INDEXABLE_PATHS = ['', '/catalog', '/collections', '/contacts'] as const;
+const STATIC_INDEXABLE_PATHS = ['/catalog', '/collections', '/contacts'] as const;
 
 function buildStaticSitemapEntries(locale: AppLocale): MetadataRoute.Sitemap {
   return STATIC_INDEXABLE_PATHS.map((pathname) => ({
     url: absoluteUrl(localePath(locale, pathname)),
-    changeFrequency: pathname === '' ? ('daily' as const) : ('weekly' as const),
-    priority: pathname === '' ? 1 : 0.8,
+    changeFrequency: pathname === '/catalog' ? ('daily' as const) : ('weekly' as const),
+    priority: pathname === '/catalog' ? 1 : 0.8,
   }));
 }
 
