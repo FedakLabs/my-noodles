@@ -1,0 +1,28 @@
+{
+  "list": {
+    "title": "Категорії",
+    "search": "Slug або назва",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "columnSortOrder": "Порядок",
+    "columnTheme": "Тема",
+    "loadError": "Не вдалося завантажити категорії.",
+    "empty": "Категорій не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Нова категорія",
+    "editTitle": "Редагувати категорію",
+    "loading": "Завантаження…",
+    "language": "Мова",
+    "slug": "Slug",
+    "name": "Назва",
+    "icon": "Іконка",
+    "sortOrder": "Порядок сортування",
+    "themeKey": "Ключ теми категорії",
+    "saveFailed": "Не вдалося зберегти категорію."
+  }
+}

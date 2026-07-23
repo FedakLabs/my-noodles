@@ -132,7 +132,7 @@ describe('CheckoutsService', () => {
         qty: 2,
         product: {
           id: 'product-1',
-          name: { localized: 'Pocky' },
+          name: 'Pocky',
           priceMinor: 9_900,
           currency: 'UAH',
         },

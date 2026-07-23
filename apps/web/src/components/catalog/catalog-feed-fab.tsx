@@ -2,7 +2,6 @@
 
 import Fab from '@mui/material/Fab';
 import { useTheme } from '@mui/material/styles';
-import { iconStyle } from '@my-noodles/ui';
 import SearchIcon from '@my-noodles/ui/icons/search.svg';
 import { useTranslations } from 'next-intl';
 
@@ -25,7 +24,7 @@ export function CatalogFeedFab() {
         zIndex: theme.zIndex.speedDial,
       }}
     >
-      <SearchIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
+      <SearchIcon aria-hidden size={24} />
     </Fab>
   );
 }

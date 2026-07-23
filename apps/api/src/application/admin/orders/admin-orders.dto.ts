@@ -4,9 +4,23 @@ import { IsArray, IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, 
 
 import { IsOrderCancelledReason, OrderCancelledReason } from '@/application/orders/order-cancelled-reason';
 import { OrderStatus } from '@/application/orders/order-status';
-import { Order } from '@/application/orders/order.entity';
+
+import { AdminOrder } from './admin-order.entity';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export enum AdminOrdersSortBy {
+  CreatedAt = 'createdAt',
+  Status = 'status',
+  TotalMinor = 'totalMinor',
+  Id = 'id',
+  Phone = 'phone',
+}
+
+export enum AdminOrdersSortOrder {
+  Asc = 'asc',
+  Desc = 'desc',
+}
 
 export class ListAdminOrdersQueryDto {
   @ApiProperty({ type: Number, minimum: 1, default: 1 })
@@ -29,24 +43,34 @@ export class ListAdminOrdersQueryDto {
   @IsEnum(OrderStatus, { each: true })
   status?: OrderStatus[];
 
-  /** Matches order id prefix, full name prefix, or phone prefix. */
+  /** Matches order id prefix, first/last name prefix, or phone prefix. */
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(120)
   q?: string;
 
-  /** Inclusive UTC calendar day start (`YYYY-MM-DD`). */
+  /** Inclusive UTC calendar day start (`YYYY-MM-DD`) on `createdAt`. */
   @ApiPropertyOptional({ type: String, format: 'date', example: '2026-01-01' })
   @IsOptional()
   @Matches(ISO_DATE, { message: 'createdFrom must be YYYY-MM-DD' })
   createdFrom?: string;
 
-  /** Inclusive UTC calendar day end (`YYYY-MM-DD`). */
+  /** Inclusive UTC calendar day end (`YYYY-MM-DD`) on `createdAt`. */
   @ApiPropertyOptional({ type: String, format: 'date', example: '2026-12-31' })
   @IsOptional()
   @Matches(ISO_DATE, { message: 'createdTo must be YYYY-MM-DD' })
   createdTo?: string;
+
+  @ApiPropertyOptional({ enum: AdminOrdersSortBy, enumName: 'AdminOrdersSortBy' })
+  @IsOptional()
+  @IsEnum(AdminOrdersSortBy)
+  sortBy?: AdminOrdersSortBy;
+
+  @ApiPropertyOptional({ enum: AdminOrdersSortOrder, enumName: 'AdminOrdersSortOrder' })
+  @IsOptional()
+  @IsEnum(AdminOrdersSortOrder)
+  sortOrder?: AdminOrdersSortOrder;
 }
 
 export class CancelOrderDto {
@@ -69,8 +93,8 @@ export class AdminOrderListMetaDto {
 }
 
 export class AdminOrdersListResponseDto {
-  @ApiProperty({ type: () => [Order] })
-  items!: Order[];
+  @ApiProperty({ type: () => [AdminOrder] })
+  items!: AdminOrder[];
 
   @ApiProperty({ type: () => AdminOrderListMetaDto })
   meta!: AdminOrderListMetaDto;

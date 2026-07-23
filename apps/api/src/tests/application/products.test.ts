@@ -17,14 +17,19 @@ describe('products (e2e)', () => {
   let productsFind: jest.Mock;
 
   beforeAll(async () => {
-    getManyAndCount = jest.fn().mockResolvedValue([[Object.assign(new Product(), sampleProduct)], 1]);
+    const product = Object.assign(new Product(), {
+      ...sampleProduct,
+      country: Object.assign(new Country(), sampleProduct.country),
+      category: Object.assign(new Category(), sampleProduct.category),
+    });
+    getManyAndCount = jest.fn().mockResolvedValue([[product], 1]);
     productsFind = jest.fn().mockResolvedValue([
       {
         priceMinor: sampleProduct.priceMinor,
         isTriedByUs: sampleProduct.isTriedByUs,
         quantity: sampleProduct.quantity,
-        category: sampleProduct.category,
-        country: sampleProduct.country,
+        category: product.category,
+        country: product.country,
       },
     ]);
 
@@ -47,13 +52,17 @@ describe('products (e2e)', () => {
         {
           provide: getRepositoryToken(Category),
           useValue: {
-            find: jest.fn().mockResolvedValue(sampleCategories),
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCategories.map((entry) => Object.assign(new Category(), entry))),
           },
         },
         {
           provide: getRepositoryToken(Country),
           useValue: {
-            find: jest.fn().mockResolvedValue(sampleCountries),
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCountries.map((entry) => Object.assign(new Country(), entry))),
           },
         },
         {

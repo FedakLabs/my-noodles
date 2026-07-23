@@ -10,7 +10,6 @@ import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
@@ -50,7 +49,7 @@ function CommentsContent({ productId, onClose }: { productId: string | null; onC
       >
         <Typography variant="h6">{t('commentsPanel.title')}</Typography>
         <IconButton aria-label={t('commentsPanel.close')} onClick={onClose}>
-          <CloseIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+          <CloseIcon aria-hidden size={20} />
         </IconButton>
       </Stack>
 

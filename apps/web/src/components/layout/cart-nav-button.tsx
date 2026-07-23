@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { iconStyle } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 
 import { useCartActions, useCartItemCount } from '@/hooks/cart';
@@ -31,7 +30,7 @@ export function CartNavButton({
 
   const icon = (
     <Badge badgeContent={cartCount} color="primary" invisible={cartCount === 0}>
-      <CartIcon aria-hidden style={iconStyle({ size: iconSize, color: 'inherit' })} />
+      <CartIcon aria-hidden size={iconSize} />
     </Badge>
   );
 

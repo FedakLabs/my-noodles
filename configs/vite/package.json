@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./base": "./base.ts"
+    "./base": "./base.ts",
+    "./svgr": "./svgr.ts"
   },
   "dependencies": {
     "@vitejs/plugin-react": "5.1.4",

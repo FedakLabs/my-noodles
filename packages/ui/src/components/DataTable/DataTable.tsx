@@ -2,6 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import { type SxProps, type Theme, useTheme } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -30,6 +31,8 @@ export type DataTableProps<TData extends RowData> = {
   stickyHeader?: boolean;
   busy?: boolean;
   busyLabel?: string;
+  /** Skeleton body rows when busy with no data. Default 8. */
+  skeletonRowCount?: number;
   isError?: boolean;
   emptyContent?: ReactNode;
   errorContent?: ReactNode;
@@ -50,6 +53,7 @@ export function DataTable<TData extends RowData>({
   stickyHeader = false,
   busy = false,
   busyLabel = 'Loading',
+  skeletonRowCount = 8,
   isError = false,
   emptyContent,
   errorContent,
@@ -62,15 +66,16 @@ export function DataTable<TData extends RowData>({
   const rows = table.getRowModel().rows;
   const headerGroups = table.getHeaderGroups();
   const footerGroups = table.getFooterGroups();
-  const columnCount = table.getVisibleLeafColumns().length;
+  const leafColumns = table.getVisibleLeafColumns();
+  const columnCount = leafColumns.length;
   const hasFooter = footerGroups.some((group) =>
     group.headers.some((header) => header.column.columnDef.footer != null),
   );
   const showErrorRow = isError;
   const showEmptyRow = !isError && !busy && rows.length === 0;
-  const showBusyPlaceholderRow = busy && !isError && rows.length === 0;
-  const showStateRow = showErrorRow || showEmptyRow || showBusyPlaceholderRow;
-  const stateContent = showErrorRow ? errorContent : showEmptyRow ? emptyContent : null;
+  const showSkeletonRows = busy && !isError && rows.length === 0;
+  const showStateRow = showErrorRow || showEmptyRow;
+  const stateContent = showErrorRow ? errorContent : emptyContent;
 
   const tableNode = (
     <TableContainer
@@ -131,6 +136,19 @@ export function DataTable<TData extends RowData>({
                 </Typography>
               </TableCell>
             </TableRow>
+          ) : showSkeletonRows ? (
+            Array.from({ length: skeletonRowCount }, (_, rowIndex) => (
+              <TableRow key={`skeleton-${rowIndex}`} aria-hidden>
+                {leafColumns.map((column) => {
+                  const meta = column.columnDef.meta;
+                  return (
+                    <TableCell key={column.id} align={resolveAlign(meta?.align)} sx={{ width: meta?.width }}>
+                      <Skeleton variant="text" animation="wave" width="80%" />
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))
           ) : (
             rows.map((row) => {
               const rowProps = getRowProps?.(row) ?? {};
@@ -149,7 +167,7 @@ export function DataTable<TData extends RowData>({
             })
           )}
         </TableBody>
-        {hasFooter && !showStateRow ? (
+        {hasFooter && !showStateRow && !showSkeletonRows ? (
           <TableFooter>
             {footerGroups.map((footerGroup) => (
               <TableRow key={footerGroup.id}>

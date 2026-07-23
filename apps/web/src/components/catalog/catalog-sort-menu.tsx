@@ -6,13 +6,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { ProductSort } from '@my-noodles/api-clients/storefront';
 import { cardShadow } from '@my-noodles/theme';
-import { iconStyle } from '@my-noodles/ui';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import PlusIcon from '@my-noodles/ui/icons/plus.svg';
 import SortIcon from '@my-noodles/ui/icons/sort.svg';
 import StarIcon from '@my-noodles/ui/icons/star.svg';
+import type { SvgIconProps } from '@my-noodles/ui/types';
 import { useTranslations } from 'next-intl';
-import { type FC, type SVGProps, useId, useMemo, useState } from 'react';
+import { type FC, useId, useMemo, useState } from 'react';
 
 export const DEFAULT_CATALOG_SORT = ProductSort.POPULAR;
 
@@ -30,7 +30,7 @@ type SortOption = {
   value: ProductSort;
   labelKey: SortOptionKey;
   descriptionKey: SortOptionKey;
-  Icon: FC<SVGProps<SVGSVGElement>>;
+  Icon: FC<SvgIconProps>;
   iconTransform?: string;
 };
 
@@ -96,7 +96,7 @@ export function CatalogSortMenu({ value, onChange, disabled }: CatalogSortMenuPr
           p: 0.25,
         }}
       >
-        <SortIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+        <SortIcon aria-hidden size={20} />
       </IconButton>
 
       <Menu
@@ -136,8 +136,8 @@ export function CatalogSortMenu({ value, onChange, disabled }: CatalogSortMenuPr
             >
               <OptionIcon
                 aria-hidden
+                size={20}
                 style={{
-                  ...iconStyle({ size: 20, color: 'inherit' }),
                   marginTop: 2,
                   ...(option.iconTransform ? { transform: option.iconTransform } : {}),
                 }}

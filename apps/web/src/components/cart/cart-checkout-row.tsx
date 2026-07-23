@@ -4,7 +4,6 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Checkout } from '@my-noodles/api-clients/storefront';
-import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
@@ -58,7 +57,7 @@ export function CartCheckoutRow({ checkout, onClose }: CartCheckoutRowProps) {
           cancelCheckout(checkout.id);
         }}
       >
-        <CloseIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+        <CloseIcon aria-hidden size={20} />
       </IconButton>
     </Stack>
   );

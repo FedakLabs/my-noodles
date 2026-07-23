@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { cardShadow } from '@my-noodles/theme';
-import { iconStyle, showToast } from '@my-noodles/ui';
+import { showToast } from '@my-noodles/ui';
 import ShareIcon from '@my-noodles/ui/icons/share.svg';
 import { useTranslations } from 'next-intl';
 import { useId, useState, type MouseEvent } from 'react';
@@ -95,7 +95,7 @@ export function ShareMenu({ shareUrl, shareTitle, shareText, ariaLabel, iconSize
         }}
         sx={{ color: open ? 'primary.main' : 'inherit', p: 0.25, flexShrink: 0 }}
       >
-        <ShareIcon aria-hidden style={iconStyle({ size: iconSize, color: 'inherit' })} />
+        <ShareIcon aria-hidden size={iconSize} />
       </IconButton>
 
       <Menu

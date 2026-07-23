@@ -1,9 +1,9 @@
 export const ROUTE_NAMES = {
   login: '/login',
   orders: '/orders',
-  orderDetail: '/orders/$orderId',
+  products: '/products',
+  productDetail: '/products/$productId',
+  brands: '/brands',
+  categories: '/categories',
+  countries: '/countries',
 } as const;
-
-export function orderDetailPath(orderId: string): string {
-  return `/orders/${orderId}`;
-}

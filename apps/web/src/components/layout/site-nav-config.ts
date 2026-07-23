@@ -3,13 +3,14 @@ import CollectionsIcon from '@my-noodles/ui/icons/collections.svg';
 import ContactsIcon from '@my-noodles/ui/icons/contacts.svg';
 import HomeIcon from '@my-noodles/ui/icons/home.svg';
 import SearchIcon from '@my-noodles/ui/icons/search.svg';
-import type { FC, SVGProps } from 'react';
+import type { SvgIconProps } from '@my-noodles/ui/types';
+import type { FC } from 'react';
 
 import { isFeedRoute } from '@/shared/routes';
 
 export type SiteNavLabelKey = 'nav.home' | 'nav.catalog' | 'nav.collections' | 'nav.feed' | 'nav.contacts';
 
-export type SiteNavIcon = FC<SVGProps<SVGSVGElement>>;
+export type SiteNavIcon = FC<SvgIconProps>;
 
 export type SiteNavLinkItem = {
   kind: 'link';

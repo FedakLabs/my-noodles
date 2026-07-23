@@ -3,14 +3,13 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { getSortedRowModel } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 
 import {
   createColumnHelper,
   createSelectionColumn,
   DataTable,
-  DataTableColumnHeader,
+  getSortedRowModel,
   useDataTable,
   type RowSelectionState,
 } from '../components/DataTable';
@@ -270,20 +269,46 @@ export const Busy: Story = {
   render: () => <BusyDemo />,
 };
 
+function BusySkeletonDemo() {
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('customer', { header: 'Customer' }),
+      columnHelper.accessor('status', { header: 'Status' }),
+      columnHelper.accessor('totalMinor', {
+        header: 'Total',
+        meta: { align: 'right' },
+      }),
+    ],
+    [],
+  );
+
+  const table = useDataTable({
+    data: [],
+    columns,
+    getRowId: (row) => row.id,
+  });
+
+  return <DataTable table={table} size="small" busy busyLabel="Loading orders" skeletonRowCount={8} />;
+}
+
+export const BusySkeleton: Story = {
+  render: () => <BusySkeletonDemo />,
+};
+
 function ClientSortingDemo() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('customer', {
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
+        header: 'Customer',
         enableSorting: true,
       }),
       columnHelper.accessor('status', {
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+        header: 'Status',
         enableSorting: true,
         cell: (info) => statusChip(info.getValue()),
       }),
       columnHelper.accessor('totalMinor', {
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Total" />,
+        header: 'Total',
         enableSorting: true,
         meta: { align: 'right' },
         cell: (info) => formatMoney(info.getValue()),

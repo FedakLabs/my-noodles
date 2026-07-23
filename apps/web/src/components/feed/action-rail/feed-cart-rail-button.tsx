@@ -1,7 +1,6 @@
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { iconStyle } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 
 const CART_HIGHLIGHT = '#FFC46B';
@@ -51,10 +50,9 @@ export function CartRailButton({
         >
           <CartIcon
             aria-hidden
-            style={{
-              ...iconStyle({ size: iconSize, color: highlighted ? CART_HIGHLIGHT : '#fff' }),
-              transition: 'color 0.65s ease',
-            }}
+            size={iconSize}
+            color={highlighted ? CART_HIGHLIGHT : '#fff'}
+            style={{ transition: 'color 0.65s ease' }}
           />
         </Stack>
       </IconButton>

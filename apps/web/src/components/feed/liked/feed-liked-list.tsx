@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { layoutDisplay } from '@my-noodles/theme';
-import { iconStyle, showToast } from '@my-noodles/ui';
+import { showToast } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
@@ -81,7 +81,7 @@ function LikedListPanel({
       >
         <Typography variant="h6">{t('likedList.title')}</Typography>
         <IconButton aria-label={t('likedList.close')} onClick={onClose}>
-          <CloseIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+          <CloseIcon aria-hidden size={20} />
         </IconButton>
       </Stack>
 
@@ -124,7 +124,7 @@ function LikedListPanel({
                       {removing ? (
                         <CircularProgress size={18} color="inherit" aria-hidden />
                       ) : (
-                        <CloseIcon aria-hidden style={iconStyle({ size: 18, color: 'inherit' })} />
+                        <CloseIcon aria-hidden size={18} />
                       )}
                     </IconButton>
                     <IconButton
@@ -137,7 +137,7 @@ function LikedListPanel({
                       {adding ? (
                         <CircularProgress size={18} color="inherit" aria-hidden />
                       ) : (
-                        <CartIcon aria-hidden style={iconStyle({ size: 18, color: 'inherit' })} />
+                        <CartIcon aria-hidden size={18} />
                       )}
                     </IconButton>
                   </Stack>

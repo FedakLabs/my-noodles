@@ -8,11 +8,11 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { cardShadow } from '@my-noodles/theme';
-import { iconStyle } from '@my-noodles/ui';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import MenuIcon from '@my-noodles/ui/icons/menu.svg';
+import type { SvgIconProps } from '@my-noodles/ui/types';
 import { useTranslations } from 'next-intl';
-import { type FC, type SVGProps, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { type FC, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useViewMode } from './catalog-view-mode-context';
 import { type CatalogViewMode, DEFAULT_CATALOG_VIEW_MODE } from './view-mode';
@@ -30,7 +30,7 @@ type ViewModeOption = {
   value: CatalogViewMode;
   labelKey: ViewModeOptionKey;
   descriptionKey: ViewModeOptionKey;
-  Icon: FC<SVGProps<SVGSVGElement>>;
+  Icon: FC<SvgIconProps>;
   iconTransform?: string;
 };
 
@@ -116,7 +116,7 @@ export function CatalogViewModeMenu({ disabled }: CatalogViewModeMenuProps) {
           p: 0.25,
         }}
       >
-        <MenuIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+        <MenuIcon aria-hidden size={20} />
       </IconButton>
 
       <Menu
@@ -180,8 +180,8 @@ export function CatalogViewModeMenu({ disabled }: CatalogViewModeMenuProps) {
             >
               <OptionIcon
                 aria-hidden
+                size={20}
                 style={{
-                  ...iconStyle({ size: 20, color: 'inherit' }),
                   marginTop: 2,
                   flexShrink: 0,
                   ...(option.iconTransform ? { transform: option.iconTransform } : {}),

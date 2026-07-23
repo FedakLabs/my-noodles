@@ -295,6 +295,7 @@ export function createCheckoutFromCart(cart: CartResponseDto): WireCheckout {
     cancelledReason: null,
     delivery: null,
     items,
+    statusHistory: [],
     checkout: null,
   };
 

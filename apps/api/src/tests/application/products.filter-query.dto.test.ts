@@ -112,11 +112,19 @@ describe('GET /api/products/facets filter query', () => {
         },
         {
           provide: getRepositoryToken(Category),
-          useValue: { find: jest.fn().mockResolvedValue(sampleCategories) },
+          useValue: {
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCategories.map((entry) => Object.assign(new Category(), entry))),
+          },
         },
         {
           provide: getRepositoryToken(Country),
-          useValue: { find: jest.fn().mockResolvedValue(sampleCountries) },
+          useValue: {
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCountries.map((entry) => Object.assign(new Country(), entry))),
+          },
         },
         {
           provide: getRepositoryToken(Brand),
@@ -151,11 +159,19 @@ describe('GET /api/products/facets filter query', () => {
         },
         {
           provide: getRepositoryToken(Category),
-          useValue: { find: jest.fn().mockResolvedValue(sampleCategories) },
+          useValue: {
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCategories.map((entry) => Object.assign(new Category(), entry))),
+          },
         },
         {
           provide: getRepositoryToken(Country),
-          useValue: { find: jest.fn().mockResolvedValue(sampleCountries) },
+          useValue: {
+            find: jest
+              .fn()
+              .mockResolvedValue(sampleCountries.map((entry) => Object.assign(new Country(), entry))),
+          },
         },
         {
           provide: getRepositoryToken(Brand),

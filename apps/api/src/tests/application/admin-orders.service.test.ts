@@ -19,7 +19,10 @@ describe('AdminOrdersService', () => {
     cancelSubmittedOrder = jest.fn();
 
     service = new AdminOrdersService(
-      { findOne: ordersFindOne, save: orderSave } as never,
+      {
+        findOne: ordersFindOne,
+        save: orderSave,
+      } as never,
       { cancelSubmittedOrder } as unknown as OrdersService,
     );
   });
@@ -31,6 +34,7 @@ describe('AdminOrdersService', () => {
       totalMinor: 9_900,
       currency: 'UAH',
       delivery: null,
+      statusHistory: [],
     };
     ordersFindOne.mockResolvedValue(order);
 
@@ -47,6 +51,7 @@ describe('AdminOrdersService', () => {
       status: OrderStatus.Completed,
       totalMinor: 9_900,
       currency: 'UAH',
+      statusHistory: [],
     });
 
     await expect(service.confirm('order-1')).rejects.toBeInstanceOf(OrderTransitionNotAllowedException);
@@ -59,6 +64,7 @@ describe('AdminOrdersService', () => {
       status: OrderStatus.Draft,
       totalMinor: 0,
       currency: 'UAH',
+      statusHistory: [],
     });
 
     await expect(service.send('order-1')).rejects.toBeInstanceOf(OrderNotFoundException);
@@ -72,6 +78,7 @@ describe('AdminOrdersService', () => {
       currency: 'UAH',
       cancelledReason: OrderCancelledReason.CustomerRequest,
       delivery: null,
+      statusHistory: [],
     };
     cancelSubmittedOrder.mockResolvedValue(cancelled);
 

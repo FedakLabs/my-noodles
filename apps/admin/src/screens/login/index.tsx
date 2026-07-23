@@ -9,7 +9,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { adminApi } from '@/api/clients';
+import { authApi } from '@/api/clients';
 import { useAuthStore } from '@/hooks/auth';
 import { ROUTE_NAMES } from '@/router/route-names';
 
@@ -29,7 +29,7 @@ export function LoginScreen() {
     try {
       const result = await authControllerLogin({
         body: { email, password },
-        client: adminApi.apiClient,
+        client: authApi.apiClient,
       });
       setTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken });
       await navigate({ to: ROUTE_NAMES.orders });

@@ -1,10 +1,12 @@
 {
   "list": {
     "title": "Замовлення",
-    "search": "Id, ім'я або телефон",
+    "search": "Id, ім'я, прізвище або телефон",
     "status": "Статус",
     "statusAll": "Усі",
+    "dates": "Дати",
     "createdAt": "Створено",
+    "orderedAt": "Замовлено",
     "dateFrom": "Дата від",
     "dateTo": "Дата до",
     "id": "Id",
@@ -17,7 +19,6 @@
   },
   "detail": {
     "title": "Замовлення",
-    "backToOrders": "← Замовлення",
     "notFound": "Замовлення не знайдено.",
     "status": "Статус",
     "customer": "Клієнт",
@@ -33,6 +34,9 @@
     "cancelFailed": "Не вдалося скасувати"
   },
   "delivery": {
+    "provider": "Служба доставки",
+    "method": "Спосіб доставки",
+    "details": "Деталі",
     "providers": {
       "nova-poshta": "Нова Пошта",
       "ukrposhta": "Укрпошта",

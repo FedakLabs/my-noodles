@@ -1,7 +1,8 @@
 import { type LocalizedString } from '@my-noodles/api-lib/locale';
-import { ApiLocalizedColumn } from '@my-noodles/api-lib/nest';
+import { LocalizedColumn, LocalizedResolved } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CURRENCY_CODES, type CurrencyCode } from '@my-noodles/utils';
+import { ApiHideProperty, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
@@ -19,17 +20,41 @@ export class Product extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @ApiLocalizedColumn()
-  name!: LocalizedString;
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'name' })
+  nameLocale!: LocalizedString;
 
-  @ApiLocalizedColumn()
-  description!: LocalizedString;
+  @LocalizedResolved()
+  get name(): string | null {
+    return this.nameLocale.localized;
+  }
 
-  @ApiLocalizedColumn()
-  story!: LocalizedString;
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'description' })
+  descriptionLocale!: LocalizedString;
 
-  @ApiLocalizedColumn({ name: 'for_whom' })
-  forWhom!: LocalizedString;
+  @LocalizedResolved()
+  get description(): string | null {
+    return this.descriptionLocale.localized;
+  }
+
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'story' })
+  storyLocale!: LocalizedString;
+
+  @LocalizedResolved()
+  get story(): string | null {
+    return this.storyLocale.localized;
+  }
+
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'for_whom' })
+  forWhomLocale!: LocalizedString;
+
+  @LocalizedResolved()
+  get forWhom(): string | null {
+    return this.forWhomLocale.localized;
+  }
 
   @Column({ type: 'text', nullable: true })
   weight!: string | null;
@@ -37,8 +62,9 @@ export class Product extends TimestampEntity {
   @Column({ name: 'price_minor', type: 'int' })
   priceMinor!: number;
 
+  @ApiProperty({ enum: CURRENCY_CODES, enumName: 'CurrencyCode' })
   @Column({ type: 'text' })
-  currency!: string;
+  currency!: CurrencyCode;
 
   @Column({ type: 'jsonb' })
   flavor!: ProductFlavor;

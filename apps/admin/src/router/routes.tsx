@@ -2,9 +2,12 @@ import { createRootRoute, createRoute, Outlet, redirect } from '@tanstack/react-
 
 import { AdminShell } from '@/components/layout/admin-shell';
 import { getAccessToken } from '@/hooks/auth';
+import { BrandsListScreen } from '@/screens/brands/brands-list-screen';
+import { CategoriesListScreen } from '@/screens/categories/categories-list-screen';
+import { CountriesListScreen } from '@/screens/countries/countries-list-screen';
 import { LoginScreen } from '@/screens/login';
-import { OrderDetailScreen } from '@/screens/orders/order-detail-screen';
 import { OrdersListScreen } from '@/screens/orders/orders-list-screen';
+import { ProductsListScreen } from '@/screens/products/products-list-screen';
 
 import { ROUTE_NAMES } from './route-names';
 
@@ -56,8 +59,32 @@ export const ordersRoute = createRoute({
   component: OrdersListScreen,
 });
 
-export const orderDetailRoute = createRoute({
+export const productsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: ROUTE_NAMES.orderDetail,
-  component: OrderDetailScreen,
+  path: ROUTE_NAMES.products,
+  component: ProductsListScreen,
+});
+
+export const productDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.productDetail,
+  component: ProductsListScreen,
+});
+
+export const brandsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.brands,
+  component: BrandsListScreen,
+});
+
+export const categoriesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.categories,
+  component: CategoriesListScreen,
+});
+
+export const countriesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.countries,
+  component: CountriesListScreen,
 });

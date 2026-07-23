@@ -74,23 +74,23 @@ src/components/[ComponentName]/
 src/icons/[name].svg          # import: packages/ui/icons/cart.svg (SVGR, tree-shakeable)
 ```
 
-Icons — one file per import (bundler tree-shakes unused SVGs). **Size and color via `style`** (strokes use `currentColor`):
+Icons — one file per import (bundler tree-shakes unused SVGs). **Size via `size` prop; `color` defaults to `inherit`** (strokes use `currentColor`):
 
 ```tsx
-import CartIcon from 'packages/ui/icons/cart.svg';
-import { iconStyle } from 'packages/ui';
+import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import { useTheme } from '@mui/material/styles';
 
 const theme = useTheme();
 
-<CartIcon aria-hidden style={iconStyle({ size: 24, color: theme.colors.icon.primary })} />;
-// Inside MUI `color="inherit"` chrome: color: 'inherit'
-<MenuIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />;
+// Default: inherits parent CSS `color` (MUI IconButton, etc.)
+<MenuIcon aria-hidden size={24} />;
+// Override when you need a specific token/hex
+<CartIcon aria-hidden size={24} color={theme.colors.icon.primary} />;
 ```
 
-Do not use `width` / `height` props or parent `color` inheritance for icon sizing/tinting.
+Do not use `width` / `height` attrs for icon sizing — use `size`. Extra layout styles go on `style`.
 
-SVGR is configured for direct svg import
+SVGR is configured for direct svg import (`size` / `color` baked in via shared template)
 
 ## Implementation Workflow
 

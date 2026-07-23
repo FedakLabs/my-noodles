@@ -41,6 +41,8 @@ export {
   CopyButton,
   type CopyButtonProps,
 } from './components/CopyableField';
+export { CurrencySelect, type CurrencySelectProps } from './components/CurrencySelect';
+export { SelectField, type SelectFieldProps } from './components/SelectField';
 export {
   createColumnHelper,
   createSelectionColumn,
@@ -115,10 +117,27 @@ export {
   useModal,
 } from './components/Modal';
 export { PhoneInput, type PhoneInputProps } from './components/PhoneInput';
+export {
+  LocalizedTextField,
+  type LocalizedTextFieldLocaleOption,
+  type LocalizedTextFieldProps,
+  type LocalizedTextFieldValue,
+} from './components/LocalizedTextField';
 export { PriceRangeSlider, type PriceRangeSliderProps } from './components/PriceRangeSlider';
+export {
+  ProductDiscoveryCard,
+  type ProductDiscoveryCardActionContext,
+  type ProductDiscoveryCardDetails,
+  type ProductDiscoveryCardDetailsEmptyProps,
+  type ProductDiscoveryCardProps,
+  ProductDiscoveryCardDetailsEmpty,
+  productCardPreviewAnchor,
+  productDiscoveryCardLabelQuickActionSx,
+  productDiscoveryCardSummaryTitleSx,
+  usePreviewCollapse,
+} from './components/ProductDiscoveryCard';
 export { StableLinearProgress, type StableLinearProgressProps } from './components/StableLinearProgress';
 export { showToast, ToastProvider } from './components/Toast';
-export { iconStyle, type IconStyleInput } from './utils/iconStyle';
 export {
   baseSkinCssVars,
   brandSkins,

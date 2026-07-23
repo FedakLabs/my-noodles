@@ -1,0 +1,58 @@
+{
+  "list": {
+    "title": "Товари",
+    "search": "Slug або назва",
+    "searchBySlug": "Slug",
+    "searchByName": "Назва",
+    "category": "Категорія",
+    "categoryAll": "Усі категорії",
+    "brand": "Бренд",
+    "brandAll": "Усі бренди",
+    "country": "Країна",
+    "countryAll": "Усі країни",
+    "loadError": "Не вдалося завантажити товари.",
+    "empty": "Товарів не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "card": {
+    "storyLabel": "Історія",
+    "descriptionLabel": "Опис",
+    "forWhomLabel": "Кому підійде",
+    "detailsEmpty": "Немає додаткової інформації."
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Новий товар",
+    "editTitle": "Редагувати товар",
+    "loading": "Завантаження…",
+    "language": "Мова",
+    "slug": "Slug",
+    "name": "Назва",
+    "description": "Опис",
+    "story": "Історія",
+    "forWhom": "Кому підійде",
+    "weight": "Вага",
+    "priceMinor": "Ціна, копійки",
+    "currency": "Валюта",
+    "quantity": "Кількість",
+    "sortWeight": "Порядок сортування",
+    "flavor": "Смак",
+    "spice": "Гострота (0–5)",
+    "sweet": "Солодкість (0–5)",
+    "texture": "Текстура",
+    "allergens": "Алергени",
+    "addAllergen": "Додати алерген",
+    "images": "Зображення (URL)",
+    "addImage": "Додати зображення",
+    "videos": "Відео (URL)",
+    "addVideo": "Додати відео",
+    "isTriedByUs": "Ми це куштували",
+    "brand": "Бренд",
+    "noBrand": "Без бренду",
+    "country": "Країна",
+    "category": "Категорія",
+    "saveFailed": "Не вдалося зберегти товар."
+  }
+}

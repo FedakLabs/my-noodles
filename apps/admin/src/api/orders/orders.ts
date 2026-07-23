@@ -8,7 +8,9 @@ import {
   adminOrdersControllerListOrders,
   adminOrdersControllerReturnOrder,
   adminOrdersControllerSendOrder,
-  type Order,
+  type AdminOrder,
+  type AdminOrdersSortBy,
+  type AdminOrdersSortOrder,
   type OrderCancelledReason,
   type OrderStatus,
 } from '@my-noodles/api-clients/admin';
@@ -21,6 +23,8 @@ export type OrdersListParams = {
   q?: string;
   createdFrom?: string;
   createdTo?: string;
+  sortBy?: AdminOrdersSortBy;
+  sortOrder?: AdminOrdersSortOrder;
 };
 
 type CancelOrderVariables = {
@@ -46,6 +50,8 @@ export const ordersQueries = {
             q: params.q,
             createdFrom: params.createdFrom,
             createdTo: params.createdTo,
+            sortBy: params.sortBy,
+            sortOrder: params.sortOrder,
           },
         }),
     }),
@@ -55,7 +61,7 @@ export const ordersQueries = {
       queryFn: () =>
         adminOrdersControllerGetOrder({
           path: { id: orderId },
-        }) as Promise<Order>,
+        }) as Promise<AdminOrder>,
     }),
 };
 

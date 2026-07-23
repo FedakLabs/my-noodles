@@ -156,6 +156,7 @@
         "src/pagination/index.ts",
         "src/persistence/index.ts",
         "src/api-client/index.ts",
+        "src/cache/index.ts",
         "src/exceptions/index.ts",
         "src/logger/index.ts",
         "src/otel/index.ts",

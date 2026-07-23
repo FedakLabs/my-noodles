@@ -1,7 +1,11 @@
 {
   "appTitle": "my-noodles admin",
   "nav": {
-    "orders": "Замовлення"
+    "orders": "Замовлення",
+    "products": "Товари",
+    "brands": "Бренди",
+    "categories": "Категорії",
+    "countries": "Країни"
   },
   "actions": {
     "back": "Назад",
@@ -10,7 +14,13 @@
     "next": "Далі",
     "search": "Пошук",
     "copy": "Копіювати",
-    "copied": "Скопійовано"
+    "copied": "Скопійовано",
+    "create": "Додати",
+    "edit": "Редагувати",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "add": "Додати",
+    "remove": "Видалити"
   },
   "states": {
     "loading": "Завантаження…"

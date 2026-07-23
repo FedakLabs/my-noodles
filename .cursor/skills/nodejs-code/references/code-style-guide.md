@@ -469,16 +469,16 @@ Nest-facing DTO classes must live in files matched by OpenAPI generation convent
 
 Use Swagger decorators only for metadata the plugin cannot (or should not) infer from types / validators / (optional) JSDoc.
 
-| Need                                                    | Decorator                                                                                                                            |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Tag / group in Swagger UI                               | `@ApiTags('Resources')`                                                                                                              |
-| Documented error responses                              | `@ApiException(...)` (preferred); `@ApiNotFoundResponse` etc. only when there is no typed exception yet                              |
-| Enum schema name                                        | `@ApiProperty({ enum: Status, enumName: 'ResourceStatus' })`                                                                         |
-| Nullable unions                                         | `@ApiProperty({ type: String, nullable: true })` for `string \| null` — unions collapse to `Object` under `emitDecoratorMetadata`    |
-| Localized JSONB columns on API entities                 | `@ApiLocalizedColumn()` from `@my-noodles/api-lib/nest` (not bare `@LocalizedColumn()` — that stays Nest-free for persistence)       |
-| Format without a matching validator                     | `@ApiProperty({ format: 'uuid' })` / `date-time` when validators alone do not emit it                                                |
-| Mapped / intersection DTOs that drop fields             | Explicit `@ApiProperty` / `@ApiPropertyOptional` on the resulting shape                                                              |
-| Non-default success status that must appear in the spec | `@HttpCode(...)` for runtime; add `@ApiOkResponse` / `@ApiCreatedResponse` only if you must document a divergence from Nest defaults |
+| Need                                                    | Decorator                                                                                                                                                                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tag / group in Swagger UI                               | `@ApiTags('Resources')`                                                                                                                                                                                            |
+| Documented error responses                              | `@ApiException(...)` (preferred); `@ApiNotFoundResponse` etc. only when there is no typed exception yet                                                                                                            |
+| Enum schema name                                        | `@ApiProperty({ enum: Status, enumName: 'ResourceStatus' })`                                                                                                                                                       |
+| Nullable unions                                         | `@ApiProperty({ type: String, nullable: true })` for `string \| null` — unions collapse to `Object` under `emitDecoratorMetadata`                                                                                  |
+| Localized JSONB columns on API entities                 | `@ApiHideProperty()` + `@LocalizedColumn()` on `*Locale` storage props + `@LocalizedResolved()` getters (`name` etc.) from `@my-noodles/api-lib/nest` (`@ApiHideProperty` must be explicit for the Swagger plugin) |
+| Format without a matching validator                     | `@ApiProperty({ format: 'uuid' })` / `date-time` when validators alone do not emit it                                                                                                                              |
+| Mapped / intersection DTOs that drop fields             | Explicit `@ApiProperty` / `@ApiPropertyOptional` on the resulting shape                                                                                                                                            |
+| Non-default success status that must appear in the spec | `@HttpCode(...)` for runtime; add `@ApiOkResponse` / `@ApiCreatedResponse` only if you must document a divergence from Nest defaults                                                                               |
 
 When a field already has useful JSDoc, do not also put `description` / `example` on `@ApiProperty` unless you must override the plugin.
 

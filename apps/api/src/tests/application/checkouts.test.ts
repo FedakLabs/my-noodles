@@ -164,7 +164,7 @@ describe('checkouts (e2e)', () => {
         qty: 1,
         product: {
           id: sampleProductId,
-          name: { localized: 'Pocky Matcha' },
+          name: 'Pocky Matcha',
           priceMinor: 9_900,
           currency: 'UAH',
         },

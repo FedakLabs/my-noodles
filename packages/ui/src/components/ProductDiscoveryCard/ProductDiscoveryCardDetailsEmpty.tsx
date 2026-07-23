@@ -1,10 +1,10 @@
 import Typography from '@mui/material/Typography';
 
-type ProductCardPreviewDetailsEmptyProps = {
+export type ProductDiscoveryCardDetailsEmptyProps = {
   message: string;
 };
 
-export function ProductCardPreviewDetailsEmpty({ message }: ProductCardPreviewDetailsEmptyProps) {
+export function ProductDiscoveryCardDetailsEmpty({ message }: ProductDiscoveryCardDetailsEmptyProps) {
   return (
     <Typography
       variant="body2"

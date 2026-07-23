@@ -60,39 +60,41 @@ describe('ProductsService', () => {
   });
 
   it('returns product detail with localized fields', async () => {
-    findOne.mockResolvedValue({
-      slug: 'pocky',
-      name: new LocalizedString({ uk: 'Pocky', en: 'Pocky EN' }),
-      description: new LocalizedString({ uk: 'Опис', en: 'Description' }),
-      story: new LocalizedString({ uk: 'Історія', en: 'Story' }),
-      forWhom: new LocalizedString({ uk: 'Для всіх', en: 'For everyone' }),
-      priceMinor: 9_900,
-      currency: 'UAH',
-      images: [],
-      videos: [],
-      quantity: 3,
-      isTriedByUs: true,
-      sortWeight: 10,
-      weight: '47g',
-      flavor: { spice: 0, sweet: 3, texture: 'crispy' },
-      allergens: ['milk'],
-      brand: { slug: 'glico', name: 'Glico' },
-      country: {
-        slug: 'taiwan',
-        code: 'TW',
-        name: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
-      },
-      category: {
-        slug: 'snacks',
-        name: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
-      },
-      alternatives: [],
-    });
+    findOne.mockResolvedValue(
+      Object.assign(new Product(), {
+        slug: 'pocky',
+        nameLocale: new LocalizedString({ uk: 'Pocky', en: 'Pocky EN' }),
+        descriptionLocale: new LocalizedString({ uk: 'Опис', en: 'Description' }),
+        storyLocale: new LocalizedString({ uk: 'Історія', en: 'Story' }),
+        forWhomLocale: new LocalizedString({ uk: 'Для всіх', en: 'For everyone' }),
+        priceMinor: 9_900,
+        currency: 'UAH',
+        images: [],
+        videos: [],
+        quantity: 3,
+        isTriedByUs: true,
+        sortWeight: 10,
+        weight: '47g',
+        flavor: { spice: 0, sweet: 3, texture: 'crispy' },
+        allergens: ['milk'],
+        brand: { slug: 'glico', name: 'Glico' },
+        country: Object.assign(new Country(), {
+          slug: 'taiwan',
+          code: 'TW',
+          nameLocale: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
+        }),
+        category: Object.assign(new Category(), {
+          slug: 'snacks',
+          nameLocale: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
+        }),
+        alternatives: [],
+      }),
+    );
 
     const result = await LocaleContext.run('uk', () => service.getBySlug('pocky'));
 
-    expect(result.name.localized).toBe('Pocky');
-    expect(result.description.localized).toBe('Опис');
+    expect(result.name).toBe('Pocky');
+    expect(result.description).toBe('Опис');
     expect(result.quantity).toBeGreaterThan(0);
   });
 
@@ -133,24 +135,24 @@ describe('ProductsService', () => {
       },
     );
     categoriesFind.mockResolvedValue([
-      {
+      Object.assign(new Category(), {
         slug: 'snacks',
-        name: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
-      },
-      {
+        nameLocale: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
+      }),
+      Object.assign(new Category(), {
         slug: 'drinks',
-        name: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
-      },
+        nameLocale: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
+      }),
     ]);
     countriesFind.mockResolvedValue([
-      {
+      Object.assign(new Country(), {
         slug: 'japan',
-        name: new LocalizedString({ uk: 'Японія', en: 'Japan' }),
-      },
-      {
+        nameLocale: new LocalizedString({ uk: 'Японія', en: 'Japan' }),
+      }),
+      Object.assign(new Country(), {
         slug: 'korea',
-        name: new LocalizedString({ uk: 'Корея', en: 'Korea' }),
-      },
+        nameLocale: new LocalizedString({ uk: 'Корея', en: 'Korea' }),
+      }),
     ]);
     brandsFind.mockResolvedValue([
       { slug: 'glico', name: 'Glico' },

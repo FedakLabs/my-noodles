@@ -41,7 +41,7 @@
             "name": "q",
             "required": false,
             "in": "query",
-            "description": "Matches order id prefix, full name prefix, or phone prefix.",
+            "description": "Matches order id prefix, first/last name prefix, or phone prefix.",
             "schema": {
               "maxLength": 120,
               "type": "string"
@@ -51,7 +51,7 @@
             "name": "createdFrom",
             "required": false,
             "in": "query",
-            "description": "Inclusive UTC calendar day start (`YYYY-MM-DD`).",
+            "description": "Inclusive UTC calendar day start (`YYYY-MM-DD`) on `createdAt`.",
             "schema": {
               "format": "date",
               "example": "2026-01-01",
@@ -62,11 +62,27 @@
             "name": "createdTo",
             "required": false,
             "in": "query",
-            "description": "Inclusive UTC calendar day end (`YYYY-MM-DD`).",
+            "description": "Inclusive UTC calendar day end (`YYYY-MM-DD`) on `createdAt`.",
             "schema": {
               "format": "date",
               "example": "2026-12-31",
               "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AdminOrdersSortBy"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AdminOrdersSortOrder"
             }
           }
         ],
@@ -171,7 +187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -256,7 +272,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -399,7 +415,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -542,7 +558,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -685,7 +701,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -838,7 +854,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -1013,7 +1029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -1156,7 +1172,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/AdminOrder"
                 }
               }
             }
@@ -1279,6 +1295,1410 @@
         ],
         "tags": ["Admin Orders"]
       }
+    },
+    "/api/admin/brands": {
+      "get": {
+        "operationId": "AdminBrandsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminBrandsListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Brands"]
+      },
+      "post": {
+        "operationId": "AdminBrandsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBrandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brand"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Brands"]
+      }
+    },
+    "/api/admin/brands/{id}": {
+      "get": {
+        "operationId": "AdminBrandsController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brand"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "brand_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["brand_not_found"],
+                      "example": "brand_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Brand not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "brandId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "brand_not_found": {
+                    "summary": "Brand not found",
+                    "value": {
+                      "status": 404,
+                      "code": "brand_not_found",
+                      "message": "Brand not found",
+                      "payload": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Brands"]
+      },
+      "patch": {
+        "operationId": "AdminBrandsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brand"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "brand_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["brand_not_found"],
+                      "example": "brand_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Brand not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "brandId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "brand_not_found": {
+                    "summary": "Brand not found",
+                    "value": {
+                      "status": 404,
+                      "code": "brand_not_found",
+                      "message": "Brand not found",
+                      "payload": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Brands"]
+      }
+    },
+    "/api/admin/categories": {
+      "get": {
+        "operationId": "AdminCategoriesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminCategoriesListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Categories"]
+      },
+      "post": {
+        "operationId": "AdminCategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCategoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Categories"]
+      }
+    },
+    "/api/admin/categories/{id}": {
+      "get": {
+        "operationId": "AdminCategoriesController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCategoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "category_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["category_not_found"],
+                      "example": "category_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Category not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "categoryId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "category_not_found": {
+                    "summary": "Category not found",
+                    "value": {
+                      "status": 404,
+                      "code": "category_not_found",
+                      "message": "Category not found",
+                      "payload": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Categories"]
+      },
+      "patch": {
+        "operationId": "AdminCategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCategoryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "category_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["category_not_found"],
+                      "example": "category_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Category not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "categoryId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "category_not_found": {
+                    "summary": "Category not found",
+                    "value": {
+                      "status": 404,
+                      "code": "category_not_found",
+                      "message": "Category not found",
+                      "payload": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Categories"]
+      }
+    },
+    "/api/admin/countries": {
+      "get": {
+        "operationId": "AdminCountriesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminCountriesListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Countries"]
+      },
+      "post": {
+        "operationId": "AdminCountriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCountryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Countries"]
+      }
+    },
+    "/api/admin/countries/{id}": {
+      "get": {
+        "operationId": "AdminCountriesController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "country_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["country_not_found"],
+                      "example": "country_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Country not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "countryId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "country_not_found": {
+                    "summary": "Country not found",
+                    "value": {
+                      "status": 404,
+                      "code": "country_not_found",
+                      "message": "Country not found",
+                      "payload": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Countries"]
+      },
+      "patch": {
+        "operationId": "AdminCountriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCountryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "country_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["country_not_found"],
+                      "example": "country_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Country not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "countryId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "country_not_found": {
+                    "summary": "Country not found",
+                    "value": {
+                      "status": 404,
+                      "code": "country_not_found",
+                      "message": "Country not found",
+                      "payload": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Countries"]
+      }
+    },
+    "/api/admin/products": {
+      "get": {
+        "operationId": "AdminProductsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AdminProductSearchBy"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "brandId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "countryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminProductsListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Products"]
+      },
+      "post": {
+        "operationId": "AdminProductsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "product_brand_not_found, product_category_not_found, product_country_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_brand_not_found"],
+                          "example": "product_brand_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Brand not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "brandId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "brandId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_category_not_found"],
+                          "example": "product_category_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Category not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "categoryId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "categoryId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_country_not_found"],
+                          "example": "product_country_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Country not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "countryId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "countryId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "product_brand_not_found": {
+                    "summary": "Brand not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_brand_not_found",
+                      "message": "Brand not found",
+                      "payload": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_category_not_found": {
+                    "summary": "Category not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_category_not_found",
+                      "message": "Category not found",
+                      "payload": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_country_not_found": {
+                    "summary": "Country not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_country_not_found",
+                      "message": "Country not found",
+                      "payload": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Products"]
+      }
+    },
+    "/api/admin/products/{id}": {
+      "get": {
+        "operationId": "AdminProductsController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "product_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["product_not_found"],
+                      "example": "product_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Product not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "productId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "productId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_found": {
+                    "summary": "Product not found",
+                    "value": {
+                      "status": 404,
+                      "code": "product_not_found",
+                      "message": "Product not found",
+                      "payload": {
+                        "productId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Products"]
+      },
+      "patch": {
+        "operationId": "AdminProductsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "product_brand_not_found, product_category_not_found, product_country_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_brand_not_found"],
+                          "example": "product_brand_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Brand not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "brandId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "brandId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_category_not_found"],
+                          "example": "product_category_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Category not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "categoryId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "categoryId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_country_not_found"],
+                          "example": "product_country_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Country not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "countryId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "countryId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "product_brand_not_found": {
+                    "summary": "Brand not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_brand_not_found",
+                      "message": "Brand not found",
+                      "payload": {
+                        "brandId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_category_not_found": {
+                    "summary": "Category not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_category_not_found",
+                      "message": "Category not found",
+                      "payload": {
+                        "categoryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_country_not_found": {
+                    "summary": "Country not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_country_not_found",
+                      "message": "Country not found",
+                      "payload": {
+                        "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "product_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["product_not_found"],
+                      "example": "product_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Product not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "productId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "productId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_found": {
+                    "summary": "Product not found",
+                    "value": {
+                      "status": 404,
+                      "code": "product_not_found",
+                      "message": "Product not found",
+                      "payload": {
+                        "productId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Products"]
+      }
     }
   },
   "info": {
@@ -1298,6 +2718,10 @@
       }
     },
     "schemas": {
+      "CurrencyCode": {
+        "type": "string",
+        "enum": ["UAH", "USD"]
+      },
       "Brand": {
         "type": "object",
         "properties": {
@@ -1466,6 +2890,13 @@
             "type": "string",
             "nullable": true
           },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          },
           "inStock": {
             "type": "boolean"
           },
@@ -1487,9 +2918,6 @@
           },
           "priceMinor": {
             "type": "number"
-          },
-          "currency": {
-            "type": "string"
           },
           "flavor": {
             "type": "object"
@@ -1570,12 +2998,12 @@
           "description",
           "story",
           "forWhom",
+          "currency",
           "inStock",
           "id",
           "slug",
           "weight",
           "priceMinor",
-          "currency",
           "flavor",
           "allergens",
           "images",
@@ -1711,6 +3139,49 @@
           "qty"
         ]
       },
+      "OrderStatusHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "oldStatus": {
+            "enum": [
+              "draft",
+              "new",
+              "confirmed",
+              "sent",
+              "arrived",
+              "completed",
+              "cancelled",
+              "returned",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "newStatus": {
+            "enum": [
+              "draft",
+              "new",
+              "confirmed",
+              "sent",
+              "arrived",
+              "completed",
+              "cancelled",
+              "returned",
+              "archived"
+            ],
+            "type": "string"
+          }
+        },
+        "required": ["id", "orderId", "order", "oldStatus", "newStatus"]
+      },
       "OrderDeliveryEstimateDto": {
         "type": "object",
         "properties": {
@@ -1809,24 +3280,6 @@
             "type": "number",
             "description": "Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.\nResponse-only — set by `CheckoutCalculator.calculateTotals`."
           },
-          "availableTransitions": {
-            "description": "Admin responses only — allowed next statuses for transition UI.",
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "draft",
-                "new",
-                "confirmed",
-                "sent",
-                "arrived",
-                "completed",
-                "cancelled",
-                "returned",
-                "archived"
-              ]
-            }
-          },
           "id": {
             "type": "string"
           },
@@ -1895,6 +3348,12 @@
               "$ref": "#/components/schemas/OrderItem"
             }
           },
+          "statusHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderStatusHistory"
+            }
+          },
           "checkout": {
             "nullable": true,
             "type": "object",
@@ -1919,6 +3378,7 @@
           "cancelledReason",
           "delivery",
           "items",
+          "statusHistory",
           "checkout"
         ]
       },
@@ -2022,6 +3482,142 @@
           "shippingCostMinor"
         ]
       },
+      "AdminOrder": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "grandTotalMinor": {
+            "type": "number",
+            "description": "Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.\nResponse-only — set by `CheckoutCalculator.calculateTotals`."
+          },
+          "availableTransitions": {
+            "description": "Allowed next statuses for transition UI.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "new",
+                "confirmed",
+                "sent",
+                "arrived",
+                "completed",
+                "cancelled",
+                "returned",
+                "archived"
+              ]
+            }
+          },
+          "orderedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "visitorSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "visitorSession": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VisitorSession"
+              }
+            ]
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "new",
+              "confirmed",
+              "sent",
+              "arrived",
+              "completed",
+              "cancelled",
+              "returned",
+              "archived"
+            ],
+            "type": "string"
+          },
+          "cancelledReason": {
+            "nullable": true,
+            "enum": ["customer_request", "out_of_stock"],
+            "type": "string"
+          },
+          "delivery": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderDelivery"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "statusHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderStatusHistory"
+            }
+          },
+          "checkout": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Checkout"
+              }
+            ]
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "visitorSessionId",
+          "visitorSession",
+          "firstName",
+          "lastName",
+          "phone",
+          "totalMinor",
+          "currency",
+          "status",
+          "cancelledReason",
+          "delivery",
+          "items",
+          "statusHistory",
+          "checkout"
+        ]
+      },
       "AdminOrderListMetaDto": {
         "type": "object",
         "properties": {
@@ -2046,7 +3642,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Order"
+              "$ref": "#/components/schemas/AdminOrder"
             }
           },
           "meta": {
@@ -2069,6 +3665,14 @@
           "archived"
         ]
       },
+      "AdminOrdersSortBy": {
+        "type": "string",
+        "enum": ["createdAt", "status", "totalMinor", "id", "phone"]
+      },
+      "AdminOrdersSortOrder": {
+        "type": "string",
+        "enum": ["asc", "desc"]
+      },
       "OrderCancelledReason": {
         "type": "string",
         "enum": ["customer_request", "out_of_stock"]
@@ -2085,6 +3689,650 @@
           }
         },
         "required": ["cancelledReason"]
+      },
+      "AdminListMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "currentTotal": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": ["total", "currentTotal", "page", "limit"]
+      },
+      "AdminBrandsListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Brand"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "CreateBrandDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 60
+          }
+        },
+        "required": ["slug", "name"]
+      },
+      "UpdateBrandDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 60
+          }
+        }
+      },
+      "LocalizedStringDto": {
+        "type": "object",
+        "properties": {
+          "uk": {
+            "type": "string",
+            "minLength": 1
+          },
+          "en": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["uk"]
+      },
+      "AdminCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "slug", "name", "sortOrder"]
+      },
+      "AdminCategoriesListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCategoryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["slug", "name", "sortOrder"]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AdminCountryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "flagEmoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "code", "slug", "name"]
+      },
+      "AdminCountriesListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCountryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "CreateCountryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "flagEmoji": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 8
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["code", "slug", "name"]
+      },
+      "UpdateCountryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "flagEmoji": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 8
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AdminProductFlavorDto": {
+        "type": "object",
+        "properties": {
+          "spice": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "sweet": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "texture": {
+            "type": "string"
+          }
+        },
+        "required": ["spice", "sweet", "texture"]
+      },
+      "AdminBrandSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "slug", "name"]
+      },
+      "AdminCountrySummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          }
+        },
+        "required": ["id", "slug", "name"]
+      },
+      "AdminCategorySummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          }
+        },
+        "required": ["id", "slug", "name"]
+      },
+      "AdminProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "story": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "forWhom": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "weight": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          },
+          "flavor": {
+            "$ref": "#/components/schemas/AdminProductFlavorDto"
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isTriedByUs": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "sortWeight": {
+            "type": "number"
+          },
+          "brand": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminBrandSummaryDto"
+              }
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/AdminCountrySummaryDto"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AdminCategorySummaryDto"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "description",
+          "story",
+          "forWhom",
+          "priceMinor",
+          "currency",
+          "flavor",
+          "allergens",
+          "images",
+          "videos",
+          "isTriedByUs",
+          "quantity",
+          "sortWeight",
+          "country",
+          "category"
+        ]
+      },
+      "AdminProductsListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "AdminProductSearchBy": {
+        "type": "string",
+        "enum": ["slug", "name"]
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "story": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "forWhom": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "weight": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          },
+          "flavor": {
+            "$ref": "#/components/schemas/AdminProductFlavorDto"
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isTriedByUs": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sortWeight": {
+            "type": "number"
+          },
+          "brandId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "countryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description",
+          "story",
+          "forWhom",
+          "priceMinor",
+          "currency",
+          "flavor",
+          "allergens",
+          "images",
+          "videos",
+          "isTriedByUs",
+          "quantity",
+          "sortWeight",
+          "countryId",
+          "categoryId"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "story": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "forWhom": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "weight": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          },
+          "flavor": {
+            "$ref": "#/components/schemas/AdminProductFlavorDto"
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isTriedByUs": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sortWeight": {
+            "type": "number"
+          },
+          "brandId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "countryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
       }
     }
   }

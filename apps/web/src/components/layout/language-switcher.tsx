@@ -7,7 +7,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { cardShadow } from '@my-noodles/theme';
-import { iconStyle } from '@my-noodles/ui';
 import GlobeIcon from '@my-noodles/ui/icons/globe.svg';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useId, useState } from 'react';
@@ -121,7 +120,7 @@ export function LanguageSwitcher({ onSwitched, sx }: LanguageSwitcherProps) {
             justifyContent: 'center',
           }}
         >
-          <GlobeIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+          <GlobeIcon aria-hidden size={20} />
         </ListItemIcon>
         <ListItemText primary={t('label')} />
       </ListItemButton>

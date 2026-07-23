@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { svgIconSvgrJsonOptions, svgIconSvgrOptions } from '@my-noodles/vite-config/svgr';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
@@ -8,13 +9,24 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
-const svgrLoader = {
+const svgoConfig = {
+  plugins: [{ name: 'removeViewBox', active: false }],
+};
+
+/** Webpack accepts a function `template`; Turbopack loader options must be JSON-only. */
+const svgrWebpackLoader = {
   loader: '@svgr/webpack',
   options: {
-    icon: true,
-    svgoConfig: {
-      plugins: [{ name: 'removeViewBox', active: false }],
-    },
+    ...svgIconSvgrOptions,
+    svgoConfig,
+  },
+};
+
+const svgrTurbopackLoader = {
+  loader: '@svgr/webpack',
+  options: {
+    ...svgIconSvgrJsonOptions,
+    svgoConfig,
   },
 };
 
@@ -32,7 +44,7 @@ const nextConfig: NextConfig = {
     root: monorepoRoot,
     rules: {
       '*.svg': {
-        loaders: [svgrLoader],
+        loaders: [svgrTurbopackLoader],
         as: '*.js',
       },
     },
@@ -41,7 +53,7 @@ const nextConfig: NextConfig = {
     config.module.rules.push({
       test: /\.svg$/i,
       issuer: /\.[jt]sx?$/,
-      use: [svgrLoader],
+      use: [svgrWebpackLoader],
     });
 
     return config;

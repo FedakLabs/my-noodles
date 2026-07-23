@@ -1,6 +1,7 @@
 import { type LocalizedString } from '@my-noodles/api-lib/locale';
-import { ApiLocalizedColumn } from '@my-noodles/api-lib/nest';
+import { LocalizedColumn, LocalizedResolved } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
 import { Product } from '../products/product.entity';
@@ -16,11 +17,23 @@ export class Collection extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @ApiLocalizedColumn()
-  name!: LocalizedString;
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'name' })
+  nameLocale!: LocalizedString;
 
-  @ApiLocalizedColumn()
-  description!: LocalizedString;
+  @LocalizedResolved()
+  get name(): string | null {
+    return this.nameLocale.localized;
+  }
+
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'description' })
+  descriptionLocale!: LocalizedString;
+
+  @LocalizedResolved()
+  get description(): string | null {
+    return this.descriptionLocale.localized;
+  }
 
   @Column({ name: 'hero_image', type: 'text', nullable: true })
   heroImage!: string | null;

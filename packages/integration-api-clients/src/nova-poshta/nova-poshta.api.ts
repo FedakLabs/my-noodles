@@ -14,7 +14,6 @@ export type {
   NovaPoshtaDirectoryCityRow,
   NovaPoshtaResponse,
   NovaPoshtaSearchSettlementRow,
-  NovaPoshtaSettlementAddress,
   NovaPoshtaWarehouseRow,
 } from './nova-poshta.api.dto';
 

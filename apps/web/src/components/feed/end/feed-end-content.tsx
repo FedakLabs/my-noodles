@@ -5,7 +5,6 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { iconStyle } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import CatalogIcon from '@my-noodles/ui/icons/catalog.svg';
 import { useTranslations } from 'next-intl';
@@ -15,8 +14,6 @@ import { feedMutedTextSx, feedOutlinedButtonSx, feedSubtleChipSx } from '@/compo
 import { useCartActions } from '@/hooks/cart';
 import { type FeedTagChip, feedTagLabel } from '@/hooks/feed';
 import { Link } from '@/i18n/navigation';
-
-const endButtonIconSx = iconStyle({ size: 20, color: 'inherit' });
 
 type FeedEndContentProps = {
   activeTags: FeedTagChip[];
@@ -87,7 +84,7 @@ export function FeedEndContent({
           variant="outlined"
           fullWidth
           data-feed-no-swipe
-          startIcon={<CatalogIcon aria-hidden style={endButtonIconSx} />}
+          startIcon={<CatalogIcon aria-hidden size={20} />}
           sx={feedOutlinedButtonSx(theme)}
         >
           {t('end.browseCatalog')}
@@ -108,7 +105,7 @@ export function FeedEndContent({
           variant="outlined"
           fullWidth
           data-feed-no-swipe
-          startIcon={<CartIcon aria-hidden style={endButtonIconSx} />}
+          startIcon={<CartIcon aria-hidden size={20} />}
           onClick={openCartPanel}
           sx={feedOutlinedButtonSx(theme)}
         >

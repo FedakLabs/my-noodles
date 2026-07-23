@@ -5,7 +5,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { iconStyle } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import { useTranslations } from 'next-intl';
@@ -14,8 +13,6 @@ import type { Product } from '@/api/feed';
 import { ChevronIcon } from '@/components/feed/action-rail/feed-icons';
 import { useCartActions } from '@/hooks/cart';
 import { Link } from '@/i18n/navigation';
-
-const actionIconSx = iconStyle({ size: 18, color: 'inherit' });
 
 type FeedCardActionBarProps = {
   item: Product;
@@ -67,7 +64,7 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
           target="_blank"
           rel="noopener noreferrer"
           variant="text"
-          startIcon={<ChevronRightIcon aria-hidden style={actionIconSx} />}
+          startIcon={<ChevronRightIcon aria-hidden size={18} />}
           sx={{
             flex: 1,
             minWidth: 0,
@@ -88,7 +85,7 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
             isAdding ? (
               <CircularProgress size={18} color="inherit" aria-hidden />
             ) : (
-              <CartIcon aria-hidden style={actionIconSx} />
+              <CartIcon aria-hidden size={18} />
             )
           }
           onClick={() =>

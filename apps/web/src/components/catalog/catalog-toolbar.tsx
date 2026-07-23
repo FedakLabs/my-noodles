@@ -11,7 +11,6 @@ import { layoutDisplay } from '@my-noodles/theme';
 import {
   BusyArea,
   type BusyAreaState,
-  iconStyle,
   resolveSmoothMotionTokens,
   StableLinearProgress,
 } from '@my-noodles/ui';
@@ -128,7 +127,7 @@ export function CatalogToolbarControls({
               onClick={onOpenFilters}
               sx={{ color: hasFiltersApplied ? 'primary.main' : 'inherit', p: 0.25 }}
             >
-              <FilterIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+              <FilterIcon aria-hidden size={20} />
             </IconButton>
           </Box>
         ) : null}

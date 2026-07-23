@@ -1,0 +1,25 @@
+{
+  "list": {
+    "title": "Бренди",
+    "search": "Slug або назва",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "columnTheme": "Тема",
+    "loadError": "Не вдалося завантажити бренди.",
+    "empty": "Брендів не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Новий бренд",
+    "editTitle": "Редагувати бренд",
+    "loading": "Завантаження…",
+    "slug": "Slug",
+    "name": "Назва",
+    "logoUrl": "URL логотипу",
+    "themeKey": "Ключ теми бренду",
+    "saveFailed": "Не вдалося зберегти бренд."
+  }
+}

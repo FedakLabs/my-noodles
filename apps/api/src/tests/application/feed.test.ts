@@ -3,6 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 
 import { CartItem } from '@/application/cart/cart-item.entity';
+import { Category } from '@/application/categories/category.entity';
+import { Country } from '@/application/countries/country.entity';
 import {
   FeedCommentsService,
   FeedController,
@@ -24,6 +26,15 @@ import {
 import { sampleProduct, sampleProductId } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '../jest-globals';
+
+function asProduct(overrides: Partial<Product> = {}): Product {
+  return Object.assign(new Product(), {
+    ...sampleProduct,
+    country: Object.assign(new Country(), sampleProduct.country),
+    category: Object.assign(new Category(), sampleProduct.category),
+    ...overrides,
+  });
+}
 
 describe('feed (e2e)', () => {
   let app: INestApplication;
@@ -60,7 +71,7 @@ describe('feed (e2e)', () => {
     visitorsSave = jest.fn((entity: VisitorSession) => Promise.resolve(entity));
     visitorsCreate = jest.fn((entity: Partial<VisitorSession>) => entity);
     viewsDelete = jest.fn().mockResolvedValue({ affected: 0 });
-    productsFind = jest.fn().mockResolvedValue([sampleProduct]);
+    productsFind = jest.fn().mockResolvedValue([asProduct()]);
     productsFindOne = jest.fn().mockResolvedValue({ id: sampleProductId });
     commentsFind = jest.fn().mockResolvedValue([]);
     likesFindOne = jest.fn().mockResolvedValue(null);
@@ -155,7 +166,7 @@ describe('feed (e2e)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    productsFind.mockResolvedValue([sampleProduct]);
+    productsFind.mockResolvedValue([asProduct()]);
     productsFindOne.mockResolvedValue({ id: sampleProductId });
     visitorsSave.mockImplementation((entity: VisitorSession) => {
       if (!entity.id) {

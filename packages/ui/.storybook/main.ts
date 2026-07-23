@@ -1,6 +1,7 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+import { svgIconSvgrOptions } from '@my-noodles/vite-config/svgr';
 import type { StorybookConfig } from '@storybook/react-vite';
 import svgr from 'vite-plugin-svgr';
 
@@ -18,8 +19,8 @@ const config: StorybookConfig = {
       svgr({
         include: '**/*.svg',
         svgrOptions: {
+          ...svgIconSvgrOptions,
           exportType: 'default',
-          icon: true,
           svgoConfig: {
             plugins: [{ name: 'removeViewBox' }],
           },

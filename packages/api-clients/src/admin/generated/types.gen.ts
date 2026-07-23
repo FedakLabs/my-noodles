@@ -4,6 +4,10 @@ export type ClientOptions = {
     baseUrl: string;
 };
 
+export const CurrencyCode = { UAH: 'UAH', USD: 'USD' } as const;
+
+export type CurrencyCode = typeof CurrencyCode[keyof typeof CurrencyCode];
+
 export type Brand = {
     id: string;
     slug: string;
@@ -51,6 +55,7 @@ export type Product = {
     description: string | null;
     story: string | null;
     forWhom: string | null;
+    currency: CurrencyCode;
     inStock: boolean;
     liked?: boolean;
     commentCount?: number;
@@ -58,7 +63,6 @@ export type Product = {
     slug: string;
     weight: string | null;
     priceMinor: number;
-    currency: string;
     flavor: {
         [key: string]: unknown;
     };
@@ -118,6 +122,14 @@ export type OrderItem = {
     qty: number;
 };
 
+export type OrderStatusHistory = {
+    id: string;
+    orderId: string;
+    order: Order;
+    oldStatus: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+    newStatus: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+};
+
 export type OrderDeliveryEstimateDto = {
     estimatedDeliveryAt: string;
     shippingCostMinor: number | null;
@@ -151,10 +163,6 @@ export type Order = {
      * Response-only — set by `CheckoutCalculator.calculateTotals`.
      */
     grandTotalMinor?: number;
-    /**
-     * Admin responses only — allowed next statuses for transition UI.
-     */
-    availableTransitions?: Array<'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived'>;
     id: string;
     visitorSessionId: string | null;
     visitorSession: VisitorSession | null;
@@ -167,6 +175,7 @@ export type Order = {
     cancelledReason: 'customer_request' | 'out_of_stock';
     delivery: OrderDelivery | null;
     items: Array<OrderItem>;
+    statusHistory: Array<OrderStatusHistory>;
     checkout: Checkout | null;
 };
 
@@ -192,6 +201,34 @@ export type OrderDelivery = {
     shippingCostMinor: number | null;
 };
 
+export type AdminOrder = {
+    createdAt: string;
+    /**
+     * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
+     * Response-only — set by `CheckoutCalculator.calculateTotals`.
+     */
+    grandTotalMinor?: number;
+    /**
+     * Allowed next statuses for transition UI.
+     */
+    availableTransitions?: Array<'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived'>;
+    orderedAt?: string | null;
+    id: string;
+    visitorSessionId: string | null;
+    visitorSession: VisitorSession | null;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    totalMinor: number;
+    currency: string;
+    status: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+    cancelledReason: 'customer_request' | 'out_of_stock';
+    delivery: OrderDelivery | null;
+    items: Array<OrderItem>;
+    statusHistory: Array<OrderStatusHistory>;
+    checkout: Checkout | null;
+};
+
 export type AdminOrderListMetaDto = {
     total: number;
     currentTotal: number;
@@ -200,7 +237,7 @@ export type AdminOrderListMetaDto = {
 };
 
 export type AdminOrdersListResponseDto = {
-    items: Array<Order>;
+    items: Array<AdminOrder>;
     meta: AdminOrderListMetaDto;
 };
 
@@ -218,12 +255,214 @@ export const OrderStatus = {
 
 export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
+export const AdminOrdersSortBy = {
+    CREATED_AT: 'createdAt',
+    STATUS: 'status',
+    TOTAL_MINOR: 'totalMinor',
+    ID: 'id',
+    PHONE: 'phone'
+} as const;
+
+export type AdminOrdersSortBy = typeof AdminOrdersSortBy[keyof typeof AdminOrdersSortBy];
+
+export const AdminOrdersSortOrder = { ASC: 'asc', DESC: 'desc' } as const;
+
+export type AdminOrdersSortOrder = typeof AdminOrdersSortOrder[keyof typeof AdminOrdersSortOrder];
+
 export const OrderCancelledReason = { CUSTOMER_REQUEST: 'customer_request', OUT_OF_STOCK: 'out_of_stock' } as const;
 
 export type OrderCancelledReason = typeof OrderCancelledReason[keyof typeof OrderCancelledReason];
 
 export type CancelOrderDto = {
     cancelledReason: OrderCancelledReason;
+};
+
+export type AdminListMetaDto = {
+    total: number;
+    currentTotal: number;
+    page: number;
+    limit: number;
+};
+
+export type AdminBrandsListResponseDto = {
+    items: Array<Brand>;
+    meta: AdminListMetaDto;
+};
+
+export type CreateBrandDto = {
+    slug: string;
+    name: string;
+    logoUrl?: string | null;
+    themeKey?: string | null;
+};
+
+export type UpdateBrandDto = {
+    slug?: string;
+    name?: string;
+    logoUrl?: string | null;
+    themeKey?: string | null;
+};
+
+export type LocalizedStringDto = {
+    uk: string;
+    en?: string;
+};
+
+export type AdminCategoryDto = {
+    id: string;
+    slug: string;
+    name: LocalizedStringDto;
+    icon?: string | null;
+    sortOrder: number;
+    themeKey?: string | null;
+};
+
+export type AdminCategoriesListResponseDto = {
+    items: Array<AdminCategoryDto>;
+    meta: AdminListMetaDto;
+};
+
+export type CreateCategoryDto = {
+    slug: string;
+    name: LocalizedStringDto;
+    icon?: string | null;
+    sortOrder: number;
+    themeKey?: string | null;
+};
+
+export type UpdateCategoryDto = {
+    slug?: string;
+    name?: LocalizedStringDto;
+    icon?: string | null;
+    sortOrder?: number;
+    themeKey?: string | null;
+};
+
+export type AdminCountryDto = {
+    id: string;
+    code: string;
+    slug: string;
+    name: LocalizedStringDto;
+    flagEmoji?: string | null;
+    themeKey?: string | null;
+};
+
+export type AdminCountriesListResponseDto = {
+    items: Array<AdminCountryDto>;
+    meta: AdminListMetaDto;
+};
+
+export type CreateCountryDto = {
+    code: string;
+    slug: string;
+    name: LocalizedStringDto;
+    flagEmoji?: string | null;
+    themeKey?: string | null;
+};
+
+export type UpdateCountryDto = {
+    code?: string;
+    slug?: string;
+    name?: LocalizedStringDto;
+    flagEmoji?: string | null;
+    themeKey?: string | null;
+};
+
+export type AdminProductFlavorDto = {
+    spice: number;
+    sweet: number;
+    texture: string;
+};
+
+export type AdminBrandSummaryDto = {
+    id: string;
+    slug: string;
+    name: string;
+};
+
+export type AdminCountrySummaryDto = {
+    id: string;
+    slug: string;
+    name: LocalizedStringDto;
+};
+
+export type AdminCategorySummaryDto = {
+    id: string;
+    slug: string;
+    name: LocalizedStringDto;
+};
+
+export type AdminProductDto = {
+    id: string;
+    slug: string;
+    name: LocalizedStringDto;
+    description: LocalizedStringDto;
+    story: LocalizedStringDto;
+    forWhom: LocalizedStringDto;
+    weight?: string | null;
+    priceMinor: number;
+    currency: CurrencyCode;
+    flavor: AdminProductFlavorDto;
+    allergens: Array<string>;
+    images: Array<string>;
+    videos: Array<string>;
+    isTriedByUs: boolean;
+    quantity: number;
+    sortWeight: number;
+    brand?: AdminBrandSummaryDto | null;
+    country: AdminCountrySummaryDto;
+    category: AdminCategorySummaryDto;
+};
+
+export type AdminProductsListResponseDto = {
+    items: Array<AdminProductDto>;
+    meta: AdminListMetaDto;
+};
+
+export const AdminProductSearchBy = { SLUG: 'slug', NAME: 'name' } as const;
+
+export type AdminProductSearchBy = typeof AdminProductSearchBy[keyof typeof AdminProductSearchBy];
+
+export type CreateProductDto = {
+    slug: string;
+    name: LocalizedStringDto;
+    description: LocalizedStringDto;
+    story: LocalizedStringDto;
+    forWhom: LocalizedStringDto;
+    weight?: string | null;
+    priceMinor: number;
+    currency: CurrencyCode;
+    flavor: AdminProductFlavorDto;
+    allergens: Array<string>;
+    images: Array<string>;
+    videos: Array<string>;
+    isTriedByUs: boolean;
+    quantity: number;
+    sortWeight: number;
+    brandId?: string | null;
+    countryId: string;
+    categoryId: string;
+};
+
+export type UpdateProductDto = {
+    slug?: string;
+    name?: LocalizedStringDto;
+    description?: LocalizedStringDto;
+    story?: LocalizedStringDto;
+    forWhom?: LocalizedStringDto;
+    weight?: string | null;
+    priceMinor?: number;
+    currency?: CurrencyCode;
+    flavor?: AdminProductFlavorDto;
+    allergens?: Array<string>;
+    images?: Array<string>;
+    videos?: Array<string>;
+    isTriedByUs?: boolean;
+    quantity?: number;
+    sortWeight?: number;
+    brandId?: string | null;
+    countryId?: string;
+    categoryId?: string;
 };
 
 export type AdminOrdersControllerListOrdersData = {
@@ -234,17 +473,19 @@ export type AdminOrdersControllerListOrdersData = {
         limit: number;
         status?: Array<OrderStatus>;
         /**
-         * Matches order id prefix, full name prefix, or phone prefix.
+         * Matches order id prefix, first/last name prefix, or phone prefix.
          */
         q?: string;
         /**
-         * Inclusive UTC calendar day start (`YYYY-MM-DD`).
+         * Inclusive UTC calendar day start (`YYYY-MM-DD`) on `createdAt`.
          */
         createdFrom?: string;
         /**
-         * Inclusive UTC calendar day end (`YYYY-MM-DD`).
+         * Inclusive UTC calendar day end (`YYYY-MM-DD`) on `createdAt`.
          */
         createdTo?: string;
+        sortBy?: AdminOrdersSortBy;
+        sortOrder?: AdminOrdersSortOrder;
     };
     url: '/api/admin/orders';
 };
@@ -298,7 +539,7 @@ export type AdminOrdersControllerGetOrderErrors = {
 export type AdminOrdersControllerGetOrderError = AdminOrdersControllerGetOrderErrors[keyof AdminOrdersControllerGetOrderErrors];
 
 export type AdminOrdersControllerGetOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerGetOrderResponse = AdminOrdersControllerGetOrderResponses[keyof AdminOrdersControllerGetOrderResponses];
@@ -341,7 +582,7 @@ export type AdminOrdersControllerConfirmOrderErrors = {
 export type AdminOrdersControllerConfirmOrderError = AdminOrdersControllerConfirmOrderErrors[keyof AdminOrdersControllerConfirmOrderErrors];
 
 export type AdminOrdersControllerConfirmOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerConfirmOrderResponse = AdminOrdersControllerConfirmOrderResponses[keyof AdminOrdersControllerConfirmOrderResponses];
@@ -384,7 +625,7 @@ export type AdminOrdersControllerSendOrderErrors = {
 export type AdminOrdersControllerSendOrderError = AdminOrdersControllerSendOrderErrors[keyof AdminOrdersControllerSendOrderErrors];
 
 export type AdminOrdersControllerSendOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerSendOrderResponse = AdminOrdersControllerSendOrderResponses[keyof AdminOrdersControllerSendOrderResponses];
@@ -427,7 +668,7 @@ export type AdminOrdersControllerArriveOrderErrors = {
 export type AdminOrdersControllerArriveOrderError = AdminOrdersControllerArriveOrderErrors[keyof AdminOrdersControllerArriveOrderErrors];
 
 export type AdminOrdersControllerArriveOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerArriveOrderResponse = AdminOrdersControllerArriveOrderResponses[keyof AdminOrdersControllerArriveOrderResponses];
@@ -470,7 +711,7 @@ export type AdminOrdersControllerCompleteOrderErrors = {
 export type AdminOrdersControllerCompleteOrderError = AdminOrdersControllerCompleteOrderErrors[keyof AdminOrdersControllerCompleteOrderErrors];
 
 export type AdminOrdersControllerCompleteOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerCompleteOrderResponse = AdminOrdersControllerCompleteOrderResponses[keyof AdminOrdersControllerCompleteOrderResponses];
@@ -519,7 +760,7 @@ export type AdminOrdersControllerCancelOrderErrors = {
 export type AdminOrdersControllerCancelOrderError = AdminOrdersControllerCancelOrderErrors[keyof AdminOrdersControllerCancelOrderErrors];
 
 export type AdminOrdersControllerCancelOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerCancelOrderResponse = AdminOrdersControllerCancelOrderResponses[keyof AdminOrdersControllerCancelOrderResponses];
@@ -562,7 +803,7 @@ export type AdminOrdersControllerReturnOrderErrors = {
 export type AdminOrdersControllerReturnOrderError = AdminOrdersControllerReturnOrderErrors[keyof AdminOrdersControllerReturnOrderErrors];
 
 export type AdminOrdersControllerReturnOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerReturnOrderResponse = AdminOrdersControllerReturnOrderResponses[keyof AdminOrdersControllerReturnOrderResponses];
@@ -605,7 +846,434 @@ export type AdminOrdersControllerArchiveOrderErrors = {
 export type AdminOrdersControllerArchiveOrderError = AdminOrdersControllerArchiveOrderErrors[keyof AdminOrdersControllerArchiveOrderErrors];
 
 export type AdminOrdersControllerArchiveOrderResponses = {
-    200: Order;
+    200: AdminOrder;
 };
 
 export type AdminOrdersControllerArchiveOrderResponse = AdminOrdersControllerArchiveOrderResponses[keyof AdminOrdersControllerArchiveOrderResponses];
+
+export type AdminBrandsControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+    };
+    url: '/api/admin/brands';
+};
+
+export type AdminBrandsControllerListResponses = {
+    200: AdminBrandsListResponseDto;
+};
+
+export type AdminBrandsControllerListResponse = AdminBrandsControllerListResponses[keyof AdminBrandsControllerListResponses];
+
+export type AdminBrandsControllerCreateData = {
+    body: CreateBrandDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/brands';
+};
+
+export type AdminBrandsControllerCreateResponses = {
+    201: Brand;
+};
+
+export type AdminBrandsControllerCreateResponse = AdminBrandsControllerCreateResponses[keyof AdminBrandsControllerCreateResponses];
+
+export type AdminBrandsControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/brands/{id}';
+};
+
+export type AdminBrandsControllerGetByIdErrors = {
+    /**
+     * brand_not_found
+     */
+    404: {
+        status: 404;
+        code: 'brand_not_found';
+        message: string;
+        payload: {
+            brandId?: string;
+        };
+    };
+};
+
+export type AdminBrandsControllerGetByIdError = AdminBrandsControllerGetByIdErrors[keyof AdminBrandsControllerGetByIdErrors];
+
+export type AdminBrandsControllerGetByIdResponses = {
+    200: Brand;
+};
+
+export type AdminBrandsControllerGetByIdResponse = AdminBrandsControllerGetByIdResponses[keyof AdminBrandsControllerGetByIdResponses];
+
+export type AdminBrandsControllerUpdateData = {
+    body: UpdateBrandDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/brands/{id}';
+};
+
+export type AdminBrandsControllerUpdateErrors = {
+    /**
+     * brand_not_found
+     */
+    404: {
+        status: 404;
+        code: 'brand_not_found';
+        message: string;
+        payload: {
+            brandId?: string;
+        };
+    };
+};
+
+export type AdminBrandsControllerUpdateError = AdminBrandsControllerUpdateErrors[keyof AdminBrandsControllerUpdateErrors];
+
+export type AdminBrandsControllerUpdateResponses = {
+    200: Brand;
+};
+
+export type AdminBrandsControllerUpdateResponse = AdminBrandsControllerUpdateResponses[keyof AdminBrandsControllerUpdateResponses];
+
+export type AdminCategoriesControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+    };
+    url: '/api/admin/categories';
+};
+
+export type AdminCategoriesControllerListResponses = {
+    200: AdminCategoriesListResponseDto;
+};
+
+export type AdminCategoriesControllerListResponse = AdminCategoriesControllerListResponses[keyof AdminCategoriesControllerListResponses];
+
+export type AdminCategoriesControllerCreateData = {
+    body: CreateCategoryDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/categories';
+};
+
+export type AdminCategoriesControllerCreateResponses = {
+    201: AdminCategoryDto;
+};
+
+export type AdminCategoriesControllerCreateResponse = AdminCategoriesControllerCreateResponses[keyof AdminCategoriesControllerCreateResponses];
+
+export type AdminCategoriesControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/categories/{id}';
+};
+
+export type AdminCategoriesControllerGetByIdErrors = {
+    /**
+     * category_not_found
+     */
+    404: {
+        status: 404;
+        code: 'category_not_found';
+        message: string;
+        payload: {
+            categoryId?: string;
+        };
+    };
+};
+
+export type AdminCategoriesControllerGetByIdError = AdminCategoriesControllerGetByIdErrors[keyof AdminCategoriesControllerGetByIdErrors];
+
+export type AdminCategoriesControllerGetByIdResponses = {
+    200: AdminCategoryDto;
+};
+
+export type AdminCategoriesControllerGetByIdResponse = AdminCategoriesControllerGetByIdResponses[keyof AdminCategoriesControllerGetByIdResponses];
+
+export type AdminCategoriesControllerUpdateData = {
+    body: UpdateCategoryDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/categories/{id}';
+};
+
+export type AdminCategoriesControllerUpdateErrors = {
+    /**
+     * category_not_found
+     */
+    404: {
+        status: 404;
+        code: 'category_not_found';
+        message: string;
+        payload: {
+            categoryId?: string;
+        };
+    };
+};
+
+export type AdminCategoriesControllerUpdateError = AdminCategoriesControllerUpdateErrors[keyof AdminCategoriesControllerUpdateErrors];
+
+export type AdminCategoriesControllerUpdateResponses = {
+    200: AdminCategoryDto;
+};
+
+export type AdminCategoriesControllerUpdateResponse = AdminCategoriesControllerUpdateResponses[keyof AdminCategoriesControllerUpdateResponses];
+
+export type AdminCountriesControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+    };
+    url: '/api/admin/countries';
+};
+
+export type AdminCountriesControllerListResponses = {
+    200: AdminCountriesListResponseDto;
+};
+
+export type AdminCountriesControllerListResponse = AdminCountriesControllerListResponses[keyof AdminCountriesControllerListResponses];
+
+export type AdminCountriesControllerCreateData = {
+    body: CreateCountryDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/countries';
+};
+
+export type AdminCountriesControllerCreateResponses = {
+    201: AdminCountryDto;
+};
+
+export type AdminCountriesControllerCreateResponse = AdminCountriesControllerCreateResponses[keyof AdminCountriesControllerCreateResponses];
+
+export type AdminCountriesControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/countries/{id}';
+};
+
+export type AdminCountriesControllerGetByIdErrors = {
+    /**
+     * country_not_found
+     */
+    404: {
+        status: 404;
+        code: 'country_not_found';
+        message: string;
+        payload: {
+            countryId?: string;
+        };
+    };
+};
+
+export type AdminCountriesControllerGetByIdError = AdminCountriesControllerGetByIdErrors[keyof AdminCountriesControllerGetByIdErrors];
+
+export type AdminCountriesControllerGetByIdResponses = {
+    200: AdminCountryDto;
+};
+
+export type AdminCountriesControllerGetByIdResponse = AdminCountriesControllerGetByIdResponses[keyof AdminCountriesControllerGetByIdResponses];
+
+export type AdminCountriesControllerUpdateData = {
+    body: UpdateCountryDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/countries/{id}';
+};
+
+export type AdminCountriesControllerUpdateErrors = {
+    /**
+     * country_not_found
+     */
+    404: {
+        status: 404;
+        code: 'country_not_found';
+        message: string;
+        payload: {
+            countryId?: string;
+        };
+    };
+};
+
+export type AdminCountriesControllerUpdateError = AdminCountriesControllerUpdateErrors[keyof AdminCountriesControllerUpdateErrors];
+
+export type AdminCountriesControllerUpdateResponses = {
+    200: AdminCountryDto;
+};
+
+export type AdminCountriesControllerUpdateResponse = AdminCountriesControllerUpdateResponses[keyof AdminCountriesControllerUpdateResponses];
+
+export type AdminProductsControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+        searchBy?: AdminProductSearchBy;
+        categoryId?: Array<string>;
+        brandId?: Array<string>;
+        countryId?: Array<string>;
+    };
+    url: '/api/admin/products';
+};
+
+export type AdminProductsControllerListResponses = {
+    200: AdminProductsListResponseDto;
+};
+
+export type AdminProductsControllerListResponse = AdminProductsControllerListResponses[keyof AdminProductsControllerListResponses];
+
+export type AdminProductsControllerCreateData = {
+    body: CreateProductDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/products';
+};
+
+export type AdminProductsControllerCreateErrors = {
+    /**
+     * product_brand_not_found, product_category_not_found, product_country_not_found
+     */
+    400: {
+        status: 400;
+        code: 'product_brand_not_found';
+        message: string;
+        payload: {
+            brandId?: string;
+        };
+    } | {
+        status: 400;
+        code: 'product_category_not_found';
+        message: string;
+        payload: {
+            categoryId?: string;
+        };
+    } | {
+        status: 400;
+        code: 'product_country_not_found';
+        message: string;
+        payload: {
+            countryId?: string;
+        };
+    };
+};
+
+export type AdminProductsControllerCreateError = AdminProductsControllerCreateErrors[keyof AdminProductsControllerCreateErrors];
+
+export type AdminProductsControllerCreateResponses = {
+    201: AdminProductDto;
+};
+
+export type AdminProductsControllerCreateResponse = AdminProductsControllerCreateResponses[keyof AdminProductsControllerCreateResponses];
+
+export type AdminProductsControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/products/{id}';
+};
+
+export type AdminProductsControllerGetByIdErrors = {
+    /**
+     * product_not_found
+     */
+    404: {
+        status: 404;
+        code: 'product_not_found';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    };
+};
+
+export type AdminProductsControllerGetByIdError = AdminProductsControllerGetByIdErrors[keyof AdminProductsControllerGetByIdErrors];
+
+export type AdminProductsControllerGetByIdResponses = {
+    200: AdminProductDto;
+};
+
+export type AdminProductsControllerGetByIdResponse = AdminProductsControllerGetByIdResponses[keyof AdminProductsControllerGetByIdResponses];
+
+export type AdminProductsControllerUpdateData = {
+    body: UpdateProductDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/products/{id}';
+};
+
+export type AdminProductsControllerUpdateErrors = {
+    /**
+     * product_brand_not_found, product_category_not_found, product_country_not_found
+     */
+    400: {
+        status: 400;
+        code: 'product_brand_not_found';
+        message: string;
+        payload: {
+            brandId?: string;
+        };
+    } | {
+        status: 400;
+        code: 'product_category_not_found';
+        message: string;
+        payload: {
+            categoryId?: string;
+        };
+    } | {
+        status: 400;
+        code: 'product_country_not_found';
+        message: string;
+        payload: {
+            countryId?: string;
+        };
+    };
+    /**
+     * product_not_found
+     */
+    404: {
+        status: 404;
+        code: 'product_not_found';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    };
+};
+
+export type AdminProductsControllerUpdateError = AdminProductsControllerUpdateErrors[keyof AdminProductsControllerUpdateErrors];
+
+export type AdminProductsControllerUpdateResponses = {
+    200: AdminProductDto;
+};
+
+export type AdminProductsControllerUpdateResponse = AdminProductsControllerUpdateResponses[keyof AdminProductsControllerUpdateResponses];

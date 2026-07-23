@@ -22,6 +22,7 @@ export const LOCALE_CURRENCY_DISPLAY: Record<AppLocale, LocaleCurrencyDisplay> =
     decimalSeparator: ',',
     currency: {
       UAH: { symbol: '₴', symbolPosition: 'after', spaceBetween: true },
+      USD: { symbol: '$', symbolPosition: 'before', spaceBetween: false },
     },
   },
   en: {
@@ -29,6 +30,7 @@ export const LOCALE_CURRENCY_DISPLAY: Record<AppLocale, LocaleCurrencyDisplay> =
     decimalSeparator: '.',
     currency: {
       UAH: { symbol: '₴', symbolPosition: 'before', spaceBetween: false },
+      USD: { symbol: '$', symbolPosition: 'before', spaceBetween: false },
     },
   },
 };

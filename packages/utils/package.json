@@ -22,5 +22,8 @@
     "lint": "oxlint --fix",
     "lint-check": "oxlint",
     "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.21"
   }
 }

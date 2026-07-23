@@ -1,10 +1,12 @@
-import { authControllerRefresh } from '../auth';
+import { authControllerRefresh, type AuthApi } from '../auth';
 import { ApiError } from '../common';
 import type { Client } from './generated/client';
 import { client as apiClient } from './generated/client.gen';
 
 export type AdminApiOptions = {
   baseUrl: string;
+  /** Auth client used for token refresh — can point at a separate auth service later. */
+  authApi: AuthApi;
 };
 
 type AppErrorBody = {
@@ -92,6 +94,7 @@ function isAuthPath(url: string | undefined): boolean {
 export class AdminApi {
   readonly apiClient: Client;
 
+  private readonly authApi: AuthApi;
   private tokenProvider: AdminApiTokenProvider | undefined;
   private authHandlers: AdminApiAuthHandlers | undefined;
   private refreshPromise: Promise<boolean> | null = null;
@@ -101,6 +104,7 @@ export class AdminApi {
 
   constructor(options: AdminApiOptions) {
     this.apiClient = apiClient;
+    this.authApi = options.authApi;
     AdminApi.active = this;
     AdminApi.attachInterceptors();
     this.apiClient.setConfig({
@@ -204,10 +208,9 @@ export class AdminApi {
   }
 
   private async defaultRefresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    // Same client so baseUrl/error mapping apply; isAuthPath skips Bearer + 401 retry.
     const tokens = await authControllerRefresh({
       body: { refreshToken },
-      client: this.apiClient as Parameters<typeof authControllerRefresh>[0]['client'],
+      client: this.authApi.apiClient,
     });
 
     return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };

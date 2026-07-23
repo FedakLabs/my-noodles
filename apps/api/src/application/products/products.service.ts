@@ -169,8 +169,8 @@ export class ProductsService {
     return {
       total: filteredProducts.length,
       facets: {
-        category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name.localized),
-        country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name.localized),
+        category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name ?? ''),
+        country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name ?? ''),
         brand: this.toFacetOptions(brands, brandCounts, (entry) => entry.name),
         price: { min: 0, max: 0 },
         isTriedByUs,

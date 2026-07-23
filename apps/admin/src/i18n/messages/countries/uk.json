@@ -1,0 +1,29 @@
+{
+  "list": {
+    "title": "Країни",
+    "search": "Slug, код або назва",
+    "columnCode": "Код",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "columnFlag": "Прапор",
+    "columnTheme": "Тема",
+    "loadError": "Не вдалося завантажити країни.",
+    "empty": "Країн не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Нова країна",
+    "editTitle": "Редагувати країну",
+    "loading": "Завантаження…",
+    "language": "Мова",
+    "code": "Код",
+    "slug": "Slug",
+    "name": "Назва",
+    "flagEmoji": "Емодзі прапора",
+    "themeKey": "Ключ теми країни",
+    "saveFailed": "Не вдалося зберегти країну."
+  }
+}

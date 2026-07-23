@@ -2,7 +2,6 @@
 
 import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
-import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useCallback, useEffect } from 'react';
 
@@ -56,7 +55,7 @@ export function FeedExitButton({ label }: FeedExitButtonProps) {
         ...feedExitButtonSx(theme),
       }}
     >
-      <CloseIcon aria-hidden style={iconStyle({ size: 22, color: 'currentColor' })} />
+      <CloseIcon aria-hidden size={22} />
     </IconButton>
   );
 }

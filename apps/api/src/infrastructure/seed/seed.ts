@@ -56,7 +56,7 @@ async function upsertCategory(
   return await repository.save(
     repository.create({
       slug,
-      name: placeholderLocalized(name),
+      nameLocale: placeholderLocalized(name),
       icon: null,
       sortOrder,
       themeKey: null,
@@ -75,7 +75,7 @@ async function upsertCountry(repository: Repository<Country>, countryName: strin
     repository.create({
       code: seed.code,
       slug: seed.slug,
-      name: seed.name,
+      nameLocale: seed.name,
       flagEmoji: seed.flagEmoji,
       themeKey: seed.themeKey,
     }),
@@ -96,10 +96,10 @@ async function upsertCollection(
     repository.create({
       code: category.slug,
       slug: category.slug,
-      name: category.name,
-      description: {
-        uk: `Добірка категорії «${category.name.uk}».`,
-        en: `A curated pick from «${category.name.en ?? category.name.uk}».`,
+      nameLocale: category.nameLocale,
+      descriptionLocale: {
+        uk: `Добірка категорії «${category.nameLocale.uk}».`,
+        en: `A curated pick from «${category.nameLocale.en ?? category.nameLocale.uk}».`,
       },
       heroImage: null,
       themeKey: category.themeKey,
@@ -177,10 +177,10 @@ async function seed(dataSource: DataSource): Promise<void> {
     const product = await productRepository.save(
       productRepository.create({
         slug,
-        name: placeholderLocalized(row.name),
-        description: copy.description,
-        story: copy.story,
-        forWhom: copy.forWhom,
+        nameLocale: placeholderLocalized(row.name),
+        descriptionLocale: copy.description,
+        storyLocale: copy.story,
+        forWhomLocale: copy.forWhom,
         weight: row.weight,
         priceMinor: row.priceMinor,
         currency: DEFAULT_CURRENCY,
@@ -255,7 +255,7 @@ async function seedFeedComments(
         commentRepository.create({
           productId: product.id,
           authorName: seed.authorName,
-          comment: seed.comment,
+          commentLocale: seed.comment,
         }),
       ),
     );

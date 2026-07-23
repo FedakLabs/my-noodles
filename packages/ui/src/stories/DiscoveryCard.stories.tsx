@@ -8,7 +8,6 @@ import type { ReactNode } from 'react';
 import { DiscoveryCard, type MediaGalleryItem } from '../components/DiscoveryCard';
 import CartIcon from '../icons/cart.svg';
 import ChevronRightIcon from '../icons/chevron-right.svg';
-import { iconStyle } from '../utils/iconStyle';
 import { resolveSkin } from '../utils/skins';
 
 /** Typical catalog column width at `xs` (2-up grid on ~390px viewport). */
@@ -111,7 +110,7 @@ function catalogQuickActions(isPreview: boolean) {
           aria-label={isPreview ? undefined : 'Add to cart'}
         >
           <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
-            <CartIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+            <CartIcon aria-hidden size={20} />
             <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
               Add
             </DiscoveryCard.Collapse>
@@ -126,7 +125,7 @@ function catalogQuickActions(isPreview: boolean) {
           aria-label={isPreview ? undefined : 'Go to details'}
         >
           <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
-            <ChevronRightIcon aria-hidden style={iconStyle({ size: 20, color: 'inherit' })} />
+            <ChevronRightIcon aria-hidden size={20} />
             <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
               Go
             </DiscoveryCard.Collapse>

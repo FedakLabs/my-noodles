@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { BusyArea, iconStyle } from '@my-noodles/ui';
+import { BusyArea } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 
@@ -96,7 +96,7 @@ export function CartPanel({ onClose }: CartPanelProps) {
         >
           <Typography variant="h6">{t('title')}</Typography>
           <IconButton onClick={onClose} aria-label={t('close')}>
-            <CloseIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
+            <CloseIcon aria-hidden size={24} />
           </IconButton>
         </Stack>
 

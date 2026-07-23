@@ -1,5 +1,5 @@
 /** ISO 4217 codes we accept from the API today — extend here for multi-currency. */
-export const CURRENCY_CODES = ['UAH'] as const;
+export const CURRENCY_CODES = ['UAH', 'USD'] as const;
 
 export type CurrencyCode = (typeof CURRENCY_CODES)[number];
 
@@ -12,6 +12,7 @@ type CurrencyDefinition = {
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyDefinition> = {
   UAH: { minorExponent: 2 },
+  USD: { minorExponent: 2 },
 };
 
 export type MinorUnitsSeparators = {

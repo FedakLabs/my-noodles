@@ -1,13 +1,17 @@
 declare module '@my-noodles/ui/icons/*.svg' {
-  import type { FC, SVGProps } from 'react';
+  import type { FC } from 'react';
 
-  const ReactComponent: FC<SVGProps<SVGSVGElement>>;
+  import type { SvgIconProps } from './svg-icon-props';
+
+  const ReactComponent: FC<SvgIconProps>;
   export default ReactComponent;
 }
 
 declare module '*.svg' {
-  import type { FC, SVGProps } from 'react';
+  import type { FC } from 'react';
 
-  const ReactComponent: FC<SVGProps<SVGSVGElement>>;
+  import type { SvgIconProps } from './svg-icon-props';
+
+  const ReactComponent: FC<SvgIconProps>;
   export default ReactComponent;
 }

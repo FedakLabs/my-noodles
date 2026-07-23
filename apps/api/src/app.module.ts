@@ -5,7 +5,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AdminOrdersModule } from './application/admin';
+import {
+  AdminBrandsModule,
+  AdminCategoriesModule,
+  AdminCountriesModule,
+  AdminOrdersModule,
+  AdminProductsModule,
+} from './application/admin';
 import { AuthModule } from './application/auth';
 import { CartController, CartModule } from './application/cart';
 import { CheckoutsController, CheckoutsModule } from './application/checkouts';
@@ -42,6 +48,10 @@ import './infrastructure/logging';
     CartModule,
     AuthModule,
     AdminOrdersModule,
+    AdminBrandsModule,
+    AdminCategoriesModule,
+    AdminCountriesModule,
+    AdminProductsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

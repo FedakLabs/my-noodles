@@ -31,9 +31,23 @@ export function AdminShell() {
               <Typography variant="h6" component="span">
                 {t('appTitle')}
               </Typography>
-              <Button component={Link} to={ROUTE_NAMES.orders} size="small">
-                {t('nav.orders')}
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button component={Link} to={ROUTE_NAMES.orders} size="small">
+                  {t('nav.orders')}
+                </Button>
+                <Button component={Link} to={ROUTE_NAMES.products} size="small">
+                  {t('nav.products')}
+                </Button>
+                <Button component={Link} to={ROUTE_NAMES.brands} size="small">
+                  {t('nav.brands')}
+                </Button>
+                <Button component={Link} to={ROUTE_NAMES.categories} size="small">
+                  {t('nav.categories')}
+                </Button>
+                <Button component={Link} to={ROUTE_NAMES.countries} size="small">
+                  {t('nav.countries')}
+                </Button>
+              </Stack>
             </Stack>
             <Button
               size="small"

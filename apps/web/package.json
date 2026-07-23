@@ -41,6 +41,7 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@my-noodles/vite-config": "workspace:*",
     "@my-noodles/vitest-config": "workspace:*",
     "@svgr/webpack": "8.1.0",
     "@tanstack/react-query-devtools": "5.101.0",

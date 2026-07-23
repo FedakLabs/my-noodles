@@ -48,10 +48,6 @@ export class Order extends TimestampEntity {
   @ApiPropertyOptional()
   grandTotalMinor?: number;
 
-  /** Admin responses only — allowed next statuses for transition UI. */
-  @ApiPropertyOptional({ enum: OrderStatus, isArray: true })
-  availableTransitions?: OrderStatus[];
-
   @Column({ type: 'text' })
   currency!: string;
 
@@ -76,7 +72,7 @@ export class Order extends TimestampEntity {
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })
   items!: OrderItem[];
 
-  @OneToMany(() => OrderStatusHistory, (entry) => entry.order)
+  @OneToMany(() => OrderStatusHistory, (entry) => entry.order, { eager: true })
   statusHistory!: OrderStatusHistory[];
 
   @OneToOne(() => Checkout, (checkout) => checkout.order, { nullable: true })

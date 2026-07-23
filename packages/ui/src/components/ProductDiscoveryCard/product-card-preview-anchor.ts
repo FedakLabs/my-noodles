@@ -1,4 +1,4 @@
-import type { DiscoveryCardViewAnchor } from '@my-noodles/ui';
+import type { DiscoveryCardViewAnchor } from '../DiscoveryCard';
 
 export function productCardPreviewAnchor(gridIndex: number, columns: number): DiscoveryCardViewAnchor {
   const position = gridIndex % columns;

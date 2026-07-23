@@ -17,13 +17,10 @@ export type {
   MeestBranchRow,
   MeestClientOptions,
   MeestDistrictRow,
-  MeestLocale,
-  MeestLocalizedName,
   MeestLocalityData,
   MeestLocalityRow,
   MeestRegionRow,
 } from './meest.api.dto';
-export { MEEST_LOCALES } from './meest.api.config';
 
 export class PublicMeestApi extends ApiClient {
   private readonly districtsCache: Cache<MeestDistrictRow[]>;

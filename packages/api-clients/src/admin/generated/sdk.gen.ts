@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminOrdersControllerArchiveOrderData, AdminOrdersControllerArchiveOrderErrors, AdminOrdersControllerArchiveOrderResponses, AdminOrdersControllerArriveOrderData, AdminOrdersControllerArriveOrderErrors, AdminOrdersControllerArriveOrderResponses, AdminOrdersControllerCancelOrderData, AdminOrdersControllerCancelOrderErrors, AdminOrdersControllerCancelOrderResponses, AdminOrdersControllerCompleteOrderData, AdminOrdersControllerCompleteOrderErrors, AdminOrdersControllerCompleteOrderResponses, AdminOrdersControllerConfirmOrderData, AdminOrdersControllerConfirmOrderErrors, AdminOrdersControllerConfirmOrderResponses, AdminOrdersControllerGetOrderData, AdminOrdersControllerGetOrderErrors, AdminOrdersControllerGetOrderResponses, AdminOrdersControllerListOrdersData, AdminOrdersControllerListOrdersErrors, AdminOrdersControllerListOrdersResponses, AdminOrdersControllerReturnOrderData, AdminOrdersControllerReturnOrderErrors, AdminOrdersControllerReturnOrderResponses, AdminOrdersControllerSendOrderData, AdminOrdersControllerSendOrderErrors, AdminOrdersControllerSendOrderResponses } from './types.gen';
+import type { AdminBrandsControllerCreateData, AdminBrandsControllerCreateResponses, AdminBrandsControllerGetByIdData, AdminBrandsControllerGetByIdErrors, AdminBrandsControllerGetByIdResponses, AdminBrandsControllerListData, AdminBrandsControllerListResponses, AdminBrandsControllerUpdateData, AdminBrandsControllerUpdateErrors, AdminBrandsControllerUpdateResponses, AdminCategoriesControllerCreateData, AdminCategoriesControllerCreateResponses, AdminCategoriesControllerGetByIdData, AdminCategoriesControllerGetByIdErrors, AdminCategoriesControllerGetByIdResponses, AdminCategoriesControllerListData, AdminCategoriesControllerListResponses, AdminCategoriesControllerUpdateData, AdminCategoriesControllerUpdateErrors, AdminCategoriesControllerUpdateResponses, AdminCountriesControllerCreateData, AdminCountriesControllerCreateResponses, AdminCountriesControllerGetByIdData, AdminCountriesControllerGetByIdErrors, AdminCountriesControllerGetByIdResponses, AdminCountriesControllerListData, AdminCountriesControllerListResponses, AdminCountriesControllerUpdateData, AdminCountriesControllerUpdateErrors, AdminCountriesControllerUpdateResponses, AdminOrdersControllerArchiveOrderData, AdminOrdersControllerArchiveOrderErrors, AdminOrdersControllerArchiveOrderResponses, AdminOrdersControllerArriveOrderData, AdminOrdersControllerArriveOrderErrors, AdminOrdersControllerArriveOrderResponses, AdminOrdersControllerCancelOrderData, AdminOrdersControllerCancelOrderErrors, AdminOrdersControllerCancelOrderResponses, AdminOrdersControllerCompleteOrderData, AdminOrdersControllerCompleteOrderErrors, AdminOrdersControllerCompleteOrderResponses, AdminOrdersControllerConfirmOrderData, AdminOrdersControllerConfirmOrderErrors, AdminOrdersControllerConfirmOrderResponses, AdminOrdersControllerGetOrderData, AdminOrdersControllerGetOrderErrors, AdminOrdersControllerGetOrderResponses, AdminOrdersControllerListOrdersData, AdminOrdersControllerListOrdersErrors, AdminOrdersControllerListOrdersResponses, AdminOrdersControllerReturnOrderData, AdminOrdersControllerReturnOrderErrors, AdminOrdersControllerReturnOrderResponses, AdminOrdersControllerSendOrderData, AdminOrdersControllerSendOrderErrors, AdminOrdersControllerSendOrderResponses, AdminProductsControllerCreateData, AdminProductsControllerCreateErrors, AdminProductsControllerCreateResponses, AdminProductsControllerGetByIdData, AdminProductsControllerGetByIdErrors, AdminProductsControllerGetByIdResponses, AdminProductsControllerListData, AdminProductsControllerListResponses, AdminProductsControllerUpdateData, AdminProductsControllerUpdateErrors, AdminProductsControllerUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -83,4 +83,148 @@ export const adminOrdersControllerArchiveOrder = <ThrowOnError extends boolean =
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/admin/orders/{id}/archive',
     ...options
+});
+
+export const adminBrandsControllerList = <ThrowOnError extends boolean = true>(options: Options<AdminBrandsControllerListData, ThrowOnError>): RequestResult<AdminBrandsControllerListResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).get<AdminBrandsControllerListResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/brands',
+    ...options
+});
+
+export const adminBrandsControllerCreate = <ThrowOnError extends boolean = true>(options: Options<AdminBrandsControllerCreateData, ThrowOnError>): RequestResult<AdminBrandsControllerCreateResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).post<AdminBrandsControllerCreateResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/brands',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminBrandsControllerGetById = <ThrowOnError extends boolean = true>(options: Options<AdminBrandsControllerGetByIdData, ThrowOnError>): RequestResult<AdminBrandsControllerGetByIdResponses, AdminBrandsControllerGetByIdErrors, ThrowOnError, 'data'> => (options.client ?? client).get<AdminBrandsControllerGetByIdResponses, AdminBrandsControllerGetByIdErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/brands/{id}',
+    ...options
+});
+
+export const adminBrandsControllerUpdate = <ThrowOnError extends boolean = true>(options: Options<AdminBrandsControllerUpdateData, ThrowOnError>): RequestResult<AdminBrandsControllerUpdateResponses, AdminBrandsControllerUpdateErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<AdminBrandsControllerUpdateResponses, AdminBrandsControllerUpdateErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/brands/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminCategoriesControllerList = <ThrowOnError extends boolean = true>(options: Options<AdminCategoriesControllerListData, ThrowOnError>): RequestResult<AdminCategoriesControllerListResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).get<AdminCategoriesControllerListResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/categories',
+    ...options
+});
+
+export const adminCategoriesControllerCreate = <ThrowOnError extends boolean = true>(options: Options<AdminCategoriesControllerCreateData, ThrowOnError>): RequestResult<AdminCategoriesControllerCreateResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).post<AdminCategoriesControllerCreateResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/categories',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminCategoriesControllerGetById = <ThrowOnError extends boolean = true>(options: Options<AdminCategoriesControllerGetByIdData, ThrowOnError>): RequestResult<AdminCategoriesControllerGetByIdResponses, AdminCategoriesControllerGetByIdErrors, ThrowOnError, 'data'> => (options.client ?? client).get<AdminCategoriesControllerGetByIdResponses, AdminCategoriesControllerGetByIdErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/categories/{id}',
+    ...options
+});
+
+export const adminCategoriesControllerUpdate = <ThrowOnError extends boolean = true>(options: Options<AdminCategoriesControllerUpdateData, ThrowOnError>): RequestResult<AdminCategoriesControllerUpdateResponses, AdminCategoriesControllerUpdateErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<AdminCategoriesControllerUpdateResponses, AdminCategoriesControllerUpdateErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/categories/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminCountriesControllerList = <ThrowOnError extends boolean = true>(options: Options<AdminCountriesControllerListData, ThrowOnError>): RequestResult<AdminCountriesControllerListResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).get<AdminCountriesControllerListResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/countries',
+    ...options
+});
+
+export const adminCountriesControllerCreate = <ThrowOnError extends boolean = true>(options: Options<AdminCountriesControllerCreateData, ThrowOnError>): RequestResult<AdminCountriesControllerCreateResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).post<AdminCountriesControllerCreateResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/countries',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminCountriesControllerGetById = <ThrowOnError extends boolean = true>(options: Options<AdminCountriesControllerGetByIdData, ThrowOnError>): RequestResult<AdminCountriesControllerGetByIdResponses, AdminCountriesControllerGetByIdErrors, ThrowOnError, 'data'> => (options.client ?? client).get<AdminCountriesControllerGetByIdResponses, AdminCountriesControllerGetByIdErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/countries/{id}',
+    ...options
+});
+
+export const adminCountriesControllerUpdate = <ThrowOnError extends boolean = true>(options: Options<AdminCountriesControllerUpdateData, ThrowOnError>): RequestResult<AdminCountriesControllerUpdateResponses, AdminCountriesControllerUpdateErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<AdminCountriesControllerUpdateResponses, AdminCountriesControllerUpdateErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/countries/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminProductsControllerList = <ThrowOnError extends boolean = true>(options: Options<AdminProductsControllerListData, ThrowOnError>): RequestResult<AdminProductsControllerListResponses, unknown, ThrowOnError, 'data'> => (options.client ?? client).get<AdminProductsControllerListResponses, unknown, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/products',
+    ...options
+});
+
+export const adminProductsControllerCreate = <ThrowOnError extends boolean = true>(options: Options<AdminProductsControllerCreateData, ThrowOnError>): RequestResult<AdminProductsControllerCreateResponses, AdminProductsControllerCreateErrors, ThrowOnError, 'data'> => (options.client ?? client).post<AdminProductsControllerCreateResponses, AdminProductsControllerCreateErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/products',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const adminProductsControllerGetById = <ThrowOnError extends boolean = true>(options: Options<AdminProductsControllerGetByIdData, ThrowOnError>): RequestResult<AdminProductsControllerGetByIdResponses, AdminProductsControllerGetByIdErrors, ThrowOnError, 'data'> => (options.client ?? client).get<AdminProductsControllerGetByIdResponses, AdminProductsControllerGetByIdErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/products/{id}',
+    ...options
+});
+
+export const adminProductsControllerUpdate = <ThrowOnError extends boolean = true>(options: Options<AdminProductsControllerUpdateData, ThrowOnError>): RequestResult<AdminProductsControllerUpdateResponses, AdminProductsControllerUpdateErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<AdminProductsControllerUpdateResponses, AdminProductsControllerUpdateErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/admin/products/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

@@ -308,6 +308,9 @@ importers:
         specifier: 5.0.14
         version: 5.0.14(@types/react@19.2.17)(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
     devDependencies:
+      '@my-noodles/vite-config':
+        specifier: workspace:*
+        version: link:../../configs/vite
       '@my-noodles/vitest-config':
         specifier: workspace:*
         version: link:../../configs/vitest
@@ -564,6 +567,9 @@ importers:
       '@mui/material':
         specifier: 9.1.1
         version: 9.1.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@my-noodles/vite-config':
+        specifier: workspace:*
+        version: link:../../configs/vite
       '@my-noodles/vitest-config':
         specifier: workspace:*
         version: link:../../configs/vitest
@@ -601,7 +607,11 @@ importers:
         specifier: 4.1.9
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.15.3)(vite@8.0.16(@types/node@22.15.3)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0))
 
-  packages/utils: {}
+  packages/utils:
+    dependencies:
+      dayjs:
+        specifier: ^1.11.21
+        version: 1.11.21
 
 packages:
 

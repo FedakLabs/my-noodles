@@ -1,19 +1,17 @@
-/// <reference types="vite/client" />
-
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { CustomColors } from '@my-noodles/theme';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { FC, SVGProps } from 'react';
+import type { FC } from 'react';
 
+import type { SvgIconProps } from '../../types';
 import CartIcon from '../icons/cart.svg';
-import { iconStyle } from '../utils/iconStyle';
 
 type IconCatalogEntry = {
   name: string;
-  Icon: FC<SVGProps<SVGSVGElement>>;
+  Icon: FC<SvgIconProps>;
 };
 
 type IconColorToken = keyof CustomColors['icon'];
@@ -25,7 +23,7 @@ type IconGalleryControls = {
 
 const iconColorOptions = ['primary', 'secondary', 'accent'] as const satisfies readonly IconColorToken[];
 
-const iconModules = import.meta.glob<{ default: FC<SVGProps<SVGSVGElement>> }>('../icons/*.svg', {
+const iconModules = import.meta.glob<{ default: FC<SvgIconProps> }>('../icons/*.svg', {
   eager: true,
 });
 
@@ -42,7 +40,7 @@ const iconCatalog: IconCatalogEntry[] = Object.entries(iconModules)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 type IconPreviewProps = {
-  Icon: FC<SVGProps<SVGSVGElement>>;
+  Icon: FC<SvgIconProps>;
   size: number;
   iconColor: IconColorToken;
 };
@@ -50,7 +48,7 @@ type IconPreviewProps = {
 function IconPreview({ Icon, size, iconColor }: IconPreviewProps) {
   const theme = useTheme();
 
-  return <Icon aria-hidden style={iconStyle({ size, color: theme.colors.icon[iconColor] })} />;
+  return <Icon aria-hidden size={size} color={theme.colors.icon[iconColor]} />;
 }
 
 const meta = {
@@ -124,12 +122,11 @@ export const DirectImport: Story = {
           Per-icon import — only bundled when this file is imported:
         </Typography>
         <Typography variant="caption" component="code">
-          {`import CartIcon from '@my-noodles/ui/icons/cart.svg';
-import { iconStyle } from '@my-noodles/ui';`}
+          {`import CartIcon from '@my-noodles/ui/icons/cart.svg';`}
         </Typography>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
           {sizes.map((iconSize) => (
-            <CartIcon key={iconSize} aria-hidden style={iconStyle({ size: iconSize, color })} />
+            <CartIcon key={iconSize} aria-hidden size={iconSize} color={color} />
           ))}
         </Stack>
       </Stack>

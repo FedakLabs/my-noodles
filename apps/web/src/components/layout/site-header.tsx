@@ -7,7 +7,6 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import { iconStyle } from '@my-noodles/ui';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import MenuIcon from '@my-noodles/ui/icons/menu.svg';
 import { useTranslations } from 'next-intl';
@@ -52,7 +51,7 @@ export function SiteHeader() {
             onClick={() => setNavOpen(true)}
             sx={{ mr: 0.5 }}
           >
-            <MenuIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
+            <MenuIcon aria-hidden size={24} />
           </IconButton>
 
           <SiteLogo label={t('brand')} markSize={28} flexGrow />
@@ -93,7 +92,7 @@ export function SiteHeader() {
             <SiteLogo label={t('brand')} markSize={28} flexGrow={false} onNavigate={closeNav} />
           </Box>
           <IconButton onClick={closeNav} aria-label={t('nav.menuClose')}>
-            <CloseIcon aria-hidden style={iconStyle({ size: 24, color: 'inherit' })} />
+            <CloseIcon aria-hidden size={24} />
           </IconButton>
         </Stack>
 

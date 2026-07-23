@@ -5,10 +5,10 @@ export const sampleProductId = '11111111-1111-4111-8111-111111111111';
 export const sampleProduct = {
   id: sampleProductId,
   slug: 'pocky-matcha',
-  name: new LocalizedString({ uk: 'Pocky Matcha', en: 'Pocky Matcha EN' }),
-  description: new LocalizedString({ uk: 'Опис', en: 'Description' }),
-  story: new LocalizedString({ uk: 'Історія', en: 'Story' }),
-  forWhom: new LocalizedString({ uk: 'Для всіх', en: 'For everyone' }),
+  nameLocale: new LocalizedString({ uk: 'Pocky Matcha', en: 'Pocky Matcha EN' }),
+  descriptionLocale: new LocalizedString({ uk: 'Опис', en: 'Description' }),
+  storyLocale: new LocalizedString({ uk: 'Історія', en: 'Story' }),
+  forWhomLocale: new LocalizedString({ uk: 'Для всіх', en: 'For everyone' }),
   priceMinor: 9_900,
   currency: 'UAH',
   images: ['https://example.com/pocky.jpg'],
@@ -23,11 +23,11 @@ export const sampleProduct = {
   country: {
     slug: 'taiwan',
     code: 'TW',
-    name: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
+    nameLocale: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
   },
   category: {
     slug: 'snacks',
-    name: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
+    nameLocale: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
   },
   alternatives: [],
 };
@@ -35,12 +35,12 @@ export const sampleProduct = {
 export const sampleCategories = [
   {
     slug: 'snacks',
-    name: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
+    nameLocale: new LocalizedString({ uk: 'Снеки', en: 'Snacks' }),
     sortOrder: 1,
   },
   {
     slug: 'drinks',
-    name: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
+    nameLocale: new LocalizedString({ uk: 'Напої', en: 'Drinks' }),
     sortOrder: 2,
   },
 ];
@@ -49,6 +49,6 @@ export const sampleCountries = [
   {
     slug: 'taiwan',
     code: 'TW',
-    name: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
+    nameLocale: new LocalizedString({ uk: 'Тайвань', en: 'Taiwan' }),
   },
 ];

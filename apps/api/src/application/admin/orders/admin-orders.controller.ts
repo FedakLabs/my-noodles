@@ -3,13 +3,13 @@ import { AuthGuard } from '@my-noodles/api-lib/nest/auth';
 import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
-import { Order } from '@/application/orders/order.entity';
 import {
   OrderCancelNotAllowedException,
   OrderInventoryChangedException,
   OrderNotFoundException,
 } from '@/application/orders/orders.exceptions';
 
+import { AdminOrder } from './admin-order.entity';
 import {
   AdminOrderListMetaDto,
   AdminOrdersListResponseDto,
@@ -24,7 +24,7 @@ import { AdminOrdersService } from './admin-orders.service';
 
 @ApiTags('Admin Orders')
 @ApiBearerAuth()
-@ApiExtraModels(Order, AdminOrdersListResponseDto, AdminOrderListMetaDto)
+@ApiExtraModels(AdminOrder, AdminOrdersListResponseDto, AdminOrderListMetaDto)
 @UseGuards(AuthGuard)
 @Controller('admin/orders')
 export class AdminOrdersController {
@@ -42,58 +42,61 @@ export class AdminOrdersController {
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException)
-  async getOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async getOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.getById(id);
   }
 
   @Post(':id/confirm')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async confirmOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async confirmOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.confirm(id);
   }
 
   @Post(':id/send')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async sendOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async sendOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.send(id);
   }
 
   @Post(':id/arrive')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async arriveOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async arriveOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.arrive(id);
   }
 
   @Post(':id/complete')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async completeOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async completeOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.complete(id);
   }
 
   @Post(':id/cancel')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderCancelNotAllowedException, OrderInventoryChangedException)
-  async cancelOrder(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelOrderDto): Promise<Order> {
+  async cancelOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelOrderDto,
+  ): Promise<AdminOrder> {
     return await this.adminOrdersService.cancel(id, dto.cancelledReason);
   }
 
   @Post(':id/return')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async returnOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async returnOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.returnOrder(id);
   }
 
   @Post(':id/archive')
-  @ApiOkResponse({ type: Order })
+  @ApiOkResponse({ type: AdminOrder })
   @ApiException(OrderNotFoundException, OrderTransitionNotAllowedException)
-  async archiveOrder(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
+  async archiveOrder(@Param('id', ParseUUIDPipe) id: string): Promise<AdminOrder> {
     return await this.adminOrdersService.archive(id);
   }
 }

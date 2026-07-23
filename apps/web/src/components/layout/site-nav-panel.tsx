@@ -4,8 +4,6 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/material/styles';
-import { iconStyle } from '@my-noodles/ui';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import { useTranslations } from 'next-intl';
 
@@ -28,14 +26,12 @@ type SiteNavPanelProps = {
 export function SiteNavPanel({ onNavigate }: SiteNavPanelProps) {
   const t = useTranslations('common');
   const pathname = usePathname();
-  const theme = useTheme();
 
   return (
     <List sx={{ py: 0, minWidth: 280, flex: '0 0 auto' }}>
       {siteNavLinkItems.map((item) => {
         const ItemIcon = item.Icon;
         const active = isNavActive(pathname, item.href);
-        const iconColor = active ? theme.palette.primary.main : theme.palette.text.primary;
 
         return (
           <ListItemButton
@@ -59,10 +55,10 @@ export function SiteNavPanel({ onNavigate }: SiteNavPanelProps) {
                 color: active ? 'primary.main' : 'text.primary',
               }}
             >
-              <ItemIcon aria-hidden style={iconStyle({ size: 22, color: iconColor })} />
+              <ItemIcon aria-hidden size={22} />
             </ListItemIcon>
             <ListItemText primary={t(item.labelKey)} />
-            <ChevronRightIcon aria-hidden style={iconStyle({ size: 18, color: 'inherit' })} />
+            <ChevronRightIcon aria-hidden size={18} />
           </ListItemButton>
         );
       })}

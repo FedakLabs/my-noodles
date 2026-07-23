@@ -49,6 +49,10 @@ export type PaginationMetaDto = {
     limit: number;
 };
 
+export const CurrencyCode = { UAH: 'UAH', USD: 'USD' } as const;
+
+export type CurrencyCode = typeof CurrencyCode[keyof typeof CurrencyCode];
+
 export type Brand = {
     id: string;
     slug: string;
@@ -96,6 +100,7 @@ export type Product = {
     description: string | null;
     story: string | null;
     forWhom: string | null;
+    currency: CurrencyCode;
     inStock: boolean;
     liked?: boolean;
     commentCount?: number;
@@ -103,7 +108,6 @@ export type Product = {
     slug: string;
     weight: string | null;
     priceMinor: number;
-    currency: string;
     flavor: {
         [key: string]: unknown;
     };
@@ -236,6 +240,14 @@ export type OrderItem = {
     qty: number;
 };
 
+export type OrderStatusHistory = {
+    id: string;
+    orderId: string;
+    order: Order;
+    oldStatus: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+    newStatus: 'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived';
+};
+
 export type Checkout = {
     /**
      * Live delivery estimate for the current checkout draft.
@@ -262,10 +274,6 @@ export type Order = {
      * Response-only — set by `CheckoutCalculator.calculateTotals`.
      */
     grandTotalMinor?: number;
-    /**
-     * Admin responses only — allowed next statuses for transition UI.
-     */
-    availableTransitions?: Array<'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived'>;
     id: string;
     visitorSessionId: string | null;
     visitorSession: VisitorSession | null;
@@ -278,6 +286,7 @@ export type Order = {
     cancelledReason: 'customer_request' | 'out_of_stock';
     delivery: OrderDelivery | null;
     items: Array<OrderItem>;
+    statusHistory: Array<OrderStatusHistory>;
     checkout: Checkout | null;
 };
 

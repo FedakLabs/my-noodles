@@ -1,11 +1,17 @@
 import { AdminApi } from '@my-noodles/api-clients/admin';
+import { AuthApi } from '@my-noodles/api-clients/auth';
 
 import { getAccessToken, getRefreshToken, useAuthStore } from '@/hooks/auth';
 import { ROUTE_NAMES } from '@/router/route-names';
 import { env } from '@/shared/env';
 
-export const adminApi = new AdminApi({
+export const authApi = new AuthApi({
+  baseUrl: env.AUTH_API_URL ?? env.ADMIN_API_URL,
+});
+
+const adminApi = new AdminApi({
   baseUrl: env.ADMIN_API_URL,
+  authApi,
 });
 
 adminApi.registerTokenProvider({

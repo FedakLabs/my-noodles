@@ -1,5 +1,6 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
@@ -7,11 +8,11 @@ import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 
 import CloseIcon from '../../icons/close.svg';
-import { iconStyle } from '../../utils/iconStyle';
 import { useModalContext } from './modal-context';
 
 export type ModalHeaderProps = {
-  title?: string;
+  /** Plain string gets `h6` styling; pass a node for custom title content (e.g. copyable id). */
+  title?: ReactNode;
   hideCloseButton?: boolean;
   children?: ReactNode;
 };
@@ -33,10 +34,16 @@ export function ModalHeader({ title, hideCloseButton = false, children }: ModalH
       }}
     >
       <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-        {title ? (
-          <Typography id={titleId} variant="h6" component="h2">
-            {title}
-          </Typography>
+        {title != null && title !== '' ? (
+          typeof title === 'string' || typeof title === 'number' ? (
+            <Typography id={titleId} variant="h6" component="h2">
+              {title}
+            </Typography>
+          ) : (
+            <Box id={titleId} sx={{ minWidth: 0 }}>
+              {title}
+            </Box>
+          )
         ) : null}
         {children}
       </Stack>
@@ -52,7 +59,7 @@ export function ModalHeader({ title, hideCloseButton = false, children }: ModalH
           }}
           sx={{ flexShrink: 0 }}
         >
-          <CloseIcon aria-hidden style={iconStyle({ size: 20, color: theme.colors.icon.secondary })} />
+          <CloseIcon aria-hidden size={20} color={theme.colors.icon.secondary} />
         </IconButton>
       )}
     </Stack>

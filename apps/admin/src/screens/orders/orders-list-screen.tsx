@@ -3,15 +3,21 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { Order, OrderStatus } from '@my-noodles/api-clients/admin';
-import { CopyableField, createColumnHelper, DataTable, useDataTable } from '@my-noodles/ui';
-import { Link } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import type { AdminOrder, AdminOrdersSortBy, OrderStatus } from '@my-noodles/api-clients/admin';
+import {
+  CopyableField,
+  createColumnHelper,
+  DataTable,
+  SelectField,
+  useDataTable,
+  type SortingState,
+} from '@my-noodles/ui';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useOrdersList } from '@/api/orders';
+import { OrderDetailModal, type OrderDetailModalRef } from '@/components/orders/order-detail-modal';
 import { OrderStatusChip } from '@/components/orders/order-status-chip';
-import { orderDetailPath } from '@/router/route-names';
 import { formatCurrency } from '@/utils/format-currency';
 
 const STATUS_OPTIONS: OrderStatus[] = [
@@ -25,9 +31,19 @@ const STATUS_OPTIONS: OrderStatus[] = [
   'archived',
 ];
 
-const columnHelper = createColumnHelper<Order>();
+const COLUMN_TO_SORT_BY: Record<string, AdminOrdersSortBy> = {
+  id: 'id',
+  createdAt: 'createdAt',
+  phone: 'phone',
+  status: 'status',
+  total: 'totalMinor',
+};
 
-function formatCreatedAt(value: string | undefined): string {
+const DEFAULT_SORTING: SortingState = [{ id: 'createdAt', desc: true }];
+
+const columnHelper = createColumnHelper<AdminOrder>();
+
+function formatDateTime(value: string | null | undefined): string {
   if (!value) {
     return '—';
   }
@@ -39,13 +55,19 @@ function formatCreatedAt(value: string | undefined): string {
 
 export function OrdersListScreen() {
   const { t } = useTranslation(['orders', 'common']);
+  const orderDetailModalRef = useRef<OrderDetailModalRef>(null);
   const [page, setPage] = useState(1);
   const [statuses, setStatuses] = useState<OrderStatus[]>([]);
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
+  const [sorting, setSorting] = useState<SortingState>(DEFAULT_SORTING);
   const limit = 20;
+
+  const activeSort = sorting[0];
+  const sortBy = activeSort ? COLUMN_TO_SORT_BY[activeSort.id] : undefined;
+  const sortOrder = activeSort ? (activeSort.desc ? 'desc' : 'asc') : undefined;
 
   const { orders, ordersIsLoading, ordersIsError } = useOrdersList({
     page,
@@ -54,12 +76,15 @@ export function OrdersListScreen() {
     q: search || undefined,
     createdFrom: createdFrom || undefined,
     createdTo: createdTo || undefined,
+    sortBy,
+    sortOrder,
   });
 
   const columns = useMemo(
     () => [
       columnHelper.accessor('id', {
         header: t('orders:list.id'),
+        enableSorting: true,
         cell: (info) => (
           <CopyableField
             value={`${info.getValue().slice(0, 8)}…`}
@@ -69,17 +94,15 @@ export function OrdersListScreen() {
           />
         ),
       }),
-      columnHelper.accessor('createdAt', {
-        header: t('orders:list.createdAt'),
-        cell: (info) => formatCreatedAt(info.getValue()),
-      }),
       columnHelper.display({
         id: 'customer',
         header: t('orders:list.customer'),
+        enableSorting: false,
         cell: ({ row }) => [row.original.firstName, row.original.lastName].filter(Boolean).join(' ') || '—',
       }),
       columnHelper.accessor('phone', {
         header: t('orders:list.phone'),
+        enableSorting: true,
         cell: (info) => (
           <CopyableField
             value={info.getValue() ?? ''}
@@ -90,13 +113,29 @@ export function OrdersListScreen() {
       }),
       columnHelper.accessor('status', {
         header: t('orders:list.status'),
+        enableSorting: true,
         cell: (info) => <OrderStatusChip status={info.getValue()} />,
       }),
       columnHelper.accessor((row) => row.grandTotalMinor ?? row.totalMinor, {
         id: 'total',
         header: t('orders:list.total'),
+        enableSorting: true,
         meta: { align: 'right' },
         cell: (info) => formatCurrency(info.getValue(), info.row.original.currency),
+      }),
+      columnHelper.accessor('createdAt', {
+        header: t('orders:list.dates'),
+        enableSorting: true,
+        cell: ({ row }) => (
+          <Stack spacing={0.25}>
+            <Typography variant="body2">
+              {t('orders:list.createdAt')}: {formatDateTime(row.original.createdAt)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t('orders:list.orderedAt')}: {formatDateTime(row.original.orderedAt)}
+            </Typography>
+          </Stack>
+        ),
       }),
     ],
     [t],
@@ -109,14 +148,23 @@ export function OrdersListScreen() {
     columns,
     getRowId: (row) => row.id,
     manualPagination: true,
+    manualSorting: true,
     pageCount,
     state: {
       pagination: { pageIndex: page - 1, pageSize: limit },
+      sorting,
     },
     onPaginationChange: (updater) => {
       const next =
         typeof updater === 'function' ? updater({ pageIndex: page - 1, pageSize: limit }) : updater;
       setPage(next.pageIndex + 1);
+    },
+    onSortingChange: (updater) => {
+      setSorting((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        return next;
+      });
+      setPage(1);
     },
   });
 
@@ -140,10 +188,11 @@ export function OrdersListScreen() {
           }}
           sx={{ flex: '1 1 180px', minWidth: 160 }}
         />
-        <TextField
-          select
+        <SelectField
           label={t('orders:list.status')}
           size="small"
+          width={220}
+          visuallyFilledWhenEmpty
           value={statuses}
           onChange={(event) => {
             const value = event.target.value;
@@ -151,7 +200,6 @@ export function OrdersListScreen() {
             setStatuses(typeof value === 'string' ? (value.split(',') as OrderStatus[]) : value);
           }}
           slotProps={{
-            inputLabel: { shrink: true },
             select: {
               multiple: true,
               displayEmpty: true,
@@ -160,18 +208,17 @@ export function OrdersListScreen() {
                 if (values.length === 0) {
                   return t('orders:list.statusAll');
                 }
-                return values.map((value) => t(`orders:status.${value}`)).join(', ');
+                return values.map((status) => t(`orders:status.${status}`)).join(', ');
               },
             },
           }}
-          sx={{ minWidth: 220 }}
         >
           {STATUS_OPTIONS.map((value) => (
             <MenuItem key={value} value={value}>
               {t(`orders:status.${value}`)}
             </MenuItem>
           ))}
-        </TextField>
+        </SelectField>
         <TextField
           label={t('orders:list.dateFrom')}
           type="date"
@@ -216,10 +263,11 @@ export function OrdersListScreen() {
         errorContent={t('orders:list.loadError')}
         emptyContent={t('orders:list.empty')}
         getRowProps={(row) => ({
-          component: Link,
-          to: orderDetailPath(row.original.id),
           hover: true,
-          style: { textDecoration: 'none' },
+          sx: { cursor: 'pointer' },
+          onClick: () => {
+            orderDetailModalRef.current?.open({ orderId: row.original.id });
+          },
         })}
         pagination={{
           previous: t('common:actions.previous'),
@@ -230,6 +278,8 @@ export function OrdersListScreen() {
           }),
         }}
       />
+
+      <OrderDetailModal ref={orderDetailModalRef} />
     </Stack>
   );
 }
