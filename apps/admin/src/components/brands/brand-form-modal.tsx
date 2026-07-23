@@ -150,7 +150,7 @@ function BrandFormModalContent() {
 
 export function BrandFormModal({ ref }: { ref?: Ref<BrandFormModalRef> }) {
   return (
-    <Modal ref={ref} maxWidth="sm">
+    <Modal ref={ref} maxWidth="lg">
       <BrandFormModalContent />
     </Modal>
   );

@@ -1,0 +1,11 @@
+{
+  "title": "Admin sign in",
+  "subtitle": "Sign in to manage orders.",
+  "email": "Email",
+  "password": "Password",
+  "signIn": "Sign in",
+  "signingIn": "Signing in…",
+  "errors": {
+    "invalidCredentials": "Invalid email or password"
+  }
+}

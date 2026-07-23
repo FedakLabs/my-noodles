@@ -62,6 +62,14 @@ const meta = {
   args: {
     ariaLabel: 'Demo carousel',
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Embla carousel compound API. Use `galleryCarouselOptions` for full-bleed media and `railCarouselOptions` for partial-width product rails.',
+      },
+    },
+  },
 } satisfies Meta<typeof Carousel>;
 
 export default meta;

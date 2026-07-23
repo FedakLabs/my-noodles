@@ -5,6 +5,7 @@ import { In, MoreThan, type Repository } from 'typeorm';
 import { CheckoutStatus } from '../checkouts/checkouts.validators';
 import { OrderItem } from '../orders/order-item.entity';
 import { OrderInventoryChangedException } from '../orders/orders.exceptions';
+import { sellableQuantity } from '../products/product-storefront-visibility';
 import { Product } from '../products/product.entity';
 
 export type InventoryLine = {
@@ -46,7 +47,7 @@ export class InventoryService {
     }
 
     const reserved = await this.sumReservedQty([productId]);
-    return product.quantity - (reserved.get(productId) ?? 0);
+    return Math.max(0, sellableQuantity(product) - (reserved.get(productId) ?? 0));
   }
 
   async getAvailableQtyBatch(productIds: string[]): Promise<Map<string, number>> {
@@ -63,7 +64,10 @@ export class InventoryService {
     const reserved = await this.sumReservedQty(uniqueIds);
 
     return new Map(
-      products.map((product) => [product.id, product.quantity - (reserved.get(product.id) ?? 0)]),
+      products.map((product) => [
+        product.id,
+        Math.max(0, sellableQuantity(product) - (reserved.get(product.id) ?? 0)),
+      ]),
     );
   }
 

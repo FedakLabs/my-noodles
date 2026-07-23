@@ -6,6 +6,14 @@ import { CopyableField } from '../components/CopyableField';
 const meta = {
   title: 'Components/CopyableField',
   component: CopyableField,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Read-only value with a copy button. Pass a string or `{ text, sx }` when the display value needs truncation.',
+      },
+    },
+  },
 } satisfies Meta<typeof CopyableField>;
 
 export default meta;

@@ -51,6 +51,14 @@ const meta = {
   args: {
     items: sampleImages,
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Product media carousel for images and videos. Pass localized `labels` from the app; empty `items` renders nothing.',
+      },
+    },
+  },
 } satisfies Meta<typeof MediaGallery>;
 
 export default meta;

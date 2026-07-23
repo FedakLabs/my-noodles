@@ -1,43 +1,80 @@
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminProductDto, AdminProductSearchBy } from '@my-noodles/api-clients/admin';
-import { ProductDiscoveryCard, SelectField } from '@my-noodles/ui';
-import { useParams } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import type { AdminProductDto } from '@my-noodles/api-clients/admin';
+import { DEFAULT_LOCALE, pickLocalized } from '@my-noodles/locale';
+import {
+  createColumnHelper,
+  DataTable,
+  InlineEditableNumber,
+  SearchField,
+  SelectField,
+  useDataTable,
+} from '@my-noodles/ui';
+import SearchIcon from '@my-noodles/ui/icons/search.svg';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useBrandsList } from '@/api/brands';
 import { useCategoriesList } from '@/api/categories';
 import { useCountriesList } from '@/api/countries';
 import { useProductsList } from '@/api/products';
+import {
+  ConfirmQuantityChangeModal,
+  type ConfirmQuantityChangeModalRef,
+} from '@/components/products/confirm-quantity-change-modal';
+import { ProductAvailableCheckbox } from '@/components/products/product-available-checkbox';
+import {
+  ProductCardPreviewModal,
+  type ProductCardPreviewModalRef,
+} from '@/components/products/product-card-preview-modal';
 import { ProductFormModal, type ProductFormModalRef } from '@/components/products/product-form-modal';
+import {
+  PRODUCT_SEARCH_FIELDS,
+  type ProductSearchField,
+  useProductsSearchParams,
+} from '@/screens/products/search-params';
 import { formatCurrency } from '@/utils/format-currency';
 
-const SEARCH_BY_OPTIONS: AdminProductSearchBy[] = ['slug', 'name'];
-const GRID_COLUMNS = 3;
+const columnHelper = createColumnHelper<AdminProductDto>();
 
 export function ProductsListScreen() {
   const { t } = useTranslation(['products', 'common']);
-  const { productId } = useParams({ strict: false });
+  const {
+    field: urlField,
+    value: urlValue,
+    slug,
+    name,
+    applySearch,
+    setField: setSearchField,
+  } = useProductsSearchParams();
   const productFormModalRef = useRef<ProductFormModalRef>(null);
+  const productPreviewModalRef = useRef<ProductCardPreviewModalRef>(null);
+  const confirmQuantityModalRef = useRef<ConfirmQuantityChangeModalRef>(null);
   const [page, setPage] = useState(1);
-  const [q, setQ] = useState('');
-  const [search, setSearch] = useState('');
-  const [searchBy, setSearchBy] = useState<AdminProductSearchBy>('slug');
+  const [field, setField] = useState<ProductSearchField>(urlField);
+  const [q, setQ] = useState(urlValue);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [brandIds, setBrandIds] = useState<string[]>([]);
   const [countryIds, setCountryIds] = useState<string[]>([]);
   const limit = 20;
 
+  const searchFields = useMemo(
+    () =>
+      PRODUCT_SEARCH_FIELDS.map((value) => ({
+        value,
+        label: value === 'slug' ? t('products:list.searchBySlug') : t('products:list.searchByName'),
+      })),
+    [t],
+  );
+
   const { products, productsIsLoading, productsIsError } = useProductsList({
     page,
     limit,
-    q: search || undefined,
-    searchBy,
+    slug: slug ?? undefined,
+    name: name ?? undefined,
     categoryId: categoryIds.length > 0 ? categoryIds : undefined,
     brandId: brandIds.length > 0 ? brandIds : undefined,
     countryId: countryIds.length > 0 ? countryIds : undefined,
@@ -48,15 +85,110 @@ export function ProductsListScreen() {
   const { countries } = useCountriesList({ page: 1, limit: 100 });
 
   useEffect(() => {
-    if (productId) {
-      productFormModalRef.current?.open({ mode: 'edit', productId });
-    }
-  }, [productId]);
+    setField(urlField);
+    setQ(urlValue);
+    setPage(1);
+  }, [urlField, urlValue]);
 
   function runSearch() {
     setPage(1);
-    setSearch(q.trim());
+    applySearch(q, field);
   }
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('slug', {
+        header: t('products:list.columnSlug'),
+      }),
+      columnHelper.accessor((row) => pickLocalized(row.name, DEFAULT_LOCALE), {
+        id: 'name',
+        header: t('products:list.columnName'),
+        cell: ({ row, getValue }) => (
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', minWidth: 0 }}>
+            <IconButton
+              size="small"
+              aria-label={t('products:list.preview')}
+              onClick={(event) => {
+                event.stopPropagation();
+                productPreviewModalRef.current?.open({
+                  productId: row.original.id,
+                });
+              }}
+            >
+              <SearchIcon fontSize="small" />
+            </IconButton>
+            <Typography variant="body2" noWrap>
+              {getValue()}
+            </Typography>
+          </Stack>
+        ),
+      }),
+      columnHelper.accessor((row) => formatCurrency(row.priceMinor, row.currency), {
+        id: 'price',
+        header: t('products:list.columnPrice'),
+      }),
+      columnHelper.accessor((row) => row.brand?.name ?? '—', {
+        id: 'brand',
+        header: t('products:list.columnBrand'),
+      }),
+      columnHelper.accessor((row) => pickLocalized(row.country.name, DEFAULT_LOCALE), {
+        id: 'country',
+        header: t('products:list.columnCountry'),
+      }),
+      columnHelper.accessor((row) => pickLocalized(row.category.name, DEFAULT_LOCALE), {
+        id: 'category',
+        header: t('products:list.columnCategory'),
+      }),
+      columnHelper.accessor('quantity', {
+        header: t('products:list.columnQuantity'),
+        cell: ({ row }) => {
+          const product = row.original;
+          return (
+            <InlineEditableNumber
+              value={product.quantity}
+              ariaLabel={t('products:quantity.editAriaLabel')}
+              confirmLabel={t('products:quantity.confirmAriaLabel')}
+              cancelLabel={t('products:quantity.cancelAriaLabel')}
+              onSubmitRequest={(next) => {
+                confirmQuantityModalRef.current?.open({
+                  productId: product.id,
+                  slug: product.slug,
+                  name: pickLocalized(product.name, DEFAULT_LOCALE),
+                  from: product.quantity,
+                  to: next,
+                });
+              }}
+            />
+          );
+        },
+      }),
+      columnHelper.accessor('available', {
+        header: t('products:list.columnAvailable'),
+        cell: ({ row }) => (
+          <ProductAvailableCheckbox productId={row.original.id} available={row.original.available} />
+        ),
+      }),
+    ],
+    [t],
+  );
+
+  const pageCount = products ? Math.max(1, Math.ceil(products.meta.total / limit)) : 0;
+
+  const table = useDataTable({
+    data: products?.items ?? [],
+    columns,
+    getRowId: (row) => row.id,
+    manualPagination: true,
+    pageCount,
+    state: {
+      pagination: { pageIndex: page - 1, pageSize: limit },
+    },
+    onPaginationChange: (updater) => {
+      const next =
+        typeof updater === 'function' ? updater({ pageIndex: page - 1, pageSize: limit }) : updater;
+      setPage(next.pageIndex + 1);
+    },
+  });
 
   return (
     <Stack spacing={2}>
@@ -70,31 +202,21 @@ export function ProductsListScreen() {
       </Stack>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
-        <TextField
-          label={t('products:list.search')}
-          size="small"
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              runSearch();
-            }
+        <SearchField
+          fields={searchFields}
+          field={field}
+          onFieldChange={(next) => {
+            const nextField = next as ProductSearchField;
+            setField(nextField);
+            setPage(1);
+            setSearchField(nextField, q);
           }}
-          sx={{ flex: '1 1 180px', minWidth: 160 }}
+          value={q}
+          onValueChange={setQ}
+          onSubmit={runSearch}
+          fieldLabel={t('products:list.searchBy')}
+          label={t('products:list.search')}
         />
-        <SelectField
-          label={t('products:list.searchBySlug')}
-          size="small"
-          width={140}
-          value={searchBy}
-          onChange={(event) => setSearchBy(event.target.value as AdminProductSearchBy)}
-        >
-          {SEARCH_BY_OPTIONS.map((value) => (
-            <MenuItem key={value} value={value}>
-              {value === 'slug' ? t('products:list.searchBySlug') : t('products:list.searchByName')}
-            </MenuItem>
-          ))}
-        </SelectField>
         <SelectField
           label={t('products:list.category')}
           size="small"
@@ -116,7 +238,10 @@ export function ProductsListScreen() {
                   return t('products:list.categoryAll');
                 }
                 return values
-                  .map((id) => categories?.items.find((category) => category.id === id)?.name.uk ?? id)
+                  .map((id) => {
+                    const category = categories?.items.find((item) => item.id === id);
+                    return category ? pickLocalized(category.name, DEFAULT_LOCALE) : id;
+                  })
                   .join(', ');
               },
             },
@@ -124,7 +249,7 @@ export function ProductsListScreen() {
         >
           {(categories?.items ?? []).map((category) => (
             <MenuItem key={category.id} value={category.id}>
-              {category.name.uk}
+              {pickLocalized(category.name, DEFAULT_LOCALE)}
             </MenuItem>
           ))}
         </SelectField>
@@ -182,7 +307,10 @@ export function ProductsListScreen() {
                   return t('products:list.countryAll');
                 }
                 return values
-                  .map((id) => countries?.items.find((country) => country.id === id)?.name.uk ?? id)
+                  .map((id) => {
+                    const country = countries?.items.find((item) => item.id === id);
+                    return country ? pickLocalized(country.name, DEFAULT_LOCALE) : id;
+                  })
                   .join(', ');
               },
             },
@@ -190,7 +318,7 @@ export function ProductsListScreen() {
         >
           {(countries?.items ?? []).map((country) => (
             <MenuItem key={country.id} value={country.id}>
-              {country.name.uk}
+              {pickLocalized(country.name, DEFAULT_LOCALE)}
             </MenuItem>
           ))}
         </SelectField>
@@ -199,79 +327,44 @@ export function ProductsListScreen() {
         </Button>
       </Stack>
 
-      {productsIsLoading ? <Typography>{t('common:states.loading')}</Typography> : null}
-      {productsIsError ? <Typography color="error">{t('products:list.loadError')}</Typography> : null}
-      {!productsIsLoading && products?.items.length === 0 ? (
-        <Typography color="text.secondary">{t('products:list.empty')}</Typography>
-      ) : null}
-
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(auto-fill, minmax(260px, 1fr))`,
-          gap: 2,
+      <DataTable
+        table={table}
+        size="small"
+        busy={productsIsLoading}
+        busyLabel={t('common:states.loading')}
+        isError={productsIsError}
+        errorContent={t('products:list.loadError')}
+        emptyContent={t('products:list.empty')}
+        getRowProps={(row) => ({
+          hover: true,
+          sx: { cursor: 'pointer' },
+          onClick: () => {
+            productFormModalRef.current?.open({ mode: 'edit', productId: row.original.id });
+          },
+        })}
+        pagination={{
+          previous: t('common:actions.previous'),
+          next: t('common:actions.next'),
+          page: t('products:list.page', {
+            page: products?.meta.page ?? page,
+            total: products?.meta.total ?? 0,
+          }),
         }}
-      >
-        {(products?.items ?? []).map((product: AdminProductDto, index: number) => (
-          <ProductDiscoveryCard
-            key={product.id}
-            name={product.name.uk}
-            countryLabel={product.country.name.uk}
-            priceLabel={formatCurrency(product.priceMinor, product.currency)}
-            mediaItems={[
-              ...product.images.map((url) => ({ type: 'image' as const, url, alt: product.name.uk })),
-              ...product.videos.map((url) => ({ type: 'video' as const, url, alt: product.name.uk })),
-            ]}
-            skinInput={{
-              brand: product.brand?.slug,
-              country: product.country.slug,
-              category: product.category.slug,
-              slug: product.slug,
-            }}
-            gridIndex={index}
-            gridColumns={GRID_COLUMNS}
-            details={{
-              loading: false,
-              story: product.story.uk,
-              description: product.description.uk,
-              forWhom: product.forWhom.uk,
-              emptyMessage: t('products:card.detailsEmpty'),
-              storyLabel: t('products:card.storyLabel'),
-              descriptionLabel: t('products:card.descriptionLabel'),
-              forWhomLabel: t('products:card.forWhomLabel'),
-            }}
-            actions={[
-              <Button
-                key="edit"
-                variant="text"
-                size="small"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  productFormModalRef.current?.open({ mode: 'edit', productId: product.id });
-                }}
-              >
-                {t('products:actions.edit')}
-              </Button>,
-            ]}
-          />
-        ))}
-      </Box>
+      />
 
-      {products ? (
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-          <Button disabled={page <= 1} onClick={() => setPage((prev) => prev - 1)}>
-            {t('common:actions.previous')}
-          </Button>
-          <Typography variant="body2">
-            {t('products:list.page', { page, total: products.meta.total })}
-          </Typography>
-          <Button disabled={page * limit >= products.meta.total} onClick={() => setPage((prev) => prev + 1)}>
-            {t('common:actions.next')}
-          </Button>
-        </Stack>
-      ) : null}
-
-      <ProductFormModal ref={productFormModalRef} />
+      <ProductFormModal
+        ref={productFormModalRef}
+        onViewProductCard={(productId) => {
+          productPreviewModalRef.current?.open({ productId });
+        }}
+      />
+      <ProductCardPreviewModal
+        ref={productPreviewModalRef}
+        onEditProduct={(productId) => {
+          productFormModalRef.current?.open({ mode: 'edit', productId });
+        }}
+      />
+      <ConfirmQuantityChangeModal ref={confirmQuantityModalRef} />
     </Stack>
   );
 }

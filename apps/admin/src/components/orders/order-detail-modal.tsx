@@ -4,7 +4,6 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { OrderDelivery, OrderStatus } from '@my-noodles/api-clients/admin';
 import { CopyableField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
-import { Link } from '@tanstack/react-router';
 import { type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +18,7 @@ import {
 } from '@/api/orders';
 import { CancelOrderModal, type CancelOrderModalRef } from '@/components/orders/cancel-order-modal';
 import { OrderStatusChip } from '@/components/orders/order-status-chip';
-import { ROUTE_NAMES } from '@/router/route-names';
+import { ProductDetailModalContent } from '@/components/products/product-detail-modal';
 import { formatCurrency } from '@/utils/format-currency';
 
 type OrderDetailModalData = {
@@ -57,10 +56,15 @@ function formatDeliveryDetails(delivery: OrderDelivery): string {
   );
 }
 
-function OrderDetailModalContent() {
+function OrderDetailView({
+  orderId,
+  onOpenProduct,
+}: {
+  orderId: string;
+  onOpenProduct: (productId: string) => void;
+}) {
   const { t } = useTranslation(['orders', 'common']);
-  const { data, close, setDisableClose } = useModal<OrderDetailModalData>();
-  const orderId = data?.orderId ?? '';
+  const { close, setDisableClose } = useModal<OrderDetailModalData>();
   const { order, orderIsLoading, orderIsError } = useOrder(orderId);
   const { confirmOrderAsync, confirmOrderIsPending } = useConfirmOrder(orderId);
   const { sendOrderAsync, sendOrderIsPending } = useSendOrder(orderId);
@@ -229,11 +233,24 @@ function OrderDetailModalContent() {
                   spacing={0.5}
                   sx={{ alignItems: 'baseline', flexWrap: 'wrap' }}
                 >
-                  <Link to={ROUTE_NAMES.productDetail} params={{ productId: item.productId }}>
-                    <Typography component="span" color="primary" sx={{ textDecoration: 'underline' }}>
-                      {item.titleSnapshot}
-                    </Typography>
-                  </Link>
+                  <Typography
+                    component="button"
+                    type="button"
+                    color="primary"
+                    onClick={() => onOpenProduct(item.productId)}
+                    sx={{
+                      border: 0,
+                      padding: 0,
+                      margin: 0,
+                      background: 'none',
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      textAlign: 'left',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    {item.titleSnapshot}
+                  </Typography>
                   <Typography component="span">
                     × {item.qty} — {formatCurrency(item.priceMinorSnapshot, order.currency)}
                   </Typography>
@@ -271,9 +288,31 @@ function OrderDetailModalContent() {
   );
 }
 
+function OrderDetailModalContent() {
+  const { data, isOpen } = useModal<OrderDetailModalData>();
+  const orderId = data?.orderId ?? '';
+  const [productId, setProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setProductId(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setProductId(null);
+  }, [orderId]);
+
+  if (productId && orderId) {
+    return <ProductDetailModalContent productId={productId} onBack={() => setProductId(null)} />;
+  }
+
+  return <OrderDetailView orderId={orderId} onOpenProduct={setProductId} />;
+}
+
 export function OrderDetailModal({ ref }: { ref?: Ref<OrderDetailModalRef> }) {
   return (
-    <Modal ref={ref} maxWidth="md">
+    <Modal ref={ref} maxWidth="lg">
       <OrderDetailModalContent />
     </Modal>
   );

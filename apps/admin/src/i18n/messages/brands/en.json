@@ -1,0 +1,25 @@
+{
+  "list": {
+    "title": "Brands",
+    "search": "Slug or name",
+    "columnSlug": "Slug",
+    "columnName": "Name",
+    "columnTheme": "Theme",
+    "loadError": "Failed to load brands.",
+    "empty": "No brands found.",
+    "page": "Page {{page}} · {{total}} total"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "form": {
+    "createTitle": "New brand",
+    "editTitle": "Edit brand",
+    "loading": "Loading…",
+    "slug": "Slug",
+    "name": "Name",
+    "logoUrl": "Logo URL",
+    "themeKey": "Brand theme key",
+    "saveFailed": "Failed to save brand."
+  }
+}

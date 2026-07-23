@@ -14,6 +14,7 @@ export const sampleProduct = {
   images: ['https://example.com/pocky.jpg'],
   videos: ['https://example.com/pocky.mp4'],
   quantity: 5,
+  available: true,
   isTriedByUs: true,
   sortWeight: 10,
   weight: '47g',

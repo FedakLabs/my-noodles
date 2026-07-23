@@ -14,7 +14,7 @@ import {
 } from './discovery-card-shared';
 import { discoveryCardSkinStripePseudoSx } from './discovery-card-skin-stripe';
 import { discoveryCardSkinStyle } from './discovery-card-skin-style';
-import { type DiscoveryCardViewPhase, isPreviewPhase } from './discovery-card-view-phase';
+import { type DiscoveryCardViewPhase, isView } from './discovery-card-view-phase';
 import { DiscoveryCardScrollable } from './DiscoveryCardScrollable';
 
 const VIEW_TRANSITION_MS = 400;
@@ -194,7 +194,7 @@ export function DiscoveryCardView({
   onClick,
 }: DiscoveryCardViewProps) {
   const skinStyle = discoveryCardSkinStyle(skin);
-  const logicalOpen = isPreviewPhase(view);
+  const logicalOpen = isView(view, 'expanded');
   const [surfaceOpen, setSurfaceOpen] = useState(logicalOpen);
   const [contentOpen, setContentOpen] = useState(logicalOpen);
   const morphRef = useRef<HTMLDivElement>(null);

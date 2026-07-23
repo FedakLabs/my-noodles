@@ -28,13 +28,6 @@
     "taste": "Finding something worth a first bite…",
     "hunt": "Still hunting — tasty things hide well"
   },
-  "addToCart": "Add to cart",
-  "outOfStock": "Out of stock",
-  "goToDetails": "Go to details",
-  "goToProduct": "Go",
-  "addShort": "Add",
-  "previewLoading": "Loading preview…",
-  "previewDetailsEmpty": "For now it's taste in the picture — the full story lives on the product page 🍜",
   "imageGallery": "Product photos",
   "imageSlide": "Photo {index} of {total}",
   "filters": {

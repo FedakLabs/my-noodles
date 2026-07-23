@@ -1,0 +1,29 @@
+{
+  "list": {
+    "title": "Countries",
+    "search": "Slug, code, or name",
+    "columnCode": "Code",
+    "columnSlug": "Slug",
+    "columnName": "Name",
+    "columnFlag": "Flag",
+    "columnTheme": "Theme",
+    "loadError": "Failed to load countries.",
+    "empty": "No countries found.",
+    "page": "Page {{page}} · {{total}} total"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "form": {
+    "createTitle": "New country",
+    "editTitle": "Edit country",
+    "loading": "Loading…",
+    "language": "Language",
+    "code": "Code",
+    "slug": "Slug",
+    "name": "Name",
+    "flagEmoji": "Flag emoji",
+    "themeKey": "Country theme key",
+    "saveFailed": "Failed to save country."
+  }
+}

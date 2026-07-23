@@ -19,6 +19,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     images: ['https://img/1.jpg'],
     videos: [],
     quantity: 5,
+    available: true,
     sortWeight: 10,
     category: Object.assign(new Category(), {
       slug: 'noodles',

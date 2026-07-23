@@ -20,7 +20,7 @@ import { ModalFooter } from './ModalFooter';
 import { ModalHeader } from './ModalHeader';
 import { ModalScrollable } from './ModalScrollable';
 
-export type ModalMaxWidth = 'sm' | 'md' | 'lg';
+export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl';
 
 export type ModalRef<T = void> = {
   open: [T] extends [void] ? () => void : (data: T) => void;

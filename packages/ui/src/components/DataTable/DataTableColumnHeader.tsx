@@ -5,6 +5,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { Column, RowData } from '@tanstack/react-table';
+import type { MouseEvent } from 'react';
 
 import ChevronDownIcon from '../../icons/chevron-down.svg';
 import ChevronUpIcon from '../../icons/chevron-up.svg';
@@ -51,6 +52,19 @@ export function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
     },
   });
 
+  function cycleSorting(event: MouseEvent) {
+    event.stopPropagation();
+    if (!sorted) {
+      column.toggleSorting(false);
+      return;
+    }
+    if (sorted === 'asc') {
+      column.toggleSorting(true);
+      return;
+    }
+    column.clearSorting();
+  }
+
   return (
     <Box
       component="span"
@@ -61,16 +75,39 @@ export function DataTableColumnHeader<TData extends RowData, TValue = unknown>({
         gap: theme.customSpacing.gap.xs,
       }}
     >
-      <Typography variant="subtitle2" component="span">
-        {title}
-      </Typography>
+      <ButtonBase
+        type="button"
+        onClick={cycleSorting}
+        aria-label={
+          !sorted
+            ? `Sort ${title} ascending`
+            : sorted === 'asc'
+              ? `Sort ${title} descending`
+              : `Clear ${title} sort`
+        }
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 0.5,
+          px: 0.25,
+          mx: -0.25,
+          color: 'inherit',
+          '&:hover': {
+            bgcolor: theme.palette.action.hover,
+          },
+        }}
+      >
+        <Typography variant="subtitle2" component="span">
+          {title}
+        </Typography>
+      </ButtonBase>
       <Box
         component="span"
         sx={{
           display: 'inline-flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 0.125,
+          gap: 0,
           lineHeight: 0,
         }}
       >

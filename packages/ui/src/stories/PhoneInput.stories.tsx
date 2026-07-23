@@ -12,6 +12,14 @@ const meta = {
     label: 'Phone',
     fullWidth: true,
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Controlled phone field (mui-tel-input). Stores E.164-style values; size follows MUI `medium` / `large`.',
+      },
+    },
+  },
 } satisfies Meta<typeof PhoneInput>;
 
 export default meta;

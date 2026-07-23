@@ -61,6 +61,14 @@ const meta = {
     price: '₴189',
     mediaItems: demoMediaItems,
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Primitive discovery card chrome (skin, media, body, actions). For the storefront product wiring (preview toggle + details), see ProductDiscoveryCard.',
+      },
+    },
+  },
   argTypes: {
     country: { control: 'select', options: ['', 'KR', 'TH', 'CN', 'US', 'CA', 'TW'] },
     brand: { control: 'select', options: ['', 'buldak', 'pocky', 'pringles'] },
@@ -97,7 +105,8 @@ const storyActionButtonSx = {
   whiteSpace: 'nowrap',
 } as const;
 
-function catalogQuickActions(isPreview: boolean) {
+function catalogQuickActions(view: 'summary' | 'expanded') {
+  const expanded = view === 'expanded';
   return (
     <DiscoveryCard.Actions
       actions={[
@@ -107,11 +116,11 @@ function catalogQuickActions(isPreview: boolean) {
           color="inherit"
           size="small"
           sx={storyActionButtonSx}
-          aria-label={isPreview ? undefined : 'Add to cart'}
+          aria-label={expanded ? undefined : 'Add to cart'}
         >
-          <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
+          <Stack direction="row" spacing={expanded ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
             <CartIcon aria-hidden size={20} />
-            <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
+            <DiscoveryCard.Collapse expanded={expanded} orientation="horizontal">
               Add
             </DiscoveryCard.Collapse>
           </Stack>
@@ -122,11 +131,11 @@ function catalogQuickActions(isPreview: boolean) {
           color="inherit"
           size="small"
           sx={storyActionButtonSx}
-          aria-label={isPreview ? undefined : 'Go to details'}
+          aria-label={expanded ? undefined : 'Go to details'}
         >
-          <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
+          <Stack direction="row" spacing={expanded ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
             <ChevronRightIcon aria-hidden size={20} />
-            <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
+            <DiscoveryCard.Collapse expanded={expanded} orientation="horizontal">
               Go
             </DiscoveryCard.Collapse>
           </Stack>
@@ -136,8 +145,8 @@ function catalogQuickActions(isPreview: boolean) {
   );
 }
 
-const quickActionsRow = catalogQuickActions(false);
-const quickActionsRowExpanded = catalogQuickActions(true);
+const quickActionsRow = catalogQuickActions('summary');
+const quickActionsRowExpanded = catalogQuickActions('expanded');
 
 function DiscoveryCardFromArgs(
   args: Story['args'] & {
@@ -288,9 +297,9 @@ export const ExpandPreviewLoading: Story = {
     return (
       <CardPreview width={CARD_WIDTH_MD}>
         <DiscoveryCard.View
-          view="preview"
+          view="expanded"
           details={{ loading: true, content: null }}
-          anchor="end"
+          anchor="start"
           skin={resolveSkin({ country: 'KR' })}
           media={<DiscoveryCard.Media unframed items={args.mediaItems} mode="static" />}
           meta={cardMeta}
@@ -314,7 +323,7 @@ export const ExpandPreviewExpanded: Story = {
       <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: 'wrap' }}>
         <CardPreview width={CARD_WIDTH_MD}>
           <DiscoveryCard.View
-            view="preview"
+            view="expanded"
             anchor="start"
             skin={resolveSkin({ country: 'TH' })}
             media={

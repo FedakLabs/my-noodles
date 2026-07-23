@@ -6,15 +6,17 @@ import Stack from '@mui/material/Stack';
 import type { Product } from '@my-noodles/api-clients/storefront';
 import {
   DiscoveryCard,
+  type DiscoveryCardViewPhase,
   discoveryCardGroupedCartButtonSx,
   discoveryCardGroupedDetailsButtonSx,
+  isView,
   ProductDiscoveryCard,
   productDiscoveryCardLabelQuickActionSx,
 } from '@my-noodles/ui';
 import CartIcon from '@my-noodles/ui/icons/cart.svg';
 import ChevronRightIcon from '@my-noodles/ui/icons/chevron-right.svg';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useProductDetail } from '@/api/products';
 import { useCartActions } from '@/hooks/cart';
@@ -28,29 +30,28 @@ export type ProductCardProps = {
   gridIndex?: number;
   /** Column count for preview anchor — pass from ProductGrid to avoid per-card media-query drift. */
   gridColumns?: number;
-  previewEnabled?: boolean;
+  /** When set without interactions, locks the discovery card to that phase (e.g. alternatives rail). */
+  view?: DiscoveryCardViewPhase;
 };
 
 export function ProductCard({
   product,
   gridIndex = 0,
   gridColumns: gridColumnsProp,
-  previewEnabled = true,
+  view,
 }: ProductCardProps) {
   const t = useTranslations('catalog');
   const tProduct = useTranslations('product');
+  const tCard = useTranslations('discoveryCard');
   const { formatCurrency } = useCurrency();
   const { addItem, isAddingProduct } = useCartActions();
   const alt = product.name ?? product.slug;
   const gridColumns = gridColumnsProp ?? CATALOG_PRODUCT_GRID_COLUMNS.sm;
-  const [previewActive, setPreviewActive] = useState(false);
-
-  const handlePreviewChange = useCallback((isPreview: boolean) => {
-    setPreviewActive(isPreview);
-  }, []);
+  const [trackedView, setTrackedView] = useState<DiscoveryCardViewPhase>('summary');
+  const cardView = view ?? trackedView;
 
   const { product: detail, productIsInitialLoad } = useProductDetail(product.slug, {
-    enabled: previewActive && previewEnabled,
+    enabled: isView(cardView, 'expanded'),
   });
 
   const mediaItems = useMemo(() => {
@@ -117,22 +118,22 @@ export function ProductCard({
         category: product.category.slug,
         slug: product.slug,
       }}
-      previewEnabled={previewEnabled}
+      view={view}
       gridIndex={gridIndex}
       gridColumns={gridColumns}
       mediaLabels={mediaLabels}
-      onPreviewChange={handlePreviewChange}
+      onViewChange={view == null ? setTrackedView : undefined}
       details={{
         loading: productIsInitialLoad,
         story: detail?.story,
         description: detail?.description,
         forWhom: detail?.forWhom,
-        emptyMessage: t('previewDetailsEmpty'),
-        storyLabel: tProduct('story'),
-        descriptionLabel: tProduct('description'),
-        forWhomLabel: tProduct('forWhom'),
+        emptyMessage: tCard('detailsEmpty'),
+        storyLabel: tCard('story'),
+        descriptionLabel: tCard('description'),
+        forWhomLabel: tCard('forWhom'),
       }}
-      actions={({ isPreview }) => [
+      actions={({ view: cardView }) => [
         <Button
           key="cart"
           variant="text"
@@ -141,21 +142,31 @@ export function ProductCard({
           sx={[productDiscoveryCardLabelQuickActionSx, discoveryCardGroupedDetailsButtonSx]}
           disabled={!product.inStock || isAdding}
           aria-busy={isAdding}
-          aria-label={isPreview ? undefined : product.inStock ? t('addToCart') : t('outOfStock')}
+          aria-label={
+            isView(cardView, 'expanded')
+              ? undefined
+              : product.inStock
+                ? tCard('addToCart')
+                : tCard('outOfStock')
+          }
           data-testid={`catalog-add-to-cart--${product.slug}`}
           onClick={(event) => {
             event.stopPropagation();
             handleAddToCart();
           }}
         >
-          <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
+          <Stack
+            direction="row"
+            spacing={isView(cardView, 'expanded') ? 1 : 0}
+            sx={{ minWidth: 0, alignItems: 'center' }}
+          >
             {isAdding ? (
               <CircularProgress size={20} color="inherit" aria-hidden />
             ) : (
               <CartIcon aria-hidden size={20} />
             )}
-            <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
-              {product.inStock ? t('addShort') : t('outOfStock')}
+            <DiscoveryCard.Collapse expanded={isView(cardView, 'expanded')} orientation="horizontal">
+              {product.inStock ? tCard('addShort') : tCard('outOfStock')}
             </DiscoveryCard.Collapse>
           </Stack>
         </Button>,
@@ -167,13 +178,17 @@ export function ProductCard({
           color="inherit"
           size="small"
           sx={[productDiscoveryCardLabelQuickActionSx, discoveryCardGroupedCartButtonSx]}
-          aria-label={isPreview ? undefined : t('goToDetails')}
+          aria-label={isView(cardView, 'expanded') ? undefined : tCard('goToDetails')}
           onClick={(event) => event.stopPropagation()}
         >
-          <Stack direction="row" spacing={isPreview ? 1 : 0} sx={{ minWidth: 0, alignItems: 'center' }}>
+          <Stack
+            direction="row"
+            spacing={isView(cardView, 'expanded') ? 1 : 0}
+            sx={{ minWidth: 0, alignItems: 'center' }}
+          >
             <ChevronRightIcon aria-hidden size={20} />
-            <DiscoveryCard.Collapse expanded={isPreview} orientation="horizontal">
-              {t('goToProduct')}
+            <DiscoveryCard.Collapse expanded={isView(cardView, 'expanded')} orientation="horizontal">
+              {tCard('goToProduct')}
             </DiscoveryCard.Collapse>
           </Stack>
         </Button>,

@@ -1,7 +1,8 @@
 {
   "list": {
     "title": "Товари",
-    "search": "Slug або назва",
+    "search": "Пошук",
+    "searchBy": "Шукати за",
     "searchBySlug": "Slug",
     "searchByName": "Назва",
     "category": "Категорія",
@@ -12,16 +13,47 @@
     "countryAll": "Усі країни",
     "loadError": "Не вдалося завантажити товари.",
     "empty": "Товарів не знайдено.",
-    "page": "Сторінка {{page}} · {{total}} всього"
+    "page": "Сторінка {{page}} · {{total}} всього",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "columnPrice": "Ціна",
+    "columnBrand": "Бренд",
+    "columnCountry": "Країна",
+    "columnCategory": "Категорія",
+    "columnQuantity": "К-сть",
+    "columnAvailable": "Доступний",
+    "preview": "Перегляд"
   },
-  "card": {
-    "storyLabel": "Історія",
-    "descriptionLabel": "Опис",
-    "forWhomLabel": "Кому підійде",
-    "detailsEmpty": "Немає додаткової інформації."
+  "available": {
+    "updateSuccess": "Доступність оновлено.",
+    "updateFailed": "Не вдалося оновити доступність."
+  },
+  "preview": {
+    "title": "Перегляд картки товару",
+    "language": "Мова перегляду",
+    "modeSwitch": "Режим картки",
+    "catalogInteractions": "Взаємодія як у каталозі",
+    "summaryCaption": "За замовчуванням",
+    "expandedCaption": "Розгорнута"
   },
   "actions": {
     "edit": "Редагувати"
+  },
+  "detail": {
+    "title": "Товар",
+    "notFound": "Товар не знайдено.",
+    "language": "Мова перегляду",
+    "id": "ID",
+    "openInProducts": "Відкрити в списку товарів",
+    "price": "Ціна",
+    "yes": "Так",
+    "no": "Ні",
+    "emptyValue": "—",
+    "noMedia": "Немає зображень чи відео.",
+    "mediaGallery": "Медіа товару",
+    "previousSlide": "Попередній слайд",
+    "nextSlide": "Наступний слайд",
+    "slide": "Слайд {{index}} з {{total}}"
   },
   "form": {
     "createTitle": "Новий товар",
@@ -37,6 +69,7 @@
     "priceMinor": "Ціна, копійки",
     "currency": "Валюта",
     "quantity": "Кількість",
+    "available": "Доступний у вітрині",
     "sortWeight": "Порядок сортування",
     "flavor": "Смак",
     "spice": "Гострота (0–5)",
@@ -53,6 +86,19 @@
     "noBrand": "Без бренду",
     "country": "Країна",
     "category": "Категорія",
-    "saveFailed": "Не вдалося зберегти товар."
+    "saveFailed": "Не вдалося зберегти товар.",
+    "updateSuccess": "Товар оновлено."
+  },
+  "quantity": {
+    "editAriaLabel": "Редагувати кількість",
+    "confirmAriaLabel": "Застосувати кількість",
+    "cancelAriaLabel": "Скасувати редагування кількості",
+    "confirmTitle": "Змінити кількість?",
+    "confirmIntro": "Змінити кількість для <bold>{{name}}</bold> (<bold>{{slug}}</bold>)",
+    "confirmFrom": "Старе значення: <bold>{{from}}</bold>",
+    "confirmTo": "Нове значення: <bold>{{to}}</bold>",
+    "confirm": "Змінити кількість",
+    "updateSuccess": "Кількість оновлено.",
+    "updateFailed": "Не вдалося оновити кількість."
   }
 }

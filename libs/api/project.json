@@ -7,6 +7,7 @@
   "targets": {
     "build": {
       "command": "pnpm build",
+      "dependsOn": [{ "projects": "locale", "target": "build" }],
       "options": { "cwd": "libs/api" },
       "outputs": ["{projectRoot}/dist"]
     },

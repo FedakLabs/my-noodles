@@ -3,10 +3,16 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useCallback, useMemo, useRef } from 'react';
 
 import { resolveSkin, type SkinInput } from '../../utils/skins';
-import { DiscoveryCard, useDiscoveryCardView } from '../DiscoveryCard';
+import {
+  DiscoveryCard,
+  isView,
+  useDiscoveryCardView,
+  type DiscoveryCardViewAnchor,
+  type DiscoveryCardViewPhase,
+} from '../DiscoveryCard';
 import type { MediaGalleryItem, MediaGalleryLabels } from '../MediaGallery';
 import { productCardPreviewAnchor } from './product-card-preview-anchor';
 import { productDiscoveryCardSummaryTitleSx } from './product-discovery-card-sx';
@@ -25,7 +31,7 @@ export type ProductDiscoveryCardDetails = {
 };
 
 export type ProductDiscoveryCardActionContext = {
-  isPreview: boolean;
+  view: DiscoveryCardViewPhase;
 };
 
 export type ProductDiscoveryCardProps = {
@@ -36,11 +42,19 @@ export type ProductDiscoveryCardProps = {
   skinInput: SkinInput;
   actions: ReactNode[] | ((context: ProductDiscoveryCardActionContext) => ReactNode[]);
   details?: ProductDiscoveryCardDetails;
-  previewEnabled?: boolean;
+  /** Starting view when uncontrolled. Defaults to summary. */
+  defaultView?: DiscoveryCardViewPhase;
+  /**
+   * Controlled view phase. When set without `onViewChange`, the card is locked
+   * (no click / outside-click toggle). Pass `onViewChange` for controlled + interactive.
+   */
+  view?: DiscoveryCardViewPhase;
+  onViewChange?: (view: DiscoveryCardViewPhase) => void;
   gridIndex?: number;
   gridColumns?: number;
+  /** Overrides grid-derived expand direction. */
+  previewAnchor?: DiscoveryCardViewAnchor;
   mediaLabels?: Pick<MediaGalleryLabels, 'gallery' | 'slide' | 'video'>;
-  onPreviewChange?: (isPreview: boolean) => void;
 };
 
 export function ProductDiscoveryCard({
@@ -51,27 +65,42 @@ export function ProductDiscoveryCard({
   skinInput,
   actions,
   details,
-  previewEnabled = true,
+  defaultView = 'summary',
+  view: viewProp,
+  onViewChange,
   gridIndex = 0,
   gridColumns = 2,
+  previewAnchor,
   mediaLabels,
-  onPreviewChange,
 }: ProductDiscoveryCardProps) {
   const skin = resolveSkin(skinInput);
-  const viewAnchor = productCardPreviewAnchor(gridIndex, gridColumns);
-  const { view, isPreview, toggleView, setView } = useDiscoveryCardView();
+  const viewAnchor = previewAnchor ?? productCardPreviewAnchor(gridIndex, gridColumns);
+  const { view: uncontrolledView, setView: setUncontrolledView } = useDiscoveryCardView(defaultView);
+  const isControlled = viewProp !== undefined;
+  const canToggle = !isControlled || onViewChange != null;
+  const view = viewProp ?? uncontrolledView;
   const rootRef = useRef<HTMLDivElement>(null);
-  const resolvedActions = typeof actions === 'function' ? actions({ isPreview }) : actions;
+  const resolvedActions = typeof actions === 'function' ? actions({ view }) : actions;
+
+  const setView = useCallback(
+    (next: DiscoveryCardViewPhase) => {
+      if (!isControlled) {
+        setUncontrolledView(next);
+      }
+      onViewChange?.(next);
+    },
+    [isControlled, onViewChange, setUncontrolledView],
+  );
+
+  const toggleView = useCallback(() => {
+    setView(isView(view, 'expanded') ? 'summary' : 'expanded');
+  }, [setView, view]);
 
   const handleCollapse = useCallback(() => {
     setView('summary');
   }, [setView]);
 
-  usePreviewCollapse(isPreview && previewEnabled, handleCollapse, rootRef);
-
-  useEffect(() => {
-    onPreviewChange?.(isPreview && previewEnabled);
-  }, [isPreview, previewEnabled, onPreviewChange]);
+  usePreviewCollapse(isView(view, 'expanded') && canToggle, handleCollapse, rootRef);
 
   const detailsContent = useMemo(() => {
     if (!details) {
@@ -116,7 +145,10 @@ export function ProductDiscoveryCard({
 
   const cardMeta = (
     <DiscoveryCard.Body>
-      <Typography variant="subtitle1" sx={!isPreview ? productDiscoveryCardSummaryTitleSx : undefined}>
+      <Typography
+        variant="subtitle1"
+        sx={!isView(view, 'expanded') ? productDiscoveryCardSummaryTitleSx : undefined}
+      >
         {name}
       </Typography>
       <Typography variant="body2" color="text.secondary">
@@ -138,13 +170,13 @@ export function ProductDiscoveryCard({
           <DiscoveryCard.Media
             unframed
             items={mediaItems}
-            mode={isPreview ? 'carousel' : 'static'}
+            mode={isView(view, 'expanded') ? 'carousel' : 'static'}
             labels={mediaLabels}
           />
         }
         meta={cardMeta}
         actions={<DiscoveryCard.Actions actions={resolvedActions} />}
-        onClick={previewEnabled ? toggleView : undefined}
+        onClick={canToggle ? toggleView : undefined}
         details={
           details
             ? {

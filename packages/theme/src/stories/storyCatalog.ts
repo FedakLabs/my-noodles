@@ -61,7 +61,7 @@ export const borderRadiusOrder = ['none', 'utility', 'discovery', 'sheet', 'pill
 
 export const spacingScaleOrder = ['xs', 'sm', 'md', 'lg'] as const;
 
-export const modalWidthOrder = ['sm', 'md', 'lg'] as const;
+export const modalWidthOrder = ['sm', 'md', 'lg', 'xl'] as const;
 
 export const countrySkinOrder = ['CN', 'KR', 'TH', 'US', 'CA', 'TW'] as const;
 

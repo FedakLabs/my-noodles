@@ -84,6 +84,10 @@ export class Product extends TimestampEntity {
   @Column({ type: 'int' })
   quantity!: number;
 
+  @ApiProperty()
+  @Column({ type: 'boolean' })
+  available!: boolean;
+
   @Column({ name: 'sort_weight', type: 'int' })
   sortWeight!: number;
 

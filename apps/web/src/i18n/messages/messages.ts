@@ -1,3 +1,5 @@
+import { discoveryCardMessages } from '@my-noodles/locale';
+
 import type { AppLocale } from '../routing';
 import analyticsEn from './analytics/en.json';
 import analyticsUk from './analytics/uk.json';
@@ -34,6 +36,7 @@ export const ukMessages = {
   collections: collectionsUk,
   common: commonUk,
   contacts: contactsUk,
+  discoveryCard: discoveryCardMessages.uk,
   feed: feedUk,
   home: homeUk,
   metadata: metadataUk,
@@ -52,6 +55,7 @@ export const enMessages = {
   collections: collectionsEn,
   common: commonEn,
   contacts: contactsEn,
+  discoveryCard: discoveryCardMessages.en,
   feed: feedEn,
   home: homeEn,
   metadata: metadataEn,
@@ -59,7 +63,6 @@ export const enMessages = {
   order: orderEn,
   product: productEn,
 } satisfies Messages;
-
 export type MessageNamespace = keyof Messages;
 
 export const messageNamespaces = Object.keys(ukMessages) as MessageNamespace[];

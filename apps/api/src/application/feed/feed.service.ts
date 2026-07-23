@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 
+import { isStorefrontListable } from '../products/product-storefront-visibility';
 import { Product } from '../products/product.entity';
 import { buildProductOrder, buildProductWhere, DEFAULT_PRODUCT_SORT } from '../products/products.filters';
 import type { VisitorSession } from '../visitor-session/visitor-session.entity';
@@ -60,10 +61,11 @@ export class FeedService {
 
   async getLikedItems(visitor: VisitorSession): Promise<Product[]> {
     const products = await this.sessionService.getLikedProducts(visitor.id);
-    for (const product of products) {
+    const listable = products.filter(isStorefrontListable);
+    for (const product of listable) {
       product.liked = true;
     }
-    return products;
+    return listable;
   }
 }
 

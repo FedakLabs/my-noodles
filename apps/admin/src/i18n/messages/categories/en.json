@@ -1,0 +1,28 @@
+{
+  "list": {
+    "title": "Categories",
+    "search": "Slug or name",
+    "columnSlug": "Slug",
+    "columnName": "Name",
+    "columnSortOrder": "Order",
+    "columnTheme": "Theme",
+    "loadError": "Failed to load categories.",
+    "empty": "No categories found.",
+    "page": "Page {{page}} · {{total}} total"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "form": {
+    "createTitle": "New category",
+    "editTitle": "Edit category",
+    "loading": "Loading…",
+    "language": "Language",
+    "slug": "Slug",
+    "name": "Name",
+    "icon": "Icon",
+    "sortOrder": "Sort order",
+    "themeKey": "Category theme key",
+    "saveFailed": "Failed to save category."
+  }
+}

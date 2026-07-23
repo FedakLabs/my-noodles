@@ -26,7 +26,7 @@ export function AlternativesRail({ products, ariaLabel }: AlternativesRailProps)
       <CarouselContent gap={2}>
         {products.map((product, index) => (
           <CarouselSlide key={product.id} index={index} responsiveBasis={ALTERNATIVE_CARD_BASIS}>
-            <ProductCard product={product} previewEnabled={false} />
+            <ProductCard product={product} view="summary" />
           </CarouselSlide>
         ))}
       </CarouselContent>

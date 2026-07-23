@@ -139,6 +139,10 @@
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
+    "packages/locale": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
     "libs/web": {
       "entry": ["src/index.ts", "src/hooks/deadline-countdown/index.ts", "src/validators/index.ts"],
       "project": ["src/**/*.ts"],

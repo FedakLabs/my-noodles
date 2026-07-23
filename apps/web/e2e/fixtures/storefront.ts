@@ -114,6 +114,7 @@ export const product = {
   videos: [],
   isTriedByUs: true,
   quantity: 10,
+  available: true,
   sortWeight: 10,
   inStock: true,
   brandId: MOCK_IDS.brand,

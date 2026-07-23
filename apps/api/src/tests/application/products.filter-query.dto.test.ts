@@ -9,6 +9,7 @@ import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductsController, ProductsService } from '@/application/products';
+import { storefrontProductWhere } from '@/application/products/product-storefront-visibility';
 import { ProductFacetsQueryDto } from '@/application/products/products.dto';
 import { buildProductWhere } from '@/application/products/products.filters';
 
@@ -142,6 +143,7 @@ describe('GET /api/products/facets filter query', () => {
     ) as [{ where: ReturnType<typeof buildProductWhere> }] | undefined;
 
     expect(filteredCall?.[0].where).toEqual({
+      ...storefrontProductWhere(),
       category: { slug: In(['noodles']) },
     });
 
@@ -189,6 +191,7 @@ describe('GET /api/products/facets filter query', () => {
     ) as [{ where: ReturnType<typeof buildProductWhere> }] | undefined;
 
     expect(filteredCall?.[0].where).toEqual({
+      ...storefrontProductWhere(),
       country: { slug: In(['canada']) },
     });
 

@@ -7,17 +7,31 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 
+import ChevronLeftIcon from '../../icons/chevron-left.svg';
 import CloseIcon from '../../icons/close.svg';
 import { useModalContext } from './modal-context';
 
 export type ModalHeaderProps = {
   /** Plain string gets `h6` styling; pass a node for custom title content (e.g. copyable id). */
   title?: ReactNode;
+  /**
+   * When set, shows a left-arrow control before the title (native drill-down back).
+   * Does not close the modal — caller decides navigation.
+   */
+  onBack?: () => void;
+  /** Accessible label for the back control. Defaults to `"Back"`. */
+  backLabel?: string;
   hideCloseButton?: boolean;
   children?: ReactNode;
 };
 
-export function ModalHeader({ title, hideCloseButton = false, children }: ModalHeaderProps) {
+export function ModalHeader({
+  title,
+  onBack,
+  backLabel = 'Back',
+  hideCloseButton = false,
+  children,
+}: ModalHeaderProps) {
   const theme = useTheme();
   const { close, disableClose, titleId } = useModalContext();
 
@@ -33,6 +47,11 @@ export function ModalHeader({ title, hideCloseButton = false, children }: ModalH
         borderBottom: `1px solid ${theme.colors.border.subtle}`,
       }}
     >
+      {onBack ? (
+        <IconButton aria-label={backLabel} size="small" onClick={onBack} sx={{ flexShrink: 0 }}>
+          <ChevronLeftIcon aria-hidden size={20} color={theme.colors.icon.secondary} />
+        </IconButton>
+      ) : null}
       <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
         {title != null && title !== '' ? (
           typeof title === 'string' || typeof title === 'number' ? (

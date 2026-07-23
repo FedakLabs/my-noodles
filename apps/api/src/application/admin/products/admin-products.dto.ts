@@ -5,7 +5,6 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -18,22 +17,18 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { AdminListMetaDto, AdminListQueryDto, LocalizedStringDto } from '../common';
+import { AdminListMetaDto, AdminPaginationQueryDto, LocalizedStringDto } from '../common';
 
-export enum AdminProductSearchBy {
-  Slug = 'slug',
-  Name = 'name',
-}
-
-export class ListAdminProductsQueryDto extends AdminListQueryDto {
-  @ApiPropertyOptional({
-    enum: AdminProductSearchBy,
-    enumName: 'AdminProductSearchBy',
-    default: AdminProductSearchBy.Slug,
-  })
+export class ListAdminProductsQueryDto extends AdminPaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Prefix match on product slug (case-insensitive).' })
   @IsOptional()
-  @IsEnum(AdminProductSearchBy)
-  searchBy?: AdminProductSearchBy;
+  @IsString()
+  slug?: string;
+
+  @ApiPropertyOptional({ description: 'Prefix match on product name in the default locale (uk).' })
+  @IsOptional()
+  @IsString()
+  name?: string;
 
   @ApiPropertyOptional({ type: [String], format: 'uuid' })
   @TransformToArray()
@@ -145,6 +140,10 @@ export class CreateProductDto {
   @Min(0)
   quantity!: number;
 
+  @ApiProperty({ default: true })
+  @IsBoolean()
+  available!: boolean;
+
   @ApiProperty()
   @IsInt()
   sortWeight!: number;
@@ -247,6 +246,11 @@ export class UpdateProductDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsBoolean()
+  available?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsInt()
   sortWeight?: number;
 
@@ -345,6 +349,9 @@ export class AdminProductDto {
 
   @ApiProperty()
   quantity!: number;
+
+  @ApiProperty()
+  available!: boolean;
 
   @ApiProperty()
   sortWeight!: number;

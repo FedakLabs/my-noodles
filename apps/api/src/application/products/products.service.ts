@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Brand } from '../brands/brand.entity';
 import { Category } from '../categories/category.entity';
 import { Country } from '../countries/country.entity';
+import { isStorefrontListable, storefrontProductWhere } from './product-storefront-visibility';
 import { Product } from './product.entity';
 import type { PaginatedProductsDto, ProductFacetOptionDto, ProductFacetsResponseDto } from './products.dto';
 import { ProductNotFoundException } from './products.exceptions';
@@ -101,7 +102,7 @@ export class ProductsService {
 
   async getBySlug(slug: string): Promise<Product> {
     const product = await this.productsRepository.findOne({
-      where: { slug },
+      where: { ...storefrontProductWhere(), slug },
       relations: {
         alternatives: {
           brand: true,
@@ -114,6 +115,8 @@ export class ProductsService {
     if (!product) {
       throw new ProductNotFoundException(slug);
     }
+
+    product.alternatives = (product.alternatives ?? []).filter(isStorefrontListable);
 
     return product;
   }

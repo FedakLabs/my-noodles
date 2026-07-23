@@ -1,8 +1,10 @@
+import { APP_LOCALE_HEADER } from '@my-noodles/locale';
+
 import { ApiError } from '../common';
 import type { Client } from './generated/client';
 import { client as apiClient } from './generated/client.gen';
 
-export const APP_LOCALE_HEADER = 'x-app-locale';
+export { APP_LOCALE_HEADER };
 
 export type StorefrontApiOptions = {
   baseUrl: string;

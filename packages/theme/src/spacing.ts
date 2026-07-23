@@ -19,6 +19,7 @@ export const modalWidths: CustomModalWidths = {
   sm: 400,
   md: 560,
   lg: 720,
+  xl: 960,
 };
 
 /** MUI spacing unit — 8px base. */

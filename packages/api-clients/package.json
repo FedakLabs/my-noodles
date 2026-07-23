@@ -54,6 +54,9 @@
     "lint-check": "oxlint",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
+  "dependencies": {
+    "@my-noodles/locale": "workspace:*"
+  },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.98.2"
   }

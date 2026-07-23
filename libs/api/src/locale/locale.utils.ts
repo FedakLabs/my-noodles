@@ -1,42 +1,7 @@
+import { resolveLocaleFromLanguageTag } from '@my-noodles/locale';
 import type { Request } from 'express';
 
-import {
-  APP_LOCALE_HEADER,
-  DEFAULT_LOCALE,
-  type Locale,
-  LOCALE_ALIASES,
-  SUPPORTED_LOCALES,
-} from './locale.config';
-
-function isSupportedLocale(value: string): value is Locale {
-  return (SUPPORTED_LOCALES as readonly string[]).includes(value);
-}
-
-function resolveLocaleFromLanguageTag(tag: string): Locale | undefined {
-  const normalized = tag.toLowerCase();
-  const primary = normalized.split('-')[0] ?? normalized;
-
-  for (const candidate of [normalized, primary]) {
-    if (isSupportedLocale(candidate)) {
-      return candidate;
-    }
-
-    const aliased = LOCALE_ALIASES[candidate];
-    if (aliased) {
-      return aliased;
-    }
-  }
-
-  const localesByLongestFirst = [...SUPPORTED_LOCALES].sort((left, right) => right.length - left.length);
-
-  for (const locale of localesByLongestFirst) {
-    if (normalized.startsWith(locale)) {
-      return locale;
-    }
-  }
-
-  return undefined;
-}
+import { APP_LOCALE_HEADER, DEFAULT_LOCALE, type Locale } from './locale.config';
 
 function parseAcceptLanguage(header: string): Locale | undefined {
   const candidates = header
@@ -78,9 +43,9 @@ export function parseRequestLocale(req: Request): Locale {
 
   const acceptLanguage = req.headers['accept-language'];
   if (typeof acceptLanguage === 'string') {
-    const fromHeader = parseAcceptLanguage(acceptLanguage);
-    if (fromHeader) {
-      return fromHeader;
+    const fromAccept = parseAcceptLanguage(acceptLanguage);
+    if (fromAccept) {
+      return fromAccept;
     }
   }
 

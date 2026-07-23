@@ -2,6 +2,7 @@ import type { PaginationQuery } from '@my-noodles/api-lib/pagination';
 import type { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 import { Between, In, LessThanOrEqual, MoreThan, MoreThanOrEqual } from 'typeorm';
 
+import { storefrontProductWhere } from './product-storefront-visibility';
 import type { Product } from './product.entity';
 import type { ProductFilterQueryDto, ProductFilters } from './products.filter-query.dto';
 
@@ -55,7 +56,9 @@ export function buildProductWhereForFacet(
 }
 
 export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Product> {
-  const where: FindOptionsWhere<Product> = {};
+  const where: FindOptionsWhere<Product> = {
+    ...storefrontProductWhere(),
+  };
 
   if (filters.collection) {
     where.collections = { code: filters.collection };
@@ -101,6 +104,7 @@ export function buildProductPriceBoundsScope(filters: ProductFilters): ProductFi
   return filters.collection ? { collection: filters.collection } : {};
 }
 
+/** Partial product select for facet counts — only slug is read from relations; labels come from taxonomy repos. */
 export const productFacetSelect = {
   id: true,
   priceMinor: true,
@@ -109,16 +113,13 @@ export const productFacetSelect = {
   category: {
     id: true,
     slug: true,
-    name: true,
   },
   country: {
     id: true,
     slug: true,
-    name: true,
   },
   brand: {
     id: true,
     slug: true,
-    name: true,
   },
 } as const;

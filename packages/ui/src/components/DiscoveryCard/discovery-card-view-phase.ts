@@ -1,6 +1,6 @@
-/** Default grid card layout vs in-place preview overlay. */
-export type DiscoveryCardViewPhase = 'summary' | 'preview';
+/** Collapsed grid card vs in-place expanded overlay. */
+export type DiscoveryCardViewPhase = 'summary' | 'expanded';
 
-export function isPreviewPhase(phase: DiscoveryCardViewPhase): boolean {
-  return phase === 'preview';
+export function isView(view: DiscoveryCardViewPhase, phase: DiscoveryCardViewPhase): boolean {
+  return view === phase;
 }

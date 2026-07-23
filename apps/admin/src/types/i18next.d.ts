@@ -1,4 +1,6 @@
+import type { DiscoveryCardMessages } from '@my-noodles/locale';
 import 'i18next';
+
 import type auth from '../i18n/messages/auth/uk.json';
 import type brands from '../i18n/messages/brands/uk.json';
 import type categories from '../i18n/messages/categories/uk.json';
@@ -18,6 +20,7 @@ declare module 'i18next' {
       brands: typeof brands;
       categories: typeof categories;
       countries: typeof countries;
+      discoveryCard: DiscoveryCardMessages;
     };
   }
 }

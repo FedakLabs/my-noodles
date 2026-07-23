@@ -72,6 +72,7 @@ describe('ProductsService', () => {
         images: [],
         videos: [],
         quantity: 3,
+        available: true,
         isTriedByUs: true,
         sortWeight: 10,
         weight: '47g',

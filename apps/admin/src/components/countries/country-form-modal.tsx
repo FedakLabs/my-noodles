@@ -4,7 +4,14 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { AdminCountryDto, CreateCountryDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
-import { LocalizedTextField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
+import {
+  cleanLocalizedString,
+  emptyLocalizedString,
+  isLocalizedStringComplete,
+  LOCALE_OPTIONS,
+  toRequiredLocalizedString,
+} from '@my-noodles/locale';
+import { LocalizedFields, LocalizedTextField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
 import { type Ref, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,29 +26,24 @@ type CountryFormState = {
 };
 
 function defaultFormState(): CountryFormState {
-  return { code: '', slug: '', name: { uk: '' }, flagEmoji: '', themeKey: '' };
+  return { code: '', slug: '', name: emptyLocalizedString(), flagEmoji: '', themeKey: '' };
 }
 
 function formStateFromCountry(country: AdminCountryDto): CountryFormState {
   return {
     code: country.code,
     slug: country.slug,
-    name: country.name,
+    name: toRequiredLocalizedString(country.name),
     flagEmoji: country.flagEmoji ?? '',
     themeKey: country.themeKey ?? '',
   };
-}
-
-function cleanLocalized(value: LocalizedStringDto): LocalizedStringDto {
-  const en = value.en?.trim();
-  return en ? { uk: value.uk.trim(), en } : { uk: value.uk.trim() };
 }
 
 function buildPayload(state: CountryFormState): CreateCountryDto {
   return {
     code: state.code.trim(),
     slug: state.slug.trim(),
-    name: cleanLocalized(state.name),
+    name: cleanLocalizedString(state.name),
     flagEmoji: state.flagEmoji.trim() || null,
     themeKey: state.themeKey.trim() || null,
   };
@@ -124,13 +126,14 @@ function CountryFormModalContent() {
               fullWidth
               required
             />
-            <LocalizedTextField
-              label={t('countries:form.name')}
-              value={form.name}
-              onChange={(name) => setForm((prev) => ({ ...prev, name: { uk: name.uk ?? '', en: name.en } }))}
-              required
-              requiredLocale="uk"
-            />
+            <LocalizedFields localeLabel={t('countries:form.language')} locales={LOCALE_OPTIONS}>
+              <LocalizedTextField
+                label={t('countries:form.name')}
+                value={form.name}
+                onChange={(name) => setForm((prev) => ({ ...prev, name: toRequiredLocalizedString(name) }))}
+                required
+              />
+            </LocalizedFields>
             <TextField
               label={t('countries:form.flagEmoji')}
               value={form.flagEmoji}
@@ -153,7 +156,7 @@ function CountryFormModalContent() {
         <Button
           variant="contained"
           loading={isSaving}
-          disabled={!isReady || !form.code || !form.slug || !form.name.uk}
+          disabled={!isReady || !form.code || !form.slug || !isLocalizedStringComplete(form.name)}
           onClick={() => void handleSave()}
         >
           {t('common:actions.save')}

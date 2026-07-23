@@ -27,6 +27,7 @@
     "build-storybook": "storybook build -o dist/storybook"
   },
   "dependencies": {
+    "@my-noodles/locale": "workspace:*",
     "@my-noodles/theme": "workspace:*",
     "@my-noodles/web-lib": "workspace:*",
     "embla-carousel-react": "^8.6.0",

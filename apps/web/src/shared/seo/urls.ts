@@ -1,3 +1,5 @@
+import { toOpenGraphLocale } from '@my-noodles/locale';
+
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { env } from '@/shared/env';
@@ -29,5 +31,5 @@ export function buildHreflangAlternates(pathname = '/'): Record<string, string> 
 }
 
 export function openGraphLocale(locale: AppLocale): string {
-  return locale === 'uk' ? 'uk_UA' : 'en_US';
+  return toOpenGraphLocale(locale);
 }

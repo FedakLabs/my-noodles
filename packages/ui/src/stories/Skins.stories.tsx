@@ -86,6 +86,14 @@ function CountrySkinsGallery() {
 const meta = {
   title: 'Skins',
   component: CountrySkinsGallery,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Catalog skin engine: brand → country → category → hash(slug) → base. Apply via `resolveSkin` + CSS vars on DiscoveryCard / ProductDiscoveryCard.',
+      },
+    },
+  },
 } satisfies Meta<typeof CountrySkinsGallery>;
 
 export default meta;

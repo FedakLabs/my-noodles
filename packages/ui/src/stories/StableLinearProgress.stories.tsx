@@ -20,6 +20,14 @@ const meta = {
     transitionMs: SMOOTH_TRANSITION_MS,
     transitionEasing: SMOOTH_TRANSITION_EASING,
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Layout-stable linear progress: reserves height and fades opacity so content below does not jump. Pair with BusyArea timing tokens for smooth show/hide.',
+      },
+    },
+  },
 } satisfies Meta<typeof StableLinearProgress>;
 
 export default meta;

@@ -3,12 +3,12 @@
 import { type RefObject, useEffect } from 'react';
 
 export function usePreviewCollapse(
-  isPreview: boolean,
+  enabled: boolean,
   onCollapse: () => void,
   rootRef: RefObject<HTMLElement | null>,
 ) {
   useEffect(() => {
-    if (!isPreview) {
+    if (!enabled) {
       return;
     }
 
@@ -24,5 +24,5 @@ export function usePreviewCollapse(
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
     };
-  }, [isPreview, onCollapse, rootRef]);
+  }, [enabled, onCollapse, rootRef]);
 }

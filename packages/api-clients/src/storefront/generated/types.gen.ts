@@ -101,6 +101,7 @@ export type Product = {
     story: string | null;
     forWhom: string | null;
     currency: CurrencyCode;
+    available: boolean;
     inStock: boolean;
     liked?: boolean;
     commentCount?: number;

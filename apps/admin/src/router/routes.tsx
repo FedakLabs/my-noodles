@@ -1,4 +1,5 @@
 import { createRootRoute, createRoute, Outlet, redirect } from '@tanstack/react-router';
+import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
 
 import { AdminShell } from '@/components/layout/admin-shell';
 import { getAccessToken } from '@/hooks/auth';
@@ -24,7 +25,11 @@ function redirectIfAuthed(): void {
 }
 
 export const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <NuqsAdapter>
+      <Outlet />
+    </NuqsAdapter>
+  ),
 });
 
 export const loginRoute = createRoute({
@@ -62,12 +67,6 @@ export const ordersRoute = createRoute({
 export const productsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: ROUTE_NAMES.products,
-  component: ProductsListScreen,
-});
-
-export const productDetailRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: ROUTE_NAMES.productDetail,
   component: ProductsListScreen,
 });
 

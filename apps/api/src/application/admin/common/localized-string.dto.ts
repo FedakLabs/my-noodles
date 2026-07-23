@@ -1,16 +1,21 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { assertLocalesMatch } from '@my-noodles/api-lib/locale';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, MinLength } from 'class-validator';
 
-/** Full locale payload for admin create/update (`uk` required). */
+/**
+ * Full locale payload for admin create/update.
+ * Every `SUPPORTED_LOCALES` key is required — no optional locales.
+ */
 export class LocalizedStringDto {
   @ApiProperty()
   @IsString()
   @MinLength(1)
   uk!: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsString()
   @MinLength(1)
-  en?: string;
+  en!: string;
 }
+
+assertLocalesMatch<LocalizedStringDto>(true);

@@ -1,4 +1,4 @@
-import { LocalizedString } from '@my-noodles/api-lib/locale';
+import { DEFAULT_LOCALE, LocalizedString } from '@my-noodles/api-lib/locale';
 import { type PaginatedResult, PaginationHelper } from '@my-noodles/api-lib/pagination';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,12 +8,7 @@ import { Brand } from '../../brands/brand.entity';
 import { Category } from '../../categories/category.entity';
 import { Country } from '../../countries/country.entity';
 import { Product } from '../../products/product.entity';
-import {
-  type AdminProductDto,
-  AdminProductSearchBy,
-  type CreateProductDto,
-  type UpdateProductDto,
-} from './admin-products.dto';
+import { type AdminProductDto, type CreateProductDto, type UpdateProductDto } from './admin-products.dto';
 import {
   AdminProductNotFoundException,
   ProductBrandNotFoundException,
@@ -24,8 +19,8 @@ import {
 type ListAdminProductsFilters = {
   page: number;
   limit: number;
-  q?: string;
-  searchBy?: AdminProductSearchBy;
+  slug?: string;
+  name?: string;
   categoryId?: string[];
   brandId?: string[];
   countryId?: string[];
@@ -83,6 +78,7 @@ export class AdminProductsService {
       videos: dto.videos,
       isTriedByUs: dto.isTriedByUs,
       quantity: dto.quantity,
+      available: dto.available,
       sortWeight: dto.sortWeight,
       brand,
       brandId: brand?.id ?? null,
@@ -141,6 +137,9 @@ export class AdminProductsService {
     if (dto.quantity !== undefined) {
       product.quantity = dto.quantity;
     }
+    if (dto.available !== undefined) {
+      product.available = dto.available;
+    }
     if (dto.sortWeight !== undefined) {
       product.sortWeight = dto.sortWeight;
     }
@@ -161,19 +160,17 @@ export class AdminProductsService {
   private buildWhere(filters: ListAdminProductsFilters): FindOptionsWhere<Product> {
     const where: FindOptionsWhere<Product> = {};
 
-    const term = filters.q?.trim();
-    if (term) {
-      const pattern = `%${term}%`;
-      if ((filters.searchBy ?? AdminProductSearchBy.Slug) === AdminProductSearchBy.Name) {
-        where.nameLocale = Raw(
-          (alias) => `(${alias}->>'uk' ILIKE :pattern OR ${alias}->>'en' ILIKE :pattern)`,
-          {
-            pattern,
-          },
-        );
-      } else {
-        where.slug = ILike(pattern);
-      }
+    const slug = filters.slug?.trim();
+    if (slug) {
+      where.slug = ILike(`${slug}%`);
+    }
+
+    const name = filters.name?.trim();
+    if (name) {
+      where.nameLocale = Raw((alias) => `${alias} ->> :locale ILIKE :pattern`, {
+        locale: DEFAULT_LOCALE,
+        pattern: `${name}%`,
+      });
     }
 
     if (filters.categoryId?.length) {
@@ -238,6 +235,7 @@ export class AdminProductsService {
       videos: product.videos,
       isTriedByUs: product.isTriedByUs,
       quantity: product.quantity,
+      available: product.available,
       sortWeight: product.sortWeight,
       brand: product.brand
         ? { id: product.brand.id, slug: product.brand.slug, name: product.brand.name }

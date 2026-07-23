@@ -1,0 +1,74 @@
+{
+  "list": {
+    "title": "Orders",
+    "search": "Id, first name, last name, or phone",
+    "status": "Status",
+    "statusAll": "All",
+    "dates": "Dates",
+    "createdAt": "Created",
+    "orderedAt": "Ordered",
+    "dateFrom": "Date from",
+    "dateTo": "Date to",
+    "id": "Id",
+    "customer": "Customer",
+    "phone": "Phone",
+    "total": "Total",
+    "page": "Page {{page}} · {{total}} total",
+    "loadError": "Failed to load orders.",
+    "empty": "No orders found."
+  },
+  "detail": {
+    "title": "Order",
+    "notFound": "Order not found.",
+    "status": "Status",
+    "customer": "Customer",
+    "phone": "Phone",
+    "total": "Total",
+    "cancelReason": "Cancellation reason",
+    "delivery": "Delivery",
+    "shipping": "Shipping cost",
+    "shippingCarrierTariff": "Carrier tariff rates",
+    "items": "Items",
+    "noTransitions": "No available transitions.",
+    "transitionFailed": "Failed to change status",
+    "cancelFailed": "Failed to cancel"
+  },
+  "delivery": {
+    "provider": "Delivery provider",
+    "method": "Delivery method",
+    "details": "Details",
+    "providers": {
+      "nova-poshta": "Nova Poshta",
+      "ukrposhta": "Ukrposhta",
+      "meest": "Meest"
+    },
+    "methods": {
+      "warehouse": "Branch or parcel locker",
+      "courier": "Courier to address",
+      "custom": "Other method"
+    }
+  },
+  "status": {
+    "new": "New",
+    "confirmed": "Confirmed",
+    "sent": "Sent",
+    "arrived": "Arrived",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "returned": "Returned",
+    "archived": "Archived",
+    "draft": "Draft"
+  },
+  "transitions": {
+    "mark": "Mark as {{status}}"
+  },
+  "cancel": {
+    "title": "Cancel order",
+    "reason": "Reason",
+    "confirm": "Cancel order",
+    "reasonLabels": {
+      "customer_request": "Customer request",
+      "out_of_stock": "Out of stock"
+    }
+  }
+}

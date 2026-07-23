@@ -1,4 +1,5 @@
 export * from './product.entity';
+export * from './product-storefront-visibility';
 export * from './products.controller';
 export * from './products.dto';
 export * from './products.exceptions';

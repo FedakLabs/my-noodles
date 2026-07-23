@@ -51,6 +51,52 @@ export const Basic: Story = {
   render: () => <BasicDemo />,
 };
 
+function WithBackDemo() {
+  const modalRef = useRef<ModalRef>(null);
+  const [view, setView] = useState<'list' | 'detail'>('list');
+
+  return (
+    <>
+      <Button
+        variant="contained"
+        onClick={() => {
+          setView('list');
+          modalRef.current?.open();
+        }}
+      >
+        Open modal
+      </Button>
+      <Modal ref={modalRef} maxWidth="sm">
+        {view === 'list' ? (
+          <>
+            <Modal.Header title="Orders" />
+            <Modal.Body>
+              <Button onClick={() => setView('detail')}>Open detail</Button>
+            </Modal.Body>
+            <Modal.Footer align="end">
+              <Button onClick={() => modalRef.current?.close()}>Close</Button>
+            </Modal.Footer>
+          </>
+        ) : (
+          <>
+            <Modal.Header title="Order detail" onBack={() => setView('list')} backLabel="Back" />
+            <Modal.Body>
+              <Typography variant="body2">Drill-down view with header back control.</Typography>
+            </Modal.Body>
+            <Modal.Footer align="end">
+              <Button onClick={() => setView('list')}>Back</Button>
+            </Modal.Footer>
+          </>
+        )}
+      </Modal>
+    </>
+  );
+}
+
+export const WithBack: Story = {
+  render: () => <WithBackDemo />,
+};
+
 function BodyScrollableDemo() {
   const modalRef = useRef<ModalRef>(null);
 

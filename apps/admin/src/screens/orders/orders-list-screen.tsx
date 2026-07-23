@@ -12,24 +12,14 @@ import {
   useDataTable,
   type SortingState,
 } from '@my-noodles/ui';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useOrdersList } from '@/api/orders';
 import { OrderDetailModal, type OrderDetailModalRef } from '@/components/orders/order-detail-modal';
 import { OrderStatusChip } from '@/components/orders/order-status-chip';
+import { ORDER_STATUS_FILTER_OPTIONS, useOrdersSearchParams } from '@/screens/orders/search-params';
 import { formatCurrency } from '@/utils/format-currency';
-
-const STATUS_OPTIONS: OrderStatus[] = [
-  'new',
-  'confirmed',
-  'sent',
-  'arrived',
-  'completed',
-  'cancelled',
-  'returned',
-  'archived',
-];
 
 const COLUMN_TO_SORT_BY: Record<string, AdminOrdersSortBy> = {
   id: 'id',
@@ -55,13 +45,20 @@ function formatDateTime(value: string | null | undefined): string {
 
 export function OrdersListScreen() {
   const { t } = useTranslation(['orders', 'common']);
+  const {
+    q: searchQ,
+    status: statuses,
+    createdFrom,
+    createdTo,
+    page,
+    applySearch,
+    setStatus,
+    setCreatedFrom,
+    setCreatedTo,
+    setPage,
+  } = useOrdersSearchParams();
   const orderDetailModalRef = useRef<OrderDetailModalRef>(null);
-  const [page, setPage] = useState(1);
-  const [statuses, setStatuses] = useState<OrderStatus[]>([]);
-  const [q, setQ] = useState('');
-  const [search, setSearch] = useState('');
-  const [createdFrom, setCreatedFrom] = useState('');
-  const [createdTo, setCreatedTo] = useState('');
+  const [q, setQ] = useState(searchQ ?? '');
   const [sorting, setSorting] = useState<SortingState>(DEFAULT_SORTING);
   const limit = 20;
 
@@ -73,12 +70,16 @@ export function OrdersListScreen() {
     page,
     limit,
     status: statuses.length > 0 ? statuses : undefined,
-    q: search || undefined,
-    createdFrom: createdFrom || undefined,
-    createdTo: createdTo || undefined,
+    q: searchQ ?? undefined,
+    createdFrom: createdFrom ?? undefined,
+    createdTo: createdTo ?? undefined,
     sortBy,
     sortOrder,
   });
+
+  useEffect(() => {
+    setQ(searchQ ?? '');
+  }, [searchQ]);
 
   const columns = useMemo(
     () => [
@@ -182,8 +183,7 @@ export function OrdersListScreen() {
           onChange={(event) => setQ(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
-              setPage(1);
-              setSearch(q.trim());
+              applySearch(q);
             }
           }}
           sx={{ flex: '1 1 180px', minWidth: 160 }}
@@ -196,8 +196,7 @@ export function OrdersListScreen() {
           value={statuses}
           onChange={(event) => {
             const value = event.target.value;
-            setPage(1);
-            setStatuses(typeof value === 'string' ? (value.split(',') as OrderStatus[]) : value);
+            setStatus(typeof value === 'string' ? (value.split(',') as OrderStatus[]) : value);
           }}
           slotProps={{
             select: {
@@ -213,7 +212,7 @@ export function OrdersListScreen() {
             },
           }}
         >
-          {STATUS_OPTIONS.map((value) => (
+          {ORDER_STATUS_FILTER_OPTIONS.map((value) => (
             <MenuItem key={value} value={value}>
               {t(`orders:status.${value}`)}
             </MenuItem>
@@ -223,11 +222,8 @@ export function OrdersListScreen() {
           label={t('orders:list.dateFrom')}
           type="date"
           size="small"
-          value={createdFrom}
-          onChange={(event) => {
-            setPage(1);
-            setCreatedFrom(event.target.value);
-          }}
+          value={createdFrom ?? ''}
+          onChange={(event) => setCreatedFrom(event.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
           sx={{ minWidth: 160 }}
         />
@@ -235,21 +231,12 @@ export function OrdersListScreen() {
           label={t('orders:list.dateTo')}
           type="date"
           size="small"
-          value={createdTo}
-          onChange={(event) => {
-            setPage(1);
-            setCreatedTo(event.target.value);
-          }}
+          value={createdTo ?? ''}
+          onChange={(event) => setCreatedTo(event.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
           sx={{ minWidth: 160 }}
         />
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setPage(1);
-            setSearch(q.trim());
-          }}
-        >
+        <Button variant="outlined" onClick={() => applySearch(q)}>
           {t('common:actions.search')}
         </Button>
       </Stack>

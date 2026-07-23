@@ -56,6 +56,7 @@ export type Product = {
     story: string | null;
     forWhom: string | null;
     currency: CurrencyCode;
+    available: boolean;
     inStock: boolean;
     liked?: boolean;
     commentCount?: number;
@@ -305,7 +306,7 @@ export type UpdateBrandDto = {
 
 export type LocalizedStringDto = {
     uk: string;
-    en?: string;
+    en: string;
 };
 
 export type AdminCategoryDto = {
@@ -408,6 +409,7 @@ export type AdminProductDto = {
     videos: Array<string>;
     isTriedByUs: boolean;
     quantity: number;
+    available: boolean;
     sortWeight: number;
     brand?: AdminBrandSummaryDto | null;
     country: AdminCountrySummaryDto;
@@ -418,10 +420,6 @@ export type AdminProductsListResponseDto = {
     items: Array<AdminProductDto>;
     meta: AdminListMetaDto;
 };
-
-export const AdminProductSearchBy = { SLUG: 'slug', NAME: 'name' } as const;
-
-export type AdminProductSearchBy = typeof AdminProductSearchBy[keyof typeof AdminProductSearchBy];
 
 export type CreateProductDto = {
     slug: string;
@@ -438,6 +436,7 @@ export type CreateProductDto = {
     videos: Array<string>;
     isTriedByUs: boolean;
     quantity: number;
+    available: boolean;
     sortWeight: number;
     brandId?: string | null;
     countryId: string;
@@ -459,6 +458,7 @@ export type UpdateProductDto = {
     videos?: Array<string>;
     isTriedByUs?: boolean;
     quantity?: number;
+    available?: boolean;
     sortWeight?: number;
     brandId?: string | null;
     countryId?: string;
@@ -1133,8 +1133,14 @@ export type AdminProductsControllerListData = {
     query: {
         page: number;
         limit: number;
-        q?: string;
-        searchBy?: AdminProductSearchBy;
+        /**
+         * Prefix match on product slug (case-insensitive).
+         */
+        slug?: string;
+        /**
+         * Prefix match on product name in the default locale (uk).
+         */
+        name?: string;
         categoryId?: Array<string>;
         brandId?: Array<string>;
         countryId?: Array<string>;

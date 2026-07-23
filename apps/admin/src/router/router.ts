@@ -8,7 +8,6 @@ import {
   indexRoute,
   loginRoute,
   ordersRoute,
-  productDetailRoute,
   productsRoute,
   rootRoute,
 } from './routes';
@@ -19,7 +18,6 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     ordersRoute,
     productsRoute,
-    productDetailRoute,
     brandsRoute,
     categoriesRoute,
     countriesRoute,

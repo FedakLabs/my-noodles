@@ -1,0 +1,29 @@
+{
+  "appTitle": "MyNoodles (Admin)",
+  "nav": {
+    "orders": "Orders",
+    "products": "Products",
+    "brands": "Brands",
+    "categories": "Categories",
+    "countries": "Countries"
+  },
+  "actions": {
+    "back": "Back",
+    "logOut": "Log out",
+    "previous": "Previous",
+    "next": "Next",
+    "search": "Search",
+    "copy": "Copy",
+    "copied": "Copied",
+    "create": "Create",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add",
+    "remove": "Remove"
+  },
+  "states": {
+    "loading": "Loading…"
+  },
+  "language": "Language"
+}

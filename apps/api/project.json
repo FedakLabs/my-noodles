@@ -16,6 +16,7 @@
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
         { "projects": "integration-api-clients", "target": "build" },
+        { "projects": "locale", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {
@@ -28,6 +29,7 @@
       "dependsOn": [
         { "projects": "api-lib", "target": "build" },
         { "projects": "integration-api-clients", "target": "build" },
+        { "projects": "locale", "target": "build" },
         { "projects": "utils", "target": "build" }
       ],
       "options": {

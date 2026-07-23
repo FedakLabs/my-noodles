@@ -1,4 +1,5 @@
 import type { Product } from '@my-noodles/api-clients/storefront';
+import { SUPPORTED_LOCALES } from '@my-noodles/locale';
 import { minorToMajor } from '@my-noodles/utils';
 
 import type { AppLocale } from '@/i18n/routing';
@@ -20,7 +21,7 @@ export function buildOrganizationWebSiteJsonLd(siteName: string): JsonLdGraph {
         '@type': 'WebSite',
         name: siteName,
         url: absoluteUrl('/'),
-        inLanguage: ['uk', 'en'],
+        inLanguage: [...SUPPORTED_LOCALES],
       },
     ],
   };

@@ -57,6 +57,14 @@ const meta = {
     size: 28,
     iconColor: 'primary' satisfies IconColorToken,
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'SVGR icons from `packages/ui/icons/*.svg`. Size with `size`; `color` defaults to `inherit` (uses `currentColor`). Prefer `theme.colors.icon.*` when overriding.',
+      },
+    },
+  },
   argTypes: {
     size: { control: { type: 'range', min: 12, max: 64, step: 2 } },
     iconColor: {

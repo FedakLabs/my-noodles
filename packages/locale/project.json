@@ -1,0 +1,65 @@
+{
+  "name": "locale",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/locale/src",
+  "projectType": "library",
+  "tags": ["scope:packages", "type:lib"],
+  "targets": {
+    "build": {
+      "command": "pnpm build",
+      "options": {
+        "cwd": "packages/locale"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "format": {
+      "command": "pnpm format",
+      "options": {
+        "cwd": "packages/locale"
+      }
+    },
+    "format-check": {
+      "command": "pnpm format-check",
+      "options": {
+        "cwd": "packages/locale"
+      }
+    },
+    "lint": {
+      "command": "pnpm lint",
+      "options": {
+        "cwd": "packages/locale"
+      }
+    },
+    "lint-check": {
+      "command": "pnpm lint-check",
+      "options": {
+        "cwd": "packages/locale"
+      }
+    },
+    "type-check": {
+      "command": "pnpm type-check",
+      "options": {
+        "cwd": "packages/locale"
+      }
+    },
+    "knip": {
+      "command": "knip --config configs/knip/knip.json --workspace packages/locale",
+      "options": {
+        "cwd": "."
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "pnpm --dir packages/locale format",
+          "pnpm --dir packages/locale lint",
+          "pnpm --dir packages/locale type-check",
+          "knip --config configs/knip/knip.json --workspace packages/locale"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

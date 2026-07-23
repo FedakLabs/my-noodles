@@ -36,10 +36,17 @@ describe('InventoryService', () => {
   });
 
   it('returns available quantity minus active checkout reservations', async () => {
-    productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 10 });
+    productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 10, available: true });
     orderItemsFind.mockResolvedValue([{ productId: 'product-1', qty: 3 }]);
 
     await expect(service.getAvailableQty('product-1')).resolves.toBe(7);
+  });
+
+  it('returns zero sellable quantity when product is unavailable', async () => {
+    productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 10, available: false });
+    orderItemsFind.mockResolvedValue([]);
+
+    await expect(service.getAvailableQty('product-1')).resolves.toBe(0);
   });
 
   it('returns gross product quantity for submit reconciliation', async () => {
@@ -87,7 +94,7 @@ describe('InventoryService', () => {
   });
 
   it('filters reservations by active checkout with unexpired expiresAt', async () => {
-    productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 4 });
+    productsFindOne.mockResolvedValue({ id: 'product-1', quantity: 4, available: true });
     orderItemsFind.mockResolvedValue([]);
 
     await service.getAvailableQty('product-1');

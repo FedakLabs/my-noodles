@@ -8,10 +8,20 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { AdminProductDto, CreateProductDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
 import {
+  cleanLocalizedString,
+  emptyLocalizedString,
+  isLocalizedStringComplete,
+  LOCALE_OPTIONS,
+  toRequiredLocalizedString,
+} from '@my-noodles/locale';
+import {
   CurrencySelect,
+  LocalizedFields,
   LocalizedTextField,
   Modal,
   SelectField,
+  showToast,
+  type LocalizedTextFieldValue,
   type ModalRef,
   useModal,
 } from '@my-noodles/ui';
@@ -34,6 +44,7 @@ type ProductFormState = {
   priceMinor: string;
   currency: CurrencyCode;
   quantity: string;
+  available: boolean;
   sortWeight: string;
   spice: string;
   sweet: string;
@@ -50,14 +61,15 @@ type ProductFormState = {
 function defaultFormState(): ProductFormState {
   return {
     slug: '',
-    name: { uk: '' },
-    description: { uk: '' },
-    story: { uk: '' },
-    forWhom: { uk: '' },
+    name: emptyLocalizedString(),
+    description: emptyLocalizedString(),
+    story: emptyLocalizedString(),
+    forWhom: emptyLocalizedString(),
     weight: '',
     priceMinor: '0',
     currency: DEFAULT_CURRENCY,
     quantity: '0',
+    available: true,
     sortWeight: '0',
     spice: '0',
     sweet: '0',
@@ -75,14 +87,15 @@ function defaultFormState(): ProductFormState {
 function formStateFromProduct(product: AdminProductDto): ProductFormState {
   return {
     slug: product.slug,
-    name: product.name,
-    description: product.description,
-    story: product.story,
-    forWhom: product.forWhom,
+    name: toRequiredLocalizedString(product.name),
+    description: toRequiredLocalizedString(product.description),
+    story: toRequiredLocalizedString(product.story),
+    forWhom: toRequiredLocalizedString(product.forWhom),
     weight: product.weight ?? '',
     priceMinor: String(product.priceMinor),
     currency: resolveCurrency(product.currency),
     quantity: String(product.quantity),
+    available: product.available,
     sortWeight: String(product.sortWeight),
     spice: String(product.flavor.spice),
     sweet: String(product.flavor.sweet),
@@ -97,18 +110,13 @@ function formStateFromProduct(product: AdminProductDto): ProductFormState {
   };
 }
 
-function cleanLocalized(value: LocalizedStringDto): LocalizedStringDto {
-  const en = value.en?.trim();
-  return en ? { uk: value.uk.trim(), en } : { uk: value.uk.trim() };
-}
-
 function buildPayload(state: ProductFormState): CreateProductDto {
   return {
     slug: state.slug.trim(),
-    name: cleanLocalized(state.name),
-    description: cleanLocalized(state.description),
-    story: cleanLocalized(state.story),
-    forWhom: cleanLocalized(state.forWhom),
+    name: cleanLocalizedString(state.name),
+    description: cleanLocalizedString(state.description),
+    story: cleanLocalizedString(state.story),
+    forWhom: cleanLocalizedString(state.forWhom),
     weight: state.weight.trim() || null,
     priceMinor: Number(state.priceMinor) || 0,
     currency: state.currency,
@@ -122,6 +130,7 @@ function buildPayload(state: ProductFormState): CreateProductDto {
     videos: state.videos.map((value) => value.trim()).filter(Boolean),
     isTriedByUs: state.isTriedByUs,
     quantity: Number(state.quantity) || 0,
+    available: state.available,
     sortWeight: Number(state.sortWeight) || 0,
     brandId: state.brandId || null,
     countryId: state.countryId,
@@ -175,7 +184,7 @@ type ProductFormModalData = { mode: 'create' } | { mode: 'edit'; productId: stri
 
 export type ProductFormModalRef = ModalRef<ProductFormModalData>;
 
-function ProductFormModalContent() {
+function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (productId: string) => void }) {
   const { t } = useTranslation(['products', 'common']);
   const { data, close, setDisableClose } = useModal<ProductFormModalData>();
   const isEdit = data.mode === 'edit';
@@ -216,10 +225,16 @@ function ProductFormModalContent() {
 
   function updateLocalized(
     field: 'name' | 'description' | 'story' | 'forWhom',
-    next: { uk?: string; en?: string },
+    next: LocalizedTextFieldValue,
   ) {
-    setForm((prev) => ({ ...prev, [field]: { uk: next.uk ?? '', en: next.en } }));
+    setForm((prev) => ({ ...prev, [field]: toRequiredLocalizedString(next) }));
   }
+
+  const localizedFieldsComplete =
+    isLocalizedStringComplete(form.name) &&
+    isLocalizedStringComplete(form.description) &&
+    isLocalizedStringComplete(form.story) &&
+    isLocalizedStringComplete(form.forWhom);
 
   async function handleSave() {
     setError(null);
@@ -227,18 +242,42 @@ function ProductFormModalContent() {
     try {
       if (isEdit) {
         await updateProductAsync(payload);
-      } else {
-        await createProductAsync(payload);
+        showToast.success(t('products:form.updateSuccess'));
+        return;
       }
+      await createProductAsync(payload);
       close();
     } catch {
       setError(t('products:form.saveFailed'));
     }
   }
 
+  const title = isEdit ? t('products:form.editTitle') : t('products:form.createTitle');
+
   return (
     <>
-      <Modal.Header title={isEdit ? t('products:form.editTitle') : t('products:form.createTitle')} />
+      <Modal.Header
+        title={
+          <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography variant="h6" component="h2">
+              {title}
+            </Typography>
+            {isEdit && onViewProductCard ? (
+              <Button
+                variant="tertiary"
+                size="small"
+                disabled={!productId || isSaving}
+                onClick={() => {
+                  close();
+                  onViewProductCard(productId);
+                }}
+              >
+                {t('products:preview.title')}
+              </Button>
+            ) : null}
+          </Stack>
+        }
+      />
       <Modal.Body scrollable>
         {isEdit && productIsLoading ? <Typography>{t('products:form.loading')}</Typography> : null}
         {isReady ? (
@@ -252,34 +291,38 @@ function ProductFormModalContent() {
               fullWidth
             />
 
-            <LocalizedTextField
-              label={t('products:form.name')}
-              value={form.name}
-              onChange={(value) => updateLocalized('name', value)}
-              required
-              requiredLocale="uk"
-            />
-            <LocalizedTextField
-              label={t('products:form.description')}
-              value={form.description}
-              onChange={(value) => updateLocalized('description', value)}
-              multiline
-              minRows={2}
-            />
-            <LocalizedTextField
-              label={t('products:form.story')}
-              value={form.story}
-              onChange={(value) => updateLocalized('story', value)}
-              multiline
-              minRows={2}
-            />
-            <LocalizedTextField
-              label={t('products:form.forWhom')}
-              value={form.forWhom}
-              onChange={(value) => updateLocalized('forWhom', value)}
-              multiline
-              minRows={2}
-            />
+            <LocalizedFields localeLabel={t('products:form.language')} locales={LOCALE_OPTIONS}>
+              <LocalizedTextField
+                label={t('products:form.name')}
+                value={form.name}
+                onChange={(value) => updateLocalized('name', value)}
+                required
+              />
+              <LocalizedTextField
+                label={t('products:form.description')}
+                value={form.description}
+                onChange={(value) => updateLocalized('description', value)}
+                required
+                multiline
+                minRows={2}
+              />
+              <LocalizedTextField
+                label={t('products:form.story')}
+                value={form.story}
+                onChange={(value) => updateLocalized('story', value)}
+                required
+                multiline
+                minRows={2}
+              />
+              <LocalizedTextField
+                label={t('products:form.forWhom')}
+                value={form.forWhom}
+                onChange={(value) => updateLocalized('forWhom', value)}
+                required
+                multiline
+                minRows={2}
+              />
+            </LocalizedFields>
 
             <Stack direction="row" spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
               <TextField
@@ -378,6 +421,16 @@ function ProductFormModalContent() {
             <FormControlLabel
               control={
                 <Checkbox
+                  checked={form.available}
+                  onChange={(event) => setForm((prev) => ({ ...prev, available: event.target.checked }))}
+                />
+              }
+              label={t('products:form.available')}
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox
                   checked={form.isTriedByUs}
                   onChange={(event) => setForm((prev) => ({ ...prev, isTriedByUs: event.target.checked }))}
                 />
@@ -437,7 +490,7 @@ function ProductFormModalContent() {
         <Button
           variant="contained"
           loading={isSaving}
-          disabled={!isReady || !form.slug || !form.countryId || !form.categoryId}
+          disabled={!isReady || !form.slug || !form.countryId || !form.categoryId || !localizedFieldsComplete}
           onClick={() => void handleSave()}
         >
           {t('common:actions.save')}
@@ -447,10 +500,16 @@ function ProductFormModalContent() {
   );
 }
 
-export function ProductFormModal({ ref }: { ref?: Ref<ProductFormModalRef> }) {
+export function ProductFormModal({
+  ref,
+  onViewProductCard,
+}: {
+  ref?: Ref<ProductFormModalRef>;
+  onViewProductCard?: (productId: string) => void;
+}) {
   return (
-    <Modal ref={ref} maxWidth="md">
-      <ProductFormModalContent />
+    <Modal ref={ref} maxWidth="xl">
+      <ProductFormModalContent onViewProductCard={onViewProductCard} />
     </Modal>
   );
 }

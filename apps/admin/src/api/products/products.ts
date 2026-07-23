@@ -4,7 +4,6 @@ import {
   adminProductsControllerList,
   adminProductsControllerUpdate,
   type AdminProductDto,
-  type AdminProductSearchBy,
   type CreateProductDto,
   type UpdateProductDto,
 } from '@my-noodles/api-clients/admin';
@@ -13,8 +12,8 @@ import { mutationOptions, queryOptions } from '@tanstack/react-query';
 export type ProductsListParams = {
   page: number;
   limit: number;
-  q?: string;
-  searchBy?: AdminProductSearchBy;
+  slug?: string;
+  name?: string;
   categoryId?: string[];
   brandId?: string[];
   countryId?: string[];
@@ -35,8 +34,8 @@ export const productsQueries = {
           query: {
             page: params.page,
             limit: params.limit,
-            q: params.q,
-            searchBy: params.searchBy,
+            slug: params.slug,
+            name: params.name,
             categoryId: params.categoryId,
             brandId: params.brandId,
             countryId: params.countryId,

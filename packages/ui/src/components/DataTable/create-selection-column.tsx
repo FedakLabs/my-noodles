@@ -21,7 +21,9 @@ export function createSelectionColumn<TData extends RowData>(
         size="small"
         checked={table.getIsAllPageRowsSelected()}
         indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-        onChange={table.getToggleAllPageRowsSelectedHandler()}
+        onChange={(_event, checked) => {
+          table.toggleAllPageRowsSelected(checked);
+        }}
         slotProps={{ input: { 'aria-label': labels.selectAll } }}
         onClick={(event) => event.stopPropagation()}
       />
@@ -31,7 +33,9 @@ export function createSelectionColumn<TData extends RowData>(
         size="small"
         checked={row.getIsSelected()}
         disabled={!row.getCanSelect()}
-        onChange={row.getToggleSelectedHandler()}
+        onChange={(_event, checked) => {
+          row.toggleSelected(checked);
+        }}
         slotProps={{ input: { 'aria-label': labels.selectRow } }}
         onClick={(event) => event.stopPropagation()}
       />

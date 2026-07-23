@@ -1,5 +1,5 @@
 {
-  "appTitle": "my-noodles admin",
+  "appTitle": "MyNoodles (Admin)",
   "nav": {
     "orders": "Замовлення",
     "products": "Товари",
@@ -24,5 +24,6 @@
   },
   "states": {
     "loading": "Завантаження…"
-  }
+  },
+  "language": "Мова"
 }

@@ -9,10 +9,12 @@ import {
   createColumnHelper,
   createSelectionColumn,
   DataTable,
-  getSortedRowModel,
+  getSortedRowModel as createSortedRowModel,
   useDataTable,
   type RowSelectionState,
 } from '../components/DataTable';
+
+const getSortedRowModel = createSortedRowModel();
 
 type DemoOrder = {
   id: string;
@@ -131,6 +133,12 @@ const tallOrders = Array.from({ length: 40 }, (_, index) => {
   };
 });
 
+/** Stable empty rows — inline `[]` each render retriggers TanStack auto-reset → freeze. */
+const emptyOrders: DemoOrder[] = [];
+const busyOrders = demoOrders.slice(0, 5);
+const rowClickOrders = demoOrders.slice(0, 6);
+const selectionOrders = demoOrders.slice(0, 8);
+
 const columnHelper = createColumnHelper<DemoOrder>();
 
 function formatMoney(totalMinor: number) {
@@ -201,7 +209,7 @@ function EmptyDemo() {
     [],
   );
 
-  const table = useDataTable({ data: [], columns, getRowId: (row) => row.id });
+  const table = useDataTable({ data: emptyOrders, columns, getRowId: (row) => row.id });
 
   return <DataTable table={table} size="small" emptyContent="No orders yet." />;
 }
@@ -222,7 +230,7 @@ function ErrorDemo() {
     [],
   );
 
-  const table = useDataTable({ data: [], columns, getRowId: (row) => row.id });
+  const table = useDataTable({ data: emptyOrders, columns, getRowId: (row) => row.id });
 
   return <DataTable table={table} size="small" isError errorContent="Could not load orders." />;
 }
@@ -250,7 +258,7 @@ function BusyDemo() {
   );
 
   const table = useDataTable({
-    data: demoOrders.slice(0, 5),
+    data: busyOrders,
     columns,
     getRowId: (row) => row.id,
   });
@@ -283,7 +291,7 @@ function BusySkeletonDemo() {
   );
 
   const table = useDataTable({
-    data: [],
+    data: emptyOrders,
     columns,
     getRowId: (row) => row.id,
   });
@@ -321,7 +329,7 @@ function ClientSortingDemo() {
     data: demoOrders,
     columns,
     getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel,
   });
 
   return <DataTable table={table} size="small" />;
@@ -335,7 +343,10 @@ function ManualPaginationDemo() {
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 5;
   const pageCount = Math.ceil(demoOrders.length / pageSize);
-  const pageRows = demoOrders.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
+  const pageRows = useMemo(
+    () => demoOrders.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize),
+    [pageIndex, pageSize],
+  );
 
   const columns = useMemo(
     () => [
@@ -402,7 +413,7 @@ function RowClickDemo() {
   );
 
   const table = useDataTable({
-    data: demoOrders.slice(0, 6),
+    data: rowClickOrders,
     columns,
     getRowId: (row) => row.id,
   });
@@ -438,13 +449,15 @@ function SelectionDemo() {
         selectAll: 'Select all rows',
         selectRow: 'Select row',
       }),
-      columnHelper.accessor('customer', { header: 'Customer' }),
+      columnHelper.accessor('customer', { header: 'Customer', enableSorting: false }),
       columnHelper.accessor('status', {
         header: 'Status',
+        enableSorting: false,
         cell: (info) => statusChip(info.getValue()),
       }),
       columnHelper.accessor('totalMinor', {
         header: 'Total',
+        enableSorting: false,
         meta: { align: 'right' },
         cell: (info) => formatMoney(info.getValue()),
       }),
@@ -453,10 +466,11 @@ function SelectionDemo() {
   );
 
   const table = useDataTable({
-    data: demoOrders.slice(0, 8),
+    data: selectionOrders,
     columns,
     getRowId: (row) => row.id,
     enableRowSelection: true,
+    enableSorting: false,
     state: { rowSelection },
     onRowSelectionChange: setRowSelection,
   });

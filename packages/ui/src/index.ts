@@ -43,6 +43,7 @@ export {
 } from './components/CopyableField';
 export { CurrencySelect, type CurrencySelectProps } from './components/CurrencySelect';
 export { SelectField, type SelectFieldProps } from './components/SelectField';
+export { SearchField, type SearchFieldOption, type SearchFieldProps } from './components/SearchField';
 export {
   createColumnHelper,
   createSelectionColumn,
@@ -85,7 +86,7 @@ export {
   type DiscoveryCardViewDetails,
   type DiscoveryCardViewPhase,
   type DiscoveryCardViewProps,
-  isPreviewPhase,
+  isView,
   useDiscoveryCardView,
 } from './components/DiscoveryCard';
 export {
@@ -117,8 +118,11 @@ export {
   useModal,
 } from './components/Modal';
 export { PhoneInput, type PhoneInputProps } from './components/PhoneInput';
+export { InlineEditableNumber, type InlineEditableNumberProps } from './components/InlineEditableNumber';
 export {
+  LocalizedFields,
   LocalizedTextField,
+  type LocalizedFieldsProps,
   type LocalizedTextFieldLocaleOption,
   type LocalizedTextFieldProps,
   type LocalizedTextFieldValue,

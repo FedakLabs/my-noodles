@@ -1,3 +1,4 @@
+import { resolveLocale } from '@my-noodles/locale';
 import type { CurrencyCode } from '@my-noodles/utils';
 
 import type { AppLocale } from '@/i18n/routing';
@@ -36,11 +37,5 @@ export const LOCALE_CURRENCY_DISPLAY: Record<AppLocale, LocaleCurrencyDisplay> =
 };
 
 export function resolveAppLocale(locale: string): AppLocale {
-  const base = locale.split('-')[0]?.toLowerCase();
-
-  if (base && (routing.locales as readonly string[]).includes(base)) {
-    return base as AppLocale;
-  }
-
-  return routing.defaultLocale;
+  return resolveLocale(locale, routing.defaultLocale);
 }

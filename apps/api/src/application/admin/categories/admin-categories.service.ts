@@ -1,8 +1,8 @@
-import { LocalizedString } from '@my-noodles/api-lib/locale';
+import { jsonbAnyLocaleIlike, LocalizedString } from '@my-noodles/api-lib/locale';
 import { type PaginatedResult, PaginationHelper } from '@my-noodles/api-lib/pagination';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { type FindOptionsWhere, ILike, Raw, type Repository } from 'typeorm';
+import { type FindOptionsWhere, ILike, type Repository } from 'typeorm';
 
 import { Category } from '../../categories/category.entity';
 import type { AdminCategoryDto, CreateCategoryDto, UpdateCategoryDto } from './admin-categories.dto';
@@ -21,7 +21,7 @@ export class AdminCategoriesService {
 
     if (term) {
       const pattern = `%${term}%`;
-      where = [{ slug: ILike(pattern) }, { nameLocale: nameLocaleRaw(pattern) }];
+      where = [{ slug: ILike(pattern) }, { nameLocale: jsonbAnyLocaleIlike(pattern) }];
     }
 
     const result = await PaginationHelper.paginate(
@@ -94,9 +94,4 @@ export class AdminCategoriesService {
       themeKey: category.themeKey,
     };
   }
-}
-
-/** Matches the `name` JSONB column (property `nameLocale`) against either supported locale. */
-function nameLocaleRaw(pattern: string) {
-  return Raw((alias) => `(${alias}->>'uk' ILIKE :pattern OR ${alias}->>'en' ILIKE :pattern)`, { pattern });
 }

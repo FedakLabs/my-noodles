@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { isStorefrontListable } from '../products/product-storefront-visibility';
 import { Collection } from './collection.entity';
 import { CollectionNotFoundException } from './collections.exceptions';
 
@@ -28,6 +29,8 @@ export class CollectionsService {
     if (!collection) {
       throw new CollectionNotFoundException(slug);
     }
+
+    collection.products = (collection.products ?? []).filter(isStorefrontListable);
 
     return collection;
   }

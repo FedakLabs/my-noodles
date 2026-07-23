@@ -107,6 +107,12 @@ Choose the simplest sufficient access level:
   `update` / `softDelete` criteria. Use `withDeleted: true` only when deleted records are
   intentionally required.
 
+### TypeORM text search
+
+- Prefer **prefix** match (`term%` / `ILike(\`${term}%\`)`) so btree (and similar) indexes can be used.
+- Prefer TypeORM repository / `FindOperator` APIs (`ILike`, `Like`, …) over hand-rolled `LIKE` SQL when they express the filter. Use `Raw()` only when needed (e.g. JSONB `col ->> :locale`).
+- Leading-wildcard contains (`%term%` / `ILIKE '%term%'`) forces sequential scans and is **extremely rare**. Do not default to it — review alternatives first (prefix, exact match, `pg_trgm` / trigram, dedicated search).
+
 ---
 
 ## 4. External API integration

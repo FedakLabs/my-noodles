@@ -15,6 +15,14 @@ const meta = {
     minLabel: 'From',
     maxLabel: 'To',
   },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Catalog price filter: dual thumb + numeric inputs. Commits on release / blur via `onCommit`. Renders nothing when `max ≤ min`.',
+      },
+    },
+  },
 } satisfies Meta<typeof PriceRangeSlider>;
 
 export default meta;

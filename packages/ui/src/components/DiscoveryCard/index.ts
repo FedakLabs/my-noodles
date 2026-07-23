@@ -1,5 +1,5 @@
 export type { MediaGalleryItem } from '../MediaGallery';
-export { type DiscoveryCardViewPhase, isPreviewPhase } from './discovery-card-view-phase';
+export { type DiscoveryCardViewPhase, isView } from './discovery-card-view-phase';
 export {
   DiscoveryCard,
   type DiscoveryCardActionsProps,

@@ -23,6 +23,7 @@
     "@mui/material": "9.1.1",
     "@mui/material-nextjs": "9.1.1",
     "@my-noodles/api-clients": "workspace:*",
+    "@my-noodles/locale": "workspace:*",
     "@my-noodles/theme": "workspace:*",
     "@my-noodles/ui": "workspace:*",
     "@my-noodles/utils": "workspace:*",

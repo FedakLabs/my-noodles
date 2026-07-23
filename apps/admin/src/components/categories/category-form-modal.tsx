@@ -4,7 +4,14 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { AdminCategoryDto, CreateCategoryDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
-import { LocalizedTextField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
+import {
+  cleanLocalizedString,
+  emptyLocalizedString,
+  isLocalizedStringComplete,
+  LOCALE_OPTIONS,
+  toRequiredLocalizedString,
+} from '@my-noodles/locale';
+import { LocalizedFields, LocalizedTextField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
 import { type Ref, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,28 +26,23 @@ type CategoryFormState = {
 };
 
 function defaultFormState(): CategoryFormState {
-  return { slug: '', name: { uk: '' }, icon: '', sortOrder: '0', themeKey: '' };
+  return { slug: '', name: emptyLocalizedString(), icon: '', sortOrder: '0', themeKey: '' };
 }
 
 function formStateFromCategory(category: AdminCategoryDto): CategoryFormState {
   return {
     slug: category.slug,
-    name: category.name,
+    name: toRequiredLocalizedString(category.name),
     icon: category.icon ?? '',
     sortOrder: String(category.sortOrder),
     themeKey: category.themeKey ?? '',
   };
 }
 
-function cleanLocalized(value: LocalizedStringDto): LocalizedStringDto {
-  const en = value.en?.trim();
-  return en ? { uk: value.uk.trim(), en } : { uk: value.uk.trim() };
-}
-
 function buildPayload(state: CategoryFormState): CreateCategoryDto {
   return {
     slug: state.slug.trim(),
-    name: cleanLocalized(state.name),
+    name: cleanLocalizedString(state.name),
     icon: state.icon.trim() || null,
     sortOrder: Number(state.sortOrder) || 0,
     themeKey: state.themeKey.trim() || null,
@@ -117,13 +119,14 @@ function CategoryFormModalContent() {
               fullWidth
               required
             />
-            <LocalizedTextField
-              label={t('categories:form.name')}
-              value={form.name}
-              onChange={(name) => setForm((prev) => ({ ...prev, name: { uk: name.uk ?? '', en: name.en } }))}
-              required
-              requiredLocale="uk"
-            />
+            <LocalizedFields localeLabel={t('categories:form.language')} locales={LOCALE_OPTIONS}>
+              <LocalizedTextField
+                label={t('categories:form.name')}
+                value={form.name}
+                onChange={(name) => setForm((prev) => ({ ...prev, name: toRequiredLocalizedString(name) }))}
+                required
+              />
+            </LocalizedFields>
             <TextField
               label={t('categories:form.icon')}
               value={form.icon}
@@ -153,7 +156,7 @@ function CategoryFormModalContent() {
         <Button
           variant="contained"
           loading={isSaving}
-          disabled={!isReady || !form.slug || !form.name.uk}
+          disabled={!isReady || !form.slug || !isLocalizedStringComplete(form.name)}
           onClick={() => void handleSave()}
         >
           {t('common:actions.save')}
@@ -165,7 +168,7 @@ function CategoryFormModalContent() {
 
 export function CategoryFormModal({ ref }: { ref?: Ref<CategoryFormModalRef> }) {
   return (
-    <Modal ref={ref} maxWidth="sm">
+    <Modal ref={ref} maxWidth="lg">
       <CategoryFormModalContent />
     </Modal>
   );
