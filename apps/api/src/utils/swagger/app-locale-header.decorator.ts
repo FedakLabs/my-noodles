@@ -1,4 +1,4 @@
-import { APP_LOCALE_HEADER, SUPPORTED_LOCALES } from '@my-noodles/api-lib/locale';
+import { APP_LOCALE_HEADER, SUPPORTED_LOCALES } from '@my-noodles/locale';
 import { applyDecorators } from '@nestjs/common';
 import { ApiHeader } from '@nestjs/swagger';
 

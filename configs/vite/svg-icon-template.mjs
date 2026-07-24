@@ -12,9 +12,12 @@ export default function svgIconTemplate(
   return tpl`
 ${imports}
 ${interfaces}
-const ${componentName} = ({ size, color = 'inherit', style, ...rest }) => {
+const ${componentName} = ({ size = 16, color = 'inherit', style, ...rest }) => {
+  // Set attrs + style so size wins over SVGR \`icon: true\` (1em) and parent font-size.
   const props = {
     ...rest,
+    width: size,
+    height: size,
     style: {
       width: size,
       height: size,

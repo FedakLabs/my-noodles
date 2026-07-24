@@ -1,6 +1,6 @@
+import type { LocalizedStringData } from '@my-noodles/locale';
 import type { ValueTransformer } from 'typeorm';
 
-import type { LocalizedStringData } from './locale.config';
 import { LocalizedString } from './localized-string';
 
 export const localizedStringTransformer: ValueTransformer = {

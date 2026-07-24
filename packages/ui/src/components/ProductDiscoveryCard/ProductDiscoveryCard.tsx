@@ -46,7 +46,7 @@ export type ProductDiscoveryCardProps = {
   defaultView?: DiscoveryCardViewPhase;
   /**
    * Controlled view phase. When set without `onViewChange`, the card is locked
-   * (no click / outside-click toggle). Pass `onViewChange` for controlled + interactive.
+   * (no click / outside-click / Escape toggle). Pass `onViewChange` for controlled + interactive.
    */
   view?: DiscoveryCardViewPhase;
   onViewChange?: (view: DiscoveryCardViewPhase) => void;

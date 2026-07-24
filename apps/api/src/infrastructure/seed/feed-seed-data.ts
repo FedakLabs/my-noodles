@@ -1,4 +1,4 @@
-import type { LocalizedStringData } from '@my-noodles/api-lib/locale';
+import type { LocalizedStringData } from '@my-noodles/locale';
 
 const FEED_COMMENT_AUTHORS = [
   'Оля',

@@ -1,6 +1,5 @@
+import { SUPPORTED_LOCALES } from '@my-noodles/locale';
 import { Raw } from 'typeorm';
-
-import { SUPPORTED_LOCALES } from './locale.config';
 
 /**
  * TypeORM `Raw` that matches a JSONB locale map against any supported locale key

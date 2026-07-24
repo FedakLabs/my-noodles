@@ -1,6 +1,10 @@
 import template from '../../configs/vite/svg-icon-template.mjs';
 
-/** Picked up by `@svgr/webpack` (incl. Next Turbopack) when transforming `src/icons/*.svg`. */
+/**
+ * Optional cosmiconfig entry for SVGR tooling.
+ * Next Turbopack uses `apps/web/svg-icon-svgr-loader.mjs` instead (template must be
+ * in-process — loader options cannot carry functions).
+ */
 export default {
   icon: true,
   template,

@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import {
   AdminBrandsModule,
+  AdminCartsModule,
   AdminCategoriesModule,
   AdminCountriesModule,
   AdminOrdersModule,
@@ -22,6 +23,7 @@ import { FeedController, FeedModule } from './application/feed';
 import { HealthModule } from './application/health';
 import { OrdersController, OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
+import { SupportController, SupportModule } from './application/support';
 import { UsersModule } from './application/users';
 import { VisitorSessionMiddleware, VisitorSessionModule } from './application/visitor-session';
 import { config } from './config';
@@ -46,9 +48,11 @@ import './infrastructure/logging';
     OrdersModule,
     FeedModule,
     CartModule,
+    SupportModule,
     AuthModule,
     AdminOrdersModule,
     AdminBrandsModule,
+    AdminCartsModule,
     AdminCategoriesModule,
     AdminCountriesModule,
     AdminProductsModule,
@@ -59,6 +63,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(VisitorSessionMiddleware)
-      .forRoutes(CartController, CheckoutsController, FeedController, OrdersController);
+      .forRoutes(CartController, CheckoutsController, FeedController, OrdersController, SupportController);
   }
 }

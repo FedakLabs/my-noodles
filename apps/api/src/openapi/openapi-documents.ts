@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 
 import { AdminBrandsModule } from '@/application/admin/brands';
+import { AdminCartsModule } from '@/application/admin/carts';
 import { AdminCategoriesModule } from '@/application/admin/categories';
 import { AdminCountriesModule } from '@/application/admin/countries';
 import { AdminOrdersModule } from '@/application/admin/orders';
@@ -16,6 +17,7 @@ import { FeedModule } from '@/application/feed';
 import { HealthModule } from '@/application/health';
 import { OrdersModule } from '@/application/orders';
 import { ProductsModule } from '@/application/products';
+import { SupportModule } from '@/application/support';
 import { config } from '@/config';
 
 export function createStorefrontOpenApiDocument(app: INestApplication): OpenAPIObject {
@@ -33,6 +35,7 @@ export function createStorefrontOpenApiDocument(app: INestApplication): OpenAPIO
         OrdersModule,
         FeedModule,
         CartModule,
+        SupportModule,
       ],
     },
   );
@@ -50,6 +53,7 @@ export function createAdminOpenApiDocument(app: INestApplication): OpenAPIObject
       include: [
         AdminOrdersModule,
         AdminBrandsModule,
+        AdminCartsModule,
         AdminCategoriesModule,
         AdminCountriesModule,
         AdminProductsModule,

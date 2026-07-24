@@ -1565,6 +1565,151 @@
         "tags": ["Admin Brands"]
       }
     },
+    "/api/admin/carts": {
+      "get": {
+        "operationId": "AdminCartsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "visitorSessionId",
+            "required": false,
+            "in": "query",
+            "description": "Prefix match on visitor session id (case-insensitive).",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminCartsListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Carts"]
+      }
+    },
+    "/api/admin/carts/{visitorSessionId}": {
+      "get": {
+        "operationId": "AdminCartsController_getByVisitorSessionId",
+        "parameters": [
+          {
+            "name": "visitorSessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCartDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "cart_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["cart_not_found"],
+                      "example": "cart_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Cart not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "visitorSessionId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "visitorSessionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "cart_not_found": {
+                    "summary": "Cart not found",
+                    "value": {
+                      "status": 404,
+                      "code": "cart_not_found",
+                      "message": "Cart not found",
+                      "payload": {
+                        "visitorSessionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Carts"]
+      }
+    },
     "/api/admin/categories": {
       "get": {
         "operationId": "AdminCategoriesController_list",
@@ -3778,6 +3923,109 @@
             "maxLength": 60
           }
         }
+      },
+      "AdminCartListItemDto": {
+        "type": "object",
+        "properties": {
+          "visitorSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          },
+          "itemCount": {
+            "type": "number"
+          }
+        },
+        "required": ["visitorSessionId", "totalMinor", "currency", "itemCount"]
+      },
+      "AdminCartsListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCartListItemDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "AdminCartItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "number"
+          },
+          "unitPriceMinor": {
+            "type": "number"
+          },
+          "lineTotalMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          }
+        },
+        "required": ["productId", "slug", "name", "qty", "unitPriceMinor", "lineTotalMinor", "currency"]
+      },
+      "AdminCartDetailDto": {
+        "type": "object",
+        "properties": {
+          "visitorSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cartExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCartItemDto"
+            }
+          },
+          "totalMinor": {
+            "type": "number"
+          },
+          "itemCount": {
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrencyCode"
+              }
+            ]
+          }
+        },
+        "required": ["visitorSessionId", "cartExpiresAt", "items", "totalMinor", "itemCount", "currency"]
       },
       "LocalizedStringDto": {
         "type": "object",

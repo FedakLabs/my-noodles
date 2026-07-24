@@ -63,6 +63,7 @@
         "src/infrastructure/seed/index.ts": ["exports", "types"],
         "src/application/telegram/index.ts": ["exports", "types"],
         "src/application/telegram/telegram.config.ts": ["exports"],
+        "src/application/support/providers/tawk-support.config.ts": ["exports"],
         "src/application/meest/index.ts": ["exports"],
         "src/application/meest/meest.config.ts": ["exports"],
         "src/application/nova-poshta/index.ts": ["exports", "types"],
@@ -139,7 +140,7 @@
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
-    "packages/locale": {
+    "libs/locale": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },

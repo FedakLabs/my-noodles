@@ -1,18 +1,24 @@
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
+import Popover from '@mui/material/Popover';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { AdminOrder, AdminOrdersSortBy, OrderStatus } from '@my-noodles/api-clients/admin';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '@my-noodles/locale';
 import {
   CopyableField,
   createColumnHelper,
   DataTable,
+  DateRangePicker,
+  type DatePreset,
+  type DateRange,
   SelectField,
   useDataTable,
   type SortingState,
 } from '@my-noodles/ui';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import dayjs from 'dayjs';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useOrdersList } from '@/api/orders';
@@ -30,6 +36,7 @@ const COLUMN_TO_SORT_BY: Record<string, AdminOrdersSortBy> = {
 };
 
 const DEFAULT_SORTING: SortingState = [{ id: 'createdAt', desc: true }];
+const ISO_DATE = 'YYYY-MM-DD';
 
 const columnHelper = createColumnHelper<AdminOrder>();
 
@@ -43,8 +50,37 @@ function formatDateTime(value: string | null | undefined): string {
   }).format(new Date(value));
 }
 
+function parseIsoDate(value: string | null | undefined): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return undefined;
+  }
+
+  const [yearString, monthString, dayString] = value.split('-');
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+  const parsed = dayjs(new Date(year, month - 1, day));
+
+  if (!parsed.isValid() || parsed.year() !== year || parsed.month() !== month - 1 || parsed.date() !== day) {
+    return undefined;
+  }
+
+  return parsed.startOf('day').toDate();
+}
+
+function formatTriggerValue(from: string | null, to: string | null): string {
+  if (!from && !to) {
+    return '';
+  }
+
+  const fromLabel = from ? dayjs(from).format('DD.MM.YYYY') : '…';
+  const toLabel = to ? dayjs(to).format('DD.MM.YYYY') : '…';
+  return `${fromLabel} – ${toLabel}`;
+}
+
 export function OrdersListScreen() {
-  const { t } = useTranslation(['orders', 'common']);
+  const { t, i18n } = useTranslation(['orders', 'common']);
+  const chromeLocale: Locale = isLocale(i18n.language) ? i18n.language : DEFAULT_LOCALE;
   const {
     q: searchQ,
     status: statuses,
@@ -53,18 +89,60 @@ export function OrdersListScreen() {
     page,
     applySearch,
     setStatus,
-    setCreatedFrom,
-    setCreatedTo,
+    setCreatedRange,
     setPage,
   } = useOrdersSearchParams();
   const orderDetailModalRef = useRef<OrderDetailModalRef>(null);
   const [q, setQ] = useState(searchQ ?? '');
   const [sorting, setSorting] = useState<SortingState>(DEFAULT_SORTING);
+  const [dateAnchorEl, setDateAnchorEl] = useState<HTMLElement | null>(null);
   const limit = 20;
 
   const activeSort = sorting[0];
   const sortBy = activeSort ? COLUMN_TO_SORT_BY[activeSort.id] : undefined;
   const sortOrder = activeSort ? (activeSort.desc ? 'desc' : 'asc') : undefined;
+  const datePopoverOpen = Boolean(dateAnchorEl);
+
+  const rangeValue = useMemo<Partial<DateRange> | undefined>(() => {
+    const from = parseIsoDate(createdFrom);
+    const to = parseIsoDate(createdTo);
+    if (!from && !to) {
+      return undefined;
+    }
+    return { from, to };
+  }, [createdFrom, createdTo]);
+
+  const datePresets = useMemo<DatePreset[][]>(
+    () => [
+      [
+        {
+          id: 'last7',
+          label: t('orders:list.presets.last7'),
+          getValue: () => ({
+            from: dayjs().subtract(6, 'day').startOf('day').toDate(),
+            to: dayjs().startOf('day').toDate(),
+          }),
+        },
+        {
+          id: 'last30',
+          label: t('orders:list.presets.last30'),
+          getValue: () => ({
+            from: dayjs().subtract(29, 'day').startOf('day').toDate(),
+            to: dayjs().startOf('day').toDate(),
+          }),
+        },
+        {
+          id: 'thisMonth',
+          label: t('orders:list.presets.thisMonth'),
+          getValue: () => ({
+            from: dayjs().startOf('month').toDate(),
+            to: dayjs().startOf('day').toDate(),
+          }),
+        },
+      ],
+    ],
+    [t],
+  );
 
   const { orders, ordersIsLoading, ordersIsError } = useOrdersList({
     page,
@@ -80,6 +158,19 @@ export function OrdersListScreen() {
   useEffect(() => {
     setQ(searchQ ?? '');
   }, [searchQ]);
+
+  const openDatePopover = (event: MouseEvent<HTMLElement>) => {
+    setDateAnchorEl(event.currentTarget);
+  };
+
+  const closeDatePopover = () => {
+    setDateAnchorEl(null);
+  };
+
+  const handleDateApply = (range: DateRange) => {
+    setCreatedRange(dayjs(range.from).format(ISO_DATE), dayjs(range.to).format(ISO_DATE));
+    closeDatePopover();
+  };
 
   const columns = useMemo(
     () => [
@@ -219,23 +310,36 @@ export function OrdersListScreen() {
           ))}
         </SelectField>
         <TextField
-          label={t('orders:list.dateFrom')}
-          type="date"
+          label={t('orders:list.dates')}
           size="small"
-          value={createdFrom ?? ''}
-          onChange={(event) => setCreatedFrom(event.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ minWidth: 160 }}
+          value={formatTriggerValue(createdFrom, createdTo)}
+          placeholder={t('orders:list.datesPlaceholder')}
+          onClick={openDatePopover}
+          slotProps={{
+            input: { readOnly: true },
+            inputLabel: { shrink: true },
+          }}
+          sx={{ minWidth: 220, cursor: 'pointer' }}
         />
-        <TextField
-          label={t('orders:list.dateTo')}
-          type="date"
-          size="small"
-          value={createdTo ?? ''}
-          onChange={(event) => setCreatedTo(event.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ minWidth: 160 }}
-        />
+        <Popover
+          open={datePopoverOpen}
+          anchorEl={dateAnchorEl}
+          onClose={closeDatePopover}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <DateRangePicker
+            value={rangeValue}
+            locale={chromeLocale}
+            presets={datePresets}
+            applyLabel={t('orders:list.dateApply')}
+            fromLabel={t('orders:list.dateFrom')}
+            toLabel={t('orders:list.dateTo')}
+            previousMonthLabel={t('orders:list.prevMonth')}
+            nextMonthLabel={t('orders:list.nextMonth')}
+            onApply={handleDateApply}
+          />
+        </Popover>
         <Button variant="outlined" onClick={() => applySearch(q)}>
           {t('common:actions.search')}
         </Button>

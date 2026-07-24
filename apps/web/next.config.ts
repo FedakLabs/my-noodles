@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { svgIconSvgrJsonOptions, svgIconSvgrOptions } from '@my-noodles/vite-config/svgr';
+import { svgIconSvgrOptions } from '@my-noodles/vite-config/svgr';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
@@ -13,19 +13,24 @@ const svgoConfig = {
   plugins: [{ name: 'removeViewBox', active: false }],
 };
 
-/** Webpack accepts a function `template`; Turbopack loader options must be JSON-only. */
+/** Webpack can take an inline `template` function in loader options. */
 const svgrWebpackLoader = {
   loader: '@svgr/webpack',
   options: {
     ...svgIconSvgrOptions,
+    runtimeConfig: false,
     svgoConfig,
   },
 };
 
+/**
+ * Turbopack: JSON-only options; size/color template is baked into this app-local loader
+ * (path must resolve from `apps/web`, not `turbopack.root`).
+ */
 const svgrTurbopackLoader = {
-  loader: '@svgr/webpack',
+  loader: './svg-icon-svgr-loader.mjs',
   options: {
-    ...svgIconSvgrJsonOptions,
+    icon: true,
     svgoConfig,
   },
 };

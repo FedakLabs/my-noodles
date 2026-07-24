@@ -1,13 +1,13 @@
-import { Transform, Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
-
 import {
   DEFAULT_LOCALE,
   type Locale,
   type LocalizedStringData,
   type LocalizedStringRecord,
   SUPPORTED_LOCALES,
-} from './locale.config';
+} from '@my-noodles/locale';
+import { Transform, Type } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
+
 import { LocaleContext } from './locale.context';
 
 /* oxlint-disable typescript/no-unsafe-declaration-merging, typescript/no-empty-object-type -- locale keys come from `SUPPORTED_LOCALES` via Object.assign in the constructor */

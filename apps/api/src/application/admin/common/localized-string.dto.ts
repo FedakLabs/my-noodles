@@ -1,4 +1,4 @@
-import { assertLocalesMatch } from '@my-noodles/api-lib/locale';
+import { assertLocalesMatch } from '@my-noodles/locale';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MinLength } from 'class-validator';
 

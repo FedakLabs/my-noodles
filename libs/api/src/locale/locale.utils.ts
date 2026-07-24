@@ -1,7 +1,10 @@
-import { resolveLocaleFromLanguageTag } from '@my-noodles/locale';
+import {
+  APP_LOCALE_HEADER,
+  DEFAULT_LOCALE,
+  resolveLocaleFromLanguageTag,
+  type Locale,
+} from '@my-noodles/locale';
 import type { Request } from 'express';
-
-import { APP_LOCALE_HEADER, DEFAULT_LOCALE, type Locale } from './locale.config';
 
 function parseAcceptLanguage(header: string): Locale | undefined {
   const candidates = header

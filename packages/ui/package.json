@@ -30,8 +30,10 @@
     "@my-noodles/locale": "workspace:*",
     "@my-noodles/theme": "workspace:*",
     "@my-noodles/web-lib": "workspace:*",
+    "dayjs": "^1.11.21",
     "embla-carousel-react": "^8.6.0",
     "mui-tel-input": "^11.0.0",
+    "react-day-picker": "^10.0.1",
     "sonner": "^2.0.7"
   },
   "peerDependencies": {

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { type CatalogViewMode, CatalogViewModeProvider, useViewMode } from '@/components/catalog-view-mode';
-import { CatalogFeedFab } from '@/components/catalog/catalog-feed-fab';
+import { CatalogFeedEntry } from '@/components/catalog/catalog-feed-entry';
 import {
   CatalogTitle,
   CatalogToolbarControls,
@@ -113,7 +113,7 @@ function CatalogScreenContent() {
         </Stack>
       </Box>
 
-      <CatalogFeedFab />
+      <CatalogFeedEntry />
     </PageContainer>
   );
 }

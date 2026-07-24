@@ -10,8 +10,9 @@ export const svgIconSvgrOptions = {
 };
 
 /**
- * JSON-safe options for Next Turbopack loaders (no functions).
- * Template is loaded from `packages/ui/svgr.config.mjs` via SVGR runtime config.
+ * JSON-safe options for Next Turbopack (no functions).
+ * Storefront uses `apps/web/svg-icon-svgr-loader.mjs` to bake in the template —
+ * Turbopack cannot serialize `template`, and SVGR `configFile` is unreliable there.
  */
 export const svgIconSvgrJsonOptions = {
   icon: true as const,
