@@ -1,6 +1,5 @@
-/** Default MUI Fab is 56px; support chat FAB is 12.5% larger (half of the prior +25%). */
-export const SUPPORT_CHAT_FAB_SIZE = Math.round(56 * 1.125);
-export const SUPPORT_CHAT_FAB_ICON_SIZE = Math.round(24 * 1.125);
+export const SUPPORT_CHAT_FAB_SIZE = 63;
+export const SUPPORT_CHAT_FAB_ICON_SIZE = 27;
 
 /** Fixed insets — nudged in from the corner, then +5px left/top (half of prior +10). */
 export const SUPPORT_CHAT_FAB_INSET = {

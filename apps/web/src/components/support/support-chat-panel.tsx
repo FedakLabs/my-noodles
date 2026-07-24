@@ -5,14 +5,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { sheetShadow } from '@my-noodles/theme';
 import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
-
-import { SUPPORT_CHAT_PANEL_INSET } from './support-chat-layout';
 
 export type SupportChatPanelPhase = 'loadingSession' | 'sessionError' | 'connecting' | 'connectError';
 
@@ -22,6 +18,7 @@ type SupportChatPanelProps = {
   onRetry: () => void;
 };
 
+/** Shared loading / error chrome — host chooses drawer (mobile) vs floating panel (desktop). */
 export function SupportChatPanel({ phase, onClose, onRetry }: SupportChatPanelProps) {
   const t = useTranslations('common');
   const isLoading = phase === 'loadingSession' || phase === 'connecting';
@@ -37,36 +34,7 @@ export function SupportChatPanel({ phase, onClose, onRetry }: SupportChatPanelPr
           : t('support.connectFailed');
 
   return (
-    <Paper
-      component="dialog"
-      open
-      elevation={0}
-      aria-label={t('support.title')}
-      aria-busy={isLoading}
-      sx={{
-        position: 'fixed',
-        inset: 'auto',
-        right: SUPPORT_CHAT_PANEL_INSET.right,
-        bottom: SUPPORT_CHAT_PANEL_INSET.bottom,
-        zIndex: (theme) => theme.zIndex.modal,
-        width: { mobile: 'min(100vw - 32px, 380px)', desktop: 380 },
-        maxWidth: 'none',
-        height: { mobile: 'min(70dvh, 560px)', desktop: 560 },
-        maxHeight: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        bgcolor: 'background.paper',
-        color: 'text.primary',
-        border: 1,
-        borderColor: 'divider',
-        borderRadius: (theme) => `${theme.borderRadius.sheet}px`,
-        boxShadow: sheetShadow,
-        margin: 0,
-        padding: 0,
-        '&::backdrop': { display: 'none' },
-      }}
-    >
+    <>
       <Stack
         direction="row"
         sx={{
@@ -118,6 +86,6 @@ export function SupportChatPanel({ phase, onClose, onRetry }: SupportChatPanelPr
           ) : null}
         </Stack>
       </Box>
-    </Paper>
+    </>
   );
 }

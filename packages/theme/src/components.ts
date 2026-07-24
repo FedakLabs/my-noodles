@@ -6,6 +6,14 @@ import { cardShadow, sheetShadow } from './shadows';
 import { borderRadius, edgeAnchoredBorderRadius } from './shape';
 import { spacingUnit } from './spacing';
 
+/**
+ * Hover/focus fill easing for interactive controls only.
+ * Do not put this on `*` / layout surfaces — that animates sheets and page chrome.
+ * Matches MUI `transitions.duration.short` + standard easing.
+ */
+const interactiveFillTransition =
+  'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1)';
+
 export const components: Components = {
   MuiCssBaseline: {
     styleOverrides: {
@@ -14,6 +22,13 @@ export const components: Components = {
         color: colors.text.primary,
       },
       '*': scrollbarStyles(),
+    },
+  },
+  MuiButtonBase: {
+    styleOverrides: {
+      root: {
+        transition: interactiveFillTransition,
+      },
     },
   },
   MuiButton: {
@@ -27,6 +42,7 @@ export const components: Components = {
         textTransform: 'none',
         minHeight: 44,
         paddingInline: spacingUnit * 3,
+        transition: interactiveFillTransition,
       },
     },
     variants: [
@@ -70,6 +86,14 @@ export const components: Components = {
         borderRadius: borderRadius.utility,
         minWidth: 44,
         minHeight: 44,
+        transition: interactiveFillTransition,
+      },
+    },
+  },
+  MuiFab: {
+    styleOverrides: {
+      root: {
+        transition: interactiveFillTransition,
       },
     },
   },
@@ -78,6 +102,7 @@ export const components: Components = {
       root: {
         borderRadius: borderRadius.utility,
         fontWeight: 600,
+        transition: interactiveFillTransition,
       },
       filled: {
         backgroundColor: colors.buttonFill.primary,
