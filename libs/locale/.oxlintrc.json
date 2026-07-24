@@ -8,7 +8,7 @@
         "patterns": [
           {
             "group": ["**/apps/**"],
-            "message": "Packages must not import apps (@nx/enforce-module-boundaries replacement)."
+            "message": "Libs must not import apps (@nx/enforce-module-boundaries replacement)."
           }
         ]
       }

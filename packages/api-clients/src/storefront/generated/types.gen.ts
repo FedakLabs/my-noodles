@@ -436,6 +436,14 @@ export type FeedProductComment = {
     authorName: string;
 };
 
+export type SupportSessionResponseDto = {
+    visitorSessionId: string;
+    /**
+     * Secure session credential for the chat provider.
+     */
+    sessionHash: string;
+};
+
 export type HealthControllerGetLiveData = {
     body?: never;
     path?: never;
@@ -1240,3 +1248,22 @@ export type FeedControllerLikesResponses = {
 };
 
 export type FeedControllerLikesResponse = FeedControllerLikesResponses[keyof FeedControllerLikesResponses];
+
+export type SupportControllerOpenSessionData = {
+    body?: never;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/support/sessions';
+};
+
+export type SupportControllerOpenSessionResponses = {
+    200: SupportSessionResponseDto;
+};
+
+export type SupportControllerOpenSessionResponse = SupportControllerOpenSessionResponses[keyof SupportControllerOpenSessionResponses];

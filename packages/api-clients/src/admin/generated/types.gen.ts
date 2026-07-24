@@ -304,6 +304,37 @@ export type UpdateBrandDto = {
     themeKey?: string | null;
 };
 
+export type AdminCartListItemDto = {
+    visitorSessionId: string;
+    totalMinor: number;
+    currency: CurrencyCode;
+    itemCount: number;
+};
+
+export type AdminCartsListResponseDto = {
+    items: Array<AdminCartListItemDto>;
+    meta: AdminListMetaDto;
+};
+
+export type AdminCartItemDto = {
+    productId: string;
+    slug: string;
+    name: string;
+    qty: number;
+    unitPriceMinor: number;
+    lineTotalMinor: number;
+    currency: CurrencyCode;
+};
+
+export type AdminCartDetailDto = {
+    visitorSessionId: string;
+    cartExpiresAt: string;
+    items: Array<AdminCartItemDto>;
+    totalMinor: number;
+    itemCount: number;
+    currency: CurrencyCode;
+};
+
 export type LocalizedStringDto = {
     uk: string;
     en: string;
@@ -942,6 +973,57 @@ export type AdminBrandsControllerUpdateResponses = {
 };
 
 export type AdminBrandsControllerUpdateResponse = AdminBrandsControllerUpdateResponses[keyof AdminBrandsControllerUpdateResponses];
+
+export type AdminCartsControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        /**
+         * Prefix match on visitor session id (case-insensitive).
+         */
+        visitorSessionId?: string;
+    };
+    url: '/api/admin/carts';
+};
+
+export type AdminCartsControllerListResponses = {
+    200: AdminCartsListResponseDto;
+};
+
+export type AdminCartsControllerListResponse = AdminCartsControllerListResponses[keyof AdminCartsControllerListResponses];
+
+export type AdminCartsControllerGetByVisitorSessionIdData = {
+    body?: never;
+    path: {
+        visitorSessionId: string;
+    };
+    query?: never;
+    url: '/api/admin/carts/{visitorSessionId}';
+};
+
+export type AdminCartsControllerGetByVisitorSessionIdErrors = {
+    /**
+     * cart_not_found
+     */
+    404: {
+        status: 404;
+        code: 'cart_not_found';
+        message: string;
+        payload: {
+            visitorSessionId?: string;
+        };
+    };
+};
+
+export type AdminCartsControllerGetByVisitorSessionIdError = AdminCartsControllerGetByVisitorSessionIdErrors[keyof AdminCartsControllerGetByVisitorSessionIdErrors];
+
+export type AdminCartsControllerGetByVisitorSessionIdResponses = {
+    200: AdminCartDetailDto;
+};
+
+export type AdminCartsControllerGetByVisitorSessionIdResponse = AdminCartsControllerGetByVisitorSessionIdResponses[keyof AdminCartsControllerGetByVisitorSessionIdResponses];
 
 export type AdminCategoriesControllerListData = {
     body?: never;

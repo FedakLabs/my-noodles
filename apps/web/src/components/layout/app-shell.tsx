@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { CartBootstrap } from '@/components/cart/cart-bootstrap';
 import { CartPanelHost } from '@/components/cart/cart-panel-host';
 import { NavigationBusyOverlay } from '@/components/navigation/navigation-busy-overlay';
+import { SupportChatHost } from '@/components/support/support-chat-host';
 import { NavigationPendingProvider } from '@/hooks/smooth';
 import { usePathname } from '@/i18n/navigation';
 
@@ -36,6 +37,7 @@ export function AppShell({ children }: AppShellProps) {
         </NavigationBusyOverlay>
         <CartBootstrap />
         <CartPanelHost />
+        <SupportChatHost />
       </Box>
     </NavigationPendingProvider>
   );

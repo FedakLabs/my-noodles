@@ -1,0 +1,22 @@
+{
+  "list": {
+    "title": "Carts",
+    "search": "Search",
+    "searchBy": "Search by",
+    "searchByVisitorSessionId": "Visitor ID",
+    "loadError": "Failed to load carts.",
+    "empty": "No carts found.",
+    "page": "Page {{page}} · {{total}} total",
+    "columnVisitorId": "Visitor ID",
+    "columnTotal": "Total"
+  },
+  "detail": {
+    "title": "Cart",
+    "visitorId": "Visitor ID",
+    "cartExpiresAt": "Cart expires",
+    "items": "Products",
+    "emptyItems": "Cart is empty.",
+    "total": "Total",
+    "loadError": "Failed to load cart."
+  }
+}

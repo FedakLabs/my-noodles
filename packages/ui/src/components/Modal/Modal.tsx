@@ -38,7 +38,7 @@ export type ModalProps<T = void> = {
 function ModalRoot({
   children,
   ref,
-  maxWidth = 'sm',
+  maxWidth = 'lg',
   disableClose: disableCloseProp = false,
   onClose,
 }: ModalProps<unknown>) {

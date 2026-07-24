@@ -2,10 +2,14 @@
   "appTitle": "MyNoodles (Admin)",
   "nav": {
     "orders": "Orders",
+    "carts": "Carts",
     "products": "Products",
     "brands": "Brands",
     "categories": "Categories",
-    "countries": "Countries"
+    "countries": "Countries",
+    "support": "Support",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu"
   },
   "actions": {
     "back": "Back",

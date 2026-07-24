@@ -1,0 +1,22 @@
+{
+  "list": {
+    "title": "Кошики",
+    "search": "Пошук",
+    "searchBy": "Шукати за",
+    "searchByVisitorSessionId": "ID відвідувача",
+    "loadError": "Не вдалося завантажити кошики.",
+    "empty": "Кошиків не знайдено.",
+    "page": "Сторінка {{page}} · усього {{total}}",
+    "columnVisitorId": "ID відвідувача",
+    "columnTotal": "Сума"
+  },
+  "detail": {
+    "title": "Кошик",
+    "visitorId": "ID відвідувача",
+    "cartExpiresAt": "Кошик діє до",
+    "items": "Товари",
+    "emptyItems": "Кошик порожній.",
+    "total": "Разом",
+    "loadError": "Не вдалося завантажити кошик."
+  }
+}

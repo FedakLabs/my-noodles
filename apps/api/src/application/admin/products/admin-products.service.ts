@@ -1,5 +1,6 @@
-import { DEFAULT_LOCALE, LocalizedString } from '@my-noodles/api-lib/locale';
+import { LocalizedString } from '@my-noodles/api-lib/locale';
 import { type PaginatedResult, PaginationHelper } from '@my-noodles/api-lib/pagination';
+import { DEFAULT_LOCALE } from '@my-noodles/locale';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type FindOptionsWhere, ILike, In, Raw, type Repository } from 'typeorm';

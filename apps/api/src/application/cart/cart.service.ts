@@ -1,5 +1,4 @@
 import { TransactionalRepository } from '@my-noodles/api-lib/nest';
-import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, Repository } from 'typeorm';
@@ -7,6 +6,7 @@ import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, Reposito
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';
 import type { VisitorSession } from '../visitor-session/visitor-session.entity';
+import { Cart } from './cart';
 import { CartItem } from './cart-item.entity';
 import type { CartResponseDto } from './cart.dto';
 import {
@@ -31,17 +31,26 @@ export class CartService extends TransactionalRepository {
     super(dataSource);
   }
 
-  async getCart(visitor: VisitorSession): Promise<CartResponseDto> {
-    const items = await this.getCartItems({ visitorSessionId: visitor.id }, { createdAt: 'ASC' });
-    const totalMinor = items.reduce((sum, item) => sum + item.product.priceMinor * item.qty, 0);
-    const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
-    const currency = items[0]?.product.currency ?? DEFAULT_CURRENCY;
+  async get(visitorSessionId: string): Promise<Cart> {
+    const items = await this.getCartItems({ visitorSessionId }, { createdAt: 'ASC' });
+    return Cart.fromItems(visitorSessionId, items);
+  }
 
-    return { items, totalMinor, itemCount, currency };
+  async getCart(visitor: VisitorSession): Promise<CartResponseDto> {
+    return this.toResponseDto(await this.get(visitor.id));
   }
 
   getCartItems(where: FindOptionsWhere<CartItem>, order?: FindOptionsOrder<CartItem>): Promise<CartItem[]> {
     return this.cartItemsRepository.find({ where, order });
+  }
+
+  private toResponseDto(cart: Cart): CartResponseDto {
+    return {
+      items: cart.items,
+      totalMinor: cart.totalMinor,
+      itemCount: cart.itemCount,
+      currency: cart.currency,
+    };
   }
 
   async addItem(visitor: VisitorSession, productId: string, qty = 1): Promise<CartResponseDto> {

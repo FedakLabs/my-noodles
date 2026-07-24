@@ -22,16 +22,16 @@ export function useOrdersSearchParams() {
     [setParams],
   );
 
-  const setCreatedFrom = useCallback(
-    (createdFrom: string) => {
-      void setParams({ createdFrom: createdFrom || null, page: 1 }, { history: 'replace' });
-    },
-    [setParams],
-  );
-
-  const setCreatedTo = useCallback(
-    (createdTo: string) => {
-      void setParams({ createdTo: createdTo || null, page: 1 }, { history: 'replace' });
+  const setCreatedRange = useCallback(
+    (createdFrom: string | null, createdTo: string | null) => {
+      void setParams(
+        {
+          createdFrom: createdFrom || null,
+          createdTo: createdTo || null,
+          page: 1,
+        },
+        { history: 'replace' },
+      );
     },
     [setParams],
   );
@@ -51,8 +51,7 @@ export function useOrdersSearchParams() {
     page: params.page,
     applySearch,
     setStatus,
-    setCreatedFrom,
-    setCreatedTo,
+    setCreatedRange,
     setPage,
   };
 }

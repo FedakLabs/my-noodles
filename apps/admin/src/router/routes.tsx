@@ -4,6 +4,7 @@ import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { getAccessToken } from '@/hooks/auth';
 import { BrandsListScreen } from '@/screens/brands/brands-list-screen';
+import { CartsListScreen } from '@/screens/carts/carts-list-screen';
 import { CategoriesListScreen } from '@/screens/categories/categories-list-screen';
 import { CountriesListScreen } from '@/screens/countries/countries-list-screen';
 import { LoginScreen } from '@/screens/login';
@@ -62,6 +63,12 @@ export const ordersRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: ROUTE_NAMES.orders,
   component: OrdersListScreen,
+});
+
+export const cartsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.carts,
+  component: CartsListScreen,
 });
 
 export const productsRoute = createRoute({

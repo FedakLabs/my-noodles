@@ -3,6 +3,7 @@ import { createRouter } from '@tanstack/react-router';
 import {
   appLayoutRoute,
   brandsRoute,
+  cartsRoute,
   categoriesRoute,
   countriesRoute,
   indexRoute,
@@ -17,6 +18,7 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     indexRoute,
     ordersRoute,
+    cartsRoute,
     productsRoute,
     brandsRoute,
     categoriesRoute,

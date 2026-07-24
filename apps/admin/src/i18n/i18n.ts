@@ -7,6 +7,8 @@ import authEn from './messages/auth/en.json';
 import authUk from './messages/auth/uk.json';
 import brandsEn from './messages/brands/en.json';
 import brandsUk from './messages/brands/uk.json';
+import cartsEn from './messages/carts/en.json';
+import cartsUk from './messages/carts/uk.json';
 import categoriesEn from './messages/categories/en.json';
 import categoriesUk from './messages/categories/uk.json';
 import commonEn from './messages/common/en.json';
@@ -22,6 +24,7 @@ type AdminNamespaceResources = {
   common: typeof commonUk;
   auth: typeof authUk;
   orders: typeof ordersUk;
+  carts: typeof cartsUk;
   products: typeof productsUk;
   brands: typeof brandsUk;
   categories: typeof categoriesUk;
@@ -34,6 +37,7 @@ const resources = {
     common: commonUk,
     auth: authUk,
     orders: ordersUk,
+    carts: cartsUk,
     products: productsUk,
     brands: brandsUk,
     categories: categoriesUk,
@@ -44,6 +48,7 @@ const resources = {
     common: commonEn,
     auth: authEn,
     orders: ordersEn,
+    carts: cartsEn,
     products: productsEn,
     brands: brandsEn,
     categories: categoriesEn,
@@ -71,7 +76,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: DEFAULT_LOCALE,
   supportedLngs: [...SUPPORTED_LOCALES],
   defaultNS: 'common',
-  ns: ['common', 'auth', 'orders', 'products', 'brands', 'categories', 'countries', 'discoveryCard'],
+  ns: ['common', 'auth', 'orders', 'carts', 'products', 'brands', 'categories', 'countries', 'discoveryCard'],
   interpolation: {
     escapeValue: false,
   },

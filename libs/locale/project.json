@@ -1,49 +1,49 @@
 {
   "name": "locale",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/locale/src",
+  "sourceRoot": "libs/locale/src",
   "projectType": "library",
-  "tags": ["scope:packages", "type:lib"],
+  "tags": ["scope:libs", "type:lib"],
   "targets": {
     "build": {
       "command": "pnpm build",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
       "command": "pnpm format",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       }
     },
     "format-check": {
       "command": "pnpm format-check",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       }
     },
     "lint": {
       "command": "pnpm lint",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       }
     },
     "lint-check": {
       "command": "pnpm lint-check",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       }
     },
     "type-check": {
       "command": "pnpm type-check",
       "options": {
-        "cwd": "packages/locale"
+        "cwd": "libs/locale"
       }
     },
     "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/locale",
+      "command": "knip --config configs/knip/knip.json --workspace libs/locale",
       "options": {
         "cwd": "."
       }
@@ -53,10 +53,10 @@
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/locale format",
-          "pnpm --dir packages/locale lint",
-          "pnpm --dir packages/locale type-check",
-          "knip --config configs/knip/knip.json --workspace packages/locale"
+          "pnpm --dir libs/locale format",
+          "pnpm --dir libs/locale lint",
+          "pnpm --dir libs/locale type-check",
+          "knip --config configs/knip/knip.json --workspace libs/locale"
         ],
         "parallel": false
       }
