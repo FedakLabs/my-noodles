@@ -16,6 +16,10 @@
     "label": "Language",
     "switchTo": "Switch language"
   },
+  "support": {
+    "label": "Support",
+    "unavailableHint": "Support chat is unavailable right now"
+  },
   "share": {
     "native": "Share…",
     "copyLink": "Copy link",
