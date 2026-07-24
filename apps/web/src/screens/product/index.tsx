@@ -113,6 +113,19 @@ export function ProductScreen({ slug }: ProductScreenProps) {
             <Typography variant="body1" color="text.secondary">
               {product.country.name} · {product.category.name}
             </Typography>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              {product.seller.logoUrl ? (
+                <Box
+                  component="img"
+                  src={product.seller.logoUrl}
+                  alt=""
+                  sx={{ width: 24, height: 24, borderRadius: 1, objectFit: 'contain' }}
+                />
+              ) : null}
+              <Typography variant="body2" color="text.secondary">
+                {t('seller')}: {product.seller.name ?? product.seller.slug}
+              </Typography>
+            </Stack>
             <Typography variant="h5">{formatCurrency(product.priceMinor, product.currency)}</Typography>
             {product.description ? <Typography variant="body1">{product.description}</Typography> : null}
             {product.forWhom ? (

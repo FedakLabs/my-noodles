@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { collectionsQueries } from '@/api/collections';
 import { withPageLocale, withPageLocaleMetadata } from '@/i18n/app-locale/server';
-import { CollectionsScreen } from '@/screens/collections/list';
+import { CollectionsScreen } from '@/screens/collections';
 import type { LocalePageProps } from '@/shared/page-props';
 import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
 import { buildPageMetadata } from '@/shared/seo';

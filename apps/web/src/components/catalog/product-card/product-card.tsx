@@ -22,6 +22,7 @@ import { useProductDetail } from '@/api/products';
 import { useCartActions } from '@/hooks/cart';
 import { useCurrency } from '@/hooks/currency';
 import { Link } from '@/i18n/navigation';
+import { APP_ROUTES } from '@/shared/routes';
 
 import { CATALOG_PRODUCT_GRID_COLUMNS } from './use-catalog-grid-columns';
 
@@ -110,6 +111,7 @@ export function ProductCard({
     <ProductDiscoveryCard
       name={product.name ?? product.slug}
       countryLabel={product.country.name ?? ''}
+      sellerLabel={product.seller.name ?? product.seller.slug}
       priceLabel={formatCurrency(product.priceMinor, product.currency)}
       mediaItems={mediaItems}
       skinInput={{
@@ -173,7 +175,7 @@ export function ProductCard({
         <Button
           key="details"
           component={Link}
-          href={`/product/${product.slug}`}
+          href={APP_ROUTES.product(product.slug)}
           variant="text"
           color="inherit"
           size="small"

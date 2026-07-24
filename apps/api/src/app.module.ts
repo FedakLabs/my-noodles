@@ -9,9 +9,11 @@ import {
   AdminBrandsModule,
   AdminCartsModule,
   AdminCategoriesModule,
+  AdminCollectionsModule,
   AdminCountriesModule,
   AdminOrdersModule,
   AdminProductsModule,
+  AdminSellersModule,
 } from './application/admin';
 import { AuthModule } from './application/auth';
 import { CartController, CartModule } from './application/cart';
@@ -54,8 +56,10 @@ import './infrastructure/logging';
     AdminBrandsModule,
     AdminCartsModule,
     AdminCategoriesModule,
+    AdminCollectionsModule,
     AdminCountriesModule,
     AdminProductsModule,
+    AdminSellersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

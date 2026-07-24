@@ -10,15 +10,7 @@
     "ctaFeed": "Відкривати у стрічці"
   },
   "countries": {
-    "headline": "Снеки з усього світу",
-    "japan": "Японія",
-    "korea": "Корея",
-    "usa": "США",
-    "thailand": "Таїланд",
-    "china": "Китай",
-    "kazakhstan": "Казахстан",
-    "germany": "Німеччина",
-    "czech": "Чехія"
+    "headline": "Снеки з усього світу"
   },
   "explore": {
     "headline": "Знайди свій спосіб відкривати",
@@ -31,27 +23,8 @@
       "body": "Гортай, як у TikTok — кожен свайп це нова смачна пригода."
     },
     "collections": {
-      "title": "Колекції",
-      "body": "Підбірки за настроєм: TikTok Foods, Movie Snacks, Around the World і не тільки."
-    }
-  },
-  "moods": {
-    "headline": "Підбірки за настроєм",
-    "tiktok": {
-      "title": "TikTok Foods",
-      "sub": "Вірусні смаки, які всі обговорюють"
-    },
-    "world": {
-      "title": "Around the World",
-      "sub": "Один снек — одна нова країна"
-    },
-    "movie": {
-      "title": "Movie Snacks",
-      "sub": "Ідеальний компаньйон для кіновечора"
-    },
-    "office": {
-      "title": "Office Box",
-      "sub": "Сюрприз для команди або колег"
+      "title": "Добірки",
+      "body": "Підбірки за настроєм: нудлі, снеки, солодощі і не тільки."
     }
   },
   "why": {

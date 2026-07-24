@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import { env } from '@/shared/env';
+
+import { SUPPORT_CHAT_WIDGET_INSET } from '../support-chat-layout';
 
 type TawkLoginPayload = {
   hash: string;
@@ -10,14 +10,28 @@ type TawkLoginPayload = {
   name?: string;
 };
 
+type TawkVisibilityStyle = {
+  position?: 'br' | 'bl' | 'cr' | 'cl' | 'tr' | 'tl';
+  xOffset?: number | string;
+  yOffset?: number | string;
+};
+
+type TawkCustomStyle = {
+  zIndex?: number | string;
+  visibility?: {
+    desktop?: TawkVisibilityStyle;
+    mobile?: TawkVisibilityStyle;
+  };
+};
+
 type TawkApi = {
+  customStyle?: TawkCustomStyle;
+  showWidget?: () => void;
   hideWidget?: () => void;
   maximize?: () => void;
   minimize?: () => void;
   login?: (data: TawkLoginPayload, callback?: (error?: unknown) => void) => void;
   onLoad?: () => void;
-  onChatMaximized?: () => void;
-  onChatMinimized?: () => void;
 };
 
 declare global {
@@ -42,6 +56,25 @@ function isConfigured(): boolean {
 
 function isTawkReady(api: TawkApi): boolean {
   return typeof api.login === 'function' && typeof api.maximize === 'function';
+}
+
+function applyTawkPlacement(api: TawkApi) {
+  // Must be set before the embed script runs.
+  api.customStyle = {
+    ...api.customStyle,
+    visibility: {
+      desktop: {
+        position: 'br',
+        xOffset: SUPPORT_CHAT_WIDGET_INSET.right.desktop,
+        yOffset: SUPPORT_CHAT_WIDGET_INSET.bottom.desktop,
+      },
+      mobile: {
+        position: 'br',
+        xOffset: SUPPORT_CHAT_WIDGET_INSET.right.mobile,
+        yOffset: SUPPORT_CHAT_WIDGET_INSET.bottom.mobile,
+      },
+    },
+  };
 }
 
 function waitForTawkReady(): Promise<TawkApi> {
@@ -105,7 +138,8 @@ async function ensureLoaded(): Promise<TawkApi> {
   const propertyId = env.NEXT_PUBLIC_TAWK_PROPERTY_ID!;
   const widgetId = env.NEXT_PUBLIC_TAWK_WIDGET_ID!;
 
-  getTawkApi();
+  const api = getTawkApi();
+  applyTawkPlacement(api);
 
   if (!document.getElementById(TAWK_SCRIPT_ID)) {
     window.Tawk_LoadStart = new Date();
@@ -119,6 +153,7 @@ async function ensureLoaded(): Promise<TawkApi> {
   }
 
   const ready = await waitForTawkReady();
+  // Stay hidden until secure login finishes — then reveal() shows the native bubble.
   ready.hideWidget?.();
   return ready;
 }
@@ -169,17 +204,15 @@ async function login(session: { visitorSessionId: string; sessionHash: string })
       },
     );
   });
-
-  api.hideWidget?.();
 }
 
-function show(): void {
-  const api = getTawkApi();
-  api.hideWidget?.();
-  api.maximize?.();
+/** Show the native bubble (unread / pending messages live here). */
+function reveal(): void {
+  getTawkApi().showWidget?.();
 }
 
-function hide(): void {
+/** Hide entirely (e.g. immersive / home routes). */
+function conceal(): void {
   const api = getTawkApi();
   api.minimize?.();
   api.hideWidget?.();
@@ -187,47 +220,18 @@ function hide(): void {
 
 export type TawkSupportChat = {
   isConfigured: boolean;
-  isOpen: boolean;
   connect: (session: { visitorSessionId: string; sessionHash: string }) => Promise<void>;
-  show: () => void;
-  hide: () => void;
+  /** Show native launcher bubble after API + secure login are ready. */
+  reveal: () => void;
+  conceal: () => void;
 };
 
 /** Tawk provider surface — swap this hook in `use-support-chat.ts` to change vendors. */
 export function useTawkSupportChat(): TawkSupportChat {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const api = getTawkApi();
-    const previousMaximized = api.onChatMaximized;
-    const previousMinimized = api.onChatMinimized;
-
-    api.onChatMaximized = () => {
-      previousMaximized?.();
-      setIsOpen(true);
-    };
-    api.onChatMinimized = () => {
-      previousMinimized?.();
-      setIsOpen(false);
-    };
-
-    return () => {
-      api.onChatMaximized = previousMaximized;
-      api.onChatMinimized = previousMinimized;
-    };
-  }, []);
-
   return {
     isConfigured: isConfigured(),
-    isOpen,
     connect: login,
-    show: () => {
-      show();
-      setIsOpen(true);
-    },
-    hide: () => {
-      hide();
-      setIsOpen(false);
-    },
+    reveal,
+    conceal,
   };
 }

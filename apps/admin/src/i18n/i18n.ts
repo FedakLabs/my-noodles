@@ -11,6 +11,8 @@ import cartsEn from './messages/carts/en.json';
 import cartsUk from './messages/carts/uk.json';
 import categoriesEn from './messages/categories/en.json';
 import categoriesUk from './messages/categories/uk.json';
+import collectionsEn from './messages/collections/en.json';
+import collectionsUk from './messages/collections/uk.json';
 import commonEn from './messages/common/en.json';
 import commonUk from './messages/common/uk.json';
 import countriesEn from './messages/countries/en.json';
@@ -19,6 +21,8 @@ import ordersEn from './messages/orders/en.json';
 import ordersUk from './messages/orders/uk.json';
 import productsEn from './messages/products/en.json';
 import productsUk from './messages/products/uk.json';
+import sellersEn from './messages/sellers/en.json';
+import sellersUk from './messages/sellers/uk.json';
 
 type AdminNamespaceResources = {
   common: typeof commonUk;
@@ -27,7 +31,9 @@ type AdminNamespaceResources = {
   carts: typeof cartsUk;
   products: typeof productsUk;
   brands: typeof brandsUk;
+  sellers: typeof sellersUk;
   categories: typeof categoriesUk;
+  collections: typeof collectionsUk;
   countries: typeof countriesUk;
   discoveryCard: (typeof discoveryCardMessages)['uk'];
 };
@@ -40,7 +46,9 @@ const resources = {
     carts: cartsUk,
     products: productsUk,
     brands: brandsUk,
+    sellers: sellersUk,
     categories: categoriesUk,
+    collections: collectionsUk,
     countries: countriesUk,
     discoveryCard: discoveryCardMessages.uk,
   },
@@ -51,7 +59,9 @@ const resources = {
     carts: cartsEn,
     products: productsEn,
     brands: brandsEn,
+    sellers: sellersEn,
     categories: categoriesEn,
+    collections: collectionsEn,
     countries: countriesEn,
     discoveryCard: discoveryCardMessages.en,
   },
@@ -76,7 +86,19 @@ void i18n.use(initReactI18next).init({
   fallbackLng: DEFAULT_LOCALE,
   supportedLngs: [...SUPPORTED_LOCALES],
   defaultNS: 'common',
-  ns: ['common', 'auth', 'orders', 'carts', 'products', 'brands', 'categories', 'countries', 'discoveryCard'],
+  ns: [
+    'common',
+    'auth',
+    'orders',
+    'carts',
+    'products',
+    'brands',
+    'sellers',
+    'categories',
+    'collections',
+    'countries',
+    'discoveryCard',
+  ],
   interpolation: {
     escapeValue: false,
   },

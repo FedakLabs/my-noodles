@@ -1,0 +1,34 @@
+{
+  "list": {
+    "title": "Collections",
+    "search": "Slug or name",
+    "columnSlug": "Slug",
+    "columnName": "Name",
+    "columnEmoji": "Emoji",
+    "columnSortOrder": "Order",
+    "columnActive": "Active",
+    "loadError": "Failed to load collections.",
+    "empty": "No collections found.",
+    "page": "Page {{page}} · {{total}} total"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "form": {
+    "createTitle": "New collection",
+    "editTitle": "Edit collection",
+    "loading": "Loading…",
+    "language": "Language",
+    "slug": "Slug",
+    "name": "Name",
+    "description": "Short description",
+    "longDescription": "Long description",
+    "emoji": "Emoji",
+    "color": "Accent color (hex)",
+    "particles": "Particles (comma-separated emojis)",
+    "particlesHint": "Example: 🎵, 🎶, ♪, 🎤, ✨",
+    "sortOrder": "Sort order",
+    "isActive": "Active",
+    "saveFailed": "Failed to save collection."
+  }
+}

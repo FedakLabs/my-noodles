@@ -7,15 +7,16 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { MediaGallery, type MediaGalleryHandle } from '@my-noodles/ui';
+import CloseIcon from '@my-noodles/ui/icons/close.svg';
 import { useTranslations } from 'next-intl';
 import type { RefObject } from 'react';
 
 import type { Product } from '@/api/feed';
 import { FeedActionRail, type FeedCardControlsProps } from '@/components/feed/action-rail/feed-action-rail';
-import { feedCardSurfaceSx, feedSubtleChipSx } from '@/components/feed/feed-chrome';
+import { feedActiveChipSx, feedCardSurfaceSx, feedSubtleChipSx } from '@/components/feed/feed-chrome';
 import { feedGalleryCarouselOptions } from '@/components/feed/feed-gallery-carousel-options';
 import { useCurrency } from '@/hooks/currency';
-import type { FeedTagDimension } from '@/hooks/feed';
+import type { FeedTagChip, FeedTagDimension } from '@/hooks/feed';
 
 import { FeedCardActionBar } from './feed-card-action-bar';
 import { FeedCardDetails } from './feed-card-details';
@@ -25,6 +26,8 @@ import { toFeedMediaItems } from './feed-media';
 type FeedCardProps = {
   item: Product;
   onAddTag: (type: FeedTagDimension, value: string, label: string) => void;
+  onRemoveTag: (chip: FeedTagChip) => void;
+  activeTags: FeedTagChip[];
   detailsOpen: boolean;
   onOpenDetails: () => void;
   onCloseDetails: () => void;
@@ -48,12 +51,26 @@ function buildHashtags(item: Product): HashtagChip[] {
     chips.push({ type: 'brand', slug: item.brand.slug, label: item.brand.name ?? item.brand.slug });
   }
 
+  if (item.seller) {
+    chips.push({
+      type: 'seller',
+      slug: item.seller.slug,
+      label: item.seller.name ?? item.seller.slug,
+    });
+  }
+
   return chips;
+}
+
+function isTagActive(activeTags: FeedTagChip[], chip: HashtagChip): boolean {
+  return activeTags.some((tag) => tag.type === chip.type && tag.value === chip.slug);
 }
 
 export function FeedCard({
   item,
   onAddTag,
+  onRemoveTag,
+  activeTags,
   detailsOpen,
   onOpenDetails,
   onCloseDetails,
@@ -135,24 +152,40 @@ export function FeedCard({
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'common.white', lineHeight: 1.2 }}>
               {item.name ?? item.slug}
             </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.82)' }}>
+              {item.seller.name ?? item.seller.slug}
+            </Typography>
             <Typography variant="subtitle1" sx={{ color: 'common.white', fontWeight: 600 }}>
               {formatCurrency(item.priceMinor, item.currency)}
             </Typography>
 
             <FeedCardInteractive sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-              {hashtags.map((chip) => (
-                <Chip
-                  key={`${chip.type}-${chip.slug}`}
-                  label={`#${chip.label}`}
-                  size="small"
-                  onClick={() => onAddTag(chip.type, chip.slug, chip.label)}
-                  sx={{
-                    ...feedSubtleChipSx,
-                    backdropFilter: 'blur(4px)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
-                  }}
-                />
-              ))}
+              {hashtags.map((chip) => {
+                const active = isTagActive(activeTags, chip);
+                const tagChip: FeedTagChip = { type: chip.type, value: chip.slug };
+
+                return (
+                  <Chip
+                    key={`${chip.type}-${chip.slug}`}
+                    label={`#${chip.label}`}
+                    size="small"
+                    data-feed-no-swipe
+                    onClick={() => {
+                      if (active) {
+                        onRemoveTag(tagChip);
+                        return;
+                      }
+                      onAddTag(chip.type, chip.slug, chip.label);
+                    }}
+                    onDelete={active ? () => onRemoveTag(tagChip) : undefined}
+                    deleteIcon={active ? <CloseIcon aria-hidden size={14} /> : undefined}
+                    sx={{
+                      ...(active ? feedActiveChipSx(theme) : feedSubtleChipSx(theme)),
+                      backdropFilter: 'blur(4px)',
+                    }}
+                  />
+                );
+              })}
             </FeedCardInteractive>
 
             <FeedCardInteractive>

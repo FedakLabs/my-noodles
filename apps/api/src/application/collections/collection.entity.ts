@@ -12,9 +12,6 @@ export class Collection extends TimestampEntity {
   id!: string;
 
   @Column({ type: 'text', unique: true })
-  code!: string;
-
-  @Column({ type: 'text', unique: true })
   slug!: string;
 
   @ApiHideProperty()
@@ -34,6 +31,24 @@ export class Collection extends TimestampEntity {
   get description(): string | null {
     return this.descriptionLocale.localized;
   }
+
+  @ApiHideProperty()
+  @LocalizedColumn({ name: 'long_description' })
+  longDescriptionLocale!: LocalizedString;
+
+  @LocalizedResolved()
+  get longDescription(): string | null {
+    return this.longDescriptionLocale.localized;
+  }
+
+  @Column({ type: 'text' })
+  emoji!: string;
+
+  @Column({ type: 'text' })
+  color!: string;
+
+  @Column({ type: 'jsonb' })
+  particles!: string[];
 
   @Column({ name: 'hero_image', type: 'text', nullable: true })
   heroImage!: string | null;

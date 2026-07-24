@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Brand } from '../brands/brand.entity';
 import { Category } from '../categories/category.entity';
 import { Country } from '../countries/country.entity';
+import { Seller } from '../sellers/seller.entity';
 import { isStorefrontListable, storefrontProductWhere } from './product-storefront-visibility';
 import { Product } from './product.entity';
 import type { PaginatedProductsDto, ProductFacetOptionDto, ProductFacetsResponseDto } from './products.dto';
@@ -30,6 +31,8 @@ export class ProductsService {
     private readonly countriesRepository: Repository<Country>,
     @InjectRepository(Brand)
     private readonly brandsRepository: Repository<Brand>,
+    @InjectRepository(Seller)
+    private readonly sellersRepository: Repository<Seller>,
   ) {}
 
   async list(filters: ProductFilters & ProductListPagination): Promise<PaginatedProductsDto> {
@@ -50,9 +53,11 @@ export class ProductsService {
       categoryScopeProducts,
       countryScopeProducts,
       brandScopeProducts,
+      sellerScopeProducts,
       categories,
       countries,
       brands,
+      sellers,
       priceScopeProducts,
     ] = await Promise.all([
       this.productsRepository.find({
@@ -78,9 +83,15 @@ export class ProductsService {
         relations: { brand: true },
         select: productFacetSelect,
       }),
+      this.productsRepository.find({
+        where: buildProductWhereForFacet(filters, 'seller'),
+        relations: { seller: true },
+        select: productFacetSelect,
+      }),
       this.categoriesRepository.find({ order: { sortOrder: 'ASC', slug: 'ASC' } }),
       this.countriesRepository.find({ order: { slug: 'ASC' } }),
       this.brandsRepository.find({ order: { slug: 'ASC' } }),
+      this.sellersRepository.find({ order: { slug: 'ASC' } }),
       this.productsRepository.find({
         where: buildProductWhere(buildProductPriceBoundsScope(filters)),
         select: { priceMinor: true },
@@ -92,9 +103,11 @@ export class ProductsService {
       categoryScopeProducts,
       countryScopeProducts,
       brandScopeProducts,
+      sellerScopeProducts,
       categories,
       countries,
       brands,
+      sellers,
     });
     response.facets.price = this.computePriceBounds(priceScopeProducts);
     return response;
@@ -126,21 +139,26 @@ export class ProductsService {
     categoryScopeProducts,
     countryScopeProducts,
     brandScopeProducts,
+    sellerScopeProducts,
     categories,
     countries,
     brands,
+    sellers,
   }: {
     filteredProducts: Pick<Product, 'isTriedByUs' | 'quantity'>[];
     categoryScopeProducts: Product[];
     countryScopeProducts: Product[];
     brandScopeProducts: Product[];
+    sellerScopeProducts: Product[];
     categories: Category[];
     countries: Country[];
     brands: Brand[];
+    sellers: Seller[];
   }): ProductFacetsResponseDto {
     const categoryCounts = new Map<string, number>();
     const countryCounts = new Map<string, number>();
     const brandCounts = new Map<string, number>();
+    const sellerCounts = new Map<string, number>();
 
     let isTriedByUs = 0;
     let inStock = 0;
@@ -156,6 +174,12 @@ export class ProductsService {
     for (const product of brandScopeProducts) {
       if (product.brand) {
         brandCounts.set(product.brand.slug, (brandCounts.get(product.brand.slug) ?? 0) + 1);
+      }
+    }
+
+    for (const product of sellerScopeProducts) {
+      if (product.seller) {
+        sellerCounts.set(product.seller.slug, (sellerCounts.get(product.seller.slug) ?? 0) + 1);
       }
     }
 
@@ -175,6 +199,10 @@ export class ProductsService {
         category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name ?? ''),
         country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name ?? ''),
         brand: this.toFacetOptions(brands, brandCounts, (entry) => entry.name),
+        // Empty sellers (e.g. seeded with no catalog) clutter the facet; only offer those with matches.
+        seller: this.toFacetOptions(sellers, sellerCounts, (entry) => entry.name).filter(
+          (option) => option.count > 0,
+        ),
         price: { min: 0, max: 0 },
         isTriedByUs,
         inStock,

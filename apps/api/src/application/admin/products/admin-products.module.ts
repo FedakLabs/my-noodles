@@ -7,11 +7,12 @@ import { Brand } from '../../brands/brand.entity';
 import { Category } from '../../categories/category.entity';
 import { Country } from '../../countries/country.entity';
 import { Product } from '../../products/product.entity';
+import { Seller } from '../../sellers/seller.entity';
 import { AdminProductsController } from './admin-products.controller';
 import { AdminProductsService } from './admin-products.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Brand, Category, Country]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Product, Brand, Category, Country, Seller]), AuthModule],
   controllers: [AdminProductsController],
   providers: [AdminProductsService],
   exports: [AdminProductsService],

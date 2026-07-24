@@ -3,6 +3,7 @@ import { SUPPORTED_LOCALES } from '@my-noodles/locale';
 import { minorToMajor } from '@my-noodles/utils';
 
 import type { AppLocale } from '@/i18n/routing';
+import { APP_ROUTES } from '@/shared/routes';
 
 import { absoluteUrl, localePath } from './urls';
 
@@ -28,7 +29,7 @@ export function buildOrganizationWebSiteJsonLd(siteName: string): JsonLdGraph {
 }
 
 export function buildProductJsonLd(product: Product, locale: AppLocale): JsonLdGraph {
-  const productUrl = absoluteUrl(localePath(locale, `/product/${product.slug}`));
+  const productUrl = absoluteUrl(localePath(locale, APP_ROUTES.product(product.slug)));
   const description = product.description ?? product.story ?? undefined;
 
   return {

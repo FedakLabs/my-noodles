@@ -6,7 +6,7 @@ import SearchIcon from '@my-noodles/ui/icons/search.svg';
 import type { SvgIconProps } from '@my-noodles/ui/types';
 import type { FC } from 'react';
 
-import { isFeedRoute } from '@/shared/routes';
+import { APP_ROUTES, isFeedRoute } from '@/shared/routes';
 
 export type SiteNavLabelKey = 'nav.home' | 'nav.catalog' | 'nav.collections' | 'nav.feed' | 'nav.contacts';
 
@@ -20,11 +20,11 @@ export type SiteNavLinkItem = {
 };
 
 export const siteNavLinkItems: SiteNavLinkItem[] = [
-  { kind: 'link', href: '/', labelKey: 'nav.home', Icon: HomeIcon },
-  { kind: 'link', href: '/catalog', labelKey: 'nav.catalog', Icon: CatalogIcon },
-  { kind: 'link', href: '/collections', labelKey: 'nav.collections', Icon: CollectionsIcon },
-  { kind: 'link', href: '/feed', labelKey: 'nav.feed', Icon: SearchIcon },
-  { kind: 'link', href: '/contacts', labelKey: 'nav.contacts', Icon: ContactsIcon },
+  { kind: 'link', href: APP_ROUTES.home, labelKey: 'nav.home', Icon: HomeIcon },
+  { kind: 'link', href: APP_ROUTES.catalog, labelKey: 'nav.catalog', Icon: CatalogIcon },
+  { kind: 'link', href: APP_ROUTES.collections, labelKey: 'nav.collections', Icon: CollectionsIcon },
+  { kind: 'link', href: APP_ROUTES.feed, labelKey: 'nav.feed', Icon: SearchIcon },
+  { kind: 'link', href: APP_ROUTES.contacts, labelKey: 'nav.contacts', Icon: ContactsIcon },
 ];
 
 /** Sticky app header height (px) — keep in sync with `SiteHeader` toolbar and nav overlay offsets. */

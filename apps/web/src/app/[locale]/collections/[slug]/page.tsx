@@ -1,49 +1,13 @@
-import { dehydrate } from '@tanstack/react-query';
+import { redirect } from 'next/navigation';
 
-import { collectionsQueries } from '@/api/collections';
-import { productsQueries } from '@/api/products';
-import { withPageLocale, withPageLocaleMetadata, type WithPageLocaleProps } from '@/i18n/app-locale/server';
-import { DEFAULT_CATALOG_FILTER_PARAMS } from '@/screens/catalog/search-params';
-import { CollectionScreen } from '@/screens/collections';
+import { withPageLocale } from '@/i18n/app-locale/server';
 import type { LocalePageProps } from '@/shared/page-props';
-import { getQueryClient, QueryHydrate, runPrefetchSafe } from '@/shared/query-client';
-import { buildPageMetadata } from '@/shared/seo';
+import { APP_ROUTES } from '@/shared/routes';
 
 type CollectionPageProps = LocalePageProps<{ slug: string }>;
 
-export const generateMetadata = withPageLocaleMetadata<CollectionPageProps>(async ({ params, locale }) => {
-  const { slug } = params;
-  const collection = await getQueryClient().fetchQuery(collectionsQueries.detail(slug));
-
-  return buildPageMetadata({
-    locale,
-    pathname: `/collections/${slug}`,
-    title: collection.name ?? collection.slug,
-    description: collection.description,
-  });
-});
-
-async function CollectionPage({ params }: WithPageLocaleProps<CollectionPageProps>) {
-  const { slug } = params;
-  const queryClient = getQueryClient();
-
-  await runPrefetchSafe(async () => {
-    const collection = await queryClient.fetchQuery(collectionsQueries.detail(slug));
-    const listParams = {
-      ...DEFAULT_CATALOG_FILTER_PARAMS,
-      page: 1,
-      limit: 48,
-      collection: collection.code,
-    };
-
-    await queryClient.prefetchQuery(productsQueries.list(listParams));
-  });
-
-  return (
-    <QueryHydrate state={dehydrate(queryClient)}>
-      <CollectionScreen slug={slug} />
-    </QueryHydrate>
-  );
+function CollectionPage(): never {
+  redirect(APP_ROUTES.collections);
 }
 
-export default withPageLocale(CollectionPage);
+export default withPageLocale<CollectionPageProps>(CollectionPage);

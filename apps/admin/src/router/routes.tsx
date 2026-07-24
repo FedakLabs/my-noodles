@@ -6,10 +6,12 @@ import { getAccessToken } from '@/hooks/auth';
 import { BrandsListScreen } from '@/screens/brands/brands-list-screen';
 import { CartsListScreen } from '@/screens/carts/carts-list-screen';
 import { CategoriesListScreen } from '@/screens/categories/categories-list-screen';
+import { CollectionsListScreen } from '@/screens/collections/collections-list-screen';
 import { CountriesListScreen } from '@/screens/countries/countries-list-screen';
 import { LoginScreen } from '@/screens/login';
 import { OrdersListScreen } from '@/screens/orders/orders-list-screen';
 import { ProductsListScreen } from '@/screens/products/products-list-screen';
+import { SellersListScreen } from '@/screens/sellers/sellers-list-screen';
 
 import { ROUTE_NAMES } from './route-names';
 
@@ -83,10 +85,22 @@ export const brandsRoute = createRoute({
   component: BrandsListScreen,
 });
 
+export const sellersRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.sellers,
+  component: SellersListScreen,
+});
+
 export const categoriesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: ROUTE_NAMES.categories,
   component: CategoriesListScreen,
+});
+
+export const collectionsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: ROUTE_NAMES.collections,
+  component: CollectionsListScreen,
 });
 
 export const countriesRoute = createRoute({

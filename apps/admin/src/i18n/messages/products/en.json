@@ -84,6 +84,7 @@
     "isTriedByUs": "We tried this",
     "brand": "Brand",
     "noBrand": "No brand",
+    "seller": "Seller",
     "country": "Country",
     "category": "Category",
     "saveFailed": "Failed to save product.",

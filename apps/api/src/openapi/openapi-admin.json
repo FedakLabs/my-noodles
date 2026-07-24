@@ -1979,6 +1979,275 @@
         "tags": ["Admin Categories"]
       }
     },
+    "/api/admin/collections": {
+      "get": {
+        "operationId": "AdminCollectionsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminCollectionsListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Collections"]
+      },
+      "post": {
+        "operationId": "AdminCollectionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCollectionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Collections"]
+      }
+    },
+    "/api/admin/collections/{id}": {
+      "get": {
+        "operationId": "AdminCollectionsController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCollectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "collection_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["collection_not_found"],
+                      "example": "collection_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Collection not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "collectionId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "collectionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "collection_not_found": {
+                    "summary": "Collection not found",
+                    "value": {
+                      "status": 404,
+                      "code": "collection_not_found",
+                      "message": "Collection not found",
+                      "payload": {
+                        "collectionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Collections"]
+      },
+      "patch": {
+        "operationId": "AdminCollectionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCollectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "collection_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["collection_not_found"],
+                      "example": "collection_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Collection not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "collectionId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "collectionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "collection_not_found": {
+                    "summary": "Collection not found",
+                    "value": {
+                      "status": 404,
+                      "code": "collection_not_found",
+                      "message": "Collection not found",
+                      "payload": {
+                        "collectionId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Collections"]
+      }
+    },
     "/api/admin/countries": {
       "get": {
         "operationId": "AdminCountriesController_list",
@@ -2376,7 +2645,7 @@
             }
           },
           "400": {
-            "description": "product_brand_not_found, product_category_not_found, product_country_not_found",
+            "description": "product_brand_not_found, product_category_not_found, product_country_not_found, product_seller_not_found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2476,6 +2745,38 @@
                           }
                         }
                       }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_seller_not_found"],
+                          "example": "product_seller_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Seller not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "sellerId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "sellerId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
                     }
                   ]
                 },
@@ -2510,6 +2811,17 @@
                       "message": "Country not found",
                       "payload": {
                         "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_seller_not_found": {
+                    "summary": "Seller not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_seller_not_found",
+                      "message": "Seller not found",
+                      "payload": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
                       }
                     }
                   }
@@ -2644,7 +2956,7 @@
             }
           },
           "400": {
-            "description": "product_brand_not_found, product_category_not_found, product_country_not_found",
+            "description": "product_brand_not_found, product_category_not_found, product_country_not_found, product_seller_not_found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2744,6 +3056,38 @@
                           }
                         }
                       }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["status", "code", "message", "payload"],
+                      "properties": {
+                        "status": {
+                          "type": "integer",
+                          "enum": [400],
+                          "example": 400
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": ["product_seller_not_found"],
+                          "example": "product_seller_not_found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Seller not found"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "sellerId": {
+                              "type": "string",
+                              "example": "00000000-0000-4000-8000-000000000001"
+                            }
+                          },
+                          "example": {
+                            "sellerId": "00000000-0000-4000-8000-000000000001"
+                          }
+                        }
+                      }
                     }
                   ]
                 },
@@ -2778,6 +3122,17 @@
                       "message": "Country not found",
                       "payload": {
                         "countryId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  },
+                  "product_seller_not_found": {
+                    "summary": "Seller not found",
+                    "value": {
+                      "status": 400,
+                      "code": "product_seller_not_found",
+                      "message": "Seller not found",
+                      "payload": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
                       }
                     }
                   }
@@ -2845,6 +3200,275 @@
         ],
         "tags": ["Admin Products"]
       }
+    },
+    "/api/admin/sellers": {
+      "get": {
+        "operationId": "AdminSellersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminSellersListResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Sellers"]
+      },
+      "post": {
+        "operationId": "AdminSellersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Seller"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Sellers"]
+      }
+    },
+    "/api/admin/sellers/{id}": {
+      "get": {
+        "operationId": "AdminSellersController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Seller"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "seller_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["seller_not_found"],
+                      "example": "seller_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Seller not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "sellerId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "seller_not_found": {
+                    "summary": "Seller not found",
+                    "value": {
+                      "status": 404,
+                      "code": "seller_not_found",
+                      "message": "Seller not found",
+                      "payload": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Sellers"]
+      },
+      "patch": {
+        "operationId": "AdminSellersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSellerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Seller"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "seller_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "code", "message", "payload"],
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "enum": [404],
+                      "example": 404
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["seller_not_found"],
+                      "example": "seller_not_found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Seller not found"
+                    },
+                    "payload": {
+                      "type": "object",
+                      "properties": {
+                        "sellerId": {
+                          "type": "string",
+                          "example": "00000000-0000-4000-8000-000000000001"
+                        }
+                      },
+                      "example": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "seller_not_found": {
+                    "summary": "Seller not found",
+                    "value": {
+                      "status": 404,
+                      "code": "seller_not_found",
+                      "message": "Seller not found",
+                      "payload": {
+                        "sellerId": "00000000-0000-4000-8000-000000000001"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["Admin Sellers"]
+      }
     }
   },
   "info": {
@@ -2896,6 +3520,31 @@
           }
         },
         "required": ["id", "slug", "name", "logoUrl", "themeKey", "products"]
+      },
+      "Seller": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": ["id", "slug", "name", "logoUrl", "products"]
       },
       "Country": {
         "type": "object",
@@ -2974,14 +3623,27 @@
             "type": "string",
             "nullable": true
           },
-          "id": {
-            "type": "string"
+          "longDescription": {
+            "type": "string",
+            "nullable": true
           },
-          "code": {
+          "id": {
             "type": "string"
           },
           "slug": {
             "type": "string"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "particles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "heroImage": {
             "type": "string",
@@ -3007,9 +3669,12 @@
         "required": [
           "name",
           "description",
+          "longDescription",
           "id",
-          "code",
           "slug",
+          "emoji",
+          "color",
+          "particles",
           "heroImage",
           "themeKey",
           "sortOrder",
@@ -3111,6 +3776,13 @@
               }
             ]
           },
+          "sellerId": {
+            "type": "string",
+            "description": "DB-nullable until seed backfill; required on admin create/update."
+          },
+          "seller": {
+            "$ref": "#/components/schemas/Seller"
+          },
           "countryId": {
             "type": "string"
           },
@@ -3163,6 +3835,8 @@
           "sortWeight",
           "brandId",
           "brand",
+          "sellerId",
+          "seller",
           "countryId",
           "country",
           "categoryId",
@@ -4131,6 +4805,180 @@
           }
         }
       },
+      "AdminCollectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "longDescription": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "particles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "heroImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "description",
+          "longDescription",
+          "emoji",
+          "color",
+          "particles",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "AdminCollectionsListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCollectionDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "CreateCollectionDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "longDescription": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "particles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "heroImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description",
+          "longDescription",
+          "emoji",
+          "color",
+          "particles",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "UpdateCollectionDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "longDescription": {
+            "$ref": "#/components/schemas/LocalizedStringDto"
+          },
+          "emoji": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "particles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "heroImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
       "AdminCountryDto": {
         "type": "object",
         "properties": {
@@ -4259,6 +5107,21 @@
         },
         "required": ["id", "slug", "name"]
       },
+      "AdminSellerSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "slug", "name"]
+      },
       "AdminCountrySummaryDto": {
         "type": "object",
         "properties": {
@@ -4366,6 +5229,9 @@
               }
             ]
           },
+          "seller": {
+            "$ref": "#/components/schemas/AdminSellerSummaryDto"
+          },
           "country": {
             "$ref": "#/components/schemas/AdminCountrySummaryDto"
           },
@@ -4390,6 +5256,7 @@
           "quantity",
           "available",
           "sortWeight",
+          "seller",
           "country",
           "category"
         ]
@@ -4483,6 +5350,10 @@
             "nullable": true,
             "format": "uuid"
           },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "countryId": {
             "type": "string",
             "format": "uuid"
@@ -4508,6 +5379,7 @@
           "quantity",
           "available",
           "sortWeight",
+          "sellerId",
           "countryId",
           "categoryId"
         ]
@@ -4585,6 +5457,10 @@
             "nullable": true,
             "format": "uuid"
           },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "countryId": {
             "type": "string",
             "format": "uuid"
@@ -4592,6 +5468,62 @@
           "categoryId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "AdminSellersListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Seller"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
+      "CreateSellerDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        },
+        "required": ["slug", "name"]
+      },
+      "UpdateSellerDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
           }
         }
       }

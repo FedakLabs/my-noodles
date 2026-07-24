@@ -1,0 +1,34 @@
+{
+  "list": {
+    "title": "Колекції",
+    "search": "Slug або назва",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "columnEmoji": "Емодзі",
+    "columnSortOrder": "Порядок",
+    "columnActive": "Активна",
+    "loadError": "Не вдалося завантажити колекції.",
+    "empty": "Колекцій не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Нова колекція",
+    "editTitle": "Редагувати колекцію",
+    "loading": "Завантаження…",
+    "language": "Мова",
+    "slug": "Slug",
+    "name": "Назва",
+    "description": "Короткий опис",
+    "longDescription": "Розгорнутий опис",
+    "emoji": "Емодзі",
+    "color": "Колір акценту (hex)",
+    "particles": "Частинки (емодзі через кому)",
+    "particlesHint": "Приклад: 🎵, 🎶, ♪, 🎤, ✨",
+    "sortOrder": "Порядок сортування",
+    "isActive": "Активна",
+    "saveFailed": "Не вдалося зберегти колекцію."
+  }
+}

@@ -149,12 +149,18 @@ export function feedMutedTextSx(theme: Theme) {
 
 export function feedSubtleChipSx(theme: Theme) {
   return {
-    color: 'common.white',
-    bgcolor: alpha(theme.palette.common.white, 0.16),
     fontWeight: 600,
+    // Beat theme `MuiChip.filled` which always sets primary fill.
+    '&.MuiChip-filled': {
+      color: theme.palette.primary.contrastText,
+      bgcolor: theme.palette.primary.main,
+      '&:hover': {
+        bgcolor: theme.palette.primary.dark,
+      },
+    },
     '& .MuiChip-deleteIcon': {
-      color: alpha(theme.palette.common.white, 0.92),
-      bgcolor: alpha(theme.palette.common.black, 0.42),
+      color: theme.palette.primary.contrastText,
+      bgcolor: alpha(theme.palette.common.black, 0.28),
       borderRadius: '50%',
       fontSize: 16,
       margin: '0 2px 0 -2px',
@@ -163,7 +169,36 @@ export function feedSubtleChipSx(theme: Theme) {
       }),
       '&:hover': {
         color: theme.palette.common.white,
-        bgcolor: alpha(theme.palette.common.black, 0.62),
+        bgcolor: alpha(theme.palette.common.black, 0.45),
+      },
+    },
+  };
+}
+
+/** Applied feed hashtag — secondary fill so active filters read clearly on the reel. */
+export function feedActiveChipSx(theme: Theme) {
+  return {
+    fontWeight: 600,
+    // Beat theme `MuiChip.filled` which always sets primary fill.
+    '&.MuiChip-filled': {
+      color: theme.palette.secondary.contrastText,
+      bgcolor: theme.palette.secondary.main,
+      '&:hover': {
+        bgcolor: theme.palette.secondary.dark,
+      },
+    },
+    '& .MuiChip-deleteIcon': {
+      color: theme.palette.secondary.contrastText,
+      bgcolor: alpha(theme.palette.common.black, 0.28),
+      borderRadius: '50%',
+      fontSize: 16,
+      margin: '0 2px 0 -2px',
+      transition: theme.transitions.create(['background-color', 'color'], {
+        duration: theme.transitions.duration.shorter,
+      }),
+      '&:hover': {
+        color: theme.palette.common.white,
+        bgcolor: alpha(theme.palette.common.black, 0.45),
       },
     },
   };

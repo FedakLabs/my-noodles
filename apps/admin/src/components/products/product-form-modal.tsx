@@ -33,6 +33,7 @@ import { useBrandsList } from '@/api/brands';
 import { useCategoriesList } from '@/api/categories';
 import { useCountriesList } from '@/api/countries';
 import { useCreateProduct, useProduct, useUpdateProduct } from '@/api/products';
+import { useSellersList } from '@/api/sellers';
 
 type ProductFormState = {
   slug: string;
@@ -54,6 +55,7 @@ type ProductFormState = {
   videos: string[];
   isTriedByUs: boolean;
   brandId: string;
+  sellerId: string;
   countryId: string;
   categoryId: string;
 };
@@ -79,6 +81,7 @@ function defaultFormState(): ProductFormState {
     videos: [],
     isTriedByUs: false,
     brandId: '',
+    sellerId: '',
     countryId: '',
     categoryId: '',
   };
@@ -105,6 +108,7 @@ function formStateFromProduct(product: AdminProductDto): ProductFormState {
     videos: product.videos,
     isTriedByUs: product.isTriedByUs,
     brandId: product.brand?.id ?? '',
+    sellerId: product.seller.id,
     countryId: product.country.id,
     categoryId: product.category.id,
   };
@@ -133,6 +137,7 @@ function buildPayload(state: ProductFormState): CreateProductDto {
     available: state.available,
     sortWeight: Number(state.sortWeight) || 0,
     brandId: state.brandId || null,
+    sellerId: state.sellerId,
     countryId: state.countryId,
     categoryId: state.categoryId,
   };
@@ -193,6 +198,7 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
   const { createProductAsync, createProductIsPending } = useCreateProduct();
   const { updateProductAsync, updateProductIsPending } = useUpdateProduct(productId);
   const { brands } = useBrandsList({ page: 1, limit: 100 });
+  const { sellers } = useSellersList({ page: 1, limit: 100 });
   const { categories } = useCategoriesList({ page: 1, limit: 100 });
   const { countries } = useCountriesList({ page: 1, limit: 100 });
 
@@ -454,6 +460,20 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
             </SelectField>
 
             <SelectField
+              label={t('products:form.seller')}
+              value={form.sellerId}
+              onChange={(event) => setForm((prev) => ({ ...prev, sellerId: event.target.value }))}
+              fullWidth
+              required
+            >
+              {(sellers?.items ?? []).map((seller) => (
+                <MenuItem key={seller.id} value={seller.id}>
+                  {seller.name}
+                </MenuItem>
+              ))}
+            </SelectField>
+
+            <SelectField
               label={t('products:form.country')}
               value={form.countryId}
               onChange={(event) => setForm((prev) => ({ ...prev, countryId: event.target.value }))}
@@ -490,7 +510,14 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
         <Button
           variant="contained"
           loading={isSaving}
-          disabled={!isReady || !form.slug || !form.countryId || !form.categoryId || !localizedFieldsComplete}
+          disabled={
+            !isReady ||
+            !form.slug ||
+            !form.sellerId ||
+            !form.countryId ||
+            !form.categoryId ||
+            !localizedFieldsComplete
+          }
           onClick={() => void handleSave()}
         >
           {t('common:actions.save')}

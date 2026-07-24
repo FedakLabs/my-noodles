@@ -6,6 +6,7 @@ import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductNotFoundException, ProductsService } from '@/application/products';
+import { Seller } from '@/application/sellers/seller.entity';
 
 import { jest } from '../jest-globals';
 
@@ -16,6 +17,7 @@ describe('ProductsService', () => {
   let categoriesFind: jest.Mock;
   let countriesFind: jest.Mock;
   let brandsFind: jest.Mock;
+  let sellersFind: jest.Mock;
 
   beforeEach(async () => {
     findOne = jest.fn();
@@ -23,6 +25,7 @@ describe('ProductsService', () => {
     categoriesFind = jest.fn();
     countriesFind = jest.fn();
     brandsFind = jest.fn();
+    sellersFind = jest.fn();
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -51,6 +54,12 @@ describe('ProductsService', () => {
           provide: getRepositoryToken(Brand),
           useValue: {
             find: brandsFind,
+          },
+        },
+        {
+          provide: getRepositoryToken(Seller),
+          useValue: {
+            find: sellersFind,
           },
         },
       ],
@@ -108,7 +117,7 @@ describe('ProductsService', () => {
   it('returns facet counts without applying that facet filter (multi-select within facet)', async () => {
     productsFind.mockImplementation(
       (options: {
-        relations?: { category?: boolean; country?: boolean; brand?: boolean };
+        relations?: { category?: boolean; country?: boolean; brand?: boolean; seller?: boolean };
         select?: { id?: boolean; priceMinor?: boolean };
       }) => {
         if (options.relations?.category) {
@@ -121,6 +130,10 @@ describe('ProductsService', () => {
 
         if (options.relations?.brand) {
           return Promise.resolve([{ brand: { slug: 'glico', name: 'Glico' } }]);
+        }
+
+        if (options.relations?.seller) {
+          return Promise.resolve([{ seller: { slug: 'my-noodles', name: 'MyNoodles' } }]);
         }
 
         if (options.select?.priceMinor) {
@@ -159,6 +172,10 @@ describe('ProductsService', () => {
       { slug: 'glico', name: 'Glico' },
       { slug: 'samyang', name: 'Samyang' },
     ]);
+    sellersFind.mockResolvedValue([
+      { slug: 'my-noodles', name: 'MyNoodles' },
+      { slug: 'asia-foods', name: 'AsiaFoods' },
+    ]);
 
     const result = await LocaleContext.run('uk', () => service.getFacets({ category: ['snacks'] }));
 
@@ -175,13 +192,14 @@ describe('ProductsService', () => {
       { value: 'glico', label: 'Glico', count: 1 },
       { value: 'samyang', label: 'Samyang', count: 0 },
     ]);
+    expect(result.facets.seller).toEqual([{ value: 'my-noodles', label: 'MyNoodles', count: 1 }]);
   });
 
   it('returns catalog-wide price bounds independent of other facet filters', async () => {
     productsFind.mockImplementation(
       (options: {
         select?: { priceMinor?: boolean };
-        relations?: { category?: boolean; country?: boolean; brand?: boolean };
+        relations?: { category?: boolean; country?: boolean; brand?: boolean; seller?: boolean };
       }) => {
         if (options.select?.priceMinor && !options.relations) {
           return Promise.resolve([{ priceMinor: 500 }, { priceMinor: 5_000 }]);
@@ -199,6 +217,10 @@ describe('ProductsService', () => {
           return Promise.resolve([]);
         }
 
+        if (options.relations?.seller) {
+          return Promise.resolve([]);
+        }
+
         return Promise.resolve([
           {
             isTriedByUs: true,
@@ -210,6 +232,7 @@ describe('ProductsService', () => {
     categoriesFind.mockResolvedValue([]);
     countriesFind.mockResolvedValue([]);
     brandsFind.mockResolvedValue([]);
+    sellersFind.mockResolvedValue([]);
 
     const result = await LocaleContext.run('uk', () =>
       service.getFacets({ category: ['snacks'], priceMin: 900, priceMax: 1_100 }),

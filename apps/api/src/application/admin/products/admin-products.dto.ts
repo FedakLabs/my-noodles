@@ -155,6 +155,10 @@ export class CreateProductDto {
 
   @ApiProperty({ type: String, format: 'uuid' })
   @IsUUID()
+  sellerId!: string;
+
+  @ApiProperty({ type: String, format: 'uuid' })
+  @IsUUID()
   countryId!: string;
 
   @ApiProperty({ type: String, format: 'uuid' })
@@ -262,6 +266,11 @@ export class UpdateProductDto {
   @ApiPropertyOptional({ type: String, format: 'uuid' })
   @IsOptional()
   @IsUUID()
+  sellerId?: string;
+
+  @ApiPropertyOptional({ type: String, format: 'uuid' })
+  @IsOptional()
+  @IsUUID()
   countryId?: string;
 
   @ApiPropertyOptional({ type: String, format: 'uuid' })
@@ -271,6 +280,17 @@ export class UpdateProductDto {
 }
 
 export class AdminBrandSummaryDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  name!: string;
+}
+
+export class AdminSellerSummaryDto {
   @ApiProperty()
   id!: string;
 
@@ -358,6 +378,9 @@ export class AdminProductDto {
 
   @ApiPropertyOptional({ type: () => AdminBrandSummaryDto, nullable: true })
   brand!: AdminBrandSummaryDto | null;
+
+  @ApiProperty({ type: () => AdminSellerSummaryDto })
+  seller!: AdminSellerSummaryDto;
 
   @ApiProperty({ type: () => AdminCountrySummaryDto })
   country!: AdminCountrySummaryDto;

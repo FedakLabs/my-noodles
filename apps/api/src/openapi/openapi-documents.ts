@@ -4,9 +4,11 @@ import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swag
 import { AdminBrandsModule } from '@/application/admin/brands';
 import { AdminCartsModule } from '@/application/admin/carts';
 import { AdminCategoriesModule } from '@/application/admin/categories';
+import { AdminCollectionsModule } from '@/application/admin/collections';
 import { AdminCountriesModule } from '@/application/admin/countries';
 import { AdminOrdersModule } from '@/application/admin/orders';
 import { AdminProductsModule } from '@/application/admin/products';
+import { AdminSellersModule } from '@/application/admin/sellers';
 import { AuthModule } from '@/application/auth';
 import { CartModule } from '@/application/cart';
 import { CheckoutsModule } from '@/application/checkouts';
@@ -55,8 +57,10 @@ export function createAdminOpenApiDocument(app: INestApplication): OpenAPIObject
         AdminBrandsModule,
         AdminCartsModule,
         AdminCategoriesModule,
+        AdminCollectionsModule,
         AdminCountriesModule,
         AdminProductsModule,
+        AdminSellersModule,
       ],
     },
   );

@@ -44,6 +44,16 @@ export function FilterChips() {
     });
   });
 
+  filters.seller.forEach((value) => {
+    chips.push({
+      key: `seller-${value}`,
+      label: `${t('seller')}: ${value}`,
+      onDelete: () => {
+        void setParams({ seller: filters.seller.filter((item) => item !== value), page: 1 });
+      },
+    });
+  });
+
   if (filters.priceMin != null) {
     chips.push({
       key: 'priceMin',

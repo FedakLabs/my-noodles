@@ -40,6 +40,8 @@ export class ProductFacetsDto {
 
   brand!: ProductFacetOptionDto[];
 
+  seller!: ProductFacetOptionDto[];
+
   price!: PriceFacetDto;
 
   isTriedByUs!: number;

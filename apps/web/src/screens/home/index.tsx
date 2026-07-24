@@ -13,8 +13,13 @@ import SearchIcon from '@my-noodles/ui/icons/search.svg';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
+import { useCollections } from '@/api/collections';
+import { useCountries } from '@/api/countries';
 import { SITE_HEADER_HEIGHT } from '@/components/layout/site-nav-config';
 import { Link } from '@/i18n/navigation';
+import { APP_ROUTES } from '@/shared/routes';
+
+// ─── Animation helpers ──────────────────────────────────────────────────────
 
 function ScrollReveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -71,32 +76,12 @@ function MountReveal({ children, delay = 0 }: { children: ReactNode; delay?: num
   );
 }
 
-const COUNTRY_PILLS = [
-  { flag: '🇯🇵', slug: 'japan' },
-  { flag: '🇰🇷', slug: 'korea' },
-  { flag: '🇺🇸', slug: 'usa' },
-  { flag: '🇹🇭', slug: 'thailand' },
-  { flag: '🇨🇳', slug: 'china' },
-  { flag: '🇰🇿', slug: 'kazakhstan' },
-  { flag: '🇩🇪', slug: 'germany' },
-  { flag: '🇨🇿', slug: 'czech' },
-] as const;
-
-type CountrySlug = (typeof COUNTRY_PILLS)[number]['slug'];
-
-const MOOD_CARDS = [
-  { key: 'tiktok', emoji: '🎵' },
-  { key: 'world', emoji: '🌍' },
-  { key: 'movie', emoji: '🎬' },
-  { key: 'office', emoji: '💼' },
-] as const;
-
-type MoodKey = (typeof MOOD_CARDS)[number]['key'];
+// ─── Static data ─────────────────────────────────────────────────────────────
 
 const EXPLORE_CARDS = [
-  { key: 'catalog', href: '/catalog', Icon: CatalogIcon },
-  { key: 'feed', href: '/feed', Icon: SearchIcon },
-  { key: 'collections', href: '/collections', Icon: CollectionsIcon },
+  { key: 'catalog', href: APP_ROUTES.catalog, Icon: CatalogIcon },
+  { key: 'feed', href: APP_ROUTES.feed, Icon: SearchIcon },
+  { key: 'collections', href: APP_ROUTES.collections, Icon: CollectionsIcon },
 ] as const;
 
 type ExploreKey = (typeof EXPLORE_CARDS)[number]['key'];
@@ -111,10 +96,11 @@ type WhyKey = (typeof WHY_ITEMS)[number]['key'];
 
 export function HomeScreen() {
   const t = useTranslations('home');
+  const { collections } = useCollections({ limit: 4 });
+  const { countries } = useCountries();
 
   return (
     <Box component="main">
-      {/* ── Hero ── */}
       <Box
         sx={{
           minHeight: `calc(100dvh - ${SITE_HEADER_HEIGHT}px)`,
@@ -164,14 +150,20 @@ export function HomeScreen() {
               <Stack direction={{ mobile: 'column', sm: 'row' }} spacing={1.5} sx={{ pt: 1 }}>
                 <Button
                   component={Link}
-                  href="/catalog"
+                  href={APP_ROUTES.catalog}
                   variant="contained"
                   size="large"
                   sx={{ minWidth: 200 }}
                 >
                   {t('hero.ctaCatalog')}
                 </Button>
-                <Button component={Link} href="/feed" variant="outlined" size="large" sx={{ minWidth: 200 }}>
+                <Button
+                  component={Link}
+                  href={APP_ROUTES.feed}
+                  variant="outlined"
+                  size="large"
+                  sx={{ minWidth: 200 }}
+                >
                   {t('hero.ctaFeed')}
                 </Button>
               </Stack>
@@ -180,14 +172,7 @@ export function HomeScreen() {
         </Container>
       </Box>
 
-      {/* ── Countries ── */}
-      <Box
-        sx={{
-          py: { mobile: 7, desktop: 10 },
-          px: 2,
-          bgcolor: 'background.paper',
-        }}
-      >
+      <Box sx={{ py: { mobile: 7, desktop: 10 }, px: 2, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <ScrollReveal>
             <Typography
@@ -205,19 +190,12 @@ export function HomeScreen() {
             </Typography>
           </ScrollReveal>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 1.5,
-              justifyContent: 'center',
-            }}
-          >
-            {COUNTRY_PILLS.map(({ flag, slug }, index) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+            {(countries ?? []).map(({ flagEmoji, slug, name }, index) => (
               <ScrollReveal key={slug} delay={index * 50}>
                 <Box
                   component={Link}
-                  href={`/catalog?country=${slug}`}
+                  href={`${APP_ROUTES.catalog}?country=${slug}`}
                   sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -239,8 +217,8 @@ export function HomeScreen() {
                     },
                   }}
                 >
-                  <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{flag}</span>
-                  <span>{t(`countries.${slug}` as `countries.${CountrySlug}`)}</span>
+                  {flagEmoji && <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{flagEmoji}</span>}
+                  <span>{name ?? slug}</span>
                 </Box>
               </ScrollReveal>
             ))}
@@ -248,14 +226,7 @@ export function HomeScreen() {
         </Container>
       </Box>
 
-      {/* ── Ways to Explore ── */}
-      <Box
-        sx={{
-          py: { mobile: 7, desktop: 10 },
-          px: 2,
-          bgcolor: 'background.default',
-        }}
-      >
+      <Box sx={{ py: { mobile: 7, desktop: 10 }, px: 2, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
           <ScrollReveal>
             <Typography
@@ -347,91 +318,95 @@ export function HomeScreen() {
         </Container>
       </Box>
 
-      {/* ── Mood Collections ── */}
-      <Box
-        sx={{
-          py: { mobile: 7, desktop: 10 },
-          px: 2,
-          bgcolor: 'background.paper',
-        }}
-      >
-        <Container maxWidth="lg">
-          <ScrollReveal>
-            <Typography
-              component="h2"
+      {/* ── Collections preview ── */}
+      {collections && collections.length > 0 && (
+        <Box sx={{ py: { mobile: 7, desktop: 10 }, px: 2, bgcolor: 'background.paper' }}>
+          <Container maxWidth="lg">
+            <ScrollReveal>
+              <Typography
+                component="h2"
+                sx={{
+                  fontFamily: fontFamilies.display,
+                  fontWeight: 700,
+                  fontSize: { mobile: '1.5rem', desktop: '2rem' },
+                  textAlign: 'center',
+                  mb: 5,
+                  color: 'text.primary',
+                }}
+              >
+                {t('explore.collections.title')}
+              </Typography>
+            </ScrollReveal>
+
+            <Box
               sx={{
-                fontFamily: fontFamilies.display,
-                fontWeight: 700,
-                fontSize: { mobile: '1.5rem', desktop: '2rem' },
-                textAlign: 'center',
-                mb: 5,
-                color: 'text.primary',
+                display: 'grid',
+                gridTemplateColumns: { mobile: 'repeat(2, 1fr)', desktop: 'repeat(4, 1fr)' },
+                gap: 2,
               }}
             >
-              {t('moods.headline')}
-            </Typography>
-          </ScrollReveal>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { mobile: 'repeat(2, 1fr)', desktop: 'repeat(4, 1fr)' },
-              gap: 2,
-            }}
-          >
-            {MOOD_CARDS.map(({ key, emoji }, index) => (
-              <ScrollReveal key={key} delay={index * 70}>
-                <Box
-                  component={Link}
-                  href="/collections"
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    gap: 1.5,
-                    p: { mobile: 2.5, desktop: 3 },
-                    borderRadius: 5,
-                    border: '1.5px solid',
-                    borderColor: 'divider',
-                    bgcolor: 'background.default',
-                    color: 'text.primary',
-                    textDecoration: 'none',
-                    transition: 'transform 0.2s ease, border-color 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-3px)',
-                      borderColor: 'primary.main',
-                    },
-                  }}
-                >
-                  <Typography sx={{ fontSize: '2.5rem', lineHeight: 1 }}>{emoji}</Typography>
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '0.9375rem', mb: 0.25 }}>
-                      {t(`moods.${key}.title` as `moods.${MoodKey}.title`)}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.8125rem', lineHeight: 1.5 }}
+              {collections.map((collection, index) => {
+                const accent = collection.color;
+                return (
+                  <ScrollReveal key={collection.slug} delay={index * 70}>
+                    <Box
+                      component={Link}
+                      href={APP_ROUTES.collections}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        gap: 1.5,
+                        p: { mobile: 2.5, desktop: 3 },
+                        borderRadius: 5,
+                        border: '1.5px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'background.default',
+                        color: 'text.primary',
+                        textDecoration: 'none',
+                        transition: 'transform 0.2s ease, border-color 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          borderColor: accent,
+                        },
+                      }}
                     >
-                      {t(`moods.${key}.sub` as `moods.${MoodKey}.sub`)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </ScrollReveal>
-            ))}
-          </Box>
-        </Container>
-      </Box>
+                      <Box
+                        sx={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 3,
+                          bgcolor: `${accent}18`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.75rem',
+                        }}
+                      >
+                        {collection.emoji}
+                      </Box>
+                      <Box>
+                        <Typography variant="h5" sx={{ color: accent, mb: collection.description ? 0.5 : 0 }}>
+                          {collection.name ?? collection.slug}
+                        </Typography>
+                        {collection.description && (
+                          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.55 }}>
+                            {collection.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  </ScrollReveal>
+                );
+              })}
+            </Box>
+          </Container>
+        </Box>
+      )}
 
       {/* ── Why Us ── */}
-      <Box
-        sx={{
-          py: { mobile: 7, desktop: 10 },
-          px: 2,
-          bgcolor: 'background.default',
-        }}
-      >
+      <Box sx={{ py: { mobile: 7, desktop: 10 }, px: 2, bgcolor: 'background.default' }}>
         <Container maxWidth="md">
           <ScrollReveal>
             <Typography
@@ -510,7 +485,7 @@ export function HomeScreen() {
               </Typography>
               <Button
                 component={Link}
-                href="/catalog"
+                href={APP_ROUTES.catalog}
                 variant="contained"
                 size="large"
                 sx={{ minWidth: 220, fontSize: '1rem' }}

@@ -4,6 +4,8 @@ export const ROUTE_NAMES = {
   carts: '/carts',
   products: '/products',
   brands: '/brands',
+  sellers: '/sellers',
   categories: '/categories',
+  collections: '/collections',
   countries: '/countries',
 } as const;

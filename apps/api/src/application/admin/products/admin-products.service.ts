@@ -9,12 +9,14 @@ import { Brand } from '../../brands/brand.entity';
 import { Category } from '../../categories/category.entity';
 import { Country } from '../../countries/country.entity';
 import { Product } from '../../products/product.entity';
+import { Seller } from '../../sellers/seller.entity';
 import { type AdminProductDto, type CreateProductDto, type UpdateProductDto } from './admin-products.dto';
 import {
   AdminProductNotFoundException,
   ProductBrandNotFoundException,
   ProductCategoryNotFoundException,
   ProductCountryNotFoundException,
+  ProductSellerNotFoundException,
 } from './admin-products.exceptions';
 
 type ListAdminProductsFilters = {
@@ -34,6 +36,8 @@ export class AdminProductsService {
     private readonly productsRepository: Repository<Product>,
     @InjectRepository(Brand)
     private readonly brandsRepository: Repository<Brand>,
+    @InjectRepository(Seller)
+    private readonly sellersRepository: Repository<Seller>,
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
     @InjectRepository(Country)
@@ -58,9 +62,10 @@ export class AdminProductsService {
   }
 
   async create(dto: CreateProductDto): Promise<AdminProductDto> {
-    const [country, category, brand] = await Promise.all([
+    const [country, category, seller, brand] = await Promise.all([
       this.getCountryOrThrow(dto.countryId),
       this.getCategoryOrThrow(dto.categoryId),
+      this.getSellerOrThrow(dto.sellerId),
       dto.brandId != null ? this.getBrandOrThrow(dto.brandId) : Promise.resolve(null),
     ]);
 
@@ -83,6 +88,8 @@ export class AdminProductsService {
       sortWeight: dto.sortWeight,
       brand,
       brandId: brand?.id ?? null,
+      seller,
+      sellerId: seller.id,
       country,
       countryId: country.id,
       category,
@@ -147,6 +154,10 @@ export class AdminProductsService {
     if (dto.brandId !== undefined) {
       product.brand = dto.brandId === null ? null : await this.getBrandOrThrow(dto.brandId);
     }
+    if (dto.sellerId !== undefined) {
+      product.seller = await this.getSellerOrThrow(dto.sellerId);
+      product.sellerId = product.seller.id;
+    }
     if (dto.countryId !== undefined) {
       product.country = await this.getCountryOrThrow(dto.countryId);
     }
@@ -203,6 +214,14 @@ export class AdminProductsService {
     return brand;
   }
 
+  private async getSellerOrThrow(id: string): Promise<Seller> {
+    const seller = await this.sellersRepository.findOne({ where: { id } });
+    if (!seller) {
+      throw new ProductSellerNotFoundException(id);
+    }
+    return seller;
+  }
+
   private async getCategoryOrThrow(id: string): Promise<Category> {
     const category = await this.categoriesRepository.findOne({ where: { id } });
     if (!category) {
@@ -241,6 +260,11 @@ export class AdminProductsService {
       brand: product.brand
         ? { id: product.brand.id, slug: product.brand.slug, name: product.brand.name }
         : null,
+      seller: {
+        id: product.seller.id,
+        slug: product.seller.slug,
+        name: product.seller.name,
+      },
       country: {
         id: product.country.id,
         slug: product.country.slug,

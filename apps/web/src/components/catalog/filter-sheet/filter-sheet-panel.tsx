@@ -48,11 +48,13 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
   const categoryOptions = facets?.category ?? [];
   const countryOptions = facets?.country ?? [];
   const brandOptions = facets?.brand ?? [];
+  const sellerOptions = facets?.seller ?? [];
   const isEmpty =
     Boolean(productFacets) &&
     categoryOptions.length === 0 &&
     countryOptions.length === 0 &&
-    brandOptions.length === 0;
+    brandOptions.length === 0 &&
+    sellerOptions.length === 0;
 
   const priceBoundsMinor = useMemo(() => {
     const min = facets?.price.min ?? 0;
@@ -106,6 +108,13 @@ export function FilterSheetPanel({ layout = 'drawer' }: FilterSheetPanelProps) {
     </Typography>
   ) : (
     <>
+      <FilterFacetGroup
+        title={t('seller')}
+        options={sellerOptions}
+        selectedValues={params.seller}
+        onToggle={(value) => toggleArrayValue('seller', value)}
+      />
+
       <FilterFacetGroup
         title={t('category')}
         options={categoryOptions}

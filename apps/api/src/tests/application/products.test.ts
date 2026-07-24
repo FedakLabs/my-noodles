@@ -6,6 +6,7 @@ import { Brand } from '@/application/brands/brand.entity';
 import { Category } from '@/application/categories/category.entity';
 import { Country } from '@/application/countries/country.entity';
 import { Product, ProductsController, ProductsService } from '@/application/products';
+import { Seller } from '@/application/sellers/seller.entity';
 
 import { sampleCategories, sampleCountries, sampleProduct } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
@@ -19,6 +20,7 @@ describe('products (e2e)', () => {
   beforeAll(async () => {
     const product = Object.assign(new Product(), {
       ...sampleProduct,
+      seller: Object.assign(new Seller(), sampleProduct.seller),
       country: Object.assign(new Country(), sampleProduct.country),
       category: Object.assign(new Category(), sampleProduct.category),
     });
@@ -30,6 +32,7 @@ describe('products (e2e)', () => {
         quantity: sampleProduct.quantity,
         category: product.category,
         country: product.country,
+        seller: product.seller,
       },
     ]);
 
@@ -69,6 +72,12 @@ describe('products (e2e)', () => {
           provide: getRepositoryToken(Brand),
           useValue: {
             find: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: getRepositoryToken(Seller),
+          useValue: {
+            find: jest.fn().mockResolvedValue([Object.assign(new Seller(), sampleProduct.seller)]),
           },
         },
       ],
@@ -119,6 +128,7 @@ describe('products (e2e)', () => {
           { value: 'drinks', label: 'Напої', count: 0 },
         ],
         country: [{ value: 'taiwan', label: 'Тайвань', count: 1 }],
+        seller: [{ value: 'my-noodles', label: 'MyNoodles', count: 1 }],
         price: { min: 9_900, max: 9_900 },
       },
     });
@@ -132,6 +142,7 @@ describe('products (e2e)', () => {
         category: [],
         country: [],
         brand: [],
+        seller: [],
         price: { min: 0, max: 0 },
         isTriedByUs: 0,
         inStock: 0,

@@ -5,12 +5,14 @@ import {
   brandsRoute,
   cartsRoute,
   categoriesRoute,
+  collectionsRoute,
   countriesRoute,
   indexRoute,
   loginRoute,
   ordersRoute,
   productsRoute,
   rootRoute,
+  sellersRoute,
 } from './routes';
 
 const routeTree = rootRoute.addChildren([
@@ -21,7 +23,9 @@ const routeTree = rootRoute.addChildren([
     cartsRoute,
     productsRoute,
     brandsRoute,
+    sellersRoute,
     categoriesRoute,
+    collectionsRoute,
     countriesRoute,
   ]),
 ]);

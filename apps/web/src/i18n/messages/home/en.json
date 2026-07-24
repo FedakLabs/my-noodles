@@ -10,15 +10,7 @@
     "ctaFeed": "Discover in the feed"
   },
   "countries": {
-    "headline": "Snacks from around the world",
-    "japan": "Japan",
-    "korea": "Korea",
-    "usa": "USA",
-    "thailand": "Thailand",
-    "china": "China",
-    "kazakhstan": "Kazakhstan",
-    "germany": "Germany",
-    "czech": "Czech Republic"
+    "headline": "Snacks from around the world"
   },
   "explore": {
     "headline": "Find your way to discover",
@@ -32,26 +24,7 @@
     },
     "collections": {
       "title": "Collections",
-      "body": "Curated mood sets: TikTok Foods, Movie Snacks, Around the World and more."
-    }
-  },
-  "moods": {
-    "headline": "Curated by mood",
-    "tiktok": {
-      "title": "TikTok Foods",
-      "sub": "Viral flavors everyone's talking about"
-    },
-    "world": {
-      "title": "Around the World",
-      "sub": "One snack — one new country"
-    },
-    "movie": {
-      "title": "Movie Snacks",
-      "sub": "The perfect companion for movie night"
-    },
-    "office": {
-      "title": "Office Box",
-      "sub": "A surprise for your team or colleagues"
+      "body": "Curated sets by mood: noodles, snacks, sweets and more."
     }
   },
   "why": {

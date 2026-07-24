@@ -17,6 +17,14 @@ export type Brand = {
     products: Array<Product>;
 };
 
+export type Seller = {
+    id: string;
+    slug: string;
+    name: string;
+    logoUrl: string | null;
+    products: Array<Product>;
+};
+
 export type Country = {
     name: string | null;
     id: string;
@@ -40,9 +48,12 @@ export type Category = {
 export type Collection = {
     name: string | null;
     description: string | null;
+    longDescription: string | null;
     id: string;
-    code: string;
     slug: string;
+    emoji: string;
+    color: string;
+    particles: Array<string>;
     heroImage: string | null;
     themeKey: string | null;
     sortOrder: number;
@@ -75,6 +86,11 @@ export type Product = {
     sortWeight: number;
     brandId: string | null;
     brand: Brand | null;
+    /**
+     * DB-nullable until seed backfill; required on admin create/update.
+     */
+    sellerId: string;
+    seller: Seller;
     countryId: string;
     country: Country;
     categoryId: string;
@@ -370,6 +386,54 @@ export type UpdateCategoryDto = {
     themeKey?: string | null;
 };
 
+export type AdminCollectionDto = {
+    id: string;
+    slug: string;
+    name: LocalizedStringDto;
+    description: LocalizedStringDto;
+    longDescription: LocalizedStringDto;
+    emoji: string;
+    color: string;
+    particles: Array<string>;
+    heroImage?: string | null;
+    themeKey?: string | null;
+    sortOrder: number;
+    isActive: boolean;
+};
+
+export type AdminCollectionsListResponseDto = {
+    items: Array<AdminCollectionDto>;
+    meta: AdminListMetaDto;
+};
+
+export type CreateCollectionDto = {
+    slug: string;
+    name: LocalizedStringDto;
+    description: LocalizedStringDto;
+    longDescription: LocalizedStringDto;
+    emoji: string;
+    color: string;
+    particles: Array<string>;
+    heroImage?: string | null;
+    themeKey?: string | null;
+    sortOrder: number;
+    isActive: boolean;
+};
+
+export type UpdateCollectionDto = {
+    slug?: string;
+    name?: LocalizedStringDto;
+    description?: LocalizedStringDto;
+    longDescription?: LocalizedStringDto;
+    emoji?: string;
+    color?: string;
+    particles?: Array<string>;
+    heroImage?: string | null;
+    themeKey?: string | null;
+    sortOrder?: number;
+    isActive?: boolean;
+};
+
 export type AdminCountryDto = {
     id: string;
     code: string;
@@ -412,6 +476,12 @@ export type AdminBrandSummaryDto = {
     name: string;
 };
 
+export type AdminSellerSummaryDto = {
+    id: string;
+    slug: string;
+    name: string;
+};
+
 export type AdminCountrySummaryDto = {
     id: string;
     slug: string;
@@ -443,6 +513,7 @@ export type AdminProductDto = {
     available: boolean;
     sortWeight: number;
     brand?: AdminBrandSummaryDto | null;
+    seller: AdminSellerSummaryDto;
     country: AdminCountrySummaryDto;
     category: AdminCategorySummaryDto;
 };
@@ -470,6 +541,7 @@ export type CreateProductDto = {
     available: boolean;
     sortWeight: number;
     brandId?: string | null;
+    sellerId: string;
     countryId: string;
     categoryId: string;
 };
@@ -492,8 +564,26 @@ export type UpdateProductDto = {
     available?: boolean;
     sortWeight?: number;
     brandId?: string | null;
+    sellerId?: string;
     countryId?: string;
     categoryId?: string;
+};
+
+export type AdminSellersListResponseDto = {
+    items: Array<Seller>;
+    meta: AdminListMetaDto;
+};
+
+export type CreateSellerDto = {
+    slug: string;
+    name: string;
+    logoUrl?: string | null;
+};
+
+export type UpdateSellerDto = {
+    slug?: string;
+    name?: string;
+    logoUrl?: string | null;
 };
 
 export type AdminOrdersControllerListOrdersData = {
@@ -1117,6 +1207,98 @@ export type AdminCategoriesControllerUpdateResponses = {
 
 export type AdminCategoriesControllerUpdateResponse = AdminCategoriesControllerUpdateResponses[keyof AdminCategoriesControllerUpdateResponses];
 
+export type AdminCollectionsControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+    };
+    url: '/api/admin/collections';
+};
+
+export type AdminCollectionsControllerListResponses = {
+    200: AdminCollectionsListResponseDto;
+};
+
+export type AdminCollectionsControllerListResponse = AdminCollectionsControllerListResponses[keyof AdminCollectionsControllerListResponses];
+
+export type AdminCollectionsControllerCreateData = {
+    body: CreateCollectionDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/collections';
+};
+
+export type AdminCollectionsControllerCreateResponses = {
+    200: AdminCollectionDto;
+};
+
+export type AdminCollectionsControllerCreateResponse = AdminCollectionsControllerCreateResponses[keyof AdminCollectionsControllerCreateResponses];
+
+export type AdminCollectionsControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/collections/{id}';
+};
+
+export type AdminCollectionsControllerGetByIdErrors = {
+    /**
+     * collection_not_found
+     */
+    404: {
+        status: 404;
+        code: 'collection_not_found';
+        message: string;
+        payload: {
+            collectionId?: string;
+        };
+    };
+};
+
+export type AdminCollectionsControllerGetByIdError = AdminCollectionsControllerGetByIdErrors[keyof AdminCollectionsControllerGetByIdErrors];
+
+export type AdminCollectionsControllerGetByIdResponses = {
+    200: AdminCollectionDto;
+};
+
+export type AdminCollectionsControllerGetByIdResponse = AdminCollectionsControllerGetByIdResponses[keyof AdminCollectionsControllerGetByIdResponses];
+
+export type AdminCollectionsControllerUpdateData = {
+    body: UpdateCollectionDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/collections/{id}';
+};
+
+export type AdminCollectionsControllerUpdateErrors = {
+    /**
+     * collection_not_found
+     */
+    404: {
+        status: 404;
+        code: 'collection_not_found';
+        message: string;
+        payload: {
+            collectionId?: string;
+        };
+    };
+};
+
+export type AdminCollectionsControllerUpdateError = AdminCollectionsControllerUpdateErrors[keyof AdminCollectionsControllerUpdateErrors];
+
+export type AdminCollectionsControllerUpdateResponses = {
+    200: AdminCollectionDto;
+};
+
+export type AdminCollectionsControllerUpdateResponse = AdminCollectionsControllerUpdateResponses[keyof AdminCollectionsControllerUpdateResponses];
+
 export type AdminCountriesControllerListData = {
     body?: never;
     path?: never;
@@ -1245,7 +1427,7 @@ export type AdminProductsControllerCreateData = {
 
 export type AdminProductsControllerCreateErrors = {
     /**
-     * product_brand_not_found, product_category_not_found, product_country_not_found
+     * product_brand_not_found, product_category_not_found, product_country_not_found, product_seller_not_found
      */
     400: {
         status: 400;
@@ -1267,6 +1449,13 @@ export type AdminProductsControllerCreateErrors = {
         message: string;
         payload: {
             countryId?: string;
+        };
+    } | {
+        status: 400;
+        code: 'product_seller_not_found';
+        message: string;
+        payload: {
+            sellerId?: string;
         };
     };
 };
@@ -1321,7 +1510,7 @@ export type AdminProductsControllerUpdateData = {
 
 export type AdminProductsControllerUpdateErrors = {
     /**
-     * product_brand_not_found, product_category_not_found, product_country_not_found
+     * product_brand_not_found, product_category_not_found, product_country_not_found, product_seller_not_found
      */
     400: {
         status: 400;
@@ -1344,6 +1533,13 @@ export type AdminProductsControllerUpdateErrors = {
         payload: {
             countryId?: string;
         };
+    } | {
+        status: 400;
+        code: 'product_seller_not_found';
+        message: string;
+        payload: {
+            sellerId?: string;
+        };
     };
     /**
      * product_not_found
@@ -1365,3 +1561,95 @@ export type AdminProductsControllerUpdateResponses = {
 };
 
 export type AdminProductsControllerUpdateResponse = AdminProductsControllerUpdateResponses[keyof AdminProductsControllerUpdateResponses];
+
+export type AdminSellersControllerListData = {
+    body?: never;
+    path?: never;
+    query: {
+        page: number;
+        limit: number;
+        q?: string;
+    };
+    url: '/api/admin/sellers';
+};
+
+export type AdminSellersControllerListResponses = {
+    200: AdminSellersListResponseDto;
+};
+
+export type AdminSellersControllerListResponse = AdminSellersControllerListResponses[keyof AdminSellersControllerListResponses];
+
+export type AdminSellersControllerCreateData = {
+    body: CreateSellerDto;
+    path?: never;
+    query?: never;
+    url: '/api/admin/sellers';
+};
+
+export type AdminSellersControllerCreateResponses = {
+    201: Seller;
+};
+
+export type AdminSellersControllerCreateResponse = AdminSellersControllerCreateResponses[keyof AdminSellersControllerCreateResponses];
+
+export type AdminSellersControllerGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/sellers/{id}';
+};
+
+export type AdminSellersControllerGetByIdErrors = {
+    /**
+     * seller_not_found
+     */
+    404: {
+        status: 404;
+        code: 'seller_not_found';
+        message: string;
+        payload: {
+            sellerId?: string;
+        };
+    };
+};
+
+export type AdminSellersControllerGetByIdError = AdminSellersControllerGetByIdErrors[keyof AdminSellersControllerGetByIdErrors];
+
+export type AdminSellersControllerGetByIdResponses = {
+    200: Seller;
+};
+
+export type AdminSellersControllerGetByIdResponse = AdminSellersControllerGetByIdResponses[keyof AdminSellersControllerGetByIdResponses];
+
+export type AdminSellersControllerUpdateData = {
+    body: UpdateSellerDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/admin/sellers/{id}';
+};
+
+export type AdminSellersControllerUpdateErrors = {
+    /**
+     * seller_not_found
+     */
+    404: {
+        status: 404;
+        code: 'seller_not_found';
+        message: string;
+        payload: {
+            sellerId?: string;
+        };
+    };
+};
+
+export type AdminSellersControllerUpdateError = AdminSellersControllerUpdateErrors[keyof AdminSellersControllerUpdateErrors];
+
+export type AdminSellersControllerUpdateResponses = {
+    200: Seller;
+};
+
+export type AdminSellersControllerUpdateResponse = AdminSellersControllerUpdateResponses[keyof AdminSellersControllerUpdateResponses];

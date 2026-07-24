@@ -50,6 +50,9 @@ export function buildProductWhereForFacet(
     case 'brand':
       delete scoped.brand;
       break;
+    case 'seller':
+      delete scoped.seller;
+      break;
   }
 
   return buildProductWhere(scoped);
@@ -61,7 +64,7 @@ export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Pro
   };
 
   if (filters.collection) {
-    where.collections = { code: filters.collection };
+    where.collections = { slug: filters.collection };
   }
 
   if (filters.category?.length) {
@@ -74,6 +77,10 @@ export function buildProductWhere(filters: ProductFilters): FindOptionsWhere<Pro
 
   if (filters.brand?.length) {
     where.brand = { slug: In(filters.brand) };
+  }
+
+  if (filters.seller?.length) {
+    where.seller = { slug: In(filters.seller) };
   }
 
   if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
@@ -119,6 +126,10 @@ export const productFacetSelect = {
     slug: true,
   },
   brand: {
+    id: true,
+    slug: true,
+  },
+  seller: {
     id: true,
     slug: true,
   },

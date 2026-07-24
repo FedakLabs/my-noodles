@@ -10,6 +10,7 @@ import { Brand } from '../brands/brand.entity';
 import { Category } from '../categories/category.entity';
 import { Collection } from '../collections/collection.entity';
 import { Country } from '../countries/country.entity';
+import { Seller } from '../sellers/seller.entity';
 import type { ProductFlavor } from './product.types';
 
 @Entity({ name: 'products' })
@@ -102,6 +103,18 @@ export class Product extends TimestampEntity {
   })
   @JoinColumn({ name: 'brand_id' })
   brand!: Brand | null;
+
+  @Column({ name: 'seller_id', type: 'uuid' })
+  sellerId!: string;
+
+  @ManyToOne(() => Seller, (seller) => seller.products, {
+    eager: true,
+    nullable: false,
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'seller_id' })
+  seller!: Seller;
 
   @Column({ name: 'country_id', type: 'uuid' })
   countryId!: string;

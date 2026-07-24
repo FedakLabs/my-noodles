@@ -13,10 +13,10 @@ export const collectionsQueries = {
     queryOptions({
       queryKey: withAppLocaleKey(() => collectionsQueries.rootKey)(),
     }),
-  list: () =>
+  list: (limit?: number) =>
     queryOptions({
-      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'list'] as const)(),
-      queryFn: () => collectionsControllerList(),
+      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'list', limit] as const)(),
+      queryFn: () => collectionsControllerList(limit !== undefined ? { query: { limit } } : undefined),
     }),
   detail: (slug: string) =>
     queryOptions({

@@ -2,9 +2,9 @@ import type { FeedFiltersDto } from '@my-noodles/api-clients/storefront';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-const STORE_VERSION = 1;
+const STORE_VERSION = 2;
 
-export type FeedTagDimension = 'category' | 'country' | 'brand';
+export type FeedTagDimension = 'category' | 'country' | 'brand' | 'seller';
 
 export type FeedFilters = Required<Pick<FeedFiltersDto, FeedTagDimension>>;
 
@@ -23,7 +23,7 @@ type FeedTagsState = {
 };
 
 function emptyFilters(): FeedFilters {
-  return { category: [], country: [], brand: [] };
+  return { category: [], country: [], brand: [], seller: [] };
 }
 
 function tagKey(type: FeedTagDimension, value: string): string {
@@ -71,7 +71,7 @@ export function feedTagLabel(labels: Record<string, string>, chip: FeedTagChip):
   return labels[tagKey(chip.type, chip.value)] ?? chip.value.replace(/-/g, ' ');
 }
 
-const TAG_DIMENSIONS: FeedTagDimension[] = ['category', 'country', 'brand'];
+const TAG_DIMENSIONS: FeedTagDimension[] = ['category', 'country', 'brand', 'seller'];
 
 export function flattenFeedTags(filters: FeedFilters): FeedTagChip[] {
   return TAG_DIMENSIONS.flatMap((type) => filters[type].map((value) => ({ type, value })));

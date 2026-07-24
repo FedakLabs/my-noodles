@@ -37,6 +37,8 @@ export type ProductDiscoveryCardActionContext = {
 export type ProductDiscoveryCardProps = {
   name: string;
   countryLabel: string;
+  /** Seller name shown next to country for trust / quality association. */
+  sellerLabel?: string;
   priceLabel: string;
   mediaItems: MediaGalleryItem[];
   skinInput: SkinInput;
@@ -60,6 +62,7 @@ export type ProductDiscoveryCardProps = {
 export function ProductDiscoveryCard({
   name,
   countryLabel,
+  sellerLabel,
   priceLabel,
   mediaItems,
   skinInput,
@@ -152,7 +155,7 @@ export function ProductDiscoveryCard({
         {name}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        {countryLabel}
+        {sellerLabel ? `${countryLabel} · ${sellerLabel}` : countryLabel}
       </Typography>
       <Typography variant="subtitle2" sx={{ mt: 0.5 }}>
         {priceLabel}

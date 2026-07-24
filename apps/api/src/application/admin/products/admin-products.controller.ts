@@ -26,6 +26,7 @@ import {
   ProductBrandNotFoundException,
   ProductCategoryNotFoundException,
   ProductCountryNotFoundException,
+  ProductSellerNotFoundException,
 } from './admin-products.exceptions';
 import { AdminProductsService } from './admin-products.service';
 
@@ -59,6 +60,7 @@ export class AdminProductsController {
     ProductBrandNotFoundException,
     ProductCategoryNotFoundException,
     ProductCountryNotFoundException,
+    ProductSellerNotFoundException,
   )
   async create(@Body() dto: CreateProductDto): Promise<AdminProductDto> {
     return await this.adminProductsService.create(dto);
@@ -71,6 +73,7 @@ export class AdminProductsController {
     ProductBrandNotFoundException,
     ProductCategoryNotFoundException,
     ProductCountryNotFoundException,
+    ProductSellerNotFoundException,
   )
   async update(
     @Param('id', ParseUUIDPipe) id: string,

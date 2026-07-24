@@ -25,6 +25,7 @@ import type {
   PaginatedProductsDto,
   Product,
   ProductFacetsResponseDto,
+  Seller,
   UpdateCheckoutDeliveryDto,
   VisitorSession,
 } from '@my-noodles/api-clients/storefront';
@@ -32,6 +33,7 @@ import type {
 export const MOCK_IDS = {
   product: '11111111-1111-4111-8111-111111111111',
   brand: '55555555-5555-4555-8555-555555555555',
+  seller: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   country: '66666666-6666-4666-8666-666666666666',
   category: '77777777-7777-4777-8777-777777777777',
   checkout: '22222222-2222-4222-8222-222222222222',
@@ -78,6 +80,14 @@ const brand = {
   products: [],
 } as const satisfies Brand;
 
+const seller = {
+  id: MOCK_IDS.seller,
+  slug: 'my-noodles',
+  name: 'MyNoodles',
+  logoUrl: null,
+  products: [],
+} as const satisfies Seller;
+
 const country = {
   id: MOCK_IDS.country,
   code: 'TW',
@@ -119,6 +129,8 @@ export const product = {
   inStock: true,
   brandId: MOCK_IDS.brand,
   brand,
+  sellerId: MOCK_IDS.seller,
+  seller,
   countryId: MOCK_IDS.country,
   country,
   categoryId: MOCK_IDS.category,
@@ -141,6 +153,7 @@ export const productFacets = {
     category: [{ value: 'snacks', label: 'Снеки', count: 1 }],
     country: [{ value: 'taiwan', label: 'Тайвань', count: 1 }],
     brand: [{ value: 'glico', label: 'Glico', count: 1 }],
+    seller: [{ value: 'my-noodles', label: 'MyNoodles', count: 1 }],
     price: { min: 9900, max: 9900 },
     isTriedByUs: 1,
     inStock: 1,

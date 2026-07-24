@@ -13,6 +13,7 @@ import type { Product } from '@/api/feed';
 import { ChevronIcon } from '@/components/feed/action-rail/feed-icons';
 import { useCartActions } from '@/hooks/cart';
 import { Link } from '@/i18n/navigation';
+import { APP_ROUTES } from '@/shared/routes';
 
 type FeedCardActionBarProps = {
   item: Product;
@@ -60,7 +61,7 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
       >
         <Button
           component={Link}
-          href={`/product/${item.slug}`}
+          href={APP_ROUTES.product(item.slug)}
           target="_blank"
           rel="noopener noreferrer"
           variant="text"

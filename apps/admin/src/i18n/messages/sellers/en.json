@@ -1,0 +1,23 @@
+{
+  "list": {
+    "title": "Sellers",
+    "search": "Slug or name",
+    "columnSlug": "Slug",
+    "columnName": "Name",
+    "loadError": "Failed to load sellers.",
+    "empty": "No sellers found.",
+    "page": "Page {{page}} · {{total}} total"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "form": {
+    "createTitle": "New seller",
+    "editTitle": "Edit seller",
+    "loading": "Loading…",
+    "slug": "Slug",
+    "name": "Name",
+    "logoUrl": "Logo URL",
+    "saveFailed": "Failed to save seller."
+  }
+}

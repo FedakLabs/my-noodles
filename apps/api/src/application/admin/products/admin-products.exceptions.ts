@@ -47,3 +47,15 @@ export class ProductCountryNotFoundException extends BadRequestException {
     });
   }
 }
+
+export class ProductSellerNotFoundException extends BadRequestException {
+  static readonly sample = new ProductSellerNotFoundException(SAMPLE_UUID);
+
+  constructor(sellerId: string) {
+    super({
+      code: 'product_seller_not_found',
+      message: 'Seller not found',
+      payload: { sellerId },
+    });
+  }
+}

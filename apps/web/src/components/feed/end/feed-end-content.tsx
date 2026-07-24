@@ -10,7 +10,7 @@ import CatalogIcon from '@my-noodles/ui/icons/catalog.svg';
 import { useTranslations } from 'next-intl';
 
 import { HeartIcon } from '@/components/feed/action-rail/feed-icons';
-import { feedMutedTextSx, feedOutlinedButtonSx, feedSubtleChipSx } from '@/components/feed/feed-chrome';
+import { feedActiveChipSx, feedMutedTextSx, feedOutlinedButtonSx } from '@/components/feed/feed-chrome';
 import { useCartActions } from '@/hooks/cart';
 import { type FeedTagChip, feedTagLabel } from '@/hooks/feed';
 import { Link } from '@/i18n/navigation';
@@ -61,7 +61,7 @@ export function FeedEndContent({
               label={`#${feedTagLabel(tagLabels, chip)}`}
               data-feed-no-swipe
               onDelete={() => onRemoveTag(chip)}
-              sx={feedSubtleChipSx(theme)}
+              sx={feedActiveChipSx(theme)}
             />
           ))}
         </Stack>

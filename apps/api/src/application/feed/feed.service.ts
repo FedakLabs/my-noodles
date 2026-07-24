@@ -81,6 +81,9 @@ function toFilterSnapshot(filters: FeedFiltersDto): FeedFilterSnapshot | null {
   if (filters.brand?.length) {
     snapshot.brand = filters.brand;
   }
+  if (filters.seller?.length) {
+    snapshot.seller = filters.seller;
+  }
 
   return Object.keys(snapshot).length > 0 ? snapshot : null;
 }

@@ -4,7 +4,10 @@ import { countFeedTags, feedTagLabel, flattenFeedTags, useFeedTagsStore } from '
 
 describe('useFeedTagsStore', () => {
   beforeEach(() => {
-    useFeedTagsStore.setState({ filters: { category: [], country: [], brand: [] }, labels: {} });
+    useFeedTagsStore.setState({
+      filters: { category: [], country: [], brand: [], seller: [] },
+      labels: {},
+    });
   });
 
   it('adds a value to its dimension and captures the label', () => {
@@ -52,7 +55,12 @@ describe('useFeedTagsStore', () => {
 
 describe('flattenFeedTags', () => {
   it('produces one chip per dimension value, grouped by dimension order', () => {
-    const chips = flattenFeedTags({ category: ['snacks'], country: ['japan', 'korea'], brand: [] });
+    const chips = flattenFeedTags({
+      category: ['snacks'],
+      country: ['japan', 'korea'],
+      brand: [],
+      seller: [],
+    });
 
     expect(chips).toEqual([
       { type: 'category', value: 'snacks' },

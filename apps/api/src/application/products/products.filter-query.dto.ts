@@ -27,6 +27,12 @@ export class ProductDimensionFilterQueryDto {
   @IsArray()
   @IsString({ each: true })
   brand?: string[];
+
+  @TransformToArray()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  seller?: string[];
 }
 
 /** Shared catalog filter query fields — single source for facets + list DTOs. */

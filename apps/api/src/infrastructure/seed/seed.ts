@@ -12,6 +12,7 @@ import { Collection } from '@/application/collections';
 import { Country } from '@/application/countries';
 import { FeedProductComment } from '@/application/feed';
 import { Product } from '@/application/products';
+import { Seller } from '@/application/sellers';
 import { User } from '@/application/users';
 import { config } from '@/config';
 
@@ -40,6 +41,15 @@ async function upsertBrand(repository: Repository<Brand>, name: string): Promise
   }
 
   return await repository.save(repository.create({ slug, name, logoUrl: null, themeKey: null }));
+}
+
+async function upsertSeller(repository: Repository<Seller>, slug: string, name: string): Promise<Seller> {
+  const existing = await repository.findOne({ where: { slug } });
+  if (existing) {
+    return existing;
+  }
+
+  return await repository.save(repository.create({ slug, name, logoUrl: null }));
 }
 
 async function upsertCategory(
@@ -82,25 +92,99 @@ async function upsertCountry(repository: Repository<Country>, countryName: strin
   );
 }
 
+const COLLECTION_CUSTOMIZATION: Record<
+  string,
+  { emoji: string; color: string; particles: string[]; longDescription: { uk: string; en: string } }
+> = {
+  noodles: {
+    emoji: '🍜',
+    color: '#E85D4C',
+    particles: ['🌶️', '🔥', '⚡', '💥', '🍜'],
+    longDescription: {
+      uk: 'Від пекучих корейських рамен до ніжних японських удон — ці нудлі везуть із собою цілу культуру. Кожен пакет — це вулична їжа, яку ми привезли до вас додому. Пробуйте поодинці або влаштуйте сліпу дегустацію з друзями.',
+      en: 'From fiery Korean ramen to silky Japanese udon, these noodles carry an entire culture in every packet. Street food, now delivered to your door. Try them solo or host a blind taste-test with friends.',
+    },
+  },
+  snacks: {
+    emoji: '🍿',
+    color: '#DC2626',
+    particles: ['🍿', '⭐', '🎥', '🎞️', '🎭'],
+    longDescription: {
+      uk: 'Снеки, які завоювали TikTok, кінотеатри та нічні ринки по всьому світу. Незвичні смаки, хрумке задоволення і той самий азіатський колорит, який неможливо знайти у звичайному супермаркеті.',
+      en: "Snacks that conquered TikTok, movie theatres and night markets across the globe. Unusual flavours, satisfying crunch and that distinctly Asian flair you just can't find in a regular supermarket.",
+    },
+  },
+  biscuits: {
+    emoji: '🍪',
+    color: '#D4A853',
+    particles: ['🍪', '☕', '✏️', '🌟', '✨'],
+    longDescription: {
+      uk: 'Печиво і крекери — маленьке задоволення, яке перетворює звичайну перерву на справжній момент. Японські wafer-бісквіти, корейські рисові крекери, тайські кокосові пальчики — є від чого рябіти в очах.',
+      en: "Biscuits and crackers — the small treat that turns an ordinary break into a proper moment. Japanese wafers, Korean rice crackers, Thai coconut fingers. There's a whole world to explore one bite at a time.",
+    },
+  },
+  candy: {
+    emoji: '🍬',
+    color: '#9D4EDD',
+    particles: ['🍬', '🎵', '✨', '💫', '🌈'],
+    longDescription: {
+      uk: 'Карамелі, желейки та льодяники, яких не знайдеш у місцевих магазинах. Азіатські цукерки — це цілий жанр: від фруктових желе у форм очок до тягнучих молочних карамелей з Японії.',
+      en: "Caramels, gummies and hard candies you won't find in local stores. Asian confectionery is its own genre: fruit jelly cups, stretchy Japanese milk caramels, and flavours that surprise every time.",
+    },
+  },
+  drinks: {
+    emoji: '🥤',
+    color: '#2A5CBF',
+    particles: ['🥤', '💫', '🌊', '❄️', '💧'],
+    longDescription: {
+      uk: 'Напої, які не схожі на все, що ви пробували. Японський Calpico, корейські фруктові соки, тайський холодний чай — все це тут. Ідеально до їжі або просто щоб освіжитись у спеку.',
+      en: "Drinks unlike anything you've tasted before. Japanese Calpico, Korean fruit juices, Thai iced tea — all here. Perfect with food or just for a refreshing break on a hot day.",
+    },
+  },
+  sweets: {
+    emoji: '🍭',
+    color: '#E85D4C',
+    particles: ['🍭', '🌺', '🌸', '🍓', '💖'],
+    longDescription: {
+      uk: "Солодощі, від яких сяють очі. Моті, тайські кокосові цукерки, корейські рисові десерти — це не просто їжа, а культурна пам'ять у солодкій обгортці. Подарунок собі або близьким.",
+      en: 'Sweets that make eyes light up. Mochi, Thai coconut candy, Korean rice desserts — not just food, but cultural memory wrapped in sweetness. A gift to yourself or the people you care about.',
+    },
+  },
+  cakes: {
+    emoji: '🎂',
+    color: '#40916C',
+    particles: ['🎂', '🌱', '🍃', '🌿', '🌺'],
+    longDescription: {
+      uk: 'Тістечка та торти у мінімалістичному азіатському стилі — менш солодкі, більш ніжні, із зеленим чаєм, юдзу або білим шоколадом. Зовсім інший погляд на десерт.',
+      en: 'Cakes and pastries in a minimalist Asian style — less sweet, more delicate, flavoured with matcha, yuzu or white chocolate. A completely different take on dessert.',
+    },
+  },
+};
+
 async function upsertCollection(
   repository: Repository<Collection>,
   category: Category,
   sortOrder: number,
 ): Promise<Collection> {
-  const existing = await repository.findOne({ where: { code: category.slug } });
+  const existing = await repository.findOne({ where: { slug: category.slug } });
   if (existing) {
     return existing;
   }
 
+  const customization = COLLECTION_CUSTOMIZATION[category.slug] ?? null;
+
   return await repository.save(
     repository.create({
-      code: category.slug,
       slug: category.slug,
       nameLocale: category.nameLocale,
       descriptionLocale: {
         uk: `Добірка категорії «${category.nameLocale.uk}».`,
         en: `A curated pick from «${category.nameLocale.en ?? category.nameLocale.uk}».`,
       },
+      longDescriptionLocale: customization?.longDescription ?? { uk: '', en: '' },
+      emoji: customization?.emoji ?? '📦',
+      color: customization?.color ?? '#888888',
+      particles: customization?.particles ?? [],
       heroImage: null,
       themeKey: category.themeKey,
       sortOrder,
@@ -123,10 +207,20 @@ async function upsertAdminUser(repository: Repository<User>): Promise<User> {
   return await repository.save(repository.create({ email, passwordHash }));
 }
 
+async function ensureReferenceSellers(dataSource: DataSource): Promise<Seller> {
+  const sellerRepository = dataSource.getRepository(Seller);
+  const myNoodlesSeller = await upsertSeller(sellerRepository, 'my-noodles', 'MyNoodles');
+  await upsertSeller(sellerRepository, 'asia-foods', 'AsiaFoods');
+  console.log('Sellers ready: MyNoodles, AsiaFoods');
+  return myNoodlesSeller;
+}
+
 async function seed(dataSource: DataSource): Promise<void> {
   const userRepository = dataSource.getRepository(User);
   const admin = await upsertAdminUser(userRepository);
   console.log(`Admin user ready: ${admin.email}`);
+
+  const myNoodlesSeller = await ensureReferenceSellers(dataSource);
 
   if (PRODUCT_SEEDS.length === 0) {
     console.log('No product seeds defined — skipping product seed.');
@@ -190,8 +284,10 @@ async function seed(dataSource: DataSource): Promise<void> {
         videos: productVideos(row),
         isTriedByUs: row.isTriedByUs,
         quantity: row.quantity,
+        available: true,
         sortWeight: row.sortWeight,
         brandId: brand.id,
+        sellerId: myNoodlesSeller.id,
         countryId: country.id,
         categoryId: category.id,
       }),

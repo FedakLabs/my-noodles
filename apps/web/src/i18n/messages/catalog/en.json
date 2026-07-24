@@ -52,6 +52,7 @@
     "category": "Category",
     "country": "Country",
     "brand": "Brand",
+    "seller": "Seller",
     "price": "Price",
     "priceMin": "Min",
     "priceMax": "Max",

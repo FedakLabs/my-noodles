@@ -16,16 +16,6 @@
     "label": "Language",
     "switchTo": "Switch language"
   },
-  "support": {
-    "title": "Support",
-    "open": "Open support chat",
-    "close": "Close support chat",
-    "loadingSession": "Preparing your chat…",
-    "sessionFailed": "Could not start a support session. Try again.",
-    "connecting": "Connecting to chat…",
-    "connectFailed": "Could not connect to chat. Try again.",
-    "openFailed": "Could not open support chat. Try again."
-  },
   "share": {
     "native": "Share…",
     "copyLink": "Copy link",

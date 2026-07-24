@@ -1,131 +1,84 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useOpenSupportSession } from '@/api/support';
 
 import { useTawkSupportChat } from './providers/tawk-support-chat';
-import type { SupportChatPanelPhase } from './support-chat-panel';
 
 type SupportChatSession = {
   visitorSessionId: string;
   sessionHash: string;
 };
 
-export type UseSupportChatResult = {
-  isConfigured: boolean;
-  /** Our shell open or provider chat maximized — drives FAB selected styling. */
-  isActive: boolean;
-  /** Independent open/close for the support shell (not tied to phase). */
-  isOpen: boolean;
-  panelPhase: SupportChatPanelPhase;
-  toggle: () => void;
-  close: () => void;
-  retry: () => void;
+type UseSupportChatOptions = {
+  /** When false, conceal the Tawk widget (home / immersive routes). */
+  enabled: boolean;
 };
 
-/** Provider-agnostic support chat controller (session + connect + panel phases). */
-export function useSupportChat(): UseSupportChatResult {
+/** Boots Tawk silently, then leaves the native widget as the only UI. */
+export function useSupportChat({ enabled }: UseSupportChatOptions): void {
   const provider = useTawkSupportChat();
   const openSession = useOpenSupportSession();
-  const [isOpen, setIsOpen] = useState(false);
-  const [panelPhase, setPanelPhase] = useState<SupportChatPanelPhase>('loadingSession');
-  const [chatReady, setChatReady] = useState(false);
   const sessionRef = useRef<SupportChatSession | null>(null);
   const runIdRef = useRef(0);
+  const bootstrappedRef = useRef(false);
+  const inFlightRef = useRef(false);
 
-  const isActive = isOpen || provider.isOpen;
-  const busy = panelPhase === 'loadingSession' || panelPhase === 'connecting';
-
-  const close = () => {
-    runIdRef.current += 1;
-    setIsOpen(false);
-  };
-
-  const connectWithSession = async (session: SupportChatSession, runId: number) => {
-    setPanelPhase('connecting');
-    try {
-      await provider.connect(session);
-      if (runId !== runIdRef.current) {
-        return;
-      }
-      provider.show();
-      setChatReady(true);
-      setIsOpen(false);
-    } catch (error) {
-      if (runId !== runIdRef.current) {
-        return;
-      }
-      console.error('[support-chat] connect failed', error);
-      setPanelPhase('connectError');
+  useEffect(() => {
+    if (!provider.isConfigured) {
+      return;
     }
-  };
 
-  const startOpenFlow = async () => {
-    if (busy && isOpen) {
+    if (!enabled) {
+      runIdRef.current += 1;
+      inFlightRef.current = false;
+      provider.conceal();
+      return;
+    }
+
+    if (bootstrappedRef.current && sessionRef.current) {
+      provider.reveal();
+      return;
+    }
+
+    if (inFlightRef.current) {
       return;
     }
 
     const runId = ++runIdRef.current;
-    setIsOpen(true);
-    setPanelPhase('loadingSession');
+    inFlightRef.current = true;
 
-    try {
-      const session = await openSession.openSupportSessionAsync();
-      if (runId !== runIdRef.current) {
-        return;
+    void (async () => {
+      try {
+        const session = await openSession.openSupportSessionAsync();
+        if (runId !== runIdRef.current) {
+          return;
+        }
+
+        sessionRef.current = {
+          visitorSessionId: session.visitorSessionId,
+          sessionHash: session.sessionHash,
+        };
+
+        await provider.connect(sessionRef.current);
+        if (runId !== runIdRef.current) {
+          return;
+        }
+
+        provider.reveal();
+        bootstrappedRef.current = true;
+      } catch (error) {
+        if (runId !== runIdRef.current) {
+          return;
+        }
+        console.error('[support-chat] bootstrap failed', error);
+      } finally {
+        if (runId === runIdRef.current) {
+          inFlightRef.current = false;
+        }
       }
-      sessionRef.current = {
-        visitorSessionId: session.visitorSessionId,
-        sessionHash: session.sessionHash,
-      };
-      await connectWithSession(sessionRef.current, runId);
-    } catch (error) {
-      if (runId !== runIdRef.current) {
-        return;
-      }
-      console.error('[support-chat] session failed', error);
-      setPanelPhase('sessionError');
-    }
-  };
-
-  const retry = () => {
-    if (!isOpen || busy) {
-      return;
-    }
-
-    if (panelPhase === 'connectError' && sessionRef.current) {
-      const runId = ++runIdRef.current;
-      void connectWithSession(sessionRef.current, runId);
-      return;
-    }
-
-    void startOpenFlow();
-  };
-
-  const toggle = () => {
-    if (isOpen) {
-      close();
-      return;
-    }
-    if (provider.isOpen) {
-      provider.hide();
-      return;
-    }
-    if (chatReady && sessionRef.current) {
-      provider.show();
-      return;
-    }
-    void startOpenFlow();
-  };
-
-  return {
-    isConfigured: provider.isConfigured,
-    isActive,
-    isOpen,
-    panelPhase,
-    toggle,
-    close,
-    retry,
-  };
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount/enable gate
+  }, [enabled, provider.isConfigured]);
 }

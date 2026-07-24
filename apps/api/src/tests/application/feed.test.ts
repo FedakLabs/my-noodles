@@ -16,6 +16,7 @@ import {
 } from '@/application/feed';
 import { Order } from '@/application/orders/order.entity';
 import { Product } from '@/application/products/product.entity';
+import { Seller } from '@/application/sellers/seller.entity';
 import {
   VISITOR_SESSION_COOKIE,
   VisitorSession,
@@ -30,6 +31,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '../
 function asProduct(overrides: Partial<Product> = {}): Product {
   return Object.assign(new Product(), {
     ...sampleProduct,
+    seller: Object.assign(new Seller(), sampleProduct.seller),
     country: Object.assign(new Country(), sampleProduct.country),
     category: Object.assign(new Category(), sampleProduct.category),
     ...overrides,

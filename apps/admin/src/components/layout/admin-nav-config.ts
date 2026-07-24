@@ -20,7 +20,9 @@ type AdminNavLabelKey =
   | 'nav.carts'
   | 'nav.products'
   | 'nav.brands'
+  | 'nav.sellers'
   | 'nav.categories'
+  | 'nav.collections'
   | 'nav.countries'
   | 'nav.support';
 
@@ -48,7 +50,9 @@ export const adminNavItems: AdminNavItem[] = [
   { kind: 'route', to: ROUTE_NAMES.carts, labelKey: 'nav.carts', Icon: CartIcon },
   { kind: 'route', to: ROUTE_NAMES.products, labelKey: 'nav.products', Icon: CatalogIcon },
   { kind: 'route', to: ROUTE_NAMES.brands, labelKey: 'nav.brands', Icon: StarIcon },
+  { kind: 'route', to: ROUTE_NAMES.sellers, labelKey: 'nav.sellers', Icon: CollectionsIcon },
   { kind: 'route', to: ROUTE_NAMES.categories, labelKey: 'nav.categories', Icon: FilterIcon },
+  { kind: 'route', to: ROUTE_NAMES.collections, labelKey: 'nav.collections', Icon: CollectionsIcon },
   { kind: 'route', to: ROUTE_NAMES.countries, labelKey: 'nav.countries', Icon: GlobeIcon },
   {
     kind: 'external',

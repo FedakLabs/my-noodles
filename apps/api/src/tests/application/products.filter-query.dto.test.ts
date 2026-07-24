@@ -12,6 +12,7 @@ import { Product, ProductsController, ProductsService } from '@/application/prod
 import { storefrontProductWhere } from '@/application/products/product-storefront-visibility';
 import { ProductFacetsQueryDto } from '@/application/products/products.dto';
 import { buildProductWhere } from '@/application/products/products.filters';
+import { Seller } from '@/application/sellers/seller.entity';
 
 import { sampleCategories, sampleCountries, sampleProduct } from '../fixtures/products';
 import { apiHttpServer, createApiTestApp } from '../helpers/api-test-app';
@@ -73,7 +74,7 @@ describe('GET /api/products/facets filter query', () => {
       .fn()
       .mockImplementation(
         (options: {
-          relations?: { category?: boolean; country?: boolean; brand?: boolean };
+          relations?: { category?: boolean; country?: boolean; brand?: boolean; seller?: boolean };
           select?: { id?: boolean; priceMinor?: boolean };
         }) => {
           if (options.relations?.category) {
@@ -86,6 +87,10 @@ describe('GET /api/products/facets filter query', () => {
 
           if (options.relations?.brand) {
             return Promise.resolve([]);
+          }
+
+          if (options.relations?.seller) {
+            return Promise.resolve([{ seller: sampleProduct.seller }]);
           }
 
           if (options.select?.priceMinor) {
@@ -129,6 +134,10 @@ describe('GET /api/products/facets filter query', () => {
         },
         {
           provide: getRepositoryToken(Brand),
+          useValue: { find: jest.fn().mockResolvedValue([]) },
+        },
+        {
+          provide: getRepositoryToken(Seller),
           useValue: { find: jest.fn().mockResolvedValue([]) },
         },
       ],
@@ -177,6 +186,10 @@ describe('GET /api/products/facets filter query', () => {
         },
         {
           provide: getRepositoryToken(Brand),
+          useValue: { find: jest.fn().mockResolvedValue([]) },
+        },
+        {
+          provide: getRepositoryToken(Seller),
           useValue: { find: jest.fn().mockResolvedValue([]) },
         },
       ],

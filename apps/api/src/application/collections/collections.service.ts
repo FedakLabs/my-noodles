@@ -13,10 +13,11 @@ export class CollectionsService {
     private readonly collectionsRepository: Repository<Collection>,
   ) {}
 
-  async list(): Promise<Collection[]> {
+  async list(limit?: number): Promise<Collection[]> {
     return await this.collectionsRepository.find({
       where: { isActive: true },
       order: { sortOrder: 'ASC', slug: 'ASC' },
+      take: limit,
     });
   }
 

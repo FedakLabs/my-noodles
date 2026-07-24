@@ -23,6 +23,7 @@ export type ProductFacetsDto = {
     category: Array<ProductFacetOptionDto>;
     country: Array<ProductFacetOptionDto>;
     brand: Array<ProductFacetOptionDto>;
+    seller: Array<ProductFacetOptionDto>;
     price: PriceFacetDto;
     isTriedByUs: number;
     inStock: number;
@@ -62,6 +63,14 @@ export type Brand = {
     products: Array<Product>;
 };
 
+export type Seller = {
+    id: string;
+    slug: string;
+    name: string;
+    logoUrl: string | null;
+    products: Array<Product>;
+};
+
 export type Country = {
     name: string | null;
     id: string;
@@ -85,9 +94,12 @@ export type Category = {
 export type Collection = {
     name: string | null;
     description: string | null;
+    longDescription: string | null;
     id: string;
-    code: string;
     slug: string;
+    emoji: string;
+    color: string;
+    particles: Array<string>;
     heroImage: string | null;
     themeKey: string | null;
     sortOrder: number;
@@ -120,6 +132,11 @@ export type Product = {
     sortWeight: number;
     brandId: string | null;
     brand: Brand | null;
+    /**
+     * DB-nullable until seed backfill; required on admin create/update.
+     */
+    sellerId: string;
+    seller: Seller;
     countryId: string;
     country: Country;
     categoryId: string;
@@ -405,6 +422,7 @@ export type FeedFiltersDto = {
     category?: Array<string>;
     country?: Array<string>;
     brand?: Array<string>;
+    seller?: Array<string>;
 };
 
 export type FeedNextDto = {
@@ -501,6 +519,7 @@ export type ProductsControllerGetFacetsData = {
         category?: Array<string>;
         country?: Array<string>;
         brand?: Array<string>;
+        seller?: Array<string>;
     };
     url: '/api/products/facets';
 };
@@ -527,6 +546,7 @@ export type ProductsControllerListData = {
         category?: Array<string>;
         country?: Array<string>;
         brand?: Array<string>;
+        seller?: Array<string>;
         collection?: string;
         priceMin?: number;
         priceMax?: number;
@@ -572,7 +592,9 @@ export type CollectionsControllerListData = {
         'x-app-locale'?: 'uk' | 'en';
     };
     path?: never;
-    query?: never;
+    query?: {
+        limit?: number;
+    };
     url: '/api/collections';
 };
 

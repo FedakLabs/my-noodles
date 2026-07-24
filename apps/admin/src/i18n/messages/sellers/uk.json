@@ -1,0 +1,23 @@
+{
+  "list": {
+    "title": "Продавці",
+    "search": "Slug або назва",
+    "columnSlug": "Slug",
+    "columnName": "Назва",
+    "loadError": "Не вдалося завантажити продавців.",
+    "empty": "Продавців не знайдено.",
+    "page": "Сторінка {{page}} · {{total}} всього"
+  },
+  "actions": {
+    "edit": "Редагувати"
+  },
+  "form": {
+    "createTitle": "Новий продавець",
+    "editTitle": "Редагувати продавця",
+    "loading": "Завантаження…",
+    "slug": "Slug",
+    "name": "Назва",
+    "logoUrl": "URL логотипу",
+    "saveFailed": "Не вдалося зберегти продавця."
+  }
+}
