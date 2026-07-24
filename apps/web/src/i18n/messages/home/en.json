@@ -1,4 +1,76 @@
 {
-  "title": "Tasty discoveries from around the world",
-  "description": "Explore imported snacks — pick a country, a flavor, and add to cart."
+  "meta": {
+    "title": "My Noodles — Tasty Discoveries From Around the World",
+    "description": "Imported snacks from Japan, Korea, the USA and beyond. Shop by mood, flavor, or country and discover something new every day."
+  },
+  "hero": {
+    "headline": "Discover flavors from around the world",
+    "sub": "Imported snacks, honest taste notes, and a small new discovery every day — that's what we sell.",
+    "ctaCatalog": "Browse the catalog",
+    "ctaFeed": "Discover in the feed"
+  },
+  "countries": {
+    "headline": "Snacks from around the world",
+    "japan": "Japan",
+    "korea": "Korea",
+    "usa": "USA",
+    "thailand": "Thailand",
+    "china": "China",
+    "kazakhstan": "Kazakhstan",
+    "germany": "Germany",
+    "czech": "Czech Republic"
+  },
+  "explore": {
+    "headline": "Find your way to discover",
+    "catalog": {
+      "title": "Catalog",
+      "body": "Filter by country, flavor, or brand and shop at your own pace."
+    },
+    "feed": {
+      "title": "Feed",
+      "body": "Swipe like TikTok — every scroll brings a new tasty adventure."
+    },
+    "collections": {
+      "title": "Collections",
+      "body": "Curated mood sets: TikTok Foods, Movie Snacks, Around the World and more."
+    }
+  },
+  "moods": {
+    "headline": "Curated by mood",
+    "tiktok": {
+      "title": "TikTok Foods",
+      "sub": "Viral flavors everyone's talking about"
+    },
+    "world": {
+      "title": "Around the World",
+      "sub": "One snack — one new country"
+    },
+    "movie": {
+      "title": "Movie Snacks",
+      "sub": "The perfect companion for movie night"
+    },
+    "office": {
+      "title": "Office Box",
+      "sub": "A surprise for your team or colleagues"
+    }
+  },
+  "why": {
+    "headline": "Why My Noodles?",
+    "honest": {
+      "title": "Honest taste notes",
+      "body": "We tell the truth about flavor, heat, and texture — so you know exactly what you're getting."
+    },
+    "curated": {
+      "title": "Curated, not random",
+      "body": "Every product is a deliberate choice. We taste everything we sell."
+    },
+    "delivery": {
+      "title": "Reliable delivery",
+      "body": "Verified suppliers, realistic timelines, and clear tracking."
+    }
+  },
+  "cta": {
+    "headline": "Ready for your next discovery?",
+    "button": "Start discovering"
+  }
 }

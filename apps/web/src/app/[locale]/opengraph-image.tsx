@@ -19,8 +19,8 @@ export default withPageLocaleResult<LocaleOpenGraphImageProps, Awaited<ReturnTyp
 
     return await createOgImage({
       eyebrow: tMetadata('title'),
-      title: tHome('title'),
-      subtitle: tHome('description'),
+      title: tHome('meta.title'),
+      subtitle: tHome('meta.description'),
     });
   },
   () => createOgImage({ title: 'MyNoodles' }),

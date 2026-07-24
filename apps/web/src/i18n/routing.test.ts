@@ -36,7 +36,7 @@ describe('message catalogs', () => {
       expect(enKeys, `${namespace} key parity`).toEqual(ukKeys);
     }
 
-    expect(messageCatalogs.uk.home.title).toBeTruthy();
-    expect(messageCatalogs.en.home.title).toBeTruthy();
+    expect(messageCatalogs.uk.home.meta.title).toBeTruthy();
+    expect(messageCatalogs.en.home.meta.title).toBeTruthy();
   });
 });
