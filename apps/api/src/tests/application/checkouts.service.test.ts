@@ -23,6 +23,10 @@ function asCheckout(partial: object): Checkout {
   return Object.assign(new Checkout(), partial);
 }
 
+function asOrder(partial: object): Order {
+  return Object.assign(new Order(), partial);
+}
+
 describe('CheckoutsService', () => {
   let transaction: jest.Mock;
   let checkoutsFindOne: jest.Mock;
@@ -76,14 +80,14 @@ describe('CheckoutsService', () => {
         id: 'checkout-1',
         orderId: 'order-1',
         createdAt: new Date('2025-06-20T10:00:00.000Z'),
-        order: {
+        order: asOrder({
           id: 'order-1',
           totalMinor: 19_800,
           currency: 'UAH',
           status: OrderStatus.Draft,
           items: [{ productId: 'product-1', qty: 2 }],
           delivery: null,
-        },
+        }),
       });
       checkoutsFindOne.mockResolvedValue(saved);
       return Promise.resolve(saved);
@@ -94,17 +98,20 @@ describe('CheckoutsService', () => {
     checkoutUpdate = jest.fn().mockResolvedValue({ affected: 1 });
 
     orderSave = jest.fn().mockImplementation((entity: object) =>
-      Promise.resolve({
-        id: 'order-1',
-        createdAt: new Date('2025-06-20T10:00:00.000Z'),
-        firstName: null,
-        lastName: null,
-        phone: null,
-        totalMinor: 19_800,
-        currency: 'UAH',
-        status: OrderStatus.Draft,
-        ...entity,
-      }),
+      Promise.resolve(
+        asOrder({
+          id: 'order-1',
+          createdAt: new Date('2025-06-20T10:00:00.000Z'),
+          firstName: null,
+          lastName: null,
+          phone: null,
+          totalMinor: 19_800,
+          currency: 'UAH',
+          status: OrderStatus.Draft,
+          delivery: null,
+          ...entity,
+        }),
+      ),
     );
     const orderCreate = jest
       .fn()
@@ -211,10 +218,11 @@ describe('CheckoutsService', () => {
       cancelledReason: null,
       createdAt: new Date(),
       expiresAt: futureExpiresAt(),
-      order: {
+      order: asOrder({
         id: 'order-existing',
         totalMinor: 9_900,
         currency: 'UAH',
+        delivery: null,
         items: [
           {
             id: 'line-1',
@@ -224,7 +232,7 @@ describe('CheckoutsService', () => {
             qty: 1,
           },
         ],
-      },
+      }),
     });
 
     checkoutsFindOne.mockResolvedValue(existingCheckout);
@@ -374,18 +382,18 @@ describe('CheckoutsService', () => {
         cancelledReason: null,
         createdAt: new Date(),
         expiresAt: futureExpiresAt(),
-        order: {
+        order: asOrder({
           id: 'order-1',
           status: OrderStatus.Draft,
           items: [],
-          delivery: null,
+          delivery: Object.assign(new OrderDelivery(), { shippingCostMinor: null }),
           totalMinor: 9_900,
           currency: 'UAH',
           firstName: null,
           lastName: null,
           phone: null,
           createdAt: new Date(),
-        },
+        }),
       }),
     );
     estimateForOrder.mockResolvedValue({

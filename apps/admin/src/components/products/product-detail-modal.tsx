@@ -69,8 +69,7 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
     return [...images, ...videos];
   }, [locale, product]);
 
-  const title =
-    product != null ? pickLocalized(product.nameLocale, locale) : t('products:detail.title');
+  const title = product != null ? pickLocalized(product.nameLocale, locale) : t('products:detail.title');
 
   function handleBack() {
     if (onBack) {
@@ -150,10 +149,7 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
 
             <Stack spacing={1.5}>
               <DetailRow label={t('products:form.slug')} value={product.slug} />
-              <DetailRow
-                label={t('products:form.name')}
-                value={pickLocalized(product.nameLocale, locale)}
-              />
+              <DetailRow label={t('products:form.name')} value={pickLocalized(product.nameLocale, locale)} />
               <DetailRow
                 label={t('products:form.description')}
                 value={pickLocalized(product.descriptionLocale, locale)}

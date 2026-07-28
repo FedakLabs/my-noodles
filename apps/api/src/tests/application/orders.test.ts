@@ -66,15 +66,17 @@ describe('orders (e2e)', () => {
   });
 
   it('GET /api/orders/:id returns the visitor-owned order', async () => {
-    ordersFindOne.mockResolvedValue({
-      id: orderId,
-      visitorSessionId: visitorId,
-      status: OrderStatus.New,
-      totalMinor: 9_900,
-      currency: 'UAH',
-      delivery: { shippingCostMinor: null },
-      items: [{ productId: 'product-1', qty: 1 }],
-    });
+    ordersFindOne.mockResolvedValue(
+      Object.assign(new Order(), {
+        id: orderId,
+        visitorSessionId: visitorId,
+        status: OrderStatus.New,
+        totalMinor: 9_900,
+        currency: 'UAH',
+        delivery: { shippingCostMinor: null },
+        items: [{ productId: 'product-1', qty: 1 }],
+      }),
+    );
 
     const response = await request(apiHttpServer(app))
       .get(`/api/orders/${orderId}`)

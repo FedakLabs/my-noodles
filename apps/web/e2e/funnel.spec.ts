@@ -34,10 +34,10 @@ test.describe('discovery funnel', () => {
     await page.getByLabel(uk.checkout.fields.firstName).fill('Andrii');
     await page.getByLabel(uk.checkout.fields.phone).fill('+380501112233');
 
-    await page.getByLabel(uk.checkout.fields.city).fill('Ки');
+    await page.getByLabel(uk.checkout.fields.city).fill('Київ');
     await page.getByRole('option', { name: 'Київ' }).click();
 
-    await page.getByLabel(uk.checkout.fields.branch).click();
+    await page.getByLabel(uk.checkout.fields.branch).fill('Від');
     await page.getByRole('option', { name: /Відділення №1/ }).click();
 
     await expect(page.getByText(/Орієнтовна доставка/)).toBeVisible();
@@ -47,7 +47,10 @@ test.describe('discovery funnel', () => {
 
     await expect(page).toHaveURL(new RegExp(`\\/${e2eLocale}\\/checkout\\/[^/]+$`));
     await expect(page.getByRole('heading', { name: uk.checkout.success.title })).toBeVisible();
-    await expect(page.getByText(uk.checkout.sections.receiver)).toBeVisible();
-    await expect(page.getByText('Pocky Matcha')).toBeVisible();
+    await expect(page.getByRole('link', { name: uk.checkout.success.goToOrder })).toBeVisible();
+    await expect(page.getByRole('link', { name: uk.checkout.success.goToOrder })).toHaveAttribute(
+      'href',
+      new RegExp(`\\/${e2eLocale}\\/orders\\/`),
+    );
   });
 });

@@ -50,10 +50,7 @@ export function CollectionsListScreen() {
       columnHelper.accessor('isActive', {
         header: t('collections:list.columnActive'),
         cell: ({ row }) => (
-          <CollectionActiveCheckbox
-            collectionId={row.original.id}
-            isActive={row.original.isActive}
-          />
+          <CollectionActiveCheckbox collectionId={row.original.id} isActive={row.original.isActive} />
         ),
       }),
     ],

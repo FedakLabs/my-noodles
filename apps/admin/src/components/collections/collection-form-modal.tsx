@@ -4,11 +4,7 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type {
-  Collection,
-  CreateCollectionDto,
-  LocalizedStringDto,
-} from '@my-noodles/api-clients/admin';
+import type { Collection, CreateCollectionDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
 import {
   cleanLocalizedString,
   emptyLocalizedString,
@@ -180,7 +176,8 @@ function CollectionFormModalContent() {
                 }
                 required
               />
-            </LocalizedFields>            <TextField
+            </LocalizedFields>
+            <TextField
               label={t('collections:form.emoji')}
               value={form.emoji}
               onChange={(e) => setForm((p) => ({ ...p, emoji: e.target.value }))}
