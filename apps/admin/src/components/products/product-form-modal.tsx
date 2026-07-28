@@ -6,7 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminProductDto, CreateProductDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
+import type { CreateProductDto, LocalizedStringDto, Product } from '@my-noodles/api-clients/admin';
 import {
   cleanLocalizedString,
   emptyLocalizedString,
@@ -35,12 +35,18 @@ import { useCountriesList } from '@/api/countries';
 import { useCreateProduct, useProduct, useUpdateProduct } from '@/api/products';
 import { useSellersList } from '@/api/sellers';
 
+type ProductFlavorFields = {
+  spice: number;
+  sweet: number;
+  texture: string;
+};
+
 type ProductFormState = {
   slug: string;
-  name: LocalizedStringDto;
-  description: LocalizedStringDto;
-  story: LocalizedStringDto;
-  forWhom: LocalizedStringDto;
+  nameLocale: LocalizedStringDto;
+  descriptionLocale: LocalizedStringDto;
+  storyLocale: LocalizedStringDto;
+  forWhomLocale: LocalizedStringDto;
   weight: string;
   priceMinor: string;
   currency: CurrencyCode;
@@ -63,10 +69,10 @@ type ProductFormState = {
 function defaultFormState(): ProductFormState {
   return {
     slug: '',
-    name: emptyLocalizedString(),
-    description: emptyLocalizedString(),
-    story: emptyLocalizedString(),
-    forWhom: emptyLocalizedString(),
+    nameLocale: emptyLocalizedString(),
+    descriptionLocale: emptyLocalizedString(),
+    storyLocale: emptyLocalizedString(),
+    forWhomLocale: emptyLocalizedString(),
     weight: '',
     priceMinor: '0',
     currency: DEFAULT_CURRENCY,
@@ -87,22 +93,23 @@ function defaultFormState(): ProductFormState {
   };
 }
 
-function formStateFromProduct(product: AdminProductDto): ProductFormState {
+function formStateFromProduct(product: Product): ProductFormState {
+  const flavor = product.flavor as ProductFlavorFields;
   return {
     slug: product.slug,
-    name: toRequiredLocalizedString(product.name),
-    description: toRequiredLocalizedString(product.description),
-    story: toRequiredLocalizedString(product.story),
-    forWhom: toRequiredLocalizedString(product.forWhom),
+    nameLocale: toRequiredLocalizedString(product.nameLocale),
+    descriptionLocale: toRequiredLocalizedString(product.descriptionLocale),
+    storyLocale: toRequiredLocalizedString(product.storyLocale),
+    forWhomLocale: toRequiredLocalizedString(product.forWhomLocale),
     weight: product.weight ?? '',
     priceMinor: String(product.priceMinor),
     currency: resolveCurrency(product.currency),
     quantity: String(product.quantity),
     available: product.available,
     sortWeight: String(product.sortWeight),
-    spice: String(product.flavor.spice),
-    sweet: String(product.flavor.sweet),
-    texture: product.flavor.texture,
+    spice: String(flavor.spice),
+    sweet: String(flavor.sweet),
+    texture: flavor.texture,
     allergens: product.allergens,
     images: product.images,
     videos: product.videos,
@@ -117,10 +124,10 @@ function formStateFromProduct(product: AdminProductDto): ProductFormState {
 function buildPayload(state: ProductFormState): CreateProductDto {
   return {
     slug: state.slug.trim(),
-    name: cleanLocalizedString(state.name),
-    description: cleanLocalizedString(state.description),
-    story: cleanLocalizedString(state.story),
-    forWhom: cleanLocalizedString(state.forWhom),
+    nameLocale: cleanLocalizedString(state.nameLocale),
+    descriptionLocale: cleanLocalizedString(state.descriptionLocale),
+    storyLocale: cleanLocalizedString(state.storyLocale),
+    forWhomLocale: cleanLocalizedString(state.forWhomLocale),
     weight: state.weight.trim() || null,
     priceMinor: Number(state.priceMinor) || 0,
     currency: state.currency,
@@ -230,17 +237,17 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
   }, [data, product]);
 
   function updateLocalized(
-    field: 'name' | 'description' | 'story' | 'forWhom',
+    field: 'nameLocale' | 'descriptionLocale' | 'storyLocale' | 'forWhomLocale',
     next: LocalizedTextFieldValue,
   ) {
     setForm((prev) => ({ ...prev, [field]: toRequiredLocalizedString(next) }));
   }
 
   const localizedFieldsComplete =
-    isLocalizedStringComplete(form.name) &&
-    isLocalizedStringComplete(form.description) &&
-    isLocalizedStringComplete(form.story) &&
-    isLocalizedStringComplete(form.forWhom);
+    isLocalizedStringComplete(form.nameLocale) &&
+    isLocalizedStringComplete(form.descriptionLocale) &&
+    isLocalizedStringComplete(form.storyLocale) &&
+    isLocalizedStringComplete(form.forWhomLocale);
 
   async function handleSave() {
     setError(null);
@@ -300,30 +307,30 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
             <LocalizedFields localeLabel={t('products:form.language')} locales={LOCALE_OPTIONS}>
               <LocalizedTextField
                 label={t('products:form.name')}
-                value={form.name}
-                onChange={(value) => updateLocalized('name', value)}
+                value={form.nameLocale}
+                onChange={(value) => updateLocalized('nameLocale', value)}
                 required
               />
               <LocalizedTextField
                 label={t('products:form.description')}
-                value={form.description}
-                onChange={(value) => updateLocalized('description', value)}
+                value={form.descriptionLocale}
+                onChange={(value) => updateLocalized('descriptionLocale', value)}
                 required
                 multiline
                 minRows={2}
               />
               <LocalizedTextField
                 label={t('products:form.story')}
-                value={form.story}
-                onChange={(value) => updateLocalized('story', value)}
+                value={form.storyLocale}
+                onChange={(value) => updateLocalized('storyLocale', value)}
                 required
                 multiline
                 minRows={2}
               />
               <LocalizedTextField
                 label={t('products:form.forWhom')}
-                value={form.forWhom}
-                onChange={(value) => updateLocalized('forWhom', value)}
+                value={form.forWhomLocale}
+                onChange={(value) => updateLocalized('forWhomLocale', value)}
                 required
                 multiline
                 minRows={2}
@@ -482,7 +489,7 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
             >
               {(countries?.items ?? []).map((country) => (
                 <MenuItem key={country.id} value={country.id}>
-                  {country.name.uk}
+                  {country.name}
                 </MenuItem>
               ))}
             </SelectField>
@@ -496,7 +503,7 @@ function ProductFormModalContent({ onViewProductCard }: { onViewProductCard?: (p
             >
               {(categories?.items ?? []).map((category) => (
                 <MenuItem key={category.id} value={category.id}>
-                  {category.name.uk}
+                  {category.name}
                 </MenuItem>
               ))}
             </SelectField>

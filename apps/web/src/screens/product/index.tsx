@@ -69,13 +69,13 @@ export function ProductScreen({ slug }: ProductScreenProps) {
     ...product.images.map((url, index) => ({
       type: 'image' as const,
       url,
-      alt: product.name ?? product.slug,
+      alt: product.name,
       viewTransitionName: index === 0 ? `product-image-${product.slug}` : undefined,
     })),
     ...product.videos.map((url) => ({
       type: 'video' as const,
       url,
-      alt: product.name ?? product.slug,
+      alt: product.name,
     })),
   ];
 
@@ -108,7 +108,7 @@ export function ProductScreen({ slug }: ProductScreenProps) {
               <Typography variant="h4" sx={{ minWidth: 0, flex: 1 }}>
                 {product.name}
               </Typography>
-              <ProductShareMenu productName={product.name ?? product.slug} productSlug={product.slug} />
+              <ProductShareMenu productName={product.name} productSlug={product.slug} />
             </Stack>
             <Typography variant="body1" color="text.secondary">
               {product.country.name} · {product.category.name}
@@ -154,7 +154,7 @@ export function ProductScreen({ slug }: ProductScreenProps) {
                 addItem({
                   productId,
                   slug: product.slug,
-                  title: product.name ?? product.slug,
+                  title: product.name,
                   priceMinor: product.priceMinor,
                   currency: product.currency,
                   imageUrl: heroImage,

@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminCategoryDto } from '@my-noodles/api-clients/admin';
+import type { Category } from '@my-noodles/api-clients/admin';
 import { createColumnHelper, DataTable, useDataTable } from '@my-noodles/ui';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useCategoriesList } from '@/api/categories';
 import { CategoryFormModal, type CategoryFormModalRef } from '@/components/categories/category-form-modal';
 
-const columnHelper = createColumnHelper<AdminCategoryDto>();
+const columnHelper = createColumnHelper<Category>();
 
 export function CategoriesListScreen() {
   const { t } = useTranslation(['categories', 'common']);
@@ -31,7 +31,7 @@ export function CategoriesListScreen() {
       columnHelper.accessor('slug', {
         header: t('categories:list.columnSlug'),
       }),
-      columnHelper.accessor((row) => row.name.uk, {
+      columnHelper.accessor((row) => row.name, {
         id: 'name',
         header: t('categories:list.columnName'),
       }),

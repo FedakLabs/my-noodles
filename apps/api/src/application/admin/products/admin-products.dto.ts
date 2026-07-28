@@ -17,6 +17,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { Product } from '../../products/product.entity';
 import { AdminListMetaDto, AdminPaginationQueryDto, LocalizedStringDto } from '../common';
 
 export class ListAdminProductsQueryDto extends AdminPaginationQueryDto {
@@ -80,22 +81,22 @@ export class CreateProductDto {
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name!: LocalizedStringDto;
+  nameLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  description!: LocalizedStringDto;
+  descriptionLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  story!: LocalizedStringDto;
+  storyLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  forWhom!: LocalizedStringDto;
+  forWhomLocale!: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -177,25 +178,25 @@ export class UpdateProductDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name?: LocalizedStringDto;
+  nameLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: () => LocalizedStringDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  descriptionLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: () => LocalizedStringDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  story?: LocalizedStringDto;
+  storyLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: () => LocalizedStringDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  forWhom?: LocalizedStringDto;
+  forWhomLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -279,119 +280,9 @@ export class UpdateProductDto {
   categoryId?: string;
 }
 
-export class AdminBrandSummaryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty()
-  name!: string;
-}
-
-export class AdminSellerSummaryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty()
-  name!: string;
-}
-
-export class AdminCategorySummaryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-}
-
-export class AdminCountrySummaryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-}
-
-/** Admin projection of {@link Product} — exposes full `{ uk, en? }` locales and nested taxonomy summaries. */
-export class AdminProductDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  description!: LocalizedStringDto;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  story!: LocalizedStringDto;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  forWhom!: LocalizedStringDto;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  weight!: string | null;
-
-  @ApiProperty()
-  priceMinor!: number;
-
-  @ApiProperty({ enum: CURRENCY_CODES, enumName: 'CurrencyCode' })
-  currency!: CurrencyCode;
-
-  @ApiProperty({ type: () => AdminProductFlavorDto })
-  flavor!: AdminProductFlavorDto;
-
-  @ApiProperty({ type: [String] })
-  allergens!: string[];
-
-  @ApiProperty({ type: [String] })
-  images!: string[];
-
-  @ApiProperty({ type: [String] })
-  videos!: string[];
-
-  @ApiProperty()
-  isTriedByUs!: boolean;
-
-  @ApiProperty()
-  quantity!: number;
-
-  @ApiProperty()
-  available!: boolean;
-
-  @ApiProperty()
-  sortWeight!: number;
-
-  @ApiPropertyOptional({ type: () => AdminBrandSummaryDto, nullable: true })
-  brand!: AdminBrandSummaryDto | null;
-
-  @ApiProperty({ type: () => AdminSellerSummaryDto })
-  seller!: AdminSellerSummaryDto;
-
-  @ApiProperty({ type: () => AdminCountrySummaryDto })
-  country!: AdminCountrySummaryDto;
-
-  @ApiProperty({ type: () => AdminCategorySummaryDto })
-  category!: AdminCategorySummaryDto;
-}
-
 export class AdminProductsListResponseDto {
-  @ApiProperty({ type: () => [AdminProductDto] })
-  items!: AdminProductDto[];
+  @ApiProperty({ type: () => [Product] })
+  items!: Product[];
 
   @ApiProperty({ type: () => AdminListMetaDto })
   meta!: AdminListMetaDto;

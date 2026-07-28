@@ -14,9 +14,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
+import { Category } from '../../categories/category.entity';
 import {
   AdminCategoriesListResponseDto,
-  AdminCategoryDto,
   CreateCategoryDto,
   ListAdminCategoriesQueryDto,
   UpdateCategoryDto,
@@ -26,7 +26,7 @@ import { AdminCategoriesService } from './admin-categories.service';
 
 @ApiTags('Admin Categories')
 @ApiBearerAuth()
-@ApiExtraModels(AdminCategoryDto, AdminCategoriesListResponseDto)
+@ApiExtraModels(Category, AdminCategoriesListResponseDto)
 @UseGuards(AuthGuard)
 @Controller('admin/categories')
 export class AdminCategoriesController {
@@ -45,24 +45,21 @@ export class AdminCategoriesController {
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: AdminCategoryDto })
+  @ApiOkResponse({ type: Category })
   @ApiException(CategoryNotFoundException)
-  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<AdminCategoryDto> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<Category> {
     return await this.adminCategoriesService.getById(id);
   }
 
   @Post()
-  async create(@Body() dto: CreateCategoryDto): Promise<AdminCategoryDto> {
+  async create(@Body() dto: CreateCategoryDto): Promise<Category> {
     return await this.adminCategoriesService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOkResponse({ type: AdminCategoryDto })
+  @ApiOkResponse({ type: Category })
   @ApiException(CategoryNotFoundException)
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateCategoryDto,
-  ): Promise<AdminCategoryDto> {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCategoryDto): Promise<Category> {
     return await this.adminCategoriesService.update(id, dto);
   }
 }

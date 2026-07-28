@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
+import { Product } from '../../products/product.entity';
 import {
-  AdminProductDto,
   AdminProductsListResponseDto,
   CreateProductDto,
   ListAdminProductsQueryDto,
@@ -32,7 +32,7 @@ import { AdminProductsService } from './admin-products.service';
 
 @ApiTags('Admin Products')
 @ApiBearerAuth()
-@ApiExtraModels(AdminProductDto, AdminProductsListResponseDto)
+@ApiExtraModels(Product, AdminProductsListResponseDto)
 @UseGuards(AuthGuard)
 @Controller('admin/products')
 export class AdminProductsController {
@@ -49,9 +49,9 @@ export class AdminProductsController {
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: AdminProductDto })
+  @ApiOkResponse({ type: Product })
   @ApiException(AdminProductNotFoundException)
-  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<AdminProductDto> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
     return await this.adminProductsService.getById(id);
   }
 
@@ -62,12 +62,12 @@ export class AdminProductsController {
     ProductCountryNotFoundException,
     ProductSellerNotFoundException,
   )
-  async create(@Body() dto: CreateProductDto): Promise<AdminProductDto> {
+  async create(@Body() dto: CreateProductDto): Promise<Product> {
     return await this.adminProductsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOkResponse({ type: AdminProductDto })
+  @ApiOkResponse({ type: Product })
   @ApiException(
     AdminProductNotFoundException,
     ProductBrandNotFoundException,
@@ -75,10 +75,7 @@ export class AdminProductsController {
     ProductCountryNotFoundException,
     ProductSellerNotFoundException,
   )
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateProductDto,
-  ): Promise<AdminProductDto> {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto): Promise<Product> {
     return await this.adminProductsService.update(id, dto);
   }
 }

@@ -5,7 +5,7 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type {
-  AdminCollectionDto,
+  Collection,
   CreateCollectionDto,
   LocalizedStringDto,
 } from '@my-noodles/api-clients/admin';
@@ -24,9 +24,9 @@ import { useCollection, useCreateCollection, useUpdateCollection } from '@/api/c
 
 type CollectionFormState = {
   slug: string;
-  name: LocalizedStringDto;
-  description: LocalizedStringDto;
-  longDescription: LocalizedStringDto;
+  nameLocale: LocalizedStringDto;
+  descriptionLocale: LocalizedStringDto;
+  longDescriptionLocale: LocalizedStringDto;
   emoji: string;
   color: string;
   particles: string;
@@ -37,9 +37,9 @@ type CollectionFormState = {
 function defaultFormState(): CollectionFormState {
   return {
     slug: '',
-    name: emptyLocalizedString(),
-    description: emptyLocalizedString(),
-    longDescription: emptyLocalizedString(),
+    nameLocale: emptyLocalizedString(),
+    descriptionLocale: emptyLocalizedString(),
+    longDescriptionLocale: emptyLocalizedString(),
     emoji: '',
     color: '',
     particles: '',
@@ -48,12 +48,12 @@ function defaultFormState(): CollectionFormState {
   };
 }
 
-function formStateFromCollection(c: AdminCollectionDto): CollectionFormState {
+function formStateFromCollection(c: Collection): CollectionFormState {
   return {
     slug: c.slug,
-    name: toRequiredLocalizedString(c.name),
-    description: toRequiredLocalizedString(c.description),
-    longDescription: toRequiredLocalizedString(c.longDescription),
+    nameLocale: toRequiredLocalizedString(c.nameLocale),
+    descriptionLocale: toRequiredLocalizedString(c.descriptionLocale),
+    longDescriptionLocale: toRequiredLocalizedString(c.longDescriptionLocale),
     emoji: c.emoji,
     color: c.color,
     particles: c.particles.join(', '),
@@ -65,9 +65,9 @@ function formStateFromCollection(c: AdminCollectionDto): CollectionFormState {
 function buildPayload(state: CollectionFormState): CreateCollectionDto {
   return {
     slug: state.slug.trim(),
-    name: cleanLocalizedString(state.name),
-    description: cleanLocalizedString(state.description),
-    longDescription: cleanLocalizedString(state.longDescription),
+    nameLocale: cleanLocalizedString(state.nameLocale),
+    descriptionLocale: cleanLocalizedString(state.descriptionLocale),
+    longDescriptionLocale: cleanLocalizedString(state.longDescriptionLocale),
     emoji: state.emoji.trim(),
     color: state.color.trim(),
     particles: state.particles
@@ -152,28 +152,35 @@ function CollectionFormModalContent() {
             <LocalizedFields localeLabel={t('collections:form.language')} locales={LOCALE_OPTIONS}>
               <LocalizedTextField
                 label={t('collections:form.name')}
-                value={form.name}
-                onChange={(name) => setForm((p) => ({ ...p, name: toRequiredLocalizedString(name) }))}
+                value={form.nameLocale}
+                onChange={(nameLocale) =>
+                  setForm((p) => ({ ...p, nameLocale: toRequiredLocalizedString(nameLocale) }))
+                }
                 required
               />
               <LocalizedTextField
                 label={t('collections:form.description')}
-                value={form.description}
-                onChange={(description) =>
-                  setForm((p) => ({ ...p, description: toRequiredLocalizedString(description) }))
+                value={form.descriptionLocale}
+                onChange={(descriptionLocale) =>
+                  setForm((p) => ({
+                    ...p,
+                    descriptionLocale: toRequiredLocalizedString(descriptionLocale),
+                  }))
                 }
                 required
               />
               <LocalizedTextField
                 label={t('collections:form.longDescription')}
-                value={form.longDescription}
-                onChange={(longDescription) =>
-                  setForm((p) => ({ ...p, longDescription: toRequiredLocalizedString(longDescription) }))
+                value={form.longDescriptionLocale}
+                onChange={(longDescriptionLocale) =>
+                  setForm((p) => ({
+                    ...p,
+                    longDescriptionLocale: toRequiredLocalizedString(longDescriptionLocale),
+                  }))
                 }
                 required
               />
-            </LocalizedFields>
-            <TextField
+            </LocalizedFields>            <TextField
               label={t('collections:form.emoji')}
               value={form.emoji}
               onChange={(e) => setForm((p) => ({ ...p, emoji: e.target.value }))}
@@ -227,9 +234,9 @@ function CollectionFormModalContent() {
             !form.slug ||
             !form.emoji.trim() ||
             !form.color.trim() ||
-            !isLocalizedStringComplete(form.name) ||
-            !isLocalizedStringComplete(form.description) ||
-            !isLocalizedStringComplete(form.longDescription)
+            !isLocalizedStringComplete(form.nameLocale) ||
+            !isLocalizedStringComplete(form.descriptionLocale) ||
+            !isLocalizedStringComplete(form.longDescriptionLocale)
           }
           onClick={() => void handleSave()}
         >

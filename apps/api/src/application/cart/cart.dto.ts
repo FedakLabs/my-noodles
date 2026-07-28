@@ -1,6 +1,16 @@
 import { TransformToInt } from '@my-noodles/api-lib/transformers';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 import { CartItem } from './cart-item.entity';
 
@@ -22,6 +32,19 @@ export class AddCartItemDto {
   @Min(1)
   @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 })
   qty?: number;
+}
+
+export class AddCartItemsBatchDto {
+  /**
+   * Products to add in one atomic request
+   */
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(50)
+  @ValidateNested({ each: true })
+  @Type(() => AddCartItemDto)
+  @ApiProperty({ type: [AddCartItemDto], minItems: 1, maxItems: 50 })
+  items!: AddCartItemDto[];
 }
 
 export class SetCartItemQtyDto {

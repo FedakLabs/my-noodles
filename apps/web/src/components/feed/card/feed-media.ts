@@ -5,7 +5,7 @@ import type { Product } from '@/api/feed';
 export function toFeedMediaItems(
   item: Pick<Product, 'name' | 'slug' | 'images' | 'videos'>,
 ): MediaGalleryItem[] {
-  const alt = item.name ?? item.slug;
+  const alt = item.name;
 
   return [
     ...item.images.map((url) => ({ type: 'image' as const, url, alt })),

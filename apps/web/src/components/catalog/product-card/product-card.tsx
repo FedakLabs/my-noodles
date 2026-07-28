@@ -46,7 +46,7 @@ export function ProductCard({
   const tCard = useTranslations('discoveryCard');
   const { formatCurrency } = useCurrency();
   const { addItem, isAddingProduct } = useCartActions();
-  const alt = product.name ?? product.slug;
+  const alt = product.name;
   const gridColumns = gridColumnsProp ?? CATALOG_PRODUCT_GRID_COLUMNS.sm;
   const [trackedView, setTrackedView] = useState<DiscoveryCardViewPhase>('summary');
   const cardView = view ?? trackedView;
@@ -109,8 +109,8 @@ export function ProductCard({
 
   return (
     <ProductDiscoveryCard
-      name={product.name ?? product.slug}
-      countryLabel={product.country.name ?? ''}
+      name={product.name}
+      countryLabel={product.country.name}
       sellerLabel={product.seller.name ?? product.seller.slug}
       priceLabel={formatCurrency(product.priceMinor, product.currency)}
       mediaItems={mediaItems}

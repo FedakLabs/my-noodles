@@ -20,13 +20,13 @@ export function cartLineToGa4Item(line: Pick<CartLine, 'slug' | 'title' | 'price
 export function productToGa4Item(
   product: Pick<Product, 'slug' | 'name' | 'priceMinor'> & {
     brand: { slug: string; name?: string } | null;
-    category: { slug: string; name?: string | null };
+    category: { slug: string; name?: string };
   },
   quantity = 1,
 ): Ga4Item {
   const item: Ga4Item = {
     item_id: product.slug,
-    item_name: product.name ?? product.slug,
+    item_name: product.name,
     price: priceMinorToMajor(product.priceMinor),
     quantity,
     item_category: product.category.slug,

@@ -1,6 +1,8 @@
 import {
   type AddCartItemDto,
+  type AddCartItemsBatchDto,
   cartControllerAddItem,
+  cartControllerAddItemsBatch,
   cartControllerClearCart,
   cartControllerGetCart,
   cartControllerRemoveItem,
@@ -25,6 +27,11 @@ export const cartMutations = {
     mutationOptions({
       mutationKey: [...cartMutations.rootKey, 'addItem'] as const,
       mutationFn: (body: AddCartItemDto) => cartControllerAddItem({ body }),
+    }),
+  addItemsBatch: () =>
+    mutationOptions({
+      mutationKey: [...cartMutations.rootKey, 'addItemsBatch'] as const,
+      mutationFn: (body: AddCartItemsBatchDto) => cartControllerAddItemsBatch({ body }),
     }),
   setItemQty: () =>
     mutationOptions({

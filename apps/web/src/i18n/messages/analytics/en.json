@@ -1,7 +1,7 @@
 {
   "consent": {
     "title": "Analytics & cookies",
-    "description": "We use Google Analytics via GTM to learn what guests enjoy browsing. Data is anonymous — no ad trackers.",
+    "description": "After you accept, we use Google Tag Manager: Google Analytics and behavior tools (such as Hotjar) to learn what guests enjoy browsing. Data is anonymous — no ad trackers.",
     "accept": "Accept",
     "reject": "Reject"
   }

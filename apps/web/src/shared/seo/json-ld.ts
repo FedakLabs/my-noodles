@@ -35,7 +35,7 @@ export function buildProductJsonLd(product: Product, locale: AppLocale): JsonLdG
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.name ?? product.slug,
+    name: product.name,
     ...(description ? { description } : {}),
     ...(product.images.length > 0 ? { image: product.images } : {}),
     sku: product.slug,

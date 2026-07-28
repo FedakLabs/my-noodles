@@ -27,7 +27,11 @@ import { OrdersController, OrdersModule } from './application/orders';
 import { ProductsModule } from './application/products';
 import { SupportController, SupportModule } from './application/support';
 import { UsersModule } from './application/users';
-import { VisitorSessionMiddleware, VisitorSessionModule } from './application/visitor-session';
+import {
+  RequireVisitorSessionMiddleware,
+  VisitorSessionMiddleware,
+  VisitorSessionModule,
+} from './application/visitor-session';
 import { config } from './config';
 import './infrastructure/logging';
 
@@ -67,6 +71,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(VisitorSessionMiddleware)
-      .forRoutes(CartController, CheckoutsController, FeedController, OrdersController, SupportController);
+      .forRoutes(CartController, CheckoutsController, FeedController, OrdersController);
+    consumer.apply(RequireVisitorSessionMiddleware).forRoutes(SupportController);
   }
 }

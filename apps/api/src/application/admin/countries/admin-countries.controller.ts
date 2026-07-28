@@ -14,9 +14,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
+import { Country } from '../../countries/country.entity';
 import {
   AdminCountriesListResponseDto,
-  AdminCountryDto,
   CreateCountryDto,
   ListAdminCountriesQueryDto,
   UpdateCountryDto,
@@ -26,7 +26,7 @@ import { AdminCountriesService } from './admin-countries.service';
 
 @ApiTags('Admin Countries')
 @ApiBearerAuth()
-@ApiExtraModels(AdminCountryDto, AdminCountriesListResponseDto)
+@ApiExtraModels(Country, AdminCountriesListResponseDto)
 @UseGuards(AuthGuard)
 @Controller('admin/countries')
 export class AdminCountriesController {
@@ -43,24 +43,21 @@ export class AdminCountriesController {
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: AdminCountryDto })
+  @ApiOkResponse({ type: Country })
   @ApiException(CountryNotFoundException)
-  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<AdminCountryDto> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<Country> {
     return await this.adminCountriesService.getById(id);
   }
 
   @Post()
-  async create(@Body() dto: CreateCountryDto): Promise<AdminCountryDto> {
+  async create(@Body() dto: CreateCountryDto): Promise<Country> {
     return await this.adminCountriesService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOkResponse({ type: AdminCountryDto })
+  @ApiOkResponse({ type: Country })
   @ApiException(CountryNotFoundException)
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateCountryDto,
-  ): Promise<AdminCountryDto> {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCountryDto): Promise<Country> {
     return await this.adminCountriesService.update(id, dto);
   }
 }

@@ -3,7 +3,7 @@ import {
   adminCategoriesControllerGetById,
   adminCategoriesControllerList,
   adminCategoriesControllerUpdate,
-  type AdminCategoryDto,
+  type Category,
   type CreateCategoryDto,
   type UpdateCategoryDto,
 } from '@my-noodles/api-clients/admin';
@@ -40,7 +40,7 @@ export const categoriesQueries = {
       queryFn: () =>
         adminCategoriesControllerGetById({
           path: { id: categoryId },
-        }) as Promise<AdminCategoryDto>,
+        }) as Promise<Category>,
     }),
 };
 

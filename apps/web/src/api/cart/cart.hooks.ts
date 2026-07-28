@@ -10,7 +10,7 @@ import { trackAddToCart, trackRemoveFromCart } from '@/shared/analytics';
 import { isApiConflict } from '@/shared/api-error';
 
 import { cartMutations, cartQueries } from './cart';
-import type { CartLineInput } from './types';
+import type { AddCartItemsBatchVariables, CartLineInput } from './types';
 
 export function useCartQuery() {
   return formatUseQuery(useQuery(cartQueries.all()), 'cart');
@@ -66,6 +66,53 @@ export function useAddCartItem() {
     addCartItemPendingProductIds,
     addCartItemIsAddingProduct,
   };
+}
+
+export function useAddCartItemsBatch() {
+  const queryClient = useQueryClient();
+  const openPanelIfFirstAdd = useCartStore((state) => state.openPanelIfFirstAdd);
+  const showCartApiError = useShowCartApiError();
+  const addItemsBatch = cartMutations.addItemsBatch();
+
+  const mutation = useMutation({
+    mutationKey: addItemsBatch.mutationKey,
+    mutationFn: ({ lines }: AddCartItemsBatchVariables, context) =>
+      addItemsBatch.mutationFn!(
+        {
+          items: lines.map((line) => ({ productId: line.productId, qty: line.qty ?? 1 })),
+        },
+        context,
+      ),
+    onSuccess: async (cart, variables) => {
+      await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
+      const addedQty = variables.lines.reduce((sum, line) => sum + (line.qty ?? 1), 0);
+      if (!variables.suppressPanelOpen) {
+        openPanelIfFirstAdd(cart.itemCount === addedQty);
+      }
+      for (const line of variables.lines) {
+        trackAddToCart(
+          {
+            productId: line.productId,
+            slug: line.slug,
+            title: line.title,
+            priceMinor: line.priceMinor,
+            currency: line.currency,
+            imageUrl: line.imageUrl,
+          },
+          line.qty ?? 1,
+        );
+      }
+    },
+    onError: async (error, variables) => {
+      const productTitles = Object.fromEntries(variables.lines.map((line) => [line.productId, line.title]));
+      showCartApiError(error, 'mutationError', productTitles);
+      if (isApiConflict(error)) {
+        await queryClient.invalidateQueries({ queryKey: cartQueries.all().queryKey });
+      }
+    },
+  });
+
+  return formatUseMutation(mutation, 'addCartItemsBatch');
 }
 
 type SetCartItemQtyVariables = {

@@ -2,7 +2,11 @@ import type { Repository } from 'typeorm';
 
 import { type CartItem } from '@/application/cart/cart-item.entity';
 import { type FeedSessionView } from '@/application/feed/feed-session-view.entity';
-import { type VisitorSession, VisitorSessionService } from '@/application/visitor-session';
+import {
+  type VisitorSession,
+  VisitorSessionNotFoundException,
+  VisitorSessionService,
+} from '@/application/visitor-session';
 
 import { jest } from '../jest-globals';
 
@@ -40,6 +44,24 @@ describe('VisitorSessionService', () => {
 
     expect(result.id).toBe('visitor-1');
     expect(visitorsCreate).not.toHaveBeenCalled();
+  });
+
+  it('require returns an existing visitor when the cookie id is valid', async () => {
+    const visitor = { id: 'visitor-1', feedExpiresAt: new Date(), cartExpiresAt: new Date() };
+    visitorsFindOne.mockResolvedValue(visitor);
+
+    await expect(service.require('visitor-1')).resolves.toBe(visitor);
+  });
+
+  it('require throws when the cookie id is missing', async () => {
+    await expect(service.require(undefined)).rejects.toBeInstanceOf(VisitorSessionNotFoundException);
+    expect(visitorsFindOne).not.toHaveBeenCalled();
+  });
+
+  it('require throws when the cookie id is unknown', async () => {
+    visitorsFindOne.mockResolvedValue(null);
+
+    await expect(service.require('missing-visitor')).rejects.toBeInstanceOf(VisitorSessionNotFoundException);
   });
 
   it('clears cart items when cart TTL has lapsed', async () => {

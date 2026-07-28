@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 
+import { Country } from '../../countries/country.entity';
 import { AdminListMetaDto, AdminListQueryDto, LocalizedStringDto } from '../common';
 
 export class ListAdminCountriesQueryDto extends AdminListQueryDto {}
@@ -21,7 +22,7 @@ export class CreateCountryDto {
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name!: LocalizedStringDto;
+  nameLocale!: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -53,7 +54,7 @@ export class UpdateCountryDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name?: LocalizedStringDto;
+  nameLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -67,30 +68,9 @@ export class UpdateCountryDto {
   themeKey?: string | null;
 }
 
-/** Admin projection of {@link Country} — exposes full `{ uk, en? }` name locales, not the resolved string. */
-export class AdminCountryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  code!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  flagEmoji!: string | null;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  themeKey!: string | null;
-}
-
 export class AdminCountriesListResponseDto {
-  @ApiProperty({ type: () => [AdminCountryDto] })
-  items!: AdminCountryDto[];
+  @ApiProperty({ type: () => [Country] })
+  items!: Country[];
 
   @ApiProperty({ type: () => AdminListMetaDto })
   meta!: AdminListMetaDto;

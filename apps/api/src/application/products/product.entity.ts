@@ -2,7 +2,7 @@ import { type LocalizedString } from '@my-noodles/api-lib/locale';
 import { LocalizedColumn, LocalizedResolved } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
 import { CURRENCY_CODES, type CurrencyCode } from '@my-noodles/utils';
-import { ApiHideProperty, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
@@ -21,39 +21,35 @@ export class Product extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @ApiHideProperty()
   @LocalizedColumn({ name: 'name' })
   nameLocale!: LocalizedString;
 
   @LocalizedResolved()
-  get name(): string | null {
+  get name(): string {
     return this.nameLocale.localized;
   }
 
-  @ApiHideProperty()
   @LocalizedColumn({ name: 'description' })
   descriptionLocale!: LocalizedString;
 
   @LocalizedResolved()
-  get description(): string | null {
+  get description(): string {
     return this.descriptionLocale.localized;
   }
 
-  @ApiHideProperty()
   @LocalizedColumn({ name: 'story' })
   storyLocale!: LocalizedString;
 
   @LocalizedResolved()
-  get story(): string | null {
+  get story(): string {
     return this.storyLocale.localized;
   }
 
-  @ApiHideProperty()
   @LocalizedColumn({ name: 'for_whom' })
   forWhomLocale!: LocalizedString;
 
   @LocalizedResolved()
-  get forWhom(): string | null {
+  get forWhom(): string {
     return this.forWhomLocale.localized;
   }
 

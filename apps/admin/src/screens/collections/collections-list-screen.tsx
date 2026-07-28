@@ -2,18 +2,19 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminCollectionDto } from '@my-noodles/api-clients/admin';
+import type { Collection } from '@my-noodles/api-clients/admin';
 import { createColumnHelper, DataTable, useDataTable } from '@my-noodles/ui';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useCollectionsList } from '@/api/collections';
+import { CollectionActiveCheckbox } from '@/components/collections/collection-active-checkbox';
 import {
   CollectionFormModal,
   type CollectionFormModalRef,
 } from '@/components/collections/collection-form-modal';
 
-const columnHelper = createColumnHelper<AdminCollectionDto>();
+const columnHelper = createColumnHelper<Collection>();
 
 export function CollectionsListScreen() {
   const { t } = useTranslation(['collections', 'common']);
@@ -34,7 +35,7 @@ export function CollectionsListScreen() {
       columnHelper.accessor('slug', {
         header: t('collections:list.columnSlug'),
       }),
-      columnHelper.accessor((row) => row.name.uk, {
+      columnHelper.accessor((row) => row.name, {
         id: 'name',
         header: t('collections:list.columnName'),
       }),
@@ -48,21 +49,11 @@ export function CollectionsListScreen() {
       }),
       columnHelper.accessor('isActive', {
         header: t('collections:list.columnActive'),
-        cell: (info) => (info.getValue() ? '✓' : '—'),
-      }),
-      columnHelper.display({
-        id: 'actions',
-        header: '',
         cell: ({ row }) => (
-          <Button
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              collectionFormModalRef.current?.open({ mode: 'edit', collectionId: row.original.id });
-            }}
-          >
-            {t('common:actions.edit')}
-          </Button>
+          <CollectionActiveCheckbox
+            collectionId={row.original.id}
+            isActive={row.original.isActive}
+          />
         ),
       }),
     ],

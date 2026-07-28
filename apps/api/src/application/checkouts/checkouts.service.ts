@@ -322,7 +322,7 @@ export class CheckoutsService extends TransactionalRepository {
           cartItems.map((item) => ({
             orderId: savedOrder.id,
             productId: item.productId,
-            titleSnapshot: item.product.name ?? '',
+            titleSnapshot: item.product.name,
             priceMinorSnapshot: item.product.priceMinor,
             qty: item.qty,
           })),
@@ -355,7 +355,7 @@ export class CheckoutsService extends TransactionalRepository {
 
         if (existing) {
           existing.qty += cartItem.qty;
-          existing.titleSnapshot = cartItem.product.name ?? '';
+          existing.titleSnapshot = cartItem.product.name;
           existing.priceMinorSnapshot = cartItem.product.priceMinor;
           await this.orderItemsRepository.save(existing);
           continue;
@@ -365,7 +365,7 @@ export class CheckoutsService extends TransactionalRepository {
           this.orderItemsRepository.create({
             orderId: order.id,
             productId: cartItem.productId,
-            titleSnapshot: cartItem.product.name ?? '',
+            titleSnapshot: cartItem.product.name,
             priceMinorSnapshot: cartItem.product.priceMinor,
             qty: cartItem.qty,
           }),

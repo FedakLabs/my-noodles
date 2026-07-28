@@ -102,12 +102,12 @@ function LikedListPanel({
                   <Box
                     component="img"
                     src={product.images[0]}
-                    alt={product.name ?? product.slug}
+                    alt={product.name}
                     sx={{ width: 56, height: 56, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }}
                   />
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Typography variant="subtitle2" noWrap sx={{ fontWeight: 600 }}>
-                      {product.name ?? product.slug}
+                      {product.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {formatCurrency(product.priceMinor, product.currency)}
@@ -168,7 +168,7 @@ export function FeedLikedList({ open, onClose, onUnliked }: FeedLikedListProps) 
   };
 
   const handleAddToCart = (product: LikedProduct) => {
-    const name = product.name ?? product.slug;
+    const name = product.name;
     void addCartItemAsync({
       productId: product.id,
       slug: product.slug,

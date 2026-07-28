@@ -3,8 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import type { AdminProductDto } from '@my-noodles/api-clients/admin';
-import { DEFAULT_LOCALE, pickLocalized } from '@my-noodles/locale';
+import type { Product } from '@my-noodles/api-clients/admin';
 import {
   createColumnHelper,
   DataTable,
@@ -38,7 +37,7 @@ import {
 } from '@/screens/products/search-params';
 import { formatCurrency } from '@/utils/format-currency';
 
-const columnHelper = createColumnHelper<AdminProductDto>();
+const columnHelper = createColumnHelper<Product>();
 
 export function ProductsListScreen() {
   const { t } = useTranslation(['products', 'common']);
@@ -100,7 +99,7 @@ export function ProductsListScreen() {
       columnHelper.accessor('slug', {
         header: t('products:list.columnSlug'),
       }),
-      columnHelper.accessor((row) => pickLocalized(row.name, DEFAULT_LOCALE), {
+      columnHelper.accessor((row) => row.name, {
         id: 'name',
         header: t('products:list.columnName'),
         cell: ({ row, getValue }) => (
@@ -131,11 +130,11 @@ export function ProductsListScreen() {
         id: 'brand',
         header: t('products:list.columnBrand'),
       }),
-      columnHelper.accessor((row) => pickLocalized(row.country.name, DEFAULT_LOCALE), {
+      columnHelper.accessor((row) => row.country.name, {
         id: 'country',
         header: t('products:list.columnCountry'),
       }),
-      columnHelper.accessor((row) => pickLocalized(row.category.name, DEFAULT_LOCALE), {
+      columnHelper.accessor((row) => row.category.name, {
         id: 'category',
         header: t('products:list.columnCategory'),
       }),
@@ -153,7 +152,7 @@ export function ProductsListScreen() {
                 confirmQuantityModalRef.current?.open({
                   productId: product.id,
                   slug: product.slug,
-                  name: pickLocalized(product.name, DEFAULT_LOCALE),
+                  name: product.name,
                   from: product.quantity,
                   to: next,
                 });
@@ -240,7 +239,7 @@ export function ProductsListScreen() {
                 return values
                   .map((id) => {
                     const category = categories?.items.find((item) => item.id === id);
-                    return category ? pickLocalized(category.name, DEFAULT_LOCALE) : id;
+                    return category ? category.name : id;
                   })
                   .join(', ');
               },
@@ -249,7 +248,7 @@ export function ProductsListScreen() {
         >
           {(categories?.items ?? []).map((category) => (
             <MenuItem key={category.id} value={category.id}>
-              {pickLocalized(category.name, DEFAULT_LOCALE)}
+              {category.name}
             </MenuItem>
           ))}
         </SelectField>
@@ -309,7 +308,7 @@ export function ProductsListScreen() {
                 return values
                   .map((id) => {
                     const country = countries?.items.find((item) => item.id === id);
-                    return country ? pickLocalized(country.name, DEFAULT_LOCALE) : id;
+                    return country ? country.name : id;
                   })
                   .join(', ');
               },
@@ -318,7 +317,7 @@ export function ProductsListScreen() {
         >
           {(countries?.items ?? []).map((country) => (
             <MenuItem key={country.id} value={country.id}>
-              {pickLocalized(country.name, DEFAULT_LOCALE)}
+              {country.name}
             </MenuItem>
           ))}
         </SelectField>

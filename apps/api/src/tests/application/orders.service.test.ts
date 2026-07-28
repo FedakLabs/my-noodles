@@ -1,6 +1,7 @@
 import { type InventoryService } from '@/application/inventory/inventory.service';
 import { OrderCancelledReason } from '@/application/orders/order-cancelled-reason';
 import { OrderStatus } from '@/application/orders/order-status';
+import { Order } from '@/application/orders/order.entity';
 import {
   OrderCancelNotAllowedException,
   OrderNotFoundException,
@@ -26,8 +27,8 @@ describe('OrdersService', () => {
     );
   });
 
-  it('returns an order for the owning visitor and sets grandTotalMinor', async () => {
-    const order = {
+  it('returns an order for the owning visitor with grandTotalMinor from delivery', async () => {
+    const order = Object.assign(new Order(), {
       id: 'order-1',
       visitorSessionId: 'visitor-1',
       status: OrderStatus.New,
@@ -35,7 +36,7 @@ describe('OrdersService', () => {
       currency: 'UAH',
       delivery: { shippingCostMinor: 650 },
       items: [{ productId: 'product-1', qty: 1 }],
-    };
+    });
 
     ordersFindOne.mockResolvedValue(order);
 

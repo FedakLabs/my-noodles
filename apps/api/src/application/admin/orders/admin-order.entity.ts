@@ -1,7 +1,8 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
 import { OrderStatus } from '@/application/orders/order-status';
+import { availableOrderTransitions } from '@/application/orders/order-status-transitions';
 import { Order } from '@/application/orders/order.entity';
 
 /**
@@ -12,8 +13,11 @@ import { Order } from '@/application/orders/order.entity';
  */
 export class AdminOrder extends Order {
   /** Allowed next statuses for transition UI. */
-  @ApiPropertyOptional({ enum: OrderStatus, isArray: true })
-  availableTransitions?: OrderStatus[];
+  @Expose()
+  @ApiProperty({ enum: OrderStatus, isArray: true, enumName: 'OrderStatus' })
+  get availableTransitions(): OrderStatus[] {
+    return availableOrderTransitions(this.status);
+  }
 
   /**
    * Checkout submit time — first draft→new status history row.

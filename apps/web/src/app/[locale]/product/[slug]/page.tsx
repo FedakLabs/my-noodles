@@ -16,7 +16,7 @@ export const generateMetadata = withPageLocaleMetadata<ProductPageProps>(async (
   return buildPageMetadata({
     locale,
     pathname: `/product/${slug}`,
-    title: product.name ?? product.slug,
+    title: product.name,
     description: product.description ?? product.story,
   });
 });

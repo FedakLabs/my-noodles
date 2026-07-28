@@ -1,6 +1,7 @@
 import { CheckoutCalculator } from '@/application/checkouts';
 import { Checkout } from '@/application/checkouts/checkout.entity';
 import { Order } from '@/application/orders';
+import { OrderDelivery } from '@/application/orders/order-delivery.entity';
 
 import { describe, expect, it } from '../jest-globals';
 
@@ -16,11 +17,12 @@ describe('CheckoutCalculator', () => {
     ).toBe(3_500);
   });
 
-  it('sets grandTotalMinor to products total when there is no estimate', () => {
+  it('leaves grandTotalMinor as products total when there is no estimate', () => {
     const checkout = Object.assign(new Checkout(), {
       deliveryEstimate: null,
       order: Object.assign(new Order(), {
         totalMinor: 9_900,
+        delivery: Object.assign(new OrderDelivery(), { shippingCostMinor: null }),
       }),
     });
 
@@ -29,7 +31,7 @@ describe('CheckoutCalculator', () => {
     expect(checkout.order.grandTotalMinor).toBe(9_900);
   });
 
-  it('adds shipping into grandTotalMinor when estimate is present', () => {
+  it('mirrors estimate shipping onto delivery so grandTotalMinor includes it', () => {
     const checkout = Object.assign(new Checkout(), {
       deliveryEstimate: {
         estimatedDeliveryAt: '2026-07-20T00:00:00.000Z',
@@ -39,11 +41,13 @@ describe('CheckoutCalculator', () => {
       },
       order: Object.assign(new Order(), {
         totalMinor: 9_900,
+        delivery: Object.assign(new OrderDelivery(), { shippingCostMinor: null }),
       }),
     });
 
     calculator.calculateTotals(checkout);
 
+    expect(checkout.order.delivery?.shippingCostMinor).toBe(650);
     expect(checkout.order.grandTotalMinor).toBe(10_550);
   });
 
@@ -57,11 +61,13 @@ describe('CheckoutCalculator', () => {
       },
       order: Object.assign(new Order(), {
         totalMinor: 9_900,
+        delivery: Object.assign(new OrderDelivery(), { shippingCostMinor: 100 }),
       }),
     });
 
     calculator.calculateTotals(checkout);
 
+    expect(checkout.order.delivery?.shippingCostMinor).toBeNull();
     expect(checkout.order.grandTotalMinor).toBe(9_900);
   });
 });

@@ -11,6 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { Collection } from '../../collections/collection.entity';
 import { AdminListMetaDto, AdminListQueryDto, LocalizedStringDto } from '../common';
 
 export class ListAdminCollectionsQueryDto extends AdminListQueryDto {}
@@ -24,17 +25,17 @@ export class CreateCollectionDto {
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name!: LocalizedStringDto;
+  nameLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  description!: LocalizedStringDto;
+  descriptionLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  longDescription!: LocalizedStringDto;
+  longDescriptionLocale!: LocalizedStringDto;
 
   @ApiProperty({ type: String })
   @IsString()
@@ -80,19 +81,19 @@ export class UpdateCollectionDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name?: LocalizedStringDto;
+  nameLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: () => LocalizedStringDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  description?: LocalizedStringDto;
+  descriptionLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: () => LocalizedStringDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  longDescription?: LocalizedStringDto;
+  longDescriptionLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String })
   @IsOptional()
@@ -132,48 +133,9 @@ export class UpdateCollectionDto {
   isActive?: boolean;
 }
 
-/** Admin projection of {@link Collection} — exposes full `{ uk, en? }` locales, not resolved strings. */
-export class AdminCollectionDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  description!: LocalizedStringDto;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  longDescription!: LocalizedStringDto;
-
-  @ApiProperty({ type: String })
-  emoji!: string;
-
-  @ApiProperty({ type: String })
-  color!: string;
-
-  @ApiProperty({ type: [String] })
-  particles!: string[];
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  heroImage!: string | null;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  themeKey!: string | null;
-
-  @ApiProperty()
-  sortOrder!: number;
-
-  @ApiProperty()
-  isActive!: boolean;
-}
-
 export class AdminCollectionsListResponseDto {
-  @ApiProperty({ type: () => [AdminCollectionDto] })
-  items!: AdminCollectionDto[];
+  @ApiProperty({ type: () => [Collection] })
+  items!: Collection[];
 
   @ApiProperty({ type: () => AdminListMetaDto })
   meta!: AdminListMetaDto;

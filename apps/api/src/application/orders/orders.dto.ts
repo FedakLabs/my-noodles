@@ -1,6 +1,7 @@
+import { ApiEnum } from '@my-noodles/api-lib/nest';
 import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 
-import { DeliveryMethod, DeliveryProvider, IsDeliveryMethod, IsDeliveryProvider } from './order-delivery.dto';
+import { DeliveryMethod, DeliveryProvider } from './order-delivery.dto';
 
 function isCustomDelivery(delivery: { method?: DeliveryMethod }): boolean {
   return delivery.method === DeliveryMethod.Custom;
@@ -12,11 +13,11 @@ function hasOptionalText(value: string | undefined | null): boolean {
 
 export class UpdateOrderDeliveryDto {
   @IsOptional()
-  @IsDeliveryProvider()
+  @ApiEnum(DeliveryProvider, 'DeliveryProvider')
   provider?: DeliveryProvider;
 
   @IsOptional()
-  @IsDeliveryMethod()
+  @ApiEnum(DeliveryMethod, 'DeliveryMethod')
   method?: DeliveryMethod;
 
   @IsOptional()
@@ -71,10 +72,10 @@ export class UpdateOrderDeliveryDto {
 }
 
 export class CreateOrderDeliveryDto {
-  @IsDeliveryProvider()
+  @ApiEnum(DeliveryProvider, 'DeliveryProvider')
   provider!: DeliveryProvider;
 
-  @IsDeliveryMethod()
+  @ApiEnum(DeliveryMethod, 'DeliveryMethod')
   method!: DeliveryMethod;
 
   @ValidateIf(

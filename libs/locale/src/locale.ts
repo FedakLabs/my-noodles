@@ -11,10 +11,11 @@ export const LOCALE_ALIASES: Record<string, Locale> = {
 
 export type LocalizedStringRecord = Partial<Record<Locale, string>>;
 
-export type LocalizedStringData = Partial<Record<Locale, string>> & Record<typeof DEFAULT_LOCALE, string>;
-
 /** Admin write / form payload — every supported locale required. */
 export type RequiredLocalizedString = Record<Locale, string>;
+
+/** Stored / on-the-wire locale map — every supported locale is always present. */
+export type LocalizedStringData = RequiredLocalizedString;
 
 export const APP_LOCALE_HEADER = 'x-app-locale';
 

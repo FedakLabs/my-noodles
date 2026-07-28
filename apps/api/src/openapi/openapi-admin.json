@@ -1787,7 +1787,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCategoryDto"
+                  "$ref": "#/components/schemas/Category"
                 }
               }
             }
@@ -1820,7 +1820,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCategoryDto"
+                  "$ref": "#/components/schemas/Category"
                 }
               }
             }
@@ -1913,7 +1913,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCategoryDto"
+                  "$ref": "#/components/schemas/Category"
                 }
               }
             }
@@ -2056,7 +2056,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCollectionDto"
+                  "$ref": "#/components/schemas/Collection"
                 }
               }
             }
@@ -2089,7 +2089,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCollectionDto"
+                  "$ref": "#/components/schemas/Collection"
                 }
               }
             }
@@ -2182,7 +2182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCollectionDto"
+                  "$ref": "#/components/schemas/Collection"
                 }
               }
             }
@@ -2325,7 +2325,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCountryDto"
+                  "$ref": "#/components/schemas/Country"
                 }
               }
             }
@@ -2358,7 +2358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCountryDto"
+                  "$ref": "#/components/schemas/Country"
                 }
               }
             }
@@ -2451,7 +2451,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminCountryDto"
+                  "$ref": "#/components/schemas/Country"
                 }
               }
             }
@@ -2639,7 +2639,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminProductDto"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -2857,7 +2857,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminProductDto"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -2950,7 +2950,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminProductDto"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
@@ -3488,6 +3488,32 @@
       }
     },
     "schemas": {
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "new",
+          "confirmed",
+          "sent",
+          "arrived",
+          "completed",
+          "cancelled",
+          "returned",
+          "archived"
+        ]
+      },
+      "LocalizedStringSchema": {
+        "type": "object",
+        "properties": {
+          "uk": {
+            "type": "string"
+          },
+          "en": {
+            "type": "string"
+          }
+        },
+        "required": ["uk", "en"]
+      },
       "CurrencyCode": {
         "type": "string",
         "enum": ["UAH", "USD"]
@@ -3549,9 +3575,11 @@
       "Country": {
         "type": "object",
         "properties": {
+          "nameLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
+          },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -3577,14 +3605,16 @@
             }
           }
         },
-        "required": ["name", "id", "code", "slug", "flagEmoji", "themeKey", "products"]
+        "required": ["nameLocale", "name", "id", "code", "slug", "flagEmoji", "themeKey", "products"]
       },
       "Category": {
         "type": "object",
         "properties": {
+          "nameLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
+          },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -3610,22 +3640,28 @@
             }
           }
         },
-        "required": ["name", "id", "slug", "icon", "sortOrder", "themeKey", "products"]
+        "required": ["nameLocale", "name", "id", "slug", "icon", "sortOrder", "themeKey", "products"]
       },
       "Collection": {
         "type": "object",
         "properties": {
+          "nameLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
+          },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "descriptionLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "longDescriptionLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
           },
           "longDescription": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -3667,8 +3703,11 @@
           }
         },
         "required": [
+          "nameLocale",
           "name",
+          "descriptionLocale",
           "description",
+          "longDescriptionLocale",
           "longDescription",
           "id",
           "slug",
@@ -3685,21 +3724,29 @@
       "Product": {
         "type": "object",
         "properties": {
+          "nameLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
+          },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "descriptionLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "storyLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
           },
           "story": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "forWhomLocale": {
+            "$ref": "#/components/schemas/LocalizedStringSchema"
           },
           "forWhom": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "currency": {
             "allOf": [
@@ -3777,8 +3824,7 @@
             ]
           },
           "sellerId": {
-            "type": "string",
-            "description": "DB-nullable until seed backfill; required on admin create/update."
+            "type": "string"
           },
           "seller": {
             "$ref": "#/components/schemas/Seller"
@@ -3815,9 +3861,13 @@
           }
         },
         "required": [
+          "nameLocale",
           "name",
+          "descriptionLocale",
           "description",
+          "storyLocale",
           "story",
+          "forWhomLocale",
           "forWhom",
           "currency",
           "available",
@@ -4101,8 +4151,7 @@
             "format": "date-time"
           },
           "grandTotalMinor": {
-            "type": "number",
-            "description": "Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.\nResponse-only — set by `CheckoutCalculator.calculateTotals`."
+            "type": "number"
           },
           "id": {
             "type": "string"
@@ -4190,6 +4239,7 @@
         },
         "required": [
           "createdAt",
+          "grandTotalMinor",
           "id",
           "visitorSessionId",
           "visitorSession",
@@ -4314,25 +4364,12 @@
             "format": "date-time"
           },
           "grandTotalMinor": {
-            "type": "number",
-            "description": "Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.\nResponse-only — set by `CheckoutCalculator.calculateTotals`."
+            "type": "number"
           },
           "availableTransitions": {
-            "description": "Allowed next statuses for transition UI.",
             "type": "array",
             "items": {
-              "type": "string",
-              "enum": [
-                "draft",
-                "new",
-                "confirmed",
-                "sent",
-                "arrived",
-                "completed",
-                "cancelled",
-                "returned",
-                "archived"
-              ]
+              "$ref": "#/components/schemas/OrderStatus"
             }
           },
           "orderedAt": {
@@ -4426,6 +4463,8 @@
         },
         "required": [
           "createdAt",
+          "grandTotalMinor",
+          "availableTransitions",
           "id",
           "visitorSessionId",
           "visitorSession",
@@ -4474,20 +4513,6 @@
           }
         },
         "required": ["items", "meta"]
-      },
-      "OrderStatus": {
-        "type": "string",
-        "enum": [
-          "draft",
-          "new",
-          "confirmed",
-          "sent",
-          "arrived",
-          "completed",
-          "cancelled",
-          "returned",
-          "archived"
-        ]
       },
       "AdminOrdersSortBy": {
         "type": "string",
@@ -4701,6 +4726,21 @@
         },
         "required": ["visitorSessionId", "cartExpiresAt", "items", "totalMinor", "itemCount", "currency"]
       },
+      "AdminCategoriesListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
+      },
       "LocalizedStringDto": {
         "type": "object",
         "properties": {
@@ -4715,47 +4755,6 @@
         },
         "required": ["uk", "en"]
       },
-      "AdminCategoryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "icon": {
-            "type": "string",
-            "nullable": true
-          },
-          "sortOrder": {
-            "type": "number"
-          },
-          "themeKey": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": ["id", "slug", "name", "sortOrder"]
-      },
-      "AdminCategoriesListResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminCategoryDto"
-            }
-          },
-          "meta": {
-            "$ref": "#/components/schemas/AdminListMetaDto"
-          }
-        },
-        "required": ["items", "meta"]
-      },
       "CreateCategoryDto": {
         "type": "object",
         "properties": {
@@ -4763,7 +4762,7 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "icon": {
@@ -4779,7 +4778,7 @@
             "nullable": true
           }
         },
-        "required": ["slug", "name", "sortOrder"]
+        "required": ["slug", "nameLocale", "sortOrder"]
       },
       "UpdateCategoryDto": {
         "type": "object",
@@ -4788,7 +4787,7 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "icon": {
@@ -4805,71 +4804,13 @@
           }
         }
       },
-      "AdminCollectionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "description": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "longDescription": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "emoji": {
-            "type": "string"
-          },
-          "color": {
-            "type": "string"
-          },
-          "particles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "heroImage": {
-            "type": "string",
-            "nullable": true
-          },
-          "themeKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "sortOrder": {
-            "type": "number"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "slug",
-          "name",
-          "description",
-          "longDescription",
-          "emoji",
-          "color",
-          "particles",
-          "sortOrder",
-          "isActive"
-        ]
-      },
       "AdminCollectionsListResponseDto": {
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AdminCollectionDto"
+              "$ref": "#/components/schemas/Collection"
             }
           },
           "meta": {
@@ -4885,13 +4826,13 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "description": {
+          "descriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "longDescription": {
+          "longDescriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "emoji": {
@@ -4924,9 +4865,9 @@
         },
         "required": [
           "slug",
-          "name",
-          "description",
-          "longDescription",
+          "nameLocale",
+          "descriptionLocale",
+          "longDescriptionLocale",
           "emoji",
           "color",
           "particles",
@@ -4941,13 +4882,13 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "description": {
+          "descriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "longDescription": {
+          "longDescriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "emoji": {
@@ -4979,39 +4920,13 @@
           }
         }
       },
-      "AdminCountryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "flagEmoji": {
-            "type": "string",
-            "nullable": true
-          },
-          "themeKey": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": ["id", "code", "slug", "name"]
-      },
       "AdminCountriesListResponseDto": {
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AdminCountryDto"
+              "$ref": "#/components/schemas/Country"
             }
           },
           "meta": {
@@ -5032,7 +4947,7 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "flagEmoji": {
@@ -5045,7 +4960,7 @@
             "nullable": true
           }
         },
-        "required": ["code", "slug", "name"]
+        "required": ["code", "slug", "nameLocale"]
       },
       "UpdateCountryDto": {
         "type": "object",
@@ -5059,7 +4974,7 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "flagEmoji": {
@@ -5072,6 +4987,21 @@
             "nullable": true
           }
         }
+      },
+      "AdminProductsListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/AdminListMetaDto"
+          }
+        },
+        "required": ["items", "meta"]
       },
       "AdminProductFlavorDto": {
         "type": "object",
@@ -5092,190 +5022,6 @@
         },
         "required": ["spice", "sweet", "texture"]
       },
-      "AdminBrandSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "slug", "name"]
-      },
-      "AdminSellerSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "slug", "name"]
-      },
-      "AdminCountrySummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          }
-        },
-        "required": ["id", "slug", "name"]
-      },
-      "AdminCategorySummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          }
-        },
-        "required": ["id", "slug", "name"]
-      },
-      "AdminProductDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "description": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "story": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "forWhom": {
-            "$ref": "#/components/schemas/LocalizedStringDto"
-          },
-          "weight": {
-            "type": "string",
-            "nullable": true
-          },
-          "priceMinor": {
-            "type": "number"
-          },
-          "currency": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CurrencyCode"
-              }
-            ]
-          },
-          "flavor": {
-            "$ref": "#/components/schemas/AdminProductFlavorDto"
-          },
-          "allergens": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "videos": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "isTriedByUs": {
-            "type": "boolean"
-          },
-          "quantity": {
-            "type": "number"
-          },
-          "available": {
-            "type": "boolean"
-          },
-          "sortWeight": {
-            "type": "number"
-          },
-          "brand": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AdminBrandSummaryDto"
-              }
-            ]
-          },
-          "seller": {
-            "$ref": "#/components/schemas/AdminSellerSummaryDto"
-          },
-          "country": {
-            "$ref": "#/components/schemas/AdminCountrySummaryDto"
-          },
-          "category": {
-            "$ref": "#/components/schemas/AdminCategorySummaryDto"
-          }
-        },
-        "required": [
-          "id",
-          "slug",
-          "name",
-          "description",
-          "story",
-          "forWhom",
-          "priceMinor",
-          "currency",
-          "flavor",
-          "allergens",
-          "images",
-          "videos",
-          "isTriedByUs",
-          "quantity",
-          "available",
-          "sortWeight",
-          "seller",
-          "country",
-          "category"
-        ]
-      },
-      "AdminProductsListResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminProductDto"
-            }
-          },
-          "meta": {
-            "$ref": "#/components/schemas/AdminListMetaDto"
-          }
-        },
-        "required": ["items", "meta"]
-      },
       "CreateProductDto": {
         "type": "object",
         "properties": {
@@ -5283,16 +5029,16 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "description": {
+          "descriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "story": {
+          "storyLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "forWhom": {
+          "forWhomLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "weight": {
@@ -5365,10 +5111,10 @@
         },
         "required": [
           "slug",
-          "name",
-          "description",
-          "story",
-          "forWhom",
+          "nameLocale",
+          "descriptionLocale",
+          "storyLocale",
+          "forWhomLocale",
           "priceMinor",
           "currency",
           "flavor",
@@ -5391,16 +5137,16 @@
             "type": "string",
             "minLength": 1
           },
-          "name": {
+          "nameLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "description": {
+          "descriptionLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "story": {
+          "storyLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
-          "forWhom": {
+          "forWhomLocale": {
             "$ref": "#/components/schemas/LocalizedStringDto"
           },
           "weight": {

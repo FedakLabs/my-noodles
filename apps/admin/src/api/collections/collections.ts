@@ -3,7 +3,7 @@ import {
   adminCollectionsControllerGetById,
   adminCollectionsControllerList,
   adminCollectionsControllerUpdate,
-  type AdminCollectionDto,
+  type Collection,
   type CreateCollectionDto,
   type UpdateCollectionDto,
 } from '@my-noodles/api-clients/admin';
@@ -35,7 +35,7 @@ export const collectionsQueries = {
       queryFn: () =>
         adminCollectionsControllerGetById({
           path: { id: collectionId },
-        }) as Promise<AdminCollectionDto>,
+        }) as Promise<Collection>,
     }),
 };
 

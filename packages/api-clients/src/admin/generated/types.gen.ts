@@ -4,6 +4,25 @@ export type ClientOptions = {
     baseUrl: string;
 };
 
+export const OrderStatus = {
+    DRAFT: 'draft',
+    NEW: 'new',
+    CONFIRMED: 'confirmed',
+    SENT: 'sent',
+    ARRIVED: 'arrived',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+    RETURNED: 'returned',
+    ARCHIVED: 'archived'
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+export type LocalizedStringSchema = {
+    uk: string;
+    en: string;
+};
+
 export const CurrencyCode = { UAH: 'UAH', USD: 'USD' } as const;
 
 export type CurrencyCode = typeof CurrencyCode[keyof typeof CurrencyCode];
@@ -26,7 +45,8 @@ export type Seller = {
 };
 
 export type Country = {
-    name: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
     id: string;
     code: string;
     slug: string;
@@ -36,7 +56,8 @@ export type Country = {
 };
 
 export type Category = {
-    name: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
     id: string;
     slug: string;
     icon: string | null;
@@ -46,9 +67,12 @@ export type Category = {
 };
 
 export type Collection = {
-    name: string | null;
-    description: string | null;
-    longDescription: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
+    descriptionLocale: LocalizedStringSchema;
+    description: string;
+    longDescriptionLocale: LocalizedStringSchema;
+    longDescription: string;
     id: string;
     slug: string;
     emoji: string;
@@ -62,10 +86,14 @@ export type Collection = {
 };
 
 export type Product = {
-    name: string | null;
-    description: string | null;
-    story: string | null;
-    forWhom: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
+    descriptionLocale: LocalizedStringSchema;
+    description: string;
+    storyLocale: LocalizedStringSchema;
+    story: string;
+    forWhomLocale: LocalizedStringSchema;
+    forWhom: string;
     currency: CurrencyCode;
     available: boolean;
     inStock: boolean;
@@ -86,9 +114,6 @@ export type Product = {
     sortWeight: number;
     brandId: string | null;
     brand: Brand | null;
-    /**
-     * DB-nullable until seed backfill; required on admin create/update.
-     */
     sellerId: string;
     seller: Seller;
     countryId: string;
@@ -175,11 +200,7 @@ export type Checkout = {
 
 export type Order = {
     createdAt: string;
-    /**
-     * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
-     * Response-only — set by `CheckoutCalculator.calculateTotals`.
-     */
-    grandTotalMinor?: number;
+    grandTotalMinor: number;
     id: string;
     visitorSessionId: string | null;
     visitorSession: VisitorSession | null;
@@ -220,15 +241,8 @@ export type OrderDelivery = {
 
 export type AdminOrder = {
     createdAt: string;
-    /**
-     * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
-     * Response-only — set by `CheckoutCalculator.calculateTotals`.
-     */
-    grandTotalMinor?: number;
-    /**
-     * Allowed next statuses for transition UI.
-     */
-    availableTransitions?: Array<'draft' | 'new' | 'confirmed' | 'sent' | 'arrived' | 'completed' | 'cancelled' | 'returned' | 'archived'>;
+    grandTotalMinor: number;
+    availableTransitions: Array<OrderStatus>;
     orderedAt?: string | null;
     id: string;
     visitorSessionId: string | null;
@@ -257,20 +271,6 @@ export type AdminOrdersListResponseDto = {
     items: Array<AdminOrder>;
     meta: AdminOrderListMetaDto;
 };
-
-export const OrderStatus = {
-    DRAFT: 'draft',
-    NEW: 'new',
-    CONFIRMED: 'confirmed',
-    SENT: 'sent',
-    ARRIVED: 'arrived',
-    COMPLETED: 'completed',
-    CANCELLED: 'cancelled',
-    RETURNED: 'returned',
-    ARCHIVED: 'archived'
-} as const;
-
-export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export const AdminOrdersSortBy = {
     CREATED_AT: 'createdAt',
@@ -351,28 +351,19 @@ export type AdminCartDetailDto = {
     currency: CurrencyCode;
 };
 
+export type AdminCategoriesListResponseDto = {
+    items: Array<Category>;
+    meta: AdminListMetaDto;
+};
+
 export type LocalizedStringDto = {
     uk: string;
     en: string;
 };
 
-export type AdminCategoryDto = {
-    id: string;
-    slug: string;
-    name: LocalizedStringDto;
-    icon?: string | null;
-    sortOrder: number;
-    themeKey?: string | null;
-};
-
-export type AdminCategoriesListResponseDto = {
-    items: Array<AdminCategoryDto>;
-    meta: AdminListMetaDto;
-};
-
 export type CreateCategoryDto = {
     slug: string;
-    name: LocalizedStringDto;
+    nameLocale: LocalizedStringDto;
     icon?: string | null;
     sortOrder: number;
     themeKey?: string | null;
@@ -380,37 +371,22 @@ export type CreateCategoryDto = {
 
 export type UpdateCategoryDto = {
     slug?: string;
-    name?: LocalizedStringDto;
+    nameLocale?: LocalizedStringDto;
     icon?: string | null;
     sortOrder?: number;
     themeKey?: string | null;
 };
 
-export type AdminCollectionDto = {
-    id: string;
-    slug: string;
-    name: LocalizedStringDto;
-    description: LocalizedStringDto;
-    longDescription: LocalizedStringDto;
-    emoji: string;
-    color: string;
-    particles: Array<string>;
-    heroImage?: string | null;
-    themeKey?: string | null;
-    sortOrder: number;
-    isActive: boolean;
-};
-
 export type AdminCollectionsListResponseDto = {
-    items: Array<AdminCollectionDto>;
+    items: Array<Collection>;
     meta: AdminListMetaDto;
 };
 
 export type CreateCollectionDto = {
     slug: string;
-    name: LocalizedStringDto;
-    description: LocalizedStringDto;
-    longDescription: LocalizedStringDto;
+    nameLocale: LocalizedStringDto;
+    descriptionLocale: LocalizedStringDto;
+    longDescriptionLocale: LocalizedStringDto;
     emoji: string;
     color: string;
     particles: Array<string>;
@@ -422,9 +398,9 @@ export type CreateCollectionDto = {
 
 export type UpdateCollectionDto = {
     slug?: string;
-    name?: LocalizedStringDto;
-    description?: LocalizedStringDto;
-    longDescription?: LocalizedStringDto;
+    nameLocale?: LocalizedStringDto;
+    descriptionLocale?: LocalizedStringDto;
+    longDescriptionLocale?: LocalizedStringDto;
     emoji?: string;
     color?: string;
     particles?: Array<string>;
@@ -434,24 +410,15 @@ export type UpdateCollectionDto = {
     isActive?: boolean;
 };
 
-export type AdminCountryDto = {
-    id: string;
-    code: string;
-    slug: string;
-    name: LocalizedStringDto;
-    flagEmoji?: string | null;
-    themeKey?: string | null;
-};
-
 export type AdminCountriesListResponseDto = {
-    items: Array<AdminCountryDto>;
+    items: Array<Country>;
     meta: AdminListMetaDto;
 };
 
 export type CreateCountryDto = {
     code: string;
     slug: string;
-    name: LocalizedStringDto;
+    nameLocale: LocalizedStringDto;
     flagEmoji?: string | null;
     themeKey?: string | null;
 };
@@ -459,9 +426,14 @@ export type CreateCountryDto = {
 export type UpdateCountryDto = {
     code?: string;
     slug?: string;
-    name?: LocalizedStringDto;
+    nameLocale?: LocalizedStringDto;
     flagEmoji?: string | null;
     themeKey?: string | null;
+};
+
+export type AdminProductsListResponseDto = {
+    items: Array<Product>;
+    meta: AdminListMetaDto;
 };
 
 export type AdminProductFlavorDto = {
@@ -470,65 +442,12 @@ export type AdminProductFlavorDto = {
     texture: string;
 };
 
-export type AdminBrandSummaryDto = {
-    id: string;
-    slug: string;
-    name: string;
-};
-
-export type AdminSellerSummaryDto = {
-    id: string;
-    slug: string;
-    name: string;
-};
-
-export type AdminCountrySummaryDto = {
-    id: string;
-    slug: string;
-    name: LocalizedStringDto;
-};
-
-export type AdminCategorySummaryDto = {
-    id: string;
-    slug: string;
-    name: LocalizedStringDto;
-};
-
-export type AdminProductDto = {
-    id: string;
-    slug: string;
-    name: LocalizedStringDto;
-    description: LocalizedStringDto;
-    story: LocalizedStringDto;
-    forWhom: LocalizedStringDto;
-    weight?: string | null;
-    priceMinor: number;
-    currency: CurrencyCode;
-    flavor: AdminProductFlavorDto;
-    allergens: Array<string>;
-    images: Array<string>;
-    videos: Array<string>;
-    isTriedByUs: boolean;
-    quantity: number;
-    available: boolean;
-    sortWeight: number;
-    brand?: AdminBrandSummaryDto | null;
-    seller: AdminSellerSummaryDto;
-    country: AdminCountrySummaryDto;
-    category: AdminCategorySummaryDto;
-};
-
-export type AdminProductsListResponseDto = {
-    items: Array<AdminProductDto>;
-    meta: AdminListMetaDto;
-};
-
 export type CreateProductDto = {
     slug: string;
-    name: LocalizedStringDto;
-    description: LocalizedStringDto;
-    story: LocalizedStringDto;
-    forWhom: LocalizedStringDto;
+    nameLocale: LocalizedStringDto;
+    descriptionLocale: LocalizedStringDto;
+    storyLocale: LocalizedStringDto;
+    forWhomLocale: LocalizedStringDto;
     weight?: string | null;
     priceMinor: number;
     currency: CurrencyCode;
@@ -548,10 +467,10 @@ export type CreateProductDto = {
 
 export type UpdateProductDto = {
     slug?: string;
-    name?: LocalizedStringDto;
-    description?: LocalizedStringDto;
-    story?: LocalizedStringDto;
-    forWhom?: LocalizedStringDto;
+    nameLocale?: LocalizedStringDto;
+    descriptionLocale?: LocalizedStringDto;
+    storyLocale?: LocalizedStringDto;
+    forWhomLocale?: LocalizedStringDto;
     weight?: string | null;
     priceMinor?: number;
     currency?: CurrencyCode;
@@ -1140,7 +1059,7 @@ export type AdminCategoriesControllerCreateData = {
 };
 
 export type AdminCategoriesControllerCreateResponses = {
-    201: AdminCategoryDto;
+    201: Category;
 };
 
 export type AdminCategoriesControllerCreateResponse = AdminCategoriesControllerCreateResponses[keyof AdminCategoriesControllerCreateResponses];
@@ -1171,7 +1090,7 @@ export type AdminCategoriesControllerGetByIdErrors = {
 export type AdminCategoriesControllerGetByIdError = AdminCategoriesControllerGetByIdErrors[keyof AdminCategoriesControllerGetByIdErrors];
 
 export type AdminCategoriesControllerGetByIdResponses = {
-    200: AdminCategoryDto;
+    200: Category;
 };
 
 export type AdminCategoriesControllerGetByIdResponse = AdminCategoriesControllerGetByIdResponses[keyof AdminCategoriesControllerGetByIdResponses];
@@ -1202,7 +1121,7 @@ export type AdminCategoriesControllerUpdateErrors = {
 export type AdminCategoriesControllerUpdateError = AdminCategoriesControllerUpdateErrors[keyof AdminCategoriesControllerUpdateErrors];
 
 export type AdminCategoriesControllerUpdateResponses = {
-    200: AdminCategoryDto;
+    200: Category;
 };
 
 export type AdminCategoriesControllerUpdateResponse = AdminCategoriesControllerUpdateResponses[keyof AdminCategoriesControllerUpdateResponses];
@@ -1232,7 +1151,7 @@ export type AdminCollectionsControllerCreateData = {
 };
 
 export type AdminCollectionsControllerCreateResponses = {
-    200: AdminCollectionDto;
+    200: Collection;
 };
 
 export type AdminCollectionsControllerCreateResponse = AdminCollectionsControllerCreateResponses[keyof AdminCollectionsControllerCreateResponses];
@@ -1263,7 +1182,7 @@ export type AdminCollectionsControllerGetByIdErrors = {
 export type AdminCollectionsControllerGetByIdError = AdminCollectionsControllerGetByIdErrors[keyof AdminCollectionsControllerGetByIdErrors];
 
 export type AdminCollectionsControllerGetByIdResponses = {
-    200: AdminCollectionDto;
+    200: Collection;
 };
 
 export type AdminCollectionsControllerGetByIdResponse = AdminCollectionsControllerGetByIdResponses[keyof AdminCollectionsControllerGetByIdResponses];
@@ -1294,7 +1213,7 @@ export type AdminCollectionsControllerUpdateErrors = {
 export type AdminCollectionsControllerUpdateError = AdminCollectionsControllerUpdateErrors[keyof AdminCollectionsControllerUpdateErrors];
 
 export type AdminCollectionsControllerUpdateResponses = {
-    200: AdminCollectionDto;
+    200: Collection;
 };
 
 export type AdminCollectionsControllerUpdateResponse = AdminCollectionsControllerUpdateResponses[keyof AdminCollectionsControllerUpdateResponses];
@@ -1324,7 +1243,7 @@ export type AdminCountriesControllerCreateData = {
 };
 
 export type AdminCountriesControllerCreateResponses = {
-    201: AdminCountryDto;
+    201: Country;
 };
 
 export type AdminCountriesControllerCreateResponse = AdminCountriesControllerCreateResponses[keyof AdminCountriesControllerCreateResponses];
@@ -1355,7 +1274,7 @@ export type AdminCountriesControllerGetByIdErrors = {
 export type AdminCountriesControllerGetByIdError = AdminCountriesControllerGetByIdErrors[keyof AdminCountriesControllerGetByIdErrors];
 
 export type AdminCountriesControllerGetByIdResponses = {
-    200: AdminCountryDto;
+    200: Country;
 };
 
 export type AdminCountriesControllerGetByIdResponse = AdminCountriesControllerGetByIdResponses[keyof AdminCountriesControllerGetByIdResponses];
@@ -1386,7 +1305,7 @@ export type AdminCountriesControllerUpdateErrors = {
 export type AdminCountriesControllerUpdateError = AdminCountriesControllerUpdateErrors[keyof AdminCountriesControllerUpdateErrors];
 
 export type AdminCountriesControllerUpdateResponses = {
-    200: AdminCountryDto;
+    200: Country;
 };
 
 export type AdminCountriesControllerUpdateResponse = AdminCountriesControllerUpdateResponses[keyof AdminCountriesControllerUpdateResponses];
@@ -1463,7 +1382,7 @@ export type AdminProductsControllerCreateErrors = {
 export type AdminProductsControllerCreateError = AdminProductsControllerCreateErrors[keyof AdminProductsControllerCreateErrors];
 
 export type AdminProductsControllerCreateResponses = {
-    201: AdminProductDto;
+    201: Product;
 };
 
 export type AdminProductsControllerCreateResponse = AdminProductsControllerCreateResponses[keyof AdminProductsControllerCreateResponses];
@@ -1494,7 +1413,7 @@ export type AdminProductsControllerGetByIdErrors = {
 export type AdminProductsControllerGetByIdError = AdminProductsControllerGetByIdErrors[keyof AdminProductsControllerGetByIdErrors];
 
 export type AdminProductsControllerGetByIdResponses = {
-    200: AdminProductDto;
+    200: Product;
 };
 
 export type AdminProductsControllerGetByIdResponse = AdminProductsControllerGetByIdResponses[keyof AdminProductsControllerGetByIdResponses];
@@ -1557,7 +1476,7 @@ export type AdminProductsControllerUpdateErrors = {
 export type AdminProductsControllerUpdateError = AdminProductsControllerUpdateErrors[keyof AdminProductsControllerUpdateErrors];
 
 export type AdminProductsControllerUpdateResponses = {
-    200: AdminProductDto;
+    200: Product;
 };
 
 export type AdminProductsControllerUpdateResponse = AdminProductsControllerUpdateResponses[keyof AdminProductsControllerUpdateResponses];

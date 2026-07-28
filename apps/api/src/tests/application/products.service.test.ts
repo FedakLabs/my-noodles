@@ -192,7 +192,10 @@ describe('ProductsService', () => {
       { value: 'glico', label: 'Glico', count: 1 },
       { value: 'samyang', label: 'Samyang', count: 0 },
     ]);
-    expect(result.facets.seller).toEqual([{ value: 'my-noodles', label: 'MyNoodles', count: 1 }]);
+    expect(result.facets.seller).toEqual([
+      { value: 'my-noodles', label: 'MyNoodles', count: 1 },
+      { value: 'asia-foods', label: 'AsiaFoods', count: 0 },
+    ]);
   });
 
   it('returns catalog-wide price bounds independent of other facet filters', async () => {

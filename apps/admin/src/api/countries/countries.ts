@@ -3,7 +3,7 @@ import {
   adminCountriesControllerGetById,
   adminCountriesControllerList,
   adminCountriesControllerUpdate,
-  type AdminCountryDto,
+  type Country,
   type CreateCountryDto,
   type UpdateCountryDto,
 } from '@my-noodles/api-clients/admin';
@@ -40,7 +40,7 @@ export const countriesQueries = {
       queryFn: () =>
         adminCountriesControllerGetById({
           path: { id: countryId },
-        }) as Promise<AdminCountryDto>,
+        }) as Promise<Country>,
     }),
 };
 

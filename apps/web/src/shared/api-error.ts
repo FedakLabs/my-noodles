@@ -1,6 +1,7 @@
 import {
   ApiError,
   type CartControllerAddItemError,
+  type CartControllerAddItemsBatchError,
   type CartControllerSetItemQtyError,
   type CheckoutsControllerCancelCheckoutError,
   type CheckoutsControllerGetCheckoutError,
@@ -8,17 +9,20 @@ import {
   type CheckoutsControllerSubmitCheckoutError,
   type CheckoutsControllerUpdateCheckoutDeliveryError,
   type CheckoutsControllerUpdateCheckoutReceiverError,
+  type SupportControllerOpenSessionError,
 } from '@my-noodles/api-clients/storefront';
 
 type StorefrontApiError =
   | CartControllerAddItemError
+  | CartControllerAddItemsBatchError
   | CartControllerSetItemQtyError
   | CheckoutsControllerStartCheckoutError
   | CheckoutsControllerCancelCheckoutError
   | CheckoutsControllerGetCheckoutError
   | CheckoutsControllerUpdateCheckoutReceiverError
   | CheckoutsControllerUpdateCheckoutDeliveryError
-  | CheckoutsControllerSubmitCheckoutError;
+  | CheckoutsControllerSubmitCheckoutError
+  | SupportControllerOpenSessionError;
 
 export type ApiErrorCode = Extract<StorefrontApiError, { code: string }>['code'];
 

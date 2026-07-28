@@ -93,7 +93,7 @@ export function FeedCardActionBar({ item, detailsOpen, onToggleDetails, sx }: Fe
             addItem({
               productId: item.id,
               slug: item.slug,
-              title: item.name ?? item.slug,
+              title: item.name,
               priceMinor: item.priceMinor,
               currency: item.currency,
               imageUrl: item.images[0],

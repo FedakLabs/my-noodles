@@ -6,12 +6,14 @@ type PricedLine = {
 };
 
 export class CheckoutCalculator {
+  /**
+   * Mirror live estimate shipping onto the in-memory delivery so {@link Order.grandTotalMinor} resolves.
+   */
   calculateTotals(checkout: Checkout): Checkout {
-    const { order } = checkout;
-    const shippingCostMinor = checkout.deliveryEstimate?.shippingCostMinor;
-
-    order.grandTotalMinor =
-      shippingCostMinor != null ? order.totalMinor + shippingCostMinor : order.totalMinor;
+    const { order, deliveryEstimate } = checkout;
+    if (order.delivery && deliveryEstimate) {
+      order.delivery.shippingCostMinor = deliveryEstimate.shippingCostMinor;
+    }
 
     return checkout;
   }

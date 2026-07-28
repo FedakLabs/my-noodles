@@ -6,7 +6,7 @@ import { Throttle } from '@nestjs/throttler';
 import { LocalizedStorefrontController } from '@/utils/localized-storefront.controller';
 
 import { CurrentVisitorSession, type VisitorSession, VisitorSessionService } from '../visitor-session';
-import { AddCartItemDto, CartResponseDto, SetCartItemQtyDto } from './cart.dto';
+import { AddCartItemDto, AddCartItemsBatchDto, CartResponseDto, SetCartItemQtyDto } from './cart.dto';
 import {
   CartItemNotFoundException,
   CartMaxQuantityReachedException,
@@ -42,6 +42,16 @@ export class CartController extends LocalizedStorefrontController {
       dto.productId,
       dto.qty ?? 1,
     );
+  }
+
+  @Post('items/batch')
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  @ApiException(CartProductNotFoundException, CartProductOutOfStockException, CartMaxQuantityReachedException)
+  async addItemsBatch(
+    @Body() dto: AddCartItemsBatchDto,
+    @CurrentVisitorSession() visitor: VisitorSession,
+  ): Promise<CartResponseDto> {
+    return await this.cartService.addItemsBatch(await this.visitorService.resolveForCart(visitor), dto.items);
   }
 
   @Patch('items/:productId')

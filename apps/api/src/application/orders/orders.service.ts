@@ -33,10 +33,6 @@ export class OrdersService {
       throw new OrderNotFoundException(orderId);
     }
 
-    const shippingCostMinor = order.delivery?.shippingCostMinor;
-    order.grandTotalMinor =
-      shippingCostMinor != null ? order.totalMinor + shippingCostMinor : order.totalMinor;
-
     return order;
   }
 

@@ -19,7 +19,7 @@ export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnTy
       getQueryClient().fetchQuery(productsQueries.detail(slug)),
       getTranslations({ locale, namespace: 'metadata' }),
     ]);
-    const title = product.name ?? product.slug;
+    const title = product.name;
     const subtitle = formatCurrency(product.priceMinor, product.currency, locale);
 
     return await createOgImage({
@@ -35,7 +35,7 @@ export const generateImageMetadata = withPageLocaleResult<ProductOpenGraphImageP
   async ({ params }) => {
     const product = await getQueryClient().fetchQuery(productsQueries.detail(params.slug));
 
-    return [{ alt: product.name ?? product.slug }];
+    return [{ alt: product.name }];
   },
   ({ slug }) => [{ alt: slug }],
 );

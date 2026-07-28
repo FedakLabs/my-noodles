@@ -1,12 +1,8 @@
+import { ApiEnum } from '@my-noodles/api-lib/nest';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MinLength } from 'class-validator';
 
-import {
-  DeliveryMethod,
-  DeliveryProvider,
-  IsDeliveryMethod,
-  IsDeliveryProvider,
-} from '../orders/order-delivery.dto';
+import { DeliveryMethod, DeliveryProvider } from '../orders/order-delivery.dto';
 import type { DeliveryCity, DeliveryWarehouse } from './delivery.types';
 
 export class DeliveryMethodDto {
@@ -43,10 +39,10 @@ export class DeliveryWarehouseDto implements DeliveryWarehouse {
 }
 
 export class DeliveryCityQueryDto {
-  @IsDeliveryProvider()
+  @ApiEnum(DeliveryProvider, 'DeliveryProvider')
   provider!: DeliveryProvider;
 
-  @IsDeliveryMethod()
+  @ApiEnum(DeliveryMethod, 'DeliveryMethod')
   method!: DeliveryMethod;
 
   @IsOptional()
@@ -55,7 +51,7 @@ export class DeliveryCityQueryDto {
 }
 
 export class DeliveryWarehouseQueryDto {
-  @IsDeliveryProvider()
+  @ApiEnum(DeliveryProvider, 'DeliveryProvider')
   provider!: DeliveryProvider;
 
   @IsString()

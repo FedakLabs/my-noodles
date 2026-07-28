@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 import type { AppLocale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { absoluteUrl, localePath } from '@/shared/seo';
-import { fetchAllCollectionSlugs, fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
+import { fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
 
 const STATIC_INDEXABLE_PATHS = ['/catalog', '/collections', '/contacts'] as const;
 
@@ -16,10 +16,7 @@ function buildStaticSitemapEntries(locale: AppLocale): MetadataRoute.Sitemap {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [productSlugs, collectionSlugs] = await Promise.all([
-    fetchAllProductSlugs(),
-    fetchAllCollectionSlugs(),
-  ]);
+  const productSlugs = await fetchAllProductSlugs();
 
   return routing.locales.flatMap((locale) => [
     ...buildStaticSitemapEntries(locale),
@@ -27,11 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteUrl(localePath(locale, `/product/${slug}`)),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
-    })),
-    ...collectionSlugs.map((slug) => ({
-      url: absoluteUrl(localePath(locale, `/collections/${slug}`)),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
     })),
   ]);
 }

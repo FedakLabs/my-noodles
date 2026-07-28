@@ -92,6 +92,7 @@ const country = {
   id: MOCK_IDS.country,
   code: 'TW',
   slug: 'taiwan',
+  nameLocale: { uk: 'Тайвань', en: 'Taiwan' },
   name: 'Тайвань',
   flagEmoji: '🇹🇼',
   themeKey: 'TW',
@@ -101,6 +102,7 @@ const country = {
 const category = {
   id: MOCK_IDS.category,
   slug: 'snacks',
+  nameLocale: { uk: 'Снеки', en: 'Snacks' },
   name: 'Снеки',
   icon: null,
   sortOrder: 1,
@@ -111,9 +113,13 @@ const category = {
 export const product = {
   id: MOCK_IDS.product,
   slug: 'pocky-matcha',
+  nameLocale: { uk: 'Pocky Matcha', en: 'Pocky Matcha' },
   name: 'Pocky Matcha',
+  descriptionLocale: { uk: 'Matcha-flavoured biscuit sticks.', en: 'Matcha-flavoured biscuit sticks.' },
   description: 'Matcha-flavoured biscuit sticks.',
+  storyLocale: { uk: 'A classic Japanese snack.', en: 'A classic Japanese snack.' },
   story: 'A classic Japanese snack.',
+  forWhomLocale: { uk: 'Matcha lovers', en: 'Matcha lovers' },
   forWhom: 'Matcha lovers',
   weight: '47g',
   priceMinor: 9900,
@@ -239,7 +245,7 @@ function createOrderItem(orderId: string, line: CartItem): OrderItem {
     order: null as unknown as Order,
     productId: line.productId,
     product: line.product,
-    titleSnapshot: line.product.name ?? line.product.slug,
+    titleSnapshot: line.product.name,
     priceMinorSnapshot: line.product.priceMinor,
     qty: line.qty,
   };

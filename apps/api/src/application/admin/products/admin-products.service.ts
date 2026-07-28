@@ -10,7 +10,7 @@ import { Category } from '../../categories/category.entity';
 import { Country } from '../../countries/country.entity';
 import { Product } from '../../products/product.entity';
 import { Seller } from '../../sellers/seller.entity';
-import { type AdminProductDto, type CreateProductDto, type UpdateProductDto } from './admin-products.dto';
+import { type CreateProductDto, type UpdateProductDto } from './admin-products.dto';
 import {
   AdminProductNotFoundException,
   ProductBrandNotFoundException,
@@ -44,24 +44,19 @@ export class AdminProductsService {
     private readonly countriesRepository: Repository<Country>,
   ) {}
 
-  async list(filters: ListAdminProductsFilters): Promise<PaginatedResult<AdminProductDto>> {
-    const result = await PaginationHelper.paginate(
+  async list(filters: ListAdminProductsFilters): Promise<PaginatedResult<Product>> {
+    return await PaginationHelper.paginate(
       this.productsRepository,
       { page: filters.page, limit: filters.limit },
       { where: this.buildWhere(filters), order: { sortWeight: 'DESC', slug: 'ASC' } },
     );
-
-    return {
-      items: result.items.map((product) => this.toAdminProductDto(product)),
-      meta: result.meta,
-    };
   }
 
-  async getById(id: string): Promise<AdminProductDto> {
-    return this.toAdminProductDto(await this.getProductOrThrow(id));
+  async getById(id: string): Promise<Product> {
+    return await this.getProductOrThrow(id);
   }
 
-  async create(dto: CreateProductDto): Promise<AdminProductDto> {
+  async create(dto: CreateProductDto): Promise<Product> {
     const [country, category, seller, brand] = await Promise.all([
       this.getCountryOrThrow(dto.countryId),
       this.getCategoryOrThrow(dto.categoryId),
@@ -71,10 +66,10 @@ export class AdminProductsService {
 
     const product = this.productsRepository.create({
       slug: dto.slug,
-      nameLocale: new LocalizedString(dto.name),
-      descriptionLocale: new LocalizedString(dto.description),
-      storyLocale: new LocalizedString(dto.story),
-      forWhomLocale: new LocalizedString(dto.forWhom),
+      nameLocale: new LocalizedString(dto.nameLocale),
+      descriptionLocale: new LocalizedString(dto.descriptionLocale),
+      storyLocale: new LocalizedString(dto.storyLocale),
+      forWhomLocale: new LocalizedString(dto.forWhomLocale),
       weight: dto.weight ?? null,
       priceMinor: dto.priceMinor,
       currency: dto.currency,
@@ -97,26 +92,26 @@ export class AdminProductsService {
     });
 
     const saved = await this.productsRepository.save(product);
-    return this.toAdminProductDto(await this.getProductOrThrow(saved.id));
+    return await this.getProductOrThrow(saved.id);
   }
 
-  async update(id: string, dto: UpdateProductDto): Promise<AdminProductDto> {
+  async update(id: string, dto: UpdateProductDto): Promise<Product> {
     const product = await this.getProductOrThrow(id);
 
     if (dto.slug !== undefined) {
       product.slug = dto.slug;
     }
-    if (dto.name !== undefined) {
-      product.nameLocale = new LocalizedString(dto.name);
+    if (dto.nameLocale !== undefined) {
+      product.nameLocale = new LocalizedString(dto.nameLocale);
     }
-    if (dto.description !== undefined) {
-      product.descriptionLocale = new LocalizedString(dto.description);
+    if (dto.descriptionLocale !== undefined) {
+      product.descriptionLocale = new LocalizedString(dto.descriptionLocale);
     }
-    if (dto.story !== undefined) {
-      product.storyLocale = new LocalizedString(dto.story);
+    if (dto.storyLocale !== undefined) {
+      product.storyLocale = new LocalizedString(dto.storyLocale);
     }
-    if (dto.forWhom !== undefined) {
-      product.forWhomLocale = new LocalizedString(dto.forWhom);
+    if (dto.forWhomLocale !== undefined) {
+      product.forWhomLocale = new LocalizedString(dto.forWhomLocale);
     }
     if (dto.weight !== undefined) {
       product.weight = dto.weight;
@@ -166,7 +161,7 @@ export class AdminProductsService {
     }
 
     await this.productsRepository.save(product);
-    return this.toAdminProductDto(await this.getProductOrThrow(id));
+    return await this.getProductOrThrow(id);
   }
 
   private buildWhere(filters: ListAdminProductsFilters): FindOptionsWhere<Product> {
@@ -236,45 +231,5 @@ export class AdminProductsService {
       throw new ProductCountryNotFoundException(id);
     }
     return country;
-  }
-
-  private toAdminProductDto(product: Product): AdminProductDto {
-    return {
-      id: product.id,
-      slug: product.slug,
-      name: product.nameLocale.toJSON(),
-      description: product.descriptionLocale.toJSON(),
-      story: product.storyLocale.toJSON(),
-      forWhom: product.forWhomLocale.toJSON(),
-      weight: product.weight,
-      priceMinor: product.priceMinor,
-      currency: product.currency,
-      flavor: product.flavor,
-      allergens: product.allergens,
-      images: product.images,
-      videos: product.videos,
-      isTriedByUs: product.isTriedByUs,
-      quantity: product.quantity,
-      available: product.available,
-      sortWeight: product.sortWeight,
-      brand: product.brand
-        ? { id: product.brand.id, slug: product.brand.slug, name: product.brand.name }
-        : null,
-      seller: {
-        id: product.seller.id,
-        slug: product.seller.slug,
-        name: product.seller.name,
-      },
-      country: {
-        id: product.country.id,
-        slug: product.country.slug,
-        name: product.country.nameLocale.toJSON(),
-      },
-      category: {
-        id: product.category.id,
-        slug: product.category.slug,
-        name: product.category.nameLocale.toJSON(),
-      },
-    };
   }
 }

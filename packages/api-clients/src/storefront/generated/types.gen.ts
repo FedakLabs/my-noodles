@@ -50,6 +50,11 @@ export type PaginationMetaDto = {
     limit: number;
 };
 
+export type LocalizedStringSchema = {
+    uk: string;
+    en: string;
+};
+
 export const CurrencyCode = { UAH: 'UAH', USD: 'USD' } as const;
 
 export type CurrencyCode = typeof CurrencyCode[keyof typeof CurrencyCode];
@@ -72,7 +77,8 @@ export type Seller = {
 };
 
 export type Country = {
-    name: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
     id: string;
     code: string;
     slug: string;
@@ -82,7 +88,8 @@ export type Country = {
 };
 
 export type Category = {
-    name: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
     id: string;
     slug: string;
     icon: string | null;
@@ -92,9 +99,12 @@ export type Category = {
 };
 
 export type Collection = {
-    name: string | null;
-    description: string | null;
-    longDescription: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
+    descriptionLocale: LocalizedStringSchema;
+    description: string;
+    longDescriptionLocale: LocalizedStringSchema;
+    longDescription: string;
     id: string;
     slug: string;
     emoji: string;
@@ -108,10 +118,14 @@ export type Collection = {
 };
 
 export type Product = {
-    name: string | null;
-    description: string | null;
-    story: string | null;
-    forWhom: string | null;
+    nameLocale: LocalizedStringSchema;
+    name: string;
+    descriptionLocale: LocalizedStringSchema;
+    description: string;
+    storyLocale: LocalizedStringSchema;
+    story: string;
+    forWhomLocale: LocalizedStringSchema;
+    forWhom: string;
     currency: CurrencyCode;
     available: boolean;
     inStock: boolean;
@@ -132,9 +146,6 @@ export type Product = {
     sortWeight: number;
     brandId: string | null;
     brand: Brand | null;
-    /**
-     * DB-nullable until seed backfill; required on admin create/update.
-     */
     sellerId: string;
     seller: Seller;
     countryId: string;
@@ -287,11 +298,7 @@ export type Checkout = {
 
 export type Order = {
     createdAt: string;
-    /**
-     * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
-     * Response-only — set by `CheckoutCalculator.calculateTotals`.
-     */
-    grandTotalMinor?: number;
+    grandTotalMinor: number;
     id: string;
     visitorSessionId: string | null;
     visitorSession: VisitorSession | null;
@@ -403,6 +410,13 @@ export type AddCartItemDto = {
     productId: string;
 };
 
+export type AddCartItemsBatchDto = {
+    /**
+     * Products to add in one atomic request
+     */
+    items: Array<AddCartItemDto>;
+};
+
 export type SetCartItemQtyDto = {
     /**
      * Absolute quantity to set for the cart line (0 removes the line)
@@ -447,7 +461,8 @@ export type FeedLikeStateDto = {
 };
 
 export type FeedProductComment = {
-    comment: string | null;
+    commentLocale: LocalizedStringSchema;
+    comment: string;
     id: string;
     productId: string;
     product: Product;
@@ -1055,6 +1070,60 @@ export type CartControllerAddItemResponses = {
 
 export type CartControllerAddItemResponse = CartControllerAddItemResponses[keyof CartControllerAddItemResponses];
 
+export type CartControllerAddItemsBatchData = {
+    body: AddCartItemsBatchDto;
+    headers?: {
+        /**
+         * Preferred response locale
+         */
+        'x-app-locale'?: 'uk' | 'en';
+    };
+    path?: never;
+    query?: never;
+    url: '/api/cart/items/batch';
+};
+
+export type CartControllerAddItemsBatchErrors = {
+    /**
+     * cart_product_not_found
+     */
+    404: {
+        status: 404;
+        code: 'cart_product_not_found';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    };
+    /**
+     * cart_product_out_of_stock, cart_max_quantity_reached
+     */
+    409: {
+        status: 409;
+        code: 'cart_product_out_of_stock';
+        message: string;
+        payload: {
+            productId?: string;
+        };
+    } | {
+        status: 409;
+        code: 'cart_max_quantity_reached';
+        message: string;
+        payload: {
+            productId?: string;
+            maxQty?: number;
+        };
+    };
+};
+
+export type CartControllerAddItemsBatchError = CartControllerAddItemsBatchErrors[keyof CartControllerAddItemsBatchErrors];
+
+export type CartControllerAddItemsBatchResponses = {
+    201: CartResponseDto;
+};
+
+export type CartControllerAddItemsBatchResponse = CartControllerAddItemsBatchResponses[keyof CartControllerAddItemsBatchResponses];
+
 export type CartControllerRemoveItemData = {
     body?: never;
     headers?: {
@@ -1283,6 +1352,22 @@ export type SupportControllerOpenSessionData = {
     query?: never;
     url: '/api/support/sessions';
 };
+
+export type SupportControllerOpenSessionErrors = {
+    /**
+     * visitor_session_not_found
+     */
+    404: {
+        status: 404;
+        code: 'visitor_session_not_found';
+        message: string;
+        payload: {
+            [key: string]: unknown;
+        } | null;
+    };
+};
+
+export type SupportControllerOpenSessionError = SupportControllerOpenSessionErrors[keyof SupportControllerOpenSessionErrors];
 
 export type SupportControllerOpenSessionResponses = {
     200: SupportSessionResponseDto;

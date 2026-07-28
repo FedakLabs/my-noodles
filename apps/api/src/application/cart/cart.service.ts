@@ -1,14 +1,14 @@
 import { TransactionalRepository } from '@my-noodles/api-lib/nest';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, Repository } from 'typeorm';
+import { type DataSource, type FindOptionsOrder, type FindOptionsWhere, In, Repository } from 'typeorm';
 
 import { type InventoryLine, InventoryService } from '../inventory/inventory.service';
 import { Product } from '../products/product.entity';
 import type { VisitorSession } from '../visitor-session/visitor-session.entity';
 import { Cart } from './cart';
 import { CartItem } from './cart-item.entity';
-import type { CartResponseDto } from './cart.dto';
+import type { AddCartItemDto, CartResponseDto } from './cart.dto';
 import {
   CartItemNotFoundException,
   CartMaxQuantityReachedException,
@@ -80,6 +80,64 @@ export class CartService extends TransactionalRepository {
     });
 
     return await this.getCart(visitor);
+  }
+
+  async addItemsBatch(visitor: VisitorSession, items: AddCartItemDto[]): Promise<CartResponseDto> {
+    const merged = this.mergeBatchItems(items);
+    const productIds = merged.map((item) => item.productId);
+
+    const products = await this.productsRepository.find({ where: { id: In(productIds) } });
+    const foundIds = new Set(products.map((product) => product.id));
+    for (const productId of productIds) {
+      if (!foundIds.has(productId)) {
+        throw new CartProductNotFoundException(productId);
+      }
+    }
+
+    await this.withTransaction(async () => {
+      const availableByProductId = await this.inventoryService.getAvailableQtyBatch(productIds);
+      const existingItems = await this.cartItemsRepository.find({
+        where: { visitorSessionId: visitor.id, productId: In(productIds) },
+      });
+      const existingByProductId = new Map(existingItems.map((item) => [item.productId, item]));
+
+      const nextByProductId = new Map<
+        string,
+        { existing?: (typeof existingItems)[number]; nextQty: number }
+      >();
+      for (const item of merged) {
+        const existing = existingByProductId.get(item.productId);
+        const nextQty = (existing?.qty ?? 0) + item.qty;
+        this.assertQtyWithinAvailable(item.productId, nextQty, availableByProductId.get(item.productId) ?? 0);
+        nextByProductId.set(item.productId, { existing, nextQty });
+      }
+
+      for (const [productId, { existing, nextQty }] of nextByProductId) {
+        if (existing) {
+          existing.qty = nextQty;
+          await this.cartItemsRepository.save(existing);
+        } else {
+          await this.cartItemsRepository.save(
+            this.cartItemsRepository.create({
+              visitorSessionId: visitor.id,
+              productId,
+              qty: nextQty,
+            }),
+          );
+        }
+      }
+    });
+
+    return await this.getCart(visitor);
+  }
+
+  private mergeBatchItems(items: AddCartItemDto[]): Array<{ productId: string; qty: number }> {
+    const qtyByProductId = new Map<string, number>();
+    for (const item of items) {
+      const qty = item.qty ?? 1;
+      qtyByProductId.set(item.productId, (qtyByProductId.get(item.productId) ?? 0) + qty);
+    }
+    return [...qtyByProductId.entries()].map(([productId, qty]) => ({ productId, qty }));
   }
 
   async updateItem(visitor: VisitorSession, productId: string, qty: number): Promise<CartResponseDto> {

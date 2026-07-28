@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { type FindOptionsWhere, ILike, type Repository } from 'typeorm';
 
 import { Country } from '../../countries/country.entity';
-import type { AdminCountryDto, CreateCountryDto, UpdateCountryDto } from './admin-countries.dto';
+import type { CreateCountryDto, UpdateCountryDto } from './admin-countries.dto';
 import { CountryNotFoundException } from './admin-countries.exceptions';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AdminCountriesService {
     private readonly countriesRepository: Repository<Country>,
   ) {}
 
-  async list(query: { page: number; limit: number; q?: string }): Promise<PaginatedResult<AdminCountryDto>> {
+  async list(query: { page: number; limit: number; q?: string }): Promise<PaginatedResult<Country>> {
     const term = query.q?.trim();
     let where: FindOptionsWhere<Country> | FindOptionsWhere<Country>[] = {};
 
@@ -24,36 +24,30 @@ export class AdminCountriesService {
       where = [{ slug: ILike(pattern) }, { nameLocale: jsonbAnyLocaleIlike(pattern) }];
     }
 
-    const result = await PaginationHelper.paginate(
+    return await PaginationHelper.paginate(
       this.countriesRepository,
       { page: query.page, limit: query.limit },
       { where, order: { slug: 'ASC' } },
     );
-
-    return {
-      items: result.items.map((country) => this.toAdminCountryDto(country)),
-      meta: result.meta,
-    };
   }
 
-  async getById(id: string): Promise<AdminCountryDto> {
-    return this.toAdminCountryDto(await this.getCountryOrThrow(id));
+  async getById(id: string): Promise<Country> {
+    return await this.getCountryOrThrow(id);
   }
 
-  async create(dto: CreateCountryDto): Promise<AdminCountryDto> {
+  async create(dto: CreateCountryDto): Promise<Country> {
     const country = this.countriesRepository.create({
       code: dto.code,
       slug: dto.slug,
-      nameLocale: new LocalizedString(dto.name),
+      nameLocale: new LocalizedString(dto.nameLocale),
       flagEmoji: dto.flagEmoji ?? null,
       themeKey: dto.themeKey ?? null,
     });
 
-    const saved = await this.countriesRepository.save(country);
-    return this.toAdminCountryDto(saved);
+    return await this.countriesRepository.save(country);
   }
 
-  async update(id: string, dto: UpdateCountryDto): Promise<AdminCountryDto> {
+  async update(id: string, dto: UpdateCountryDto): Promise<Country> {
     const country = await this.getCountryOrThrow(id);
 
     if (dto.code !== undefined) {
@@ -62,8 +56,8 @@ export class AdminCountriesService {
     if (dto.slug !== undefined) {
       country.slug = dto.slug;
     }
-    if (dto.name !== undefined) {
-      country.nameLocale = new LocalizedString(dto.name);
+    if (dto.nameLocale !== undefined) {
+      country.nameLocale = new LocalizedString(dto.nameLocale);
     }
     if (dto.flagEmoji !== undefined) {
       country.flagEmoji = dto.flagEmoji;
@@ -72,8 +66,7 @@ export class AdminCountriesService {
       country.themeKey = dto.themeKey;
     }
 
-    const saved = await this.countriesRepository.save(country);
-    return this.toAdminCountryDto(saved);
+    return await this.countriesRepository.save(country);
   }
 
   private async getCountryOrThrow(id: string): Promise<Country> {
@@ -82,16 +75,5 @@ export class AdminCountriesService {
       throw new CountryNotFoundException(id);
     }
     return country;
-  }
-
-  private toAdminCountryDto(country: Country): AdminCountryDto {
-    return {
-      id: country.id,
-      code: country.code,
-      slug: country.slug,
-      name: country.nameLocale.toJSON(),
-      flagEmoji: country.flagEmoji,
-      themeKey: country.themeKey,
-    };
   }
 }

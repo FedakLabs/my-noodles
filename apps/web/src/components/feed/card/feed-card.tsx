@@ -43,8 +43,8 @@ type HashtagChip = {
 
 function buildHashtags(item: Product): HashtagChip[] {
   const chips: HashtagChip[] = [
-    { type: 'category', slug: item.category.slug, label: item.category.name ?? item.category.slug },
-    { type: 'country', slug: item.country.slug, label: item.country.name ?? item.country.slug },
+    { type: 'category', slug: item.category.slug, label: item.category.name },
+    { type: 'country', slug: item.country.slug, label: item.country.name },
   ];
 
   if (item.brand) {
@@ -150,7 +150,7 @@ export function FeedCard({
         >
           <Stack spacing={1.25} sx={{ flex: actionRail ? 1 : undefined, minWidth: 0 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'common.white', lineHeight: 1.2 }}>
-              {item.name ?? item.slug}
+              {item.name}
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.82)' }}>
               {item.seller.name ?? item.seller.slug}

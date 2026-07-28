@@ -218,7 +218,7 @@ export function HomeScreen() {
                   }}
                 >
                   {flagEmoji && <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{flagEmoji}</span>}
-                  <span>{name ?? slug}</span>
+                  <span>{name}</span>
                 </Box>
               </ScrollReveal>
             ))}
@@ -388,7 +388,7 @@ export function HomeScreen() {
                       </Box>
                       <Box>
                         <Typography variant="h5" sx={{ color: accent, mb: collection.description ? 0.5 : 0 }}>
-                          {collection.name ?? collection.slug}
+                          {collection.name}
                         </Typography>
                         {collection.description && (
                           <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.55 }}>

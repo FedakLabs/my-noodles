@@ -3,8 +3,8 @@ import {
   adminProductsControllerGetById,
   adminProductsControllerList,
   adminProductsControllerUpdate,
-  type AdminProductDto,
   type CreateProductDto,
+  type Product,
   type UpdateProductDto,
 } from '@my-noodles/api-clients/admin';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
@@ -48,7 +48,7 @@ export const productsQueries = {
       queryFn: () =>
         adminProductsControllerGetById({
           path: { id: productId },
-        }) as Promise<AdminProductDto>,
+        }) as Promise<Product>,
     }),
 };
 

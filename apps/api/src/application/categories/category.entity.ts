@@ -1,7 +1,6 @@
 import { type LocalizedString } from '@my-noodles/api-lib/locale';
 import { LocalizedColumn, LocalizedResolved } from '@my-noodles/api-lib/nest';
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
-import { ApiHideProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany } from 'typeorm';
 
 import { Product } from '../products/product.entity';
@@ -14,12 +13,11 @@ export class Category extends TimestampEntity {
   @Column({ type: 'text', unique: true })
   slug!: string;
 
-  @ApiHideProperty()
   @LocalizedColumn({ name: 'name' })
   nameLocale!: LocalizedString;
 
   @LocalizedResolved()
-  get name(): string | null {
+  get name(): string {
     return this.nameLocale.localized;
   }
 

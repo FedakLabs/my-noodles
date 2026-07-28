@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { type FindOptionsWhere, ILike, type Repository } from 'typeorm';
 
 import { Category } from '../../categories/category.entity';
-import type { AdminCategoryDto, CreateCategoryDto, UpdateCategoryDto } from './admin-categories.dto';
+import type { CreateCategoryDto, UpdateCategoryDto } from './admin-categories.dto';
 import { CategoryNotFoundException } from './admin-categories.exceptions';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AdminCategoriesService {
     private readonly categoriesRepository: Repository<Category>,
   ) {}
 
-  async list(query: { page: number; limit: number; q?: string }): Promise<PaginatedResult<AdminCategoryDto>> {
+  async list(query: { page: number; limit: number; q?: string }): Promise<PaginatedResult<Category>> {
     const term = query.q?.trim();
     let where: FindOptionsWhere<Category> | FindOptionsWhere<Category>[] = {};
 
@@ -24,43 +24,37 @@ export class AdminCategoriesService {
       where = [{ slug: ILike(pattern) }, { nameLocale: jsonbAnyLocaleIlike(pattern) }];
     }
 
-    const result = await PaginationHelper.paginate(
+    return await PaginationHelper.paginate(
       this.categoriesRepository,
       { page: query.page, limit: query.limit },
       { where, order: { sortOrder: 'ASC', slug: 'ASC' } },
     );
-
-    return {
-      items: result.items.map((category) => this.toAdminCategoryDto(category)),
-      meta: result.meta,
-    };
   }
 
-  async getById(id: string): Promise<AdminCategoryDto> {
-    return this.toAdminCategoryDto(await this.getCategoryOrThrow(id));
+  async getById(id: string): Promise<Category> {
+    return await this.getCategoryOrThrow(id);
   }
 
-  async create(dto: CreateCategoryDto): Promise<AdminCategoryDto> {
+  async create(dto: CreateCategoryDto): Promise<Category> {
     const category = this.categoriesRepository.create({
       slug: dto.slug,
-      nameLocale: new LocalizedString(dto.name),
+      nameLocale: new LocalizedString(dto.nameLocale),
       icon: dto.icon ?? null,
       sortOrder: dto.sortOrder,
       themeKey: dto.themeKey ?? null,
     });
 
-    const saved = await this.categoriesRepository.save(category);
-    return this.toAdminCategoryDto(saved);
+    return await this.categoriesRepository.save(category);
   }
 
-  async update(id: string, dto: UpdateCategoryDto): Promise<AdminCategoryDto> {
+  async update(id: string, dto: UpdateCategoryDto): Promise<Category> {
     const category = await this.getCategoryOrThrow(id);
 
     if (dto.slug !== undefined) {
       category.slug = dto.slug;
     }
-    if (dto.name !== undefined) {
-      category.nameLocale = new LocalizedString(dto.name);
+    if (dto.nameLocale !== undefined) {
+      category.nameLocale = new LocalizedString(dto.nameLocale);
     }
     if (dto.icon !== undefined) {
       category.icon = dto.icon;
@@ -72,8 +66,7 @@ export class AdminCategoriesService {
       category.themeKey = dto.themeKey;
     }
 
-    const saved = await this.categoriesRepository.save(category);
-    return this.toAdminCategoryDto(saved);
+    return await this.categoriesRepository.save(category);
   }
 
   private async getCategoryOrThrow(id: string): Promise<Category> {
@@ -82,16 +75,5 @@ export class AdminCategoriesService {
       throw new CategoryNotFoundException(id);
     }
     return category;
-  }
-
-  private toAdminCategoryDto(category: Category): AdminCategoryDto {
-    return {
-      id: category.id,
-      slug: category.slug,
-      name: category.nameLocale.toJSON(),
-      icon: category.icon,
-      sortOrder: category.sortOrder,
-      themeKey: category.themeKey,
-    };
   }
 }

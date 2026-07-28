@@ -41,7 +41,7 @@ function ConfirmQuantityChangeModalContent() {
     return null;
   }
 
-  const displayName = data.name || data.slug;
+  const displayName = data.name;
   const nextQuantity = data.to;
 
   async function confirmChange() {

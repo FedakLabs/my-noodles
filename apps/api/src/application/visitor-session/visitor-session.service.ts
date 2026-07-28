@@ -6,6 +6,7 @@ import { CartItem } from '../cart/cart-item.entity';
 import { FeedSessionView } from '../feed/feed-session-view.entity';
 import { CART_IDLE_MS, FEED_IDLE_MS } from './visitor-session.config';
 import { VisitorSession } from './visitor-session.entity';
+import { VisitorSessionNotFoundException } from './visitor-session.exceptions';
 
 @Injectable()
 export class VisitorSessionService {
@@ -33,6 +34,20 @@ export class VisitorSessionService {
         cartExpiresAt: new Date(now + CART_IDLE_MS),
       }),
     );
+  }
+
+  /** Require an existing visitor; do not mint (support binds to cart-owned session). */
+  async require(existingId?: string): Promise<VisitorSession> {
+    if (!existingId) {
+      throw new VisitorSessionNotFoundException();
+    }
+
+    const existing = await this.visitorsRepository.findOne({ where: { id: existingId } });
+    if (!existing) {
+      throw new VisitorSessionNotFoundException();
+    }
+
+    return existing;
   }
 
   /** Slide feed TTL; on lapse reset views only (likes persist). */

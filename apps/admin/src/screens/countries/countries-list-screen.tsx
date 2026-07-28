@@ -2,7 +2,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminCountryDto } from '@my-noodles/api-clients/admin';
+import type { Country } from '@my-noodles/api-clients/admin';
 import { createColumnHelper, DataTable, useDataTable } from '@my-noodles/ui';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useCountriesList } from '@/api/countries';
 import { CountryFormModal, type CountryFormModalRef } from '@/components/countries/country-form-modal';
 
-const columnHelper = createColumnHelper<AdminCountryDto>();
+const columnHelper = createColumnHelper<Country>();
 
 export function CountriesListScreen() {
   const { t } = useTranslation(['countries', 'common']);
@@ -34,7 +34,7 @@ export function CountriesListScreen() {
       columnHelper.accessor('slug', {
         header: t('countries:list.columnSlug'),
       }),
-      columnHelper.accessor((row) => row.name.uk, {
+      columnHelper.accessor((row) => row.name, {
         id: 'name',
         header: t('countries:list.columnName'),
       }),

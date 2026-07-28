@@ -10,8 +10,12 @@ export function useShowCartApiError() {
   const t = useTranslations('cart');
 
   return useCallback(
-    (error: unknown, fallback: 'mutationError' | 'checkoutError' = 'mutationError') => {
-      showToast.error(resolveCartErrorMessage(t, error, fallback));
+    (
+      error: unknown,
+      fallback: 'mutationError' | 'checkoutError' = 'mutationError',
+      productTitles?: Record<string, string>,
+    ) => {
+      showToast.error(resolveCartErrorMessage(t, error, fallback, productTitles));
     },
     [t],
   );

@@ -60,8 +60,8 @@ function ProductCardPreviewModalContent({ onEditProduct }: { onEditProduct?: (pr
     setCatalogInteractions(false);
   }, [productId]);
 
-  const name = product ? pickLocalized(product.name, locale) || product.slug : '';
-  const countryLabel = product ? pickLocalized(product.country.name, locale) : '';
+  const name = product ? pickLocalized(product.nameLocale, locale) : '';
+  const countryLabel = product ? pickLocalized(product.country.nameLocale, locale) : '';
   const priceLabel = product ? formatCurrency(product.priceMinor, product.currency) : '';
   const inStock = (product?.quantity ?? 0) > 0;
 
@@ -93,9 +93,9 @@ function ProductCardPreviewModalContent({ onEditProduct }: { onEditProduct?: (pr
       product
         ? {
             loading: false,
-            story: pickLocalized(product.story, locale),
-            description: pickLocalized(product.description, locale),
-            forWhom: pickLocalized(product.forWhom, locale),
+            story: pickLocalized(product.storyLocale, locale),
+            description: pickLocalized(product.descriptionLocale, locale),
+            forWhom: pickLocalized(product.forWhomLocale, locale),
             emptyMessage: tCard('detailsEmpty'),
             storyLabel: tCard('story'),
             descriptionLabel: tCard('description'),

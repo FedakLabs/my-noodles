@@ -1,5 +1,4 @@
 import { type PaginatedResult, PaginationHelper } from '@my-noodles/api-lib/pagination';
-import { DEFAULT_LOCALE, pickLocalized } from '@my-noodles/locale';
 import { DEFAULT_CURRENCY, resolveCurrency } from '@my-noodles/utils';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -130,7 +129,7 @@ export class AdminCartsService {
     return {
       productId: item.productId,
       slug: item.product.slug,
-      name: pickLocalized(item.product.nameLocale.toJSON(), DEFAULT_LOCALE),
+      name: item.product.name,
       qty: item.qty,
       unitPriceMinor: item.product.priceMinor,
       lineTotalMinor: item.product.priceMinor * item.qty,

@@ -13,11 +13,11 @@ describe('LocalizedString', () => {
     });
   });
 
-  it('returns null when translation is missing for the active locale', () => {
+  it('falls back to DEFAULT_LOCALE when translation is missing for the active locale', () => {
     const label = new LocalizedString({ uk: 'Привіт' });
 
     LocaleContext.run('en', () => {
-      expect(label.localized).toBeNull();
+      expect(label.localized).toBe('Привіт');
     });
   });
 });

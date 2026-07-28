@@ -31,6 +31,7 @@ type TawkApi = {
   maximize?: () => void;
   minimize?: () => void;
   login?: (data: TawkLoginPayload, callback?: (error?: unknown) => void) => void;
+  logout?: (callback?: (error?: unknown) => void) => void;
   onLoad?: () => void;
 };
 
@@ -158,16 +159,14 @@ async function ensureLoaded(): Promise<TawkApi> {
   return ready;
 }
 
-async function login(session: { visitorSessionId: string; sessionHash: string }): Promise<void> {
-  const api = await ensureLoaded();
-
-  await new Promise<void>((resolve, reject) => {
-    if (typeof api.login !== 'function') {
-      reject(new Error('Tawk login is unavailable'));
-      return;
-    }
-
+function withTawkCallback(
+  run: (callback: (error?: unknown) => void) => void,
+  timeoutMs: number,
+  timeoutMessage: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
     let settled = false;
+
     const settleOk = () => {
       if (settled) {
         return;
@@ -176,6 +175,7 @@ async function login(session: { visitorSessionId: string; sessionHash: string })
       window.clearTimeout(timeoutId);
       resolve();
     };
+
     const settleErr = (error: unknown) => {
       if (settled) {
         return;
@@ -186,32 +186,71 @@ async function login(session: { visitorSessionId: string; sessionHash: string })
     };
 
     const timeoutId = window.setTimeout(() => {
-      settleOk();
-    }, TAWK_LOGIN_TIMEOUT_MS);
+      settleErr(new Error(timeoutMessage));
+    }, timeoutMs);
 
-    api.login(
-      {
-        userId: session.visitorSessionId,
-        hash: session.sessionHash,
-        name: session.visitorSessionId,
-      },
-      (error) => {
-        if (error) {
-          settleErr(error);
-          return;
-        }
-        settleOk();
-      },
-    );
+    run((error) => {
+      if (error) {
+        settleErr(error);
+        return;
+      }
+      settleOk();
+    });
   });
 }
 
+/** Clear a prior visitor identity so a later `login` actually re-hits Tawk. */
+async function logout(): Promise<void> {
+  const api = getTawkApi();
+  if (typeof api.logout !== 'function') {
+    return;
+  }
+
+  try {
+    await withTawkCallback(
+      (callback) => {
+        api.logout?.(callback);
+      },
+      TAWK_LOGIN_TIMEOUT_MS,
+      'Tawk logout timed out',
+    );
+  } catch {
+    // Visitor may never have been logged in after a failed first attempt.
+  }
+}
+
+async function login(session: { visitorSessionId: string; sessionHash: string }): Promise<void> {
+  const api = await ensureLoaded();
+
+  if (typeof api.login !== 'function') {
+    throw new Error('Tawk login is unavailable');
+  }
+
+  // Failed / stale login leaves Tawk in a state where a second `login()` is a no-op
+  // (no network). Logout first so retry actually re-authenticates.
+  await logout();
+
+  await withTawkCallback(
+    (callback) => {
+      api.login?.(
+        {
+          userId: session.visitorSessionId,
+          hash: session.sessionHash,
+          name: session.visitorSessionId,
+        },
+        callback,
+      );
+    },
+    TAWK_LOGIN_TIMEOUT_MS,
+    'Tawk login timed out',
+  );
+}
 /** Show the native bubble (unread / pending messages live here). */
 function reveal(): void {
   getTawkApi().showWidget?.();
 }
 
-/** Hide entirely (e.g. immersive / home routes). */
+/** Hide entirely (e.g. immersive routes). */
 function conceal(): void {
   const api = getTawkApi();
   api.minimize?.();

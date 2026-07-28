@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import type { AdminCategoryDto, CreateCategoryDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
+import type { Category, CreateCategoryDto, LocalizedStringDto } from '@my-noodles/api-clients/admin';
 import {
   cleanLocalizedString,
   emptyLocalizedString,
@@ -19,20 +19,20 @@ import { useCategory, useCreateCategory, useUpdateCategory } from '@/api/categor
 
 type CategoryFormState = {
   slug: string;
-  name: LocalizedStringDto;
+  nameLocale: LocalizedStringDto;
   icon: string;
   sortOrder: string;
   themeKey: string;
 };
 
 function defaultFormState(): CategoryFormState {
-  return { slug: '', name: emptyLocalizedString(), icon: '', sortOrder: '0', themeKey: '' };
+  return { slug: '', nameLocale: emptyLocalizedString(), icon: '', sortOrder: '0', themeKey: '' };
 }
 
-function formStateFromCategory(category: AdminCategoryDto): CategoryFormState {
+function formStateFromCategory(category: Category): CategoryFormState {
   return {
     slug: category.slug,
-    name: toRequiredLocalizedString(category.name),
+    nameLocale: toRequiredLocalizedString(category.nameLocale),
     icon: category.icon ?? '',
     sortOrder: String(category.sortOrder),
     themeKey: category.themeKey ?? '',
@@ -42,7 +42,7 @@ function formStateFromCategory(category: AdminCategoryDto): CategoryFormState {
 function buildPayload(state: CategoryFormState): CreateCategoryDto {
   return {
     slug: state.slug.trim(),
-    name: cleanLocalizedString(state.name),
+    nameLocale: cleanLocalizedString(state.nameLocale),
     icon: state.icon.trim() || null,
     sortOrder: Number(state.sortOrder) || 0,
     themeKey: state.themeKey.trim() || null,
@@ -122,8 +122,10 @@ function CategoryFormModalContent() {
             <LocalizedFields localeLabel={t('categories:form.language')} locales={LOCALE_OPTIONS}>
               <LocalizedTextField
                 label={t('categories:form.name')}
-                value={form.name}
-                onChange={(name) => setForm((prev) => ({ ...prev, name: toRequiredLocalizedString(name) }))}
+                value={form.nameLocale}
+                onChange={(nameLocale) =>
+                  setForm((prev) => ({ ...prev, nameLocale: toRequiredLocalizedString(nameLocale) }))
+                }
                 required
               />
             </LocalizedFields>
@@ -156,7 +158,7 @@ function CategoryFormModalContent() {
         <Button
           variant="contained"
           loading={isSaving}
-          disabled={!isReady || !form.slug || !isLocalizedStringComplete(form.name)}
+          disabled={!isReady || !form.slug || !isLocalizedStringComplete(form.nameLocale)}
           onClick={() => void handleSave()}
         >
           {t('common:actions.save')}

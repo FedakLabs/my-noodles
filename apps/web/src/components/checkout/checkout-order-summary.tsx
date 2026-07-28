@@ -23,7 +23,7 @@ export function CheckoutOrderSummary({ order, shippingCostMinor, footer }: Check
   const t = useTranslations('checkout.items');
   const { formatCurrency } = useCurrency();
 
-  const { totalMinor, grandTotalMinor = totalMinor, currency } = order;
+  const { totalMinor, grandTotalMinor, currency } = order;
   const showShipping = shippingCostMinor !== undefined;
 
   return (

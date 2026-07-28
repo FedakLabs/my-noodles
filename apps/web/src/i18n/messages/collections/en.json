@@ -5,5 +5,16 @@
   "listEmpty": "No collections yet",
   "loading": "Loading…",
   "error": "Couldn't load this collection",
-  "empty": "Collection not found"
+  "empty": "Collection not found",
+  "addToCart": "Add to cart…",
+  "addToCartModal": {
+    "title": "Add from {name}",
+    "selectAll": "Select all",
+    "clearSelection": "Clear",
+    "outOfStock": "Out of stock",
+    "submit": "Add selected",
+    "submitCount": "Add {count, plural, one {# item} other {# items}}",
+    "cancel": "Cancel",
+    "noneInStock": "Nothing in this collection is in stock right now."
+  }
 }

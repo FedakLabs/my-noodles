@@ -1,5 +1,4 @@
 import 'server-only';
-import { collectionsQueries } from '@/api/collections';
 import { productsQueries } from '@/api/products';
 import { runWithAppLocale } from '@/i18n/app-locale/server';
 import type { AppLocale } from '@/i18n/routing';
@@ -34,13 +33,5 @@ export async function fetchAllProductSlugs(locale: AppLocale = routing.defaultLo
     }
 
     return slugs;
-  });
-}
-
-export async function fetchAllCollectionSlugs(locale: AppLocale = routing.defaultLocale): Promise<string[]> {
-  return await runWithAppLocale(locale, async () => {
-    const collections = await getQueryClient().fetchQuery(collectionsQueries.list());
-
-    return collections.map((collection) => collection.slug);
   });
 }

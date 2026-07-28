@@ -5,7 +5,6 @@ export const APP_ROUTES = {
   collections: '/collections',
   contacts: '/contacts',
   product: (slug: string) => `/product/${slug}`,
-  collection: (slug: string) => `/collections/${slug}`,
 } as const;
 
 export function isFeedRoute(pathname: string): boolean {

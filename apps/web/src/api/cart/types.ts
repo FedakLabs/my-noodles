@@ -1,4 +1,9 @@
-export type { AddCartItemDto, CartItem, CartResponseDto } from '@my-noodles/api-clients/storefront';
+export type {
+  AddCartItemDto,
+  AddCartItemsBatchDto,
+  CartItem,
+  CartResponseDto,
+} from '@my-noodles/api-clients/storefront';
 
 export type CartLineInput = {
   productId: string;
@@ -9,5 +14,14 @@ export type CartLineInput = {
   imageUrl?: string;
   qty?: number;
   /** Skip auto-opening the cart panel (e.g. add from Saved while a drawer is already open). */
+  suppressPanelOpen?: boolean;
+};
+
+export type CartBatchLineInput = Omit<CartLineInput, 'suppressPanelOpen' | 'qty'> & {
+  qty?: number;
+};
+
+export type AddCartItemsBatchVariables = {
+  lines: CartBatchLineInput[];
   suppressPanelOpen?: boolean;
 };

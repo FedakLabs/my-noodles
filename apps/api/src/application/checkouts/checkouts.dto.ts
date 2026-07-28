@@ -1,24 +1,18 @@
+import { ApiEnum, IsPhone } from '@my-noodles/api-lib/nest';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 
-import { IsPhone } from '@/utils/phone';
-
 import { CreateOrderDeliveryDto, UpdateOrderDeliveryDto } from '../orders/orders.dto';
-import {
-  CheckoutCancelledReason,
-  CheckoutStatus,
-  IsCheckoutCancelledReason,
-  IsCheckoutStatus,
-} from './checkouts.validators';
+import { CheckoutCancelledReason, CheckoutStatus } from './checkouts.validators';
 
 export class ListCheckoutsQueryDto {
   @IsOptional()
-  @IsCheckoutStatus()
+  @ApiEnum(CheckoutStatus, 'CheckoutStatus')
   status?: CheckoutStatus;
 }
 
 export class CancelCheckoutDto {
-  @IsCheckoutCancelledReason()
+  @ApiEnum(CheckoutCancelledReason, 'CheckoutCancelledReason')
   reason!: CheckoutCancelledReason;
 }
 

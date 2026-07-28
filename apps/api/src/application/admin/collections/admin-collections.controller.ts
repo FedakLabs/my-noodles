@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
+import { Collection } from '../../collections/collection.entity';
 import {
-  AdminCollectionDto,
   AdminCollectionsListResponseDto,
   CreateCollectionDto,
   ListAdminCollectionsQueryDto,
@@ -26,7 +26,7 @@ import { AdminCollectionsService } from './admin-collections.service';
 
 @ApiTags('Admin Collections')
 @ApiBearerAuth()
-@ApiExtraModels(AdminCollectionDto, AdminCollectionsListResponseDto)
+@ApiExtraModels(Collection, AdminCollectionsListResponseDto)
 @UseGuards(AuthGuard)
 @Controller('admin/collections')
 export class AdminCollectionsController {
@@ -45,25 +45,25 @@ export class AdminCollectionsController {
   }
 
   @Get(':id')
-  @ApiOkResponse({ type: AdminCollectionDto })
+  @ApiOkResponse({ type: Collection })
   @ApiException(CollectionNotFoundException)
-  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<AdminCollectionDto> {
+  async getById(@Param('id', ParseUUIDPipe) id: string): Promise<Collection> {
     return await this.adminCollectionsService.getById(id);
   }
 
   @Post()
-  @ApiOkResponse({ type: AdminCollectionDto })
-  async create(@Body() dto: CreateCollectionDto): Promise<AdminCollectionDto> {
+  @ApiOkResponse({ type: Collection })
+  async create(@Body() dto: CreateCollectionDto): Promise<Collection> {
     return await this.adminCollectionsService.create(dto);
   }
 
   @Patch(':id')
-  @ApiOkResponse({ type: AdminCollectionDto })
+  @ApiOkResponse({ type: Collection })
   @ApiException(CollectionNotFoundException)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCollectionDto,
-  ): Promise<AdminCollectionDto> {
+  ): Promise<Collection> {
     return await this.adminCollectionsService.update(id, dto);
   }
 }

@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min, MinLength, ValidateNested } from 'class-validator';
 
+import { Category } from '../../categories/category.entity';
 import { AdminListMetaDto, AdminListQueryDto, LocalizedStringDto } from '../common';
 
 export class ListAdminCategoriesQueryDto extends AdminListQueryDto {}
@@ -15,7 +16,7 @@ export class CreateCategoryDto {
   @ApiProperty({ type: () => LocalizedStringDto })
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name!: LocalizedStringDto;
+  nameLocale!: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -44,7 +45,7 @@ export class UpdateCategoryDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => LocalizedStringDto)
-  name?: LocalizedStringDto;
+  nameLocale?: LocalizedStringDto;
 
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
@@ -63,30 +64,9 @@ export class UpdateCategoryDto {
   themeKey?: string | null;
 }
 
-/** Admin projection of {@link Category} — exposes full `{ uk, en? }` name locales, not the resolved string. */
-export class AdminCategoryDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  slug!: string;
-
-  @ApiProperty({ type: () => LocalizedStringDto })
-  name!: LocalizedStringDto;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  icon!: string | null;
-
-  @ApiProperty()
-  sortOrder!: number;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  themeKey!: string | null;
-}
-
 export class AdminCategoriesListResponseDto {
-  @ApiProperty({ type: () => [AdminCategoryDto] })
-  items!: AdminCategoryDto[];
+  @ApiProperty({ type: () => [Category] })
+  items!: Category[];
 
   @ApiProperty({ type: () => AdminListMetaDto })
   meta!: AdminListMetaDto;

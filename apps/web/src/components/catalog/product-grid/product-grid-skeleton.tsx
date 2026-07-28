@@ -68,6 +68,8 @@ function ProductCardSkeleton() {
   );
 }
 
+export { ProductCardSkeleton };
+
 export function ProductGridSkeleton({ count = 8 }: ProductGridSkeletonProps) {
   return (
     <Grid container spacing={2} aria-hidden>

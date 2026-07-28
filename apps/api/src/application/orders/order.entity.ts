@@ -1,5 +1,6 @@
 import { TimestampEntity, UuidV7PrimaryColumn } from '@my-noodles/api-lib/persistence';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { Checkout } from '../checkouts/checkout.entity';
@@ -41,12 +42,13 @@ export class Order extends TimestampEntity {
   @Column({ name: 'total_minor', type: 'int' })
   totalMinor!: number;
 
-  /**
-   * Products + shipping when a delivery estimate is present; otherwise equals `totalMinor`.
-   * Response-only — set by `CheckoutCalculator.calculateTotals`.
-   */
-  @ApiPropertyOptional()
-  grandTotalMinor?: number;
+  /** Products + shipping when delivery has a cost; otherwise equals `totalMinor`. */
+  @Expose()
+  @ApiProperty()
+  get grandTotalMinor(): number {
+    const shippingCostMinor = this.delivery?.shippingCostMinor;
+    return shippingCostMinor != null ? this.totalMinor + shippingCostMinor : this.totalMinor;
+  }
 
   @Column({ type: 'text' })
   currency!: string;

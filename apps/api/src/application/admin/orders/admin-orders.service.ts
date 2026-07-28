@@ -17,10 +17,7 @@ import {
 
 import { OrderCancelledReason } from '@/application/orders/order-cancelled-reason';
 import { OrderStatus } from '@/application/orders/order-status';
-import {
-  availableOrderTransitions,
-  isOrderTransitionAllowed,
-} from '@/application/orders/order-status-transitions';
+import { isOrderTransitionAllowed } from '@/application/orders/order-status-transitions';
 import { Order } from '@/application/orders/order.entity';
 import { OrderNotFoundException } from '@/application/orders/orders.exceptions';
 import { OrdersService } from '@/application/orders/orders.service';
@@ -124,7 +121,7 @@ export class AdminOrdersService {
     );
 
     return {
-      items: result.items.map((order) => this.toAdminOrder(order)),
+      items: result.items.map((order) => this.asAdminOrder(order)),
       meta: result.meta,
     };
   }
@@ -134,7 +131,7 @@ export class AdminOrdersService {
     if (!order || order.status === OrderStatus.Draft) {
       throw new OrderNotFoundException(orderId);
     }
-    return this.toAdminOrder(order);
+    return this.asAdminOrder(order);
   }
 
   async confirm(orderId: string): Promise<AdminOrder> {
@@ -163,7 +160,7 @@ export class AdminOrdersService {
 
   async cancel(orderId: string, cancelledReason: OrderCancelledReason): Promise<AdminOrder> {
     const cancelled = await this.ordersService.cancelSubmittedOrder(orderId, cancelledReason);
-    return this.toAdminOrder(cancelled);
+    return this.asAdminOrder(cancelled);
   }
 
   private async applySimpleTransition(orderId: string, status: OrderStatus): Promise<AdminOrder> {
@@ -178,15 +175,11 @@ export class AdminOrdersService {
 
     order.status = status;
     const saved = await this.ordersRepository.save(order);
-    return this.toAdminOrder(saved);
+    return this.asAdminOrder(saved);
   }
 
-  private toAdminOrder(order: Order): AdminOrder {
-    const adminOrder = Object.assign(new AdminOrder(), order);
-    const shippingCostMinor = adminOrder.delivery?.shippingCostMinor;
-    adminOrder.grandTotalMinor =
-      shippingCostMinor != null ? adminOrder.totalMinor + shippingCostMinor : adminOrder.totalMinor;
-    adminOrder.availableTransitions = availableOrderTransitions(adminOrder.status);
-    return adminOrder;
+  /** Rehydrate as {@link AdminOrder} so subclass getters work (repo aliases {@link Order}). */
+  private asAdminOrder(order: Order): AdminOrder {
+    return Object.assign(new AdminOrder(), order);
   }
 }

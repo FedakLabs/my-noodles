@@ -196,13 +196,10 @@ export class ProductsService {
     return {
       total: filteredProducts.length,
       facets: {
-        category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name ?? ''),
-        country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name ?? ''),
+        category: this.toFacetOptions(categories, categoryCounts, (entry) => entry.name),
+        country: this.toFacetOptions(countries, countryCounts, (entry) => entry.name),
         brand: this.toFacetOptions(brands, brandCounts, (entry) => entry.name),
-        // Empty sellers (e.g. seeded with no catalog) clutter the facet; only offer those with matches.
-        seller: this.toFacetOptions(sellers, sellerCounts, (entry) => entry.name).filter(
-          (option) => option.count > 0,
-        ),
+        seller: this.toFacetOptions(sellers, sellerCounts, (entry) => entry.name),
         price: { min: 0, max: 0 },
         isTriedByUs,
         inStock,

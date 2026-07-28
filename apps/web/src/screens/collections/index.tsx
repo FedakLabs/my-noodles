@@ -1,14 +1,21 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import type { Product } from '@my-noodles/api-clients/storefront';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useCollectionDetail, useCollections } from '@/api/collections';
 import { ProductCard } from '@/components/catalog/product-card/product-card';
+import { ProductCardSkeleton } from '@/components/catalog/product-grid/product-grid-skeleton';
+import {
+  AddCollectionToCartModal,
+  type AddCollectionToCartModalRef,
+} from '@/components/collections/add-collection-to-cart-modal';
 import { PageContainer } from '@/components/layout/page-container';
 
 /** Fixed horizontal travel distances per particle slot (px, right→left). */
@@ -16,6 +23,19 @@ const X_DISTANCES = [-80, -148, -216, -284, -352] as const;
 
 /** Five evenly-spaced y slots centred on 0 — shuffled on each hover so order is unpredictable. */
 const Y_SLOTS = [-24, -12, 0, 12, 24];
+
+/** One desktop row of the collection product grid (2 / 3 / 4 cols). */
+const COLLECTION_PRODUCTS_SKELETON_COUNT = 4;
+
+const collectionProductsGridSx = {
+  display: 'grid',
+  gridTemplateColumns: {
+    mobile: 'repeat(2, 1fr)',
+    sm: 'repeat(3, 1fr)',
+    desktop: 'repeat(4, 1fr)',
+  },
+  gap: 2,
+} as const;
 
 function shuffleYSlots(): number[] {
   const arr = [...Y_SLOTS];
@@ -26,16 +46,24 @@ function shuffleYSlots(): number[] {
   return arr;
 }
 
-function CollectionProducts({ slug }: { slug: string }) {
+type OpenAddToCart = (payload: { collectionName: string; products: Product[] }) => void;
+
+function CollectionProductsSkeleton() {
+  return (
+    <Box sx={{ ...collectionProductsGridSx, py: 2 }} aria-busy={true} aria-hidden>
+      {Array.from({ length: COLLECTION_PRODUCTS_SKELETON_COUNT }, (_, index) => (
+        <ProductCardSkeleton key={index} />
+      ))}
+    </Box>
+  );
+}
+
+function CollectionProducts({ slug, onAddToCart }: { slug: string; onAddToCart: OpenAddToCart }) {
   const t = useTranslations('collections');
   const { collection, collectionIsInitialLoad } = useCollectionDetail(slug);
 
   if (collectionIsInitialLoad) {
-    return (
-      <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
-        {t('listLoading')}
-      </Typography>
-    );
+    return <CollectionProductsSkeleton />;
   }
 
   if (!collection?.products?.length) {
@@ -46,23 +74,31 @@ function CollectionProducts({ slug }: { slug: string }) {
     );
   }
 
+  const hasInStock = collection.products.some((product) => product.inStock);
+
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: {
-          mobile: 'repeat(2, 1fr)',
-          sm: 'repeat(3, 1fr)',
-          desktop: 'repeat(4, 1fr)',
-        },
-        gap: 2,
-        py: 2,
-      }}
-    >
-      {collection.products.map((product, index) => (
-        <ProductCard key={product.id} product={product} gridIndex={index} gridColumns={4} />
-      ))}
-    </Box>
+    <Stack spacing={1.5} sx={{ py: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          variant="outlined"
+          size="small"
+          disabled={!hasInStock}
+          onClick={() =>
+            onAddToCart({
+              collectionName: collection.name,
+              products: collection.products,
+            })
+          }
+        >
+          {t('addToCart')}
+        </Button>
+      </Box>
+      <Box sx={collectionProductsGridSx}>
+        {collection.products.map((product, index) => (
+          <ProductCard key={product.id} product={product} gridIndex={index} gridColumns={4} />
+        ))}
+      </Box>
+    </Stack>
   );
 }
 
@@ -76,16 +112,18 @@ function CollectionRow({
   particles,
   expanded,
   onToggle,
+  onAddToCart,
 }: {
   name: string;
-  description: string | null;
-  longDescription: string | null;
+  description: string;
+  longDescription: string;
   slug: string;
   emoji: string;
   color: string;
   particles: string[];
   expanded: boolean;
   onToggle: () => void;
+  onAddToCart: OpenAddToCart;
 }) {
   const [hovered, setHovered] = useState(false);
   const [burstYOrder, setBurstYOrder] = useState<number[]>(() => shuffleYSlots());
@@ -196,7 +234,7 @@ function CollectionRow({
               sx={{
                 position: 'absolute',
                 top: '50%',
-                right: { mobile: 16, desktop: 24 },
+                right: '-50px',
                 marginTop: '-0.625rem',
                 fontSize: '1.25rem',
                 pointerEvents: 'none',
@@ -239,7 +277,7 @@ function CollectionRow({
               {longDescription}
             </Typography>
           )}
-          <CollectionProducts slug={slug} />
+          <CollectionProducts slug={slug} onAddToCart={onAddToCart} />
         </Box>
       </Collapse>
     </Box>
@@ -250,6 +288,7 @@ export function CollectionsScreen() {
   const t = useTranslations('collections');
   const { collections, collectionsIsInitialLoad } = useCollections();
   const [expandedSlugs, setExpandedSlugs] = useState<Set<string>>(new Set());
+  const addToCartModalRef = useRef<AddCollectionToCartModalRef>(null);
 
   function handleToggle(slug: string) {
     setExpandedSlugs((prev) => {
@@ -275,7 +314,7 @@ export function CollectionsScreen() {
             {collections.map((collection) => (
               <CollectionRow
                 key={collection.slug}
-                name={collection.name ?? collection.slug}
+                name={collection.name}
                 description={collection.description}
                 longDescription={collection.longDescription}
                 slug={collection.slug}
@@ -284,6 +323,7 @@ export function CollectionsScreen() {
                 particles={collection.particles}
                 expanded={expandedSlugs.has(collection.slug)}
                 onToggle={() => handleToggle(collection.slug)}
+                onAddToCart={(payload) => addToCartModalRef.current?.open(payload)}
               />
             ))}
           </Stack>
@@ -291,6 +331,8 @@ export function CollectionsScreen() {
           <Typography color="text.secondary">{t('listEmpty')}</Typography>
         )}
       </Stack>
+
+      <AddCollectionToCartModal ref={addToCartModalRef} />
     </PageContainer>
   );
 }

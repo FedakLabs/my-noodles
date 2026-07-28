@@ -3,10 +3,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { AdminCartDetailDto } from '@my-noodles/api-clients/admin';
 import { CopyableField, Modal, type ModalRef, useModal } from '@my-noodles/ui';
-import { type ReactNode, type Ref } from 'react';
+import { type ReactNode, type Ref, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useCart } from '@/api/carts';
+import { ProductDetailModalContent } from '@/components/products/product-detail-modal';
 import { formatCurrency } from '@/utils/format-currency';
 
 type CartDetailModalData = {
@@ -40,7 +41,13 @@ function formatDateTime(value: string | Date | null | undefined): string {
   }).format(new Date(value));
 }
 
-function CartDetailContent({ cart }: { cart: AdminCartDetailDto }) {
+function CartDetailContent({
+  cart,
+  onOpenProduct,
+}: {
+  cart: AdminCartDetailDto;
+  onOpenProduct: (productId: string) => void;
+}) {
   const { t } = useTranslation(['carts', 'common']);
 
   return (
@@ -69,7 +76,23 @@ function CartDetailContent({ cart }: { cart: AdminCartDetailDto }) {
                 useFlexGap
                 sx={{ justifyContent: 'space-between', alignItems: { sm: 'baseline' } }}
               >
-                <Typography variant="body2">
+                <Typography
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  color="primary"
+                  onClick={() => onOpenProduct(item.productId)}
+                  sx={{
+                    border: 0,
+                    padding: 0,
+                    margin: 0,
+                    background: 'none',
+                    cursor: 'pointer',
+                    font: 'inherit',
+                    textAlign: 'left',
+                    textDecoration: 'underline',
+                  }}
+                >
                   {item.name} ({item.slug})
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -88,10 +111,15 @@ function CartDetailContent({ cart }: { cart: AdminCartDetailDto }) {
   );
 }
 
-function CartDetailModalContent() {
+function CartDetailView({
+  visitorSessionId,
+  onOpenProduct,
+}: {
+  visitorSessionId: string;
+  onOpenProduct: (productId: string) => void;
+}) {
   const { t } = useTranslation(['carts', 'common']);
-  const { data, close } = useModal<CartDetailModalData>();
-  const visitorSessionId = data?.visitorSessionId ?? '';
+  const { close } = useModal<CartDetailModalData>();
   const { cart, cartIsLoading, cartIsError } = useCart(visitorSessionId);
 
   return (
@@ -102,13 +130,35 @@ function CartDetailModalContent() {
       <Modal.Body>
         {cartIsLoading ? <Typography color="text.secondary">{t('common:states.loading')}</Typography> : null}
         {cartIsError ? <Typography color="error">{t('carts:detail.loadError')}</Typography> : null}
-        {cart ? <CartDetailContent cart={cart} /> : null}
+        {cart ? <CartDetailContent cart={cart} onOpenProduct={onOpenProduct} /> : null}
       </Modal.Body>
       <Modal.Footer align="end">
         <Button onClick={close}>{t('common:actions.back')}</Button>
       </Modal.Footer>
     </>
   );
+}
+
+function CartDetailModalContent() {
+  const { data, isOpen } = useModal<CartDetailModalData>();
+  const visitorSessionId = data?.visitorSessionId ?? '';
+  const [productId, setProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setProductId(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setProductId(null);
+  }, [visitorSessionId]);
+
+  if (productId && visitorSessionId) {
+    return <ProductDetailModalContent productId={productId} onBack={() => setProductId(null)} />;
+  }
+
+  return <CartDetailView visitorSessionId={visitorSessionId} onOpenProduct={setProductId} />;
 }
 
 export function CartDetailModal({ ref }: { ref?: Ref<CartDetailModalRef> }) {

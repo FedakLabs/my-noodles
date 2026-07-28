@@ -16,8 +16,8 @@ export class LocalizedString {
     Object.assign(this, values);
   }
 
-  /** String for the active request locale (AsyncLocalStorage), or `null` when missing. */
-  get localized(): string | null {
+  /** String for the active request locale (AsyncLocalStorage), falling back to `DEFAULT_LOCALE`. */
+  get localized(): string {
     return LocalizedString.resolveFor(this, LocaleContext.get());
   }
 
@@ -32,26 +32,16 @@ export class LocalizedString {
   static resolveFor(
     data: LocalizedStringData | LocalizedStringRecord | LocalizedString,
     locale: Locale,
-  ): string | null {
-    return (data as LocalizedStringRecord)[locale] ?? null;
+  ): string {
+    const values = data as LocalizedStringRecord;
+    return values[locale] ?? values[DEFAULT_LOCALE] ?? '';
   }
 
   toJSON(): LocalizedStringData {
     const values = this as LocalizedStringRecord;
-    const result = { [DEFAULT_LOCALE]: values[DEFAULT_LOCALE]! } as LocalizedStringData;
-
-    for (const locale of SUPPORTED_LOCALES) {
-      if (locale === DEFAULT_LOCALE) {
-        continue;
-      }
-
-      const value = values[locale];
-      if (value !== undefined) {
-        result[locale] = value;
-      }
-    }
-
-    return result;
+    return Object.fromEntries(
+      SUPPORTED_LOCALES.map((locale) => [locale, values[locale] ?? values[DEFAULT_LOCALE] ?? '']),
+    ) as LocalizedStringData;
   }
 }
 

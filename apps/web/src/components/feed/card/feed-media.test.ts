@@ -18,12 +18,6 @@ describe('toFeedMediaItems', () => {
     ]);
   });
 
-  it('falls back to the slug when the name is missing', () => {
-    const [item] = toFeedMediaItems({ name: null, slug: 'mochi', images: ['a.jpg'], videos: [] });
-
-    expect(item?.alt).toBe('mochi');
-  });
-
   it('returns an empty list when there is no media', () => {
     expect(toFeedMediaItems({ name: 'Mochi', slug: 'mochi', images: [], videos: [] })).toEqual([]);
   });

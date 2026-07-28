@@ -55,7 +55,7 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
       return [];
     }
 
-    const name = pickLocalized(product.name, locale);
+    const name = pickLocalized(product.nameLocale, locale);
     const images: MediaGalleryItem[] = product.images.map((url) => ({
       type: 'image',
       url,
@@ -70,9 +70,7 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
   }, [locale, product]);
 
   const title =
-    product != null
-      ? pickLocalized(product.name, locale) || t('products:detail.title')
-      : t('products:detail.title');
+    product != null ? pickLocalized(product.nameLocale, locale) : t('products:detail.title');
 
   function handleBack() {
     if (onBack) {
@@ -152,13 +150,22 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
 
             <Stack spacing={1.5}>
               <DetailRow label={t('products:form.slug')} value={product.slug} />
-              <DetailRow label={t('products:form.name')} value={pickLocalized(product.name, locale)} />
+              <DetailRow
+                label={t('products:form.name')}
+                value={pickLocalized(product.nameLocale, locale)}
+              />
               <DetailRow
                 label={t('products:form.description')}
-                value={pickLocalized(product.description, locale)}
+                value={pickLocalized(product.descriptionLocale, locale)}
               />
-              <DetailRow label={t('products:form.story')} value={pickLocalized(product.story, locale)} />
-              <DetailRow label={t('products:form.forWhom')} value={pickLocalized(product.forWhom, locale)} />
+              <DetailRow
+                label={t('products:form.story')}
+                value={pickLocalized(product.storyLocale, locale)}
+              />
+              <DetailRow
+                label={t('products:form.forWhom')}
+                value={pickLocalized(product.forWhomLocale, locale)}
+              />
               <DetailRow label={t('products:form.weight')} value={product.weight} />
               <DetailRow
                 label={t('products:detail.price')}
@@ -166,9 +173,18 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
               />
               <DetailRow label={t('products:form.quantity')} value={String(product.quantity)} />
               <DetailRow label={t('products:form.sortWeight')} value={String(product.sortWeight)} />
-              <DetailRow label={t('products:form.spice')} value={String(product.flavor.spice)} />
-              <DetailRow label={t('products:form.sweet')} value={String(product.flavor.sweet)} />
-              <DetailRow label={t('products:form.texture')} value={product.flavor.texture} />
+              <DetailRow
+                label={t('products:form.spice')}
+                value={String((product.flavor as { spice?: number }).spice ?? '')}
+              />
+              <DetailRow
+                label={t('products:form.sweet')}
+                value={String((product.flavor as { sweet?: number }).sweet ?? '')}
+              />
+              <DetailRow
+                label={t('products:form.texture')}
+                value={(product.flavor as { texture?: string }).texture ?? ''}
+              />
               <DetailRow
                 label={t('products:form.allergens')}
                 value={
@@ -187,11 +203,11 @@ export function ProductDetailModalContent({ productId, onBack }: ProductDetailMo
               />
               <DetailRow
                 label={t('products:form.country')}
-                value={pickLocalized(product.country.name, locale)}
+                value={pickLocalized(product.country.nameLocale, locale)}
               />
               <DetailRow
                 label={t('products:form.category')}
-                value={pickLocalized(product.category.name, locale)}
+                value={pickLocalized(product.category.nameLocale, locale)}
               />
             </Stack>
           </Stack>

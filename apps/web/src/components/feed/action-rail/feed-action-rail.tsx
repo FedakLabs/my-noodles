@@ -130,11 +130,7 @@ export function FeedActionRail({
         </RailButton>
 
         <Stack spacing={0.25} sx={{ alignItems: 'center', color: 'common.white' }}>
-          <ProductShareMenu
-            productName={item.name ?? item.slug}
-            productSlug={item.slug}
-            iconSize={RAIL_ICON_SIZE}
-          />
+          <ProductShareMenu productName={item.name} productSlug={item.slug} iconSize={RAIL_ICON_SIZE} />
         </Stack>
 
         <RailButton

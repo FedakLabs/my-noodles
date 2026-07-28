@@ -62,7 +62,7 @@ export function FeedCardDetails({ item, open, onClose }: FeedCardDetailsProps) {
         >
           <Stack spacing={1.25} sx={feedDetailsTextShadowSx(theme)}>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {item.name ?? item.slug}
+              {item.name}
             </Typography>
             <Typography variant="body2" sx={feedDetailsMetaTextSx(theme)}>
               {[item.country.name, item.category.name].filter(Boolean).join(' · ')}

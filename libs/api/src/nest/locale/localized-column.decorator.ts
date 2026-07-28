@@ -1,11 +1,12 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiHideProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { LocalizedColumn as LocaleLocalizedColumn, type LocalizedColumnOptions } from '../../locale';
+import { LocalizedStringSchema } from './localized-string.schema';
 
-/** Storage column for locale JSONB — hidden from OpenAPI; use {@link LocalizedResolved} getters on the wire. */
+/** Storage column for locale JSONB — full required locale map on the wire alongside {@link LocalizedResolved} getters. */
 export function LocalizedColumn(options?: LocalizedColumnOptions): PropertyDecorator {
-  return applyDecorators(LocaleLocalizedColumn(options), ApiHideProperty());
+  return applyDecorators(LocaleLocalizedColumn(options), ApiProperty({ type: () => LocalizedStringSchema }));
 }
 
 export type { LocalizedColumnOptions };

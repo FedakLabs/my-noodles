@@ -1,8 +1,9 @@
+import { ApiEnum } from '@my-noodles/api-lib/nest';
 import { TransformToArray, TransformToInt } from '@my-noodles/api-lib/transformers';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
 
-import { IsOrderCancelledReason, OrderCancelledReason } from '@/application/orders/order-cancelled-reason';
+import { OrderCancelledReason } from '@/application/orders/order-cancelled-reason';
 import { OrderStatus } from '@/application/orders/order-status';
 
 import { AdminOrder } from './admin-order.entity';
@@ -74,7 +75,7 @@ export class ListAdminOrdersQueryDto {
 }
 
 export class CancelOrderDto {
-  @IsOrderCancelledReason()
+  @ApiEnum(OrderCancelledReason, 'OrderCancelledReason')
   cancelledReason!: OrderCancelledReason;
 }
 
