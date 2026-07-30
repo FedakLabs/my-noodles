@@ -11,4 +11,13 @@ describe('TawkSupportChatProvider', () => {
       createHmac('sha256', 'test-tawk-api-key').update(visitorSessionId).digest('hex'),
     );
   });
+
+  it('returns property and widget ids from config', () => {
+    const provider = new TawkSupportChatProvider();
+
+    expect(provider.getWidgetConfig()).toEqual({
+      propertyId: 'test-tawk-property-id',
+      widgetId: 'test-tawk-widget-id',
+    });
+  });
 });

@@ -2,6 +2,14 @@
   "brand": "MyNoodles",
   "loading": "Loading…",
   "retry": "Try again",
+  "loadMoreWaitingMessages": {
+    "sniff": "Sniffing out the next shelf…",
+    "crunch": "Crunch incoming…",
+    "shelf": "Peeking around the corner of the shelf…",
+    "unwrap": "Unwrapping a few more surprises…",
+    "taste": "Finding something worth a first bite…",
+    "hunt": "Still hunting — tasty things hide well"
+  },
   "nav": {
     "home": "Home",
     "catalog": "Catalog",

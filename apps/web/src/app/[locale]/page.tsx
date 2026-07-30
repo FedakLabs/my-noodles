@@ -25,7 +25,7 @@ async function HomePage() {
 
   await runPrefetchSafe(() =>
     Promise.all([
-      queryClient.prefetchQuery(collectionsQueries.list(4)),
+      queryClient.prefetchQuery(collectionsQueries.list({ page: 1, limit: 4 })),
       queryClient.prefetchQuery(countriesQueries.list()),
     ]),
   );

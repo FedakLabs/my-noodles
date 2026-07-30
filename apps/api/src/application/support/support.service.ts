@@ -11,7 +11,8 @@ export class SupportService {
   openSession(visitor: VisitorSession): SupportSessionResponseDto {
     const visitorSessionId = visitor.id;
     const sessionHash = this.supportChatProvider.createSessionHash(visitorSessionId);
+    const { propertyId, widgetId } = this.supportChatProvider.getWidgetConfig();
 
-    return { visitorSessionId, sessionHash };
+    return { visitorSessionId, sessionHash, propertyId, widgetId };
   }
 }

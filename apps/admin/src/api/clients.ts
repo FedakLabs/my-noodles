@@ -6,11 +6,11 @@ import { ROUTE_NAMES } from '@/router/route-names';
 import { env } from '@/shared/env';
 
 export const authApi = new AuthApi({
-  baseUrl: env.AUTH_API_URL ?? env.ADMIN_API_URL,
+  baseUrl: env.VITE_AUTH_API_URL,
 });
 
 const adminApi = new AdminApi({
-  baseUrl: env.ADMIN_API_URL,
+  baseUrl: env.VITE_API_URL,
   authApi,
 });
 

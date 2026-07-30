@@ -3,6 +3,8 @@ declare namespace NodeJS {
     TELEGRAM_BOT_TOKEN: string;
     TELEGRAM_CHAT_ID: string;
     TAWK_API_KEY: string;
+    TAWK_PROPERTY_ID: string;
+    TAWK_WIDGET_ID: string;
     NOVA_POSHTA_API_KEY?: string;
     NOVA_POSHTA_API_BASE_URL?: string;
     MEEST_API_BASE_URL?: string;

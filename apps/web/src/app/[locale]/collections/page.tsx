@@ -1,7 +1,7 @@
 import { dehydrate } from '@tanstack/react-query';
 import { getTranslations } from 'next-intl/server';
 
-import { collectionsQueries } from '@/api/collections';
+import { COLLECTIONS_PAGE_LIMIT, collectionsQueries } from '@/api/collections';
 import { withPageLocale, withPageLocaleMetadata } from '@/i18n/app-locale/server';
 import { CollectionsScreen } from '@/screens/collections';
 import type { LocalePageProps } from '@/shared/page-props';
@@ -22,7 +22,9 @@ export const generateMetadata = withPageLocaleMetadata<LocalePageProps>(async ({
 async function CollectionsPage() {
   const queryClient = getQueryClient();
 
-  await runPrefetchSafe(() => queryClient.prefetchQuery(collectionsQueries.list()));
+  await runPrefetchSafe(() =>
+    queryClient.prefetchInfiniteQuery(collectionsQueries.infiniteList({ limit: COLLECTIONS_PAGE_LIMIT })),
+  );
 
   return (
     <QueryHydrate state={dehydrate(queryClient)}>

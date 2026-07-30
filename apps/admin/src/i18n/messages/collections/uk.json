@@ -1,14 +1,14 @@
 {
   "list": {
-    "title": "Колекції",
+    "title": "Добірки",
     "search": "Slug або назва",
     "columnSlug": "Slug",
     "columnName": "Назва",
     "columnEmoji": "Емодзі",
     "columnSortOrder": "Порядок",
     "columnActive": "Активна",
-    "loadError": "Не вдалося завантажити колекції.",
-    "empty": "Колекцій не знайдено.",
+    "loadError": "Не вдалося завантажити добірки.",
+    "empty": "Добірок не знайдено.",
     "page": "Сторінка {{page}} · {{total}} всього"
   },
   "actions": {
@@ -19,8 +19,8 @@
     "updateFailed": "Не вдалося оновити статус активності."
   },
   "form": {
-    "createTitle": "Нова колекція",
-    "editTitle": "Редагувати колекцію",
+    "createTitle": "Нова добірка",
+    "editTitle": "Редагувати добірку",
     "loading": "Завантаження…",
     "language": "Мова",
     "slug": "Slug",
@@ -33,6 +33,6 @@
     "particlesHint": "Приклад: 🎵, 🎶, ♪, 🎤, ✨",
     "sortOrder": "Порядок сортування",
     "isActive": "Активна",
-    "saveFailed": "Не вдалося зберегти колекцію."
+    "saveFailed": "Не вдалося зберегти добірку."
   }
 }

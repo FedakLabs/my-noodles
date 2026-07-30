@@ -13,6 +13,8 @@ export const validEnv = {
   TELEGRAM_BOT_TOKEN: 'test-bot-token',
   TELEGRAM_CHAT_ID: '123456789',
   TAWK_API_KEY: 'test-tawk-api-key',
+  TAWK_PROPERTY_ID: 'test-tawk-property-id',
+  TAWK_WIDGET_ID: 'test-tawk-widget-id',
   NOVA_POSHTA_API_KEY: 'test-nova-poshta-key',
 } as const;
 

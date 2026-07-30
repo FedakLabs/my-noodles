@@ -96,7 +96,8 @@ type WhyKey = (typeof WHY_ITEMS)[number]['key'];
 
 export function HomeScreen() {
   const t = useTranslations('home');
-  const { collections } = useCollections({ limit: 4 });
+  const { collections: collectionsPage } = useCollections({ page: 1, limit: 4 });
+  const collections = collectionsPage?.items;
   const { countries } = useCountries();
 
   return (
@@ -150,21 +151,21 @@ export function HomeScreen() {
               <Stack direction={{ mobile: 'column', sm: 'row' }} spacing={1.5} sx={{ pt: 1 }}>
                 <Button
                   component={Link}
-                  href={APP_ROUTES.catalog}
+                  href={APP_ROUTES.feed}
                   variant="contained"
                   size="large"
                   sx={{ minWidth: 200 }}
                 >
-                  {t('hero.ctaCatalog')}
+                  {t('hero.ctaFeed')}
                 </Button>
                 <Button
                   component={Link}
-                  href={APP_ROUTES.feed}
+                  href={APP_ROUTES.catalog}
                   variant="outlined"
                   size="large"
                   sx={{ minWidth: 200 }}
                 >
-                  {t('hero.ctaFeed')}
+                  {t('hero.ctaCatalog')}
                 </Button>
               </Stack>
             </MountReveal>

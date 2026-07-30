@@ -3,12 +3,8 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
 import type { AnalyticsConsentChoice } from '@/shared/analytics';
-import {
-  ANALYTICS_ENABLED,
-  readStoredConsent,
-  updateConsentMode,
-  writeStoredConsent,
-} from '@/shared/analytics';
+import { CONSENT_STORAGE_KEY, readStoredConsent } from '@/shared/analytics/consent';
+import { ANALYTICS_ENABLED } from '@/shared/env';
 
 const consentListeners = new Set<() => void>();
 
@@ -21,6 +17,31 @@ function subscribeConsent(listener: () => void) {
 
 function notifyConsentListeners() {
   consentListeners.forEach((listener) => listener());
+}
+
+function writeStoredConsent(choice: Exclude<AnalyticsConsentChoice, 'pending'>) {
+  window.localStorage.setItem(CONSENT_STORAGE_KEY, choice);
+}
+
+function updateConsentMode(analyticsGranted: boolean) {
+  if (!ANALYTICS_ENABLED) {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer ?? [];
+
+  const gtag = (...args: unknown[]) => {
+    window.dataLayer?.push(args);
+  };
+
+  gtag('consent', 'update', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: analyticsGranted ? 'granted' : 'denied',
+    functionality_storage: 'denied',
+    personalization_storage: 'denied',
+  });
 }
 
 function getConsentSnapshot(): AnalyticsConsentChoice {

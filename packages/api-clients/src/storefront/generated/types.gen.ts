@@ -162,6 +162,11 @@ export type PaginatedProductsDto = {
     items: Array<Product>;
 };
 
+export type PaginatedCollectionsDto = {
+    meta: PaginationMetaDto;
+    items: Array<Collection>;
+};
+
 export const DeliveryProvider = {
     NOVA_POSHTA: 'nova-poshta',
     UKRPOSHTA: 'ukrposhta',
@@ -475,6 +480,14 @@ export type SupportSessionResponseDto = {
      * Secure session credential for the chat provider.
      */
     sessionHash: string;
+    /**
+     * Tawk property ID for the embed script path.
+     */
+    propertyId: string;
+    /**
+     * Tawk widget ID for the embed script path.
+     */
+    widgetId: string;
 };
 
 export type HealthControllerGetLiveData = {
@@ -608,44 +621,17 @@ export type CollectionsControllerListData = {
     };
     path?: never;
     query?: {
+        page?: number;
         limit?: number;
     };
     url: '/api/collections';
 };
 
 export type CollectionsControllerListResponses = {
-    200: Array<Collection>;
+    200: PaginatedCollectionsDto;
 };
 
 export type CollectionsControllerListResponse = CollectionsControllerListResponses[keyof CollectionsControllerListResponses];
-
-export type CollectionsControllerGetBySlugData = {
-    body?: never;
-    headers?: {
-        /**
-         * Preferred response locale
-         */
-        'x-app-locale'?: 'uk' | 'en';
-    };
-    path: {
-        slug: string;
-    };
-    query?: never;
-    url: '/api/collections/{slug}';
-};
-
-export type CollectionsControllerGetBySlugErrors = {
-    /**
-     * Collection not found
-     */
-    404: unknown;
-};
-
-export type CollectionsControllerGetBySlugResponses = {
-    200: Collection;
-};
-
-export type CollectionsControllerGetBySlugResponse = CollectionsControllerGetBySlugResponses[keyof CollectionsControllerGetBySlugResponses];
 
 export type CountriesControllerListData = {
     body?: never;

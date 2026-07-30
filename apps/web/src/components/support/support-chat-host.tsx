@@ -36,7 +36,7 @@ export function SupportChatHost() {
   const enabled = !isImmersiveRoute(pathname);
   const chat = useSupportChat({ enabled });
 
-  if (!chat.isConfigured || !enabled || (chat.status !== 'loading' && chat.status !== 'error')) {
+  if (!enabled || (chat.status !== 'loading' && chat.status !== 'error')) {
     return null;
   }
 

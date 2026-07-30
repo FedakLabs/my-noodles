@@ -8,7 +8,7 @@ Vite + TanStack Router SPA for order management.
 pnpm nx run admin:dev
 ```
 
-Runs on http://localhost:3002. Set `ADMIN_API_URL` in `.env` (see `.env.example`).
+Runs on http://localhost:3002. Set `VITE_API_URL` and `VITE_AUTH_API_URL` in `.env` (see `.env.example`).
 
 ## Auth
 

@@ -1,13 +1,12 @@
 'use client';
 
-import { env } from '@/shared/env';
-
 import { SUPPORT_CHAT_WIDGET_INSET } from '../support-chat-layout';
+
+type TawkCallback = (error?: unknown) => void;
 
 type TawkLoginPayload = {
   hash: string;
   userId: string;
-  name?: string;
 };
 
 type TawkVisibilityStyle = {
@@ -25,14 +24,13 @@ type TawkCustomStyle = {
 };
 
 type TawkApi = {
-  customStyle?: TawkCustomStyle;
+  autoStart?: boolean;
+  login?: (data: TawkLoginPayload, callback?: TawkCallback) => void;
+  minimize?: () => void;
   showWidget?: () => void;
   hideWidget?: () => void;
-  maximize?: () => void;
-  minimize?: () => void;
-  login?: (data: TawkLoginPayload, callback?: (error?: unknown) => void) => void;
-  logout?: (callback?: (error?: unknown) => void) => void;
   onLoad?: () => void;
+  customStyle?: TawkCustomStyle;
 };
 
 declare global {
@@ -43,24 +41,36 @@ declare global {
 }
 
 const TAWK_SCRIPT_ID = 'tawk-embed-script';
-const TAWK_READY_TIMEOUT_MS = 15_000;
-const TAWK_LOGIN_TIMEOUT_MS = 3_000;
+const TAWK_ONLOAD_TIMEOUT_MS = 15_000;
+const TAWK_LOGIN_TIMEOUT_MS = 10_000;
+const TAWK_LOGGED_IN_KEY = 'support-chat:logged-in-user';
+
+export type TawkSupportChatSession = {
+  visitorSessionId: string;
+  sessionHash: string;
+  propertyId: string;
+  widgetId: string;
+};
+
+export type TawkSupportChatConnectOptions = {
+  signal?: AbortSignal;
+};
+
+let loadPromise: Promise<void> | null = null;
+let unloadMinimizeRegistered = false;
 
 function getTawkApi(): TawkApi {
   window.Tawk_API ??= {};
   return window.Tawk_API;
 }
 
-function isConfigured(): boolean {
-  return Boolean(env.NEXT_PUBLIC_TAWK_PROPERTY_ID && env.NEXT_PUBLIC_TAWK_WIDGET_ID);
-}
-
-function isTawkReady(api: TawkApi): boolean {
-  return typeof api.login === 'function' && typeof api.maximize === 'function';
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new DOMException('Tawk connect aborted', 'AbortError');
+  }
 }
 
 function applyTawkPlacement(api: TawkApi) {
-  // Must be set before the embed script runs.
   api.customStyle = {
     ...api.customStyle,
     visibility: {
@@ -78,179 +88,185 @@ function applyTawkPlacement(api: TawkApi) {
   };
 }
 
-function waitForTawkReady(): Promise<TawkApi> {
-  return new Promise((resolve, reject) => {
-    const api = getTawkApi();
-    if (isTawkReady(api)) {
-      resolve(api);
-      return;
-    }
+function registerUnloadMinimize(): void {
+  if (unloadMinimizeRegistered) {
+    return;
+  }
+  unloadMinimizeRegistered = true;
 
-    const startedAt = Date.now();
+  const minimize = () => getTawkApi().minimize?.();
+  window.addEventListener('pagehide', minimize);
+  window.addEventListener('beforeunload', minimize);
+}
+
+function ensureLoaded(session: TawkSupportChatSession, signal?: AbortSignal): Promise<void> {
+  if (loadPromise) {
+    return loadPromise;
+  }
+
+  const api = getTawkApi();
+  api.autoStart = true;
+  applyTawkPlacement(api);
+  registerUnloadMinimize();
+
+  let scriptEl: HTMLScriptElement | null = null;
+
+  loadPromise = new Promise<void>((resolve, reject) => {
     let settled = false;
-    let pollId = 0;
 
-    const finish = (readyApi: TawkApi) => {
-      if (settled) {
-        return;
-      }
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      signal?.removeEventListener('abort', onAbort);
+    };
+
+    const succeed = () => {
+      if (settled) return;
       settled = true;
-      window.clearInterval(pollId);
-      resolve(readyApi);
+      cleanup();
+      resolve();
     };
 
     const fail = (error: Error) => {
-      if (settled) {
-        return;
-      }
+      if (settled) return;
       settled = true;
-      window.clearInterval(pollId);
+      cleanup();
+      loadPromise = null;
+      scriptEl?.remove();
       reject(error);
     };
+
+    const onAbort = () => {
+      fail(new DOMException('Tawk connect aborted', 'AbortError') as Error);
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      fail(new Error('Tawk widget failed to load'));
+    }, TAWK_ONLOAD_TIMEOUT_MS);
+
+    signal?.addEventListener('abort', onAbort, { once: true });
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
 
     const previousOnLoad = api.onLoad;
     api.onLoad = () => {
       previousOnLoad?.();
-      const readyApi = getTawkApi();
-      if (isTawkReady(readyApi)) {
-        finish(readyApi);
-      }
+      getTawkApi().minimize?.();
+      succeed();
     };
 
-    pollId = window.setInterval(() => {
-      const readyApi = getTawkApi();
-      if (isTawkReady(readyApi)) {
-        finish(readyApi);
-        return;
-      }
-
-      if (Date.now() - startedAt > TAWK_READY_TIMEOUT_MS) {
-        fail(new Error('Tawk widget failed to load'));
-      }
-    }, 50);
+    if (!document.getElementById(TAWK_SCRIPT_ID)) {
+      window.Tawk_LoadStart = new Date();
+      scriptEl = document.createElement('script');
+      scriptEl.id = TAWK_SCRIPT_ID;
+      scriptEl.async = true;
+      scriptEl.src = `https://embed.tawk.to/${session.propertyId}/${session.widgetId}`;
+      scriptEl.charset = 'UTF-8';
+      scriptEl.setAttribute('crossorigin', '*');
+      scriptEl.onerror = () => {
+        fail(new Error('Tawk embed script failed to load'));
+      };
+      document.head.appendChild(scriptEl);
+    }
   });
+
+  return loadPromise;
 }
 
-async function ensureLoaded(): Promise<TawkApi> {
-  if (!isConfigured()) {
-    throw new Error('Tawk is not configured');
+function readPersistedUserId(): string | null {
+  try {
+    return localStorage.getItem(TAWK_LOGGED_IN_KEY);
+  } catch {
+    return null;
   }
+}
 
-  const propertyId = env.NEXT_PUBLIC_TAWK_PROPERTY_ID!;
-  const widgetId = env.NEXT_PUBLIC_TAWK_WIDGET_ID!;
+function persistUserId(userId: string): void {
+  try {
+    localStorage.setItem(TAWK_LOGGED_IN_KEY, userId);
+  } catch {
+    // private-mode or storage quota
+  }
+}
+
+function ensureLoggedIn(session: TawkSupportChatSession, signal?: AbortSignal): Promise<void> {
+  if (readPersistedUserId() === session.visitorSessionId) {
+    return Promise.resolve();
+  }
 
   const api = getTawkApi();
-  applyTawkPlacement(api);
-
-  if (!document.getElementById(TAWK_SCRIPT_ID)) {
-    window.Tawk_LoadStart = new Date();
-    const script = document.createElement('script');
-    script.id = TAWK_SCRIPT_ID;
-    script.async = true;
-    script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
-    script.charset = 'UTF-8';
-    script.setAttribute('crossorigin', '*');
-    document.head.appendChild(script);
+  if (typeof api.login !== 'function') {
+    return Promise.reject(new Error('Tawk login is unavailable'));
   }
 
-  const ready = await waitForTawkReady();
-  // Stay hidden until secure login finishes — then reveal() shows the native bubble.
-  ready.hideWidget?.();
-  return ready;
-}
-
-function withTawkCallback(
-  run: (callback: (error?: unknown) => void) => void,
-  timeoutMs: number,
-  timeoutMessage: string,
-): Promise<void> {
   return new Promise((resolve, reject) => {
     let settled = false;
 
-    const settleOk = () => {
-      if (settled) {
-        return;
-      }
-      settled = true;
+    const cleanup = () => {
       window.clearTimeout(timeoutId);
+      signal?.removeEventListener('abort', onAbort);
+    };
+
+    const succeed = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      persistUserId(session.visitorSessionId);
       resolve();
     };
 
-    const settleErr = (error: unknown) => {
-      if (settled) {
-        return;
-      }
+    const fail = (error: unknown) => {
+      if (settled) return;
       settled = true;
-      window.clearTimeout(timeoutId);
+      cleanup();
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    const timeoutId = window.setTimeout(() => {
-      settleErr(new Error(timeoutMessage));
-    }, timeoutMs);
+    const onAbort = () => {
+      fail(new DOMException('Tawk connect aborted', 'AbortError'));
+    };
 
-    run((error) => {
+    const timeoutId = window.setTimeout(() => {
+      fail(new Error('Tawk login timed out'));
+    }, TAWK_LOGIN_TIMEOUT_MS);
+
+    signal?.addEventListener('abort', onAbort, { once: true });
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
+
+    api.login?.({ userId: session.visitorSessionId, hash: session.sessionHash }, (error) => {
       if (error) {
-        settleErr(error);
-        return;
+        fail(error);
+      } else {
+        succeed();
       }
-      settleOk();
     });
   });
 }
 
-/** Clear a prior visitor identity so a later `login` actually re-hits Tawk. */
-async function logout(): Promise<void> {
+async function connect(
+  session: TawkSupportChatSession,
+  options?: TawkSupportChatConnectOptions,
+): Promise<void> {
+  const { signal } = options ?? {};
+  await ensureLoaded(session, signal);
+  throwIfAborted(signal);
+  await ensureLoggedIn(session, signal);
+  throwIfAborted(signal);
   const api = getTawkApi();
-  if (typeof api.logout !== 'function') {
-    return;
-  }
-
-  try {
-    await withTawkCallback(
-      (callback) => {
-        api.logout?.(callback);
-      },
-      TAWK_LOGIN_TIMEOUT_MS,
-      'Tawk logout timed out',
-    );
-  } catch {
-    // Visitor may never have been logged in after a failed first attempt.
-  }
+  api.minimize?.();
+  api.showWidget?.();
 }
 
-async function login(session: { visitorSessionId: string; sessionHash: string }): Promise<void> {
-  const api = await ensureLoaded();
-
-  if (typeof api.login !== 'function') {
-    throw new Error('Tawk login is unavailable');
-  }
-
-  // Failed / stale login leaves Tawk in a state where a second `login()` is a no-op
-  // (no network). Logout first so retry actually re-authenticates.
-  await logout();
-
-  await withTawkCallback(
-    (callback) => {
-      api.login?.(
-        {
-          userId: session.visitorSessionId,
-          hash: session.sessionHash,
-          name: session.visitorSessionId,
-        },
-        callback,
-      );
-    },
-    TAWK_LOGIN_TIMEOUT_MS,
-    'Tawk login timed out',
-  );
-}
-/** Show the native bubble (unread / pending messages live here). */
 function reveal(): void {
-  getTawkApi().showWidget?.();
+  const api = getTawkApi();
+  api.minimize?.();
+  api.showWidget?.();
 }
 
-/** Hide entirely (e.g. immersive routes). */
 function conceal(): void {
   const api = getTawkApi();
   api.minimize?.();
@@ -258,18 +274,14 @@ function conceal(): void {
 }
 
 export type TawkSupportChat = {
-  isConfigured: boolean;
-  connect: (session: { visitorSessionId: string; sessionHash: string }) => Promise<void>;
-  /** Show native launcher bubble after API + secure login are ready. */
+  connect: (session: TawkSupportChatSession, options?: TawkSupportChatConnectOptions) => Promise<void>;
   reveal: () => void;
   conceal: () => void;
 };
 
-/** Tawk provider surface — swap this hook in `use-support-chat.ts` to change vendors. */
 export function useTawkSupportChat(): TawkSupportChat {
   return {
-    isConfigured: isConfigured(),
-    connect: login,
+    connect,
     reveal,
     conceal,
   };

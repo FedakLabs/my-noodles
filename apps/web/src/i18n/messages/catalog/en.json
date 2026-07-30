@@ -20,14 +20,6 @@
   "previousPage": "Previous page",
   "nextPage": "Next page",
   "loadMore": "Show more tasty things",
-  "loadMoreWaitingMessages": {
-    "sniff": "Sniffing out the next shelf…",
-    "crunch": "Crunch incoming…",
-    "shelf": "Peeking around the corner of the shelf…",
-    "unwrap": "Unwrapping a few more surprises…",
-    "taste": "Finding something worth a first bite…",
-    "hunt": "Still hunting — tasty things hide well"
-  },
   "imageGallery": "Product photos",
   "imageSlide": "Photo {index} of {total}",
   "filters": {

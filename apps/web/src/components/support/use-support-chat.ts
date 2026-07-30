@@ -6,17 +6,11 @@ import { useOpenSupportSession } from '@/api/support';
 import { usePathname } from '@/i18n/navigation';
 import { getApiErrorCode } from '@/shared/api-error';
 
-import { useTawkSupportChat } from './providers/tawk-support-chat';
-
-type SupportChatSession = {
-  visitorSessionId: string;
-  sessionHash: string;
-};
+import { useTawkSupportChat, type TawkSupportChatSession } from './providers/tawk-support-chat';
 
 export type SupportChatStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export type UseSupportChatResult = {
-  isConfigured: boolean;
   status: SupportChatStatus;
   retry: () => void;
 };
@@ -26,37 +20,31 @@ type UseSupportChatOptions = {
   enabled: boolean;
 };
 
-const VISITOR_SESSION_RETRY_MS = 1000;
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 500;
+const VISITOR_SESSION_RETRY_DELAY_MS = 1000;
 
-/** Boots Tawk silently; exposes status for a calm corner chip while loading / on error. */
+/** Boots Tawk with support-session login; chip while loading / on error. */
 export function useSupportChat({ enabled }: UseSupportChatOptions): UseSupportChatResult {
   const pathname = usePathname();
   const provider = useTawkSupportChat();
   const openSession = useOpenSupportSession();
   const [status, setStatus] = useState<SupportChatStatus>('idle');
   const [retryToken, setRetryToken] = useState(0);
-  const sessionRef = useRef<SupportChatSession | null>(null);
+  const sessionRef = useRef<TawkSupportChatSession | null>(null);
   const runIdRef = useRef(0);
   const bootstrappedRef = useRef(false);
-  const inFlightRef = useRef(false);
 
   const retry = useCallback(() => {
     runIdRef.current += 1;
     bootstrappedRef.current = false;
     sessionRef.current = null;
-    inFlightRef.current = false;
     setRetryToken((token) => token + 1);
   }, []);
 
   useEffect(() => {
-    if (!provider.isConfigured) {
-      setStatus('idle');
-      return;
-    }
-
     if (!enabled) {
       runIdRef.current += 1;
-      inFlightRef.current = false;
       provider.conceal();
       setStatus('idle');
       return;
@@ -68,91 +56,81 @@ export function useSupportChat({ enabled }: UseSupportChatOptions): UseSupportCh
       return;
     }
 
-    if (inFlightRef.current) {
-      return;
-    }
-
     const runId = ++runIdRef.current;
-    inFlightRef.current = true;
     setStatus('loading');
 
-    let retryTimeoutId: ReturnType<typeof setTimeout> | undefined;
-    let settleRetryWait: (() => void) | undefined;
-
-    const waitForVisitorSession = () =>
-      new Promise<void>((resolve) => {
-        settleRetryWait = resolve;
-        retryTimeoutId = setTimeout(() => {
-          settleRetryWait = undefined;
-          resolve();
-        }, VISITOR_SESSION_RETRY_MS);
-      });
+    const abortController = new AbortController();
+    let delayTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
     void (async () => {
-      try {
-        for (;;) {
-          try {
-            const session = await openSession.openSupportSessionAsync();
-            if (runId !== runIdRef.current) {
-              return;
-            }
+      let lastError: unknown;
 
-            sessionRef.current = {
-              visitorSessionId: session.visitorSessionId,
-              sessionHash: session.sessionHash,
-            };
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        if (runId !== runIdRef.current || abortController.signal.aborted) {
+          return;
+        }
 
-            await provider.connect(sessionRef.current);
-            if (runId !== runIdRef.current) {
-              return;
-            }
-
-            provider.reveal();
-            bootstrappedRef.current = true;
-            setStatus('ready');
-            return;
-          } catch (error) {
-            if (runId !== runIdRef.current) {
-              return;
-            }
-
-            if (getApiErrorCode(error) === 'visitor_session_not_found') {
-              await waitForVisitorSession();
-              if (runId !== runIdRef.current) {
-                return;
-              }
-              continue;
-            }
-
-            console.error('[support-chat] bootstrap failed', error);
-            bootstrappedRef.current = false;
-            setStatus('error');
+        if (attempt > 0) {
+          const isVisitorNotFound = getApiErrorCode(lastError) === 'visitor_session_not_found';
+          const delay = isVisitorNotFound ? VISITOR_SESSION_RETRY_DELAY_MS : RETRY_DELAY_MS;
+          await new Promise<void>((resolve) => {
+            delayTimeoutId = setTimeout(resolve, delay);
+          });
+          if (runId !== runIdRef.current || abortController.signal.aborted) {
             return;
           }
         }
-      } finally {
-        if (runId === runIdRef.current) {
-          inFlightRef.current = false;
+
+        try {
+          const session = await openSession.openSupportSessionAsync();
+          if (runId !== runIdRef.current || abortController.signal.aborted) {
+            return;
+          }
+
+          sessionRef.current = {
+            visitorSessionId: session.visitorSessionId,
+            sessionHash: session.sessionHash,
+            propertyId: session.propertyId,
+            widgetId: session.widgetId,
+          };
+
+          await provider.connect(sessionRef.current, { signal: abortController.signal });
+          if (runId !== runIdRef.current || abortController.signal.aborted) {
+            return;
+          }
+
+          bootstrappedRef.current = true;
+          setStatus('ready');
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+          }
+          if (runId !== runIdRef.current || abortController.signal.aborted) {
+            return;
+          }
+          lastError = error;
         }
       }
+
+      console.error('[support-chat] bootstrap failed after', MAX_ATTEMPTS, 'attempts', lastError);
+      bootstrappedRef.current = false;
+      setStatus('error');
     })();
 
     return () => {
-      if (retryTimeoutId !== undefined) {
-        clearTimeout(retryTimeoutId);
+      abortController.abort();
+      if (delayTimeoutId !== undefined) {
+        clearTimeout(delayTimeoutId);
       }
-      settleRetryWait?.();
       if (runId === runIdRef.current) {
         runIdRef.current += 1;
-        inFlightRef.current = false;
       }
     };
-    // pathname / retryToken: re-attempt after navigation or explicit retry.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional enable/path/retry gate
-  }, [enabled, pathname, provider.isConfigured, retryToken]);
+  }, [enabled, pathname, retryToken]);
 
   return {
-    isConfigured: provider.isConfigured,
     status,
     retry,
   };

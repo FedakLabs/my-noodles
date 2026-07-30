@@ -1,10 +1,24 @@
 import {
-  collectionsControllerGetBySlug,
+  type Collection,
+  type PaginatedCollectionsDto,
   collectionsControllerList,
 } from '@my-noodles/api-clients/storefront';
-import { queryOptions } from '@tanstack/react-query';
+import { pagePaginatedGetNextPageParam } from '@my-noodles/web-lib/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 
 import { withAppLocaleKey } from '@/i18n/app-locale';
+
+export type CollectionsListParams = {
+  page: number;
+  limit: number;
+};
+
+export type CollectionsInfiniteListParams = {
+  limit: number;
+};
+
+/** Default page size for the collections accordion list (products embedded per row). */
+export const COLLECTIONS_PAGE_LIMIT = 10;
 
 export const collectionsQueries = {
   rootKey: ['collections'] as const,
@@ -13,14 +27,19 @@ export const collectionsQueries = {
     queryOptions({
       queryKey: withAppLocaleKey(() => collectionsQueries.rootKey)(),
     }),
-  list: (limit?: number) =>
+  list: (params: CollectionsListParams) =>
     queryOptions({
-      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'list', limit] as const)(),
-      queryFn: () => collectionsControllerList(limit !== undefined ? { query: { limit } } : undefined),
+      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'list', params] as const)(),
+      queryFn: () => collectionsControllerList({ query: params }),
     }),
-  detail: (slug: string) =>
-    queryOptions({
-      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'detail', slug] as const)(),
-      queryFn: () => collectionsControllerGetBySlug({ path: { slug } }),
+  infiniteList: (params: CollectionsInfiniteListParams) =>
+    infiniteQueryOptions({
+      queryKey: withAppLocaleKey(() => [...collectionsQueries.rootKey, 'infiniteList', params] as const)(),
+      queryFn: ({ pageParam }) =>
+        collectionsControllerList({ query: { page: pageParam, limit: params.limit } }),
+      initialPageParam: 1,
+      getNextPageParam: pagePaginatedGetNextPageParam<Collection>(),
     }),
 };
+
+export type { PaginatedCollectionsDto };

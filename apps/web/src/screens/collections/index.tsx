@@ -9,13 +9,13 @@ import type { Product } from '@my-noodles/api-clients/storefront';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
-import { useCollectionDetail, useCollections } from '@/api/collections';
+import { useCollectionsInfiniteList } from '@/api/collections';
 import { ProductCard } from '@/components/catalog/product-card/product-card';
-import { ProductCardSkeleton } from '@/components/catalog/product-grid/product-grid-skeleton';
 import {
   AddCollectionToCartModal,
   type AddCollectionToCartModalRef,
 } from '@/components/collections/add-collection-to-cart-modal';
+import { InfiniteLoadMore } from '@/components/infinite-load-more';
 import { PageContainer } from '@/components/layout/page-container';
 
 /** Fixed horizontal travel distances per particle slot (px, right→left). */
@@ -23,9 +23,6 @@ const X_DISTANCES = [-80, -148, -216, -284, -352] as const;
 
 /** Five evenly-spaced y slots centred on 0 — shuffled on each hover so order is unpredictable. */
 const Y_SLOTS = [-24, -12, 0, 12, 24];
-
-/** One desktop row of the collection product grid (2 / 3 / 4 cols). */
-const COLLECTION_PRODUCTS_SKELETON_COUNT = 4;
 
 const collectionProductsGridSx = {
   display: 'grid',
@@ -48,25 +45,18 @@ function shuffleYSlots(): number[] {
 
 type OpenAddToCart = (payload: { collectionName: string; products: Product[] }) => void;
 
-function CollectionProductsSkeleton() {
-  return (
-    <Box sx={{ ...collectionProductsGridSx, py: 2 }} aria-busy={true} aria-hidden>
-      {Array.from({ length: COLLECTION_PRODUCTS_SKELETON_COUNT }, (_, index) => (
-        <ProductCardSkeleton key={index} />
-      ))}
-    </Box>
-  );
-}
-
-function CollectionProducts({ slug, onAddToCart }: { slug: string; onAddToCart: OpenAddToCart }) {
+function CollectionProducts({
+  collectionName,
+  products,
+  onAddToCart,
+}: {
+  collectionName: string;
+  products: Product[];
+  onAddToCart: OpenAddToCart;
+}) {
   const t = useTranslations('collections');
-  const { collection, collectionIsInitialLoad } = useCollectionDetail(slug);
 
-  if (collectionIsInitialLoad) {
-    return <CollectionProductsSkeleton />;
-  }
-
-  if (!collection?.products?.length) {
+  if (!products.length) {
     return (
       <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
         {t('listEmpty')}
@@ -74,7 +64,7 @@ function CollectionProducts({ slug, onAddToCart }: { slug: string; onAddToCart: 
     );
   }
 
-  const hasInStock = collection.products.some((product) => product.inStock);
+  const hasInStock = products.some((product) => product.inStock);
 
   return (
     <Stack spacing={1.5} sx={{ py: 2 }}>
@@ -85,8 +75,8 @@ function CollectionProducts({ slug, onAddToCart }: { slug: string; onAddToCart: 
           disabled={!hasInStock}
           onClick={() =>
             onAddToCart({
-              collectionName: collection.name,
-              products: collection.products,
+              collectionName,
+              products,
             })
           }
         >
@@ -94,7 +84,7 @@ function CollectionProducts({ slug, onAddToCart }: { slug: string; onAddToCart: 
         </Button>
       </Box>
       <Box sx={collectionProductsGridSx}>
-        {collection.products.map((product, index) => (
+        {products.map((product, index) => (
           <ProductCard key={product.id} product={product} gridIndex={index} gridColumns={4} />
         ))}
       </Box>
@@ -106,10 +96,10 @@ function CollectionRow({
   name,
   description,
   longDescription,
-  slug,
   emoji,
   color,
   particles,
+  products,
   expanded,
   onToggle,
   onAddToCart,
@@ -117,10 +107,10 @@ function CollectionRow({
   name: string;
   description: string;
   longDescription: string;
-  slug: string;
   emoji: string;
   color: string;
   particles: string[];
+  products: Product[];
   expanded: boolean;
   onToggle: () => void;
   onAddToCart: OpenAddToCart;
@@ -277,7 +267,7 @@ function CollectionRow({
               {longDescription}
             </Typography>
           )}
-          <CollectionProducts slug={slug} onAddToCart={onAddToCart} />
+          <CollectionProducts collectionName={name} products={products} onAddToCart={onAddToCart} />
         </Box>
       </Collapse>
     </Box>
@@ -286,7 +276,13 @@ function CollectionRow({
 
 export function CollectionsScreen() {
   const t = useTranslations('collections');
-  const { collections, collectionsIsInitialLoad } = useCollections();
+  const {
+    collections,
+    collectionsIsInitialLoad,
+    collectionsHasNextPage,
+    collectionsIsFetchingNextPage,
+    collectionsFetchNextPage,
+  } = useCollectionsInfiniteList();
   const [expandedSlugs, setExpandedSlugs] = useState<Set<string>>(new Set());
   const addToCartModalRef = useRef<AddCollectionToCartModalRef>(null);
 
@@ -309,7 +305,7 @@ export function CollectionsScreen() {
 
         {collectionsIsInitialLoad ? (
           <Typography color="text.secondary">{t('listLoading')}</Typography>
-        ) : collections?.length ? (
+        ) : collections.length ? (
           <Stack spacing={2}>
             {collections.map((collection) => (
               <CollectionRow
@@ -317,15 +313,22 @@ export function CollectionsScreen() {
                 name={collection.name}
                 description={collection.description}
                 longDescription={collection.longDescription}
-                slug={collection.slug}
                 emoji={collection.emoji}
                 color={collection.color}
                 particles={collection.particles}
+                products={collection.products}
                 expanded={expandedSlugs.has(collection.slug)}
                 onToggle={() => handleToggle(collection.slug)}
                 onAddToCart={(payload) => addToCartModalRef.current?.open(payload)}
               />
             ))}
+            <InfiniteLoadMore
+              hasMore={collectionsHasNextPage}
+              isLoading={collectionsIsFetchingNextPage}
+              onLoadMore={() => {
+                void collectionsFetchNextPage();
+              }}
+            />
           </Stack>
         ) : (
           <Typography color="text.secondary">{t('listEmpty')}</Typography>
