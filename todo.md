@@ -13,4 +13,6 @@ remove completely cjs commonjs etc from a project
 
 =====
 
-migrate from typescript 6 to 7
+Migrate typescript 6 to 7
+
+And also add extension Vs code typescript 7 stove 6 is still default
