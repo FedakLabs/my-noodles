@@ -1,0 +1,91 @@
+# Production stack on each Hetzner app VM (identical behind the LB).
+# Deploy directory on the server: /opt/my-noodles
+#   compose.prod.yml  (this file)
+#   Caddyfile
+#   certs/origin.pem + origin.key
+#   .env              (WEB_IMAGE_TAG, API_IMAGE_TAG, DATABASE_URL, …)
+#
+# Images: ghcr.io/<owner>/my-noodles-{web,api}:sha-<short>
+# Deploys roll host-by-host: docker compose up -d --no-deps --pull always --wait <service>
+
+name: my-noodles
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/etc/caddy/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - edge
+
+  web:
+    image: ghcr.io/${GHCR_OWNER:-my-noodles}/my-noodles-web:${WEB_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: '0.0.0.0'
+    expose:
+      - '3000'
+    healthcheck:
+      # Distroless images have no shell — use exec form against /nodejs/bin/node.
+      test:
+        [
+          'CMD',
+          '/nodejs/bin/node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 40s
+    networks:
+      - edge
+
+  api:
+    image: ghcr.io/${GHCR_OWNER:-my-noodles}/my-noodles-api:${API_IMAGE_TAG}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: prod
+      PORT: '3001'
+    expose:
+      - '3001'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/nodejs/bin/node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    networks:
+      - edge
+
+networks:
+  edge:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

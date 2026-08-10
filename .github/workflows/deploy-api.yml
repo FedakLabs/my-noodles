@@ -1,0 +1,94 @@
+name: deploy-api
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (branch or SHA, without sha- prefix)'
+        required: true
+        default: 'main'
+        type: string
+
+concurrency:
+  group: deploy-api-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    name: Build · migrate · deploy api · prod
+    runs-on: ubuntu-latest
+    environment: prod
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Resolve short SHA
+        id: meta
+        run: |
+          SHORT="$(git rev-parse --short=7 HEAD)"
+          echo "short_sha=${SHORT}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=sha-${SHORT}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${{ github.repository_owner }}/my-noodles-api:sha-${SHORT}" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/setup-monorepo
+
+      - name: Type-check api
+        run: pnpm nx run api:type-check
+
+      - name: Test api
+        run: pnpm nx run api:test
+
+      - name: Run migrations (Neon direct URL)
+        env:
+          # Migrations must use the non-pooled connection string.
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+          NODE_ENV: prod
+          PORT: '3001'
+          OTEL_ENABLED: 'false'
+        run: pnpm nx run api:migration:run
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Resolve app SSH hosts
+        id: hosts
+        uses: ./.github/actions/resolve-app-hosts
+        with:
+          state_passphrase: ${{ secrets.TF_STATE_PASSPHRASE }}
+          fallback_hosts: ${{ secrets.DEPLOY_SSH_HOST }}
+
+      - name: Deploy api (rolling)
+        uses: ./.github/actions/deploy-compose-service
+        with:
+          service: api
+          image_tag: ${{ steps.meta.outputs.image_tag }}
+          ssh_host: ${{ steps.hosts.outputs.hosts }}
+          ssh_user: ${{ secrets.DEPLOY_SSH_USER }}
+          ssh_key: ${{ secrets.DEPLOY_SSH_KEY }}
+          ghcr_owner: ${{ github.repository_owner }}
+          ghcr_token: ${{ secrets.GITHUB_TOKEN }}

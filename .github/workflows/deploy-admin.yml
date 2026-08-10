@@ -1,0 +1,53 @@
+name: deploy-admin
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (branch or SHA, without sha- prefix)'
+        required: true
+        default: 'main'
+        type: string
+
+concurrency:
+  group: deploy-admin-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build · Pages deploy · prod
+    runs-on: ubuntu-latest
+    environment: prod
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-monorepo
+
+      - name: Type-check admin
+        run: pnpm nx run admin:type-check
+
+      - name: Test admin
+        run: pnpm nx run admin:test
+
+      - name: Build admin
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_AUTH_API_URL: ${{ vars.VITE_AUTH_API_URL }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_APP_VERSION: ${{ github.sha }}
+        run: pnpm nx run admin:build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/admin/dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }} --commit-dirty=true

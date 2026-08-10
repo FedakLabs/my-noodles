@@ -14,7 +14,12 @@
     "dev:ui": "nx run ui:storybook",
     "build": "nx run-many -t build",
     "format": "oxfmt",
-    "validate": "nx run-many -t validate"
+    "validate": "nx run-many -t validate",
+    "tofu:plan": "gh workflow run tofu.yml -f action=plan -f ref=main",
+    "tofu:apply": "gh workflow run tofu.yml -f action=apply -f ref=main",
+    "bootstrap:host": "gh workflow run bootstrap-host.yml -f ref=main",
+    "tofu:fmt": "tofu fmt -recursive devops/tofu",
+    "tofu:validate": "tofu -chdir=devops/tofu/envs/prod init -upgrade -backend=false -input=false && tofu -chdir=devops/tofu/envs/prod validate"
   },
   "devDependencies": {
     "@commitlint/cli": "21.0.2",

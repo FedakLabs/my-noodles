@@ -36,6 +36,10 @@ const svgrTurbopackLoader = {
 };
 
 const nextConfig: NextConfig = {
+  // Required for apps/web/Dockerfile (minimal Node image via `.next/standalone`).
+  output: 'standalone',
+  // Trace files outside apps/web (workspace packages) into the standalone bundle.
+  outputFileTracingRoot: monorepoRoot,
   transpilePackages: [
     '@my-noodles/theme',
     '@my-noodles/web-lib',

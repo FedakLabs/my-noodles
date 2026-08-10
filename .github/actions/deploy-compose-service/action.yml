@@ -1,0 +1,51 @@
+name: Deploy Compose service
+description: Rolling pull/restart of one Compose service (web or api) on all app hosts.
+
+inputs:
+  service:
+    description: 'Compose service name (web or api)'
+    required: true
+  image_tag:
+    description: 'Image tag written to .env (e.g. sha-a1b2c3d)'
+    required: true
+  ssh_host:
+    description: 'Comma-separated deploy SSH hosts (app VM IPs)'
+    required: true
+  ssh_user:
+    description: 'Deploy SSH user'
+    required: true
+  ssh_key:
+    description: 'Deploy SSH private key'
+    required: true
+  ghcr_owner:
+    description: 'GHCR owner (org/user)'
+    required: true
+  ghcr_token:
+    description: 'Token for docker login to ghcr.io'
+    required: true
+  deploy_path:
+    description: 'Path on the host'
+    required: false
+    default: /opt/my-noodles
+
+runs:
+  using: composite
+  steps:
+    - name: Rolling deploy ${{ inputs.service }}
+      shell: bash
+      env:
+        SERVICE: ${{ inputs.service }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        GHCR_OWNER: ${{ inputs.ghcr_owner }}
+        GHCR_TOKEN: ${{ inputs.ghcr_token }}
+        DEPLOY_SSH_HOST: ${{ inputs.ssh_host }}
+        DEPLOY_SSH_USER: ${{ inputs.ssh_user }}
+        DEPLOY_PATH: ${{ inputs.deploy_path }}
+        DEPLOY_SSH_KEY_PEM: ${{ inputs.ssh_key }}
+      run: |
+        set -euo pipefail
+        install -m 600 /dev/null "${RUNNER_TEMP}/deploy_key"
+        printf '%s\n' "${DEPLOY_SSH_KEY_PEM}" > "${RUNNER_TEMP}/deploy_key"
+        export DEPLOY_SSH_KEY="${RUNNER_TEMP}/deploy_key"
+        export ROOT="${GITHUB_WORKSPACE}"
+        bash "${GITHUB_WORKSPACE}/devops/scripts/rolling-compose-deploy.sh"

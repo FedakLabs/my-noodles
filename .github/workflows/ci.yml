@@ -5,8 +5,9 @@
 #   Stage 3 — e2e:                 nx affected -t e2e (web funnel; skipped when web untouched)
 #
 # Local parity:
-#   pre-commit  → nx affected -t validate --uncommitted
-#   full gate   → CI workflow (atomic read-only jobs)
+#   pre-commit  → lint-staged + nx affected -t type-check,knip --uncommitted
+#                 (--uncommitted: hook runs before the commit exists)
+#   full gate   → CI workflow (atomic read-only jobs; base…HEAD already on the branch)
 #
 # CI calls atomic Nx targets (not the composite `validate`) so each job
 # maps to one concern in the GitHub UI and failures are easy to spot.

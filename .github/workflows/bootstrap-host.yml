@@ -1,0 +1,98 @@
+# App host sync: compose, Caddyfile, Origin CA, VM .env on all app VMs.
+# Called from tofu after apply, or dispatched alone (via pnpm bootstrap:host / UI).
+
+name: bootstrap-host
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git ref (branch or SHA)'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref (branch or SHA)'
+        required: true
+        default: 'main'
+        type: string
+
+concurrency:
+  group: bootstrap-host-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Bootstrap app hosts · prod
+    runs-on: ubuntu-latest
+    environment: prod
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: devops/tofu/envs/prod
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Resolve app SSH hosts
+        id: hosts
+        uses: ./.github/actions/resolve-app-hosts
+        with:
+          state_passphrase: ${{ secrets.TF_STATE_PASSPHRASE }}
+          fallback_hosts: ${{ secrets.DEPLOY_SSH_HOST }}
+
+      - name: Bootstrap hosts
+        env:
+          DEPLOY_SSH_HOST: ${{ steps.hosts.outputs.hosts }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_PATH: /opt/my-noodles
+          GHCR_OWNER: ${{ github.repository_owner }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          GH_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GH_ORIGIN_CA_CERTIFICATE: ${{ secrets.ORIGIN_CA_CERTIFICATE }}
+          GH_ORIGIN_CA_PRIVATE_KEY: ${{ secrets.ORIGIN_CA_PRIVATE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TAWK_API_KEY: ${{ secrets.TAWK_API_KEY }}
+          TAWK_PROPERTY_ID: ${{ secrets.TAWK_PROPERTY_ID }}
+          TAWK_WIDGET_ID: ${{ secrets.TAWK_WIDGET_ID }}
+          NOVA_POSHTA_API_KEY: ${{ secrets.NOVA_POSHTA_API_KEY }}
+          # Default off — bootstrap-host.sh also forces false when endpoint is empty.
+          OTEL_ENABLED: ${{ vars.OTEL_ENABLED || 'false' }}
+          OTEL_SERVICE_NAME: ${{ vars.OTEL_SERVICE_NAME || 'my-noodles-api' }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+          # Default off — bootstrap-host.sh also forces false when DSN is empty.
+          SENTRY_ENABLED: ${{ vars.SENTRY_ENABLED || 'false' }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          S3_ENDPOINT: ${{ vars.S3_ENDPOINT }}
+          S3_REGION: ${{ vars.S3_REGION }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          CDN_PUBLIC_BASE_URL: ${{ vars.CDN_PUBLIC_BASE_URL }}
+        run: |
+          set -euo pipefail
+
+          NEON_URL="$(tofu output -raw neon_database_url 2>/dev/null || true)"
+          ORIGIN_CERT="$(tofu output -raw origin_ca_certificate_pem 2>/dev/null || true)"
+          ORIGIN_KEY="$(tofu output -raw origin_ca_private_key_pem 2>/dev/null || true)"
+
+          export DATABASE_URL="${GH_DATABASE_URL:-$NEON_URL}"
+          export ORIGIN_CA_CERTIFICATE_PEM="${ORIGIN_CERT:-$GH_ORIGIN_CA_CERTIFICATE}"
+          export ORIGIN_CA_PRIVATE_KEY_PEM="${ORIGIN_KEY:-$GH_ORIGIN_CA_PRIVATE_KEY}"
+
+          install -m 600 /dev/null "$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > "$RUNNER_TEMP/deploy_key"
+          export DEPLOY_SSH_KEY="$RUNNER_TEMP/deploy_key"
+
+          bash "${GITHUB_WORKSPACE}/devops/scripts/bootstrap-host.sh"

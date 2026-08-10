@@ -1,2 +1,2 @@
 pnpm exec lint-staged
-pnpm nx affected -t type-check --uncommitted --parallel=5 --tui=false
+pnpm nx affected -t type-check,knip --uncommitted --parallel=5 --tui=false

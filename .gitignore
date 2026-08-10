@@ -37,6 +37,21 @@ test-results/
 playwright-report/
 blob-report/
 
+# OpenTofu / Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+# Encrypted prod state is committed by CI (see devops/docs/state-backend.md)
+!devops/tofu/envs/prod/terraform.tfstate
+**/terraform.tfvars
+**/backend.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
 # misc
 *.tsbuildinfo
 .turbo

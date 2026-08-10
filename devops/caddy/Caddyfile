@@ -1,0 +1,32 @@
+# Origin TLS: Cloudflare Full (strict) → Origin CA files on the VM.
+# Certs mounted at /etc/caddy/certs/{origin.pem,origin.key}.
+
+{
+	email ops@mynoodles.shop
+	auto_https disable_redirects
+}
+
+mynoodles.shop, www.mynoodles.shop {
+	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+
+	encode gzip
+
+	# Next.js hashed assets — long cache at edge is configured in Cloudflare;
+	# origin still serves them quickly for cache misses.
+	handle /_next/static/* {
+		header Cache-Control "public, max-age=31536000, immutable"
+		reverse_proxy web:3000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+api.mynoodles.shop {
+	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+
+	encode gzip
+
+	reverse_proxy api:3001
+}
