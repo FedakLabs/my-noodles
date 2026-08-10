@@ -40,6 +40,10 @@
       "types": "./dist/otel/index.d.ts",
       "default": "./dist/otel/index.js"
     },
+    "./sentry": {
+      "types": "./dist/sentry/index.d.ts",
+      "default": "./dist/sentry/index.js"
+    },
     "./config": {
       "types": "./dist/config/index.d.ts",
       "default": "./dist/config/index.js"
@@ -92,6 +96,7 @@
     "@opentelemetry/auto-instrumentations-node": "0.77.0",
     "@opentelemetry/sdk-node": "0.219.0",
     "@opentelemetry/winston-transport": "0.29.0",
+    "@sentry/node": "^10.70.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "dotenv": "16.4.7",

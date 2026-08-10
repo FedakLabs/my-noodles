@@ -22,6 +22,7 @@ import {
   TooManyRequestsException,
 } from '../../exceptions';
 import { HttpExceptionLog } from '../../express';
+import { captureAppException } from '../../sentry';
 
 @Catch()
 @Injectable()
@@ -44,6 +45,7 @@ export class ExceptionsFilter implements ExceptionFilter {
       responseBody: appException.toBody(),
       sanitizedMessage: appException.message,
     });
+    captureAppException(appException);
     httpAdapter.reply(ctx.getResponse(), appException.toBody(), appException.status);
   }
 

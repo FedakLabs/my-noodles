@@ -18,13 +18,8 @@ function defaultGlobs(rootDirname: string): Required<DataSourceGlobOptions> {
 export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptions): DataSourceOptions {
   const defaults = defaultGlobs(appConfig.rootDirname);
 
-  return {
-    type: 'postgres',
-    host: appConfig.database.host,
-    port: appConfig.database.port,
-    username: appConfig.database.username,
-    password: appConfig.database.password,
-    database: appConfig.database.database,
+  const shared = {
+    type: 'postgres' as const,
     synchronize: false,
     // Timestamp-prefixed only — excludes CLI scripts (run/revert) that self-execute on import.
     migrations: globs?.migrations ?? defaults.migrations,
@@ -33,9 +28,28 @@ export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptio
     // Prefer optional-filter ergonomics: `where: { status }` may pass `undefined`.
     // Use `IsNull()` when matching SQL NULL — bare `null` is ignored, not translated.
     invalidWhereValuesBehavior: {
-      null: 'ignore',
-      undefined: 'ignore',
+      null: 'ignore' as const,
+      undefined: 'ignore' as const,
     },
+  };
+
+  // Neon / managed: connection string (+ SSL). Local: discrete POSTGRES_* fields.
+  if (appConfig.database.url) {
+    return {
+      ...shared,
+      url: appConfig.database.url,
+      ssl: appConfig.database.ssl,
+    };
+  }
+
+  return {
+    ...shared,
+    host: appConfig.database.host,
+    port: appConfig.database.port,
+    username: appConfig.database.username,
+    password: appConfig.database.password,
+    database: appConfig.database.database,
+    ssl: appConfig.database.ssl || undefined,
   };
 }
 

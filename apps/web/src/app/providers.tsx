@@ -2,11 +2,13 @@
 
 import '@/api/clients';
 import '@/api/register-app-locale.client';
+import '@/shared/sentry.client';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { MyNoodlesTheme } from '@my-noodles/theme';
 import { ToastProvider } from '@my-noodles/ui';
+import { SentryErrorBoundary } from '@my-noodles/web-lib/sentry';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { type ReactNode, useState } from 'react';
@@ -25,18 +27,20 @@ export function Providers({ children, locale }: ProvidersProps) {
   const [queryClient] = useState(() => getQueryClient());
 
   return (
-    <NuqsAdapter>
-      <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-        <ThemeProvider theme={MyNoodlesTheme}>
-          <CssBaseline />
-          <ToastProvider />
-          <QueryClientProvider client={queryClient}>
-            <LocaleSync locale={locale} />
-            {children}
-            <ReactQueryDevtools />
-          </QueryClientProvider>
-        </ThemeProvider>
-      </AppRouterCacheProvider>
-    </NuqsAdapter>
+    <SentryErrorBoundary>
+      <NuqsAdapter>
+        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+          <ThemeProvider theme={MyNoodlesTheme}>
+            <CssBaseline />
+            <ToastProvider />
+            <QueryClientProvider client={queryClient}>
+              <LocaleSync locale={locale} />
+              {children}
+              <ReactQueryDevtools />
+            </QueryClientProvider>
+          </ThemeProvider>
+        </AppRouterCacheProvider>
+      </NuqsAdapter>
+    </SentryErrorBoundary>
   );
 }

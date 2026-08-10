@@ -145,7 +145,12 @@
       "project": ["src/**/*.ts"]
     },
     "libs/web": {
-      "entry": ["src/index.ts", "src/hooks/deadline-countdown/index.ts", "src/validators/index.ts"],
+      "entry": [
+        "src/index.ts",
+        "src/hooks/deadline-countdown/index.ts",
+        "src/validators/index.ts",
+        "src/sentry/index.ts"
+      ],
       "project": ["src/**/*.ts"],
       "ignoreDependencies": ["@tanstack/react-query", "react"]
     },
@@ -165,6 +170,7 @@
         "src/exceptions/index.ts",
         "src/logger/index.ts",
         "src/otel/index.ts",
+        "src/sentry/index.ts",
         "src/utils/index.ts",
         "src/transformers/index.ts",
         "src/validators/index.ts",
@@ -181,7 +187,8 @@
         "src/config/env.ts": ["exports"],
         "src/logger/manifest-log.ts": ["exports"],
         "src/locale/index.ts": ["exports", "types"],
-        "src/locale/localized-string.ts": ["exports"]
+        "src/locale/localized-string.ts": ["exports"],
+        "src/sentry/index.ts": ["exports", "types"]
       },
       "ignoreDependencies": [
         "typeorm",

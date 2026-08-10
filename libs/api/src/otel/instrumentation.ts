@@ -15,6 +15,7 @@ export function prepareInstrumentation(options: OtelOptions): NodeSDK | undefine
   process.env['OTEL_EXPORTER_OTLP_ENDPOINT'] = options.endpoint;
   process.env['OTEL_TRACES_EXPORTER'] = 'otlp';
   process.env['OTEL_LOGS_EXPORTER'] = 'otlp';
+  process.env['OTEL_METRICS_EXPORTER'] = 'otlp';
 
   const sdk = new NodeSDK({
     instrumentations: [

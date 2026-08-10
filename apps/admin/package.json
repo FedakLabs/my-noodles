@@ -25,6 +25,7 @@
     "@my-noodles/ui": "workspace:*",
     "@my-noodles/utils": "workspace:*",
     "@my-noodles/web-lib": "workspace:*",
+    "@sentry/react": "^10.70.0",
     "@tanstack/react-query": "5.101.0",
     "@tanstack/react-router": "1.170.18",
     "@tanstack/react-table": "8.21.3",

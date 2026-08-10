@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 
 import { type OtelOptions } from '../otel';
+import { type SentryOptions } from '../sentry';
 import { TransformToBoolean } from '../transformers';
 import { DEFAULT_NODE_ENV, loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
 
@@ -30,11 +31,22 @@ type ValidateConfigOptions = {
 };
 
 export class DatabaseConfig {
+  /**
+   * Neon / managed Postgres URL. When set, discrete POSTGRES_* fields are unused.
+   * Prod runtime: pooled URL. Migrations: direct (non-pooled) URL.
+   */
+  @ValidateIf((config: DatabaseConfig) => Boolean(config.url))
+  @IsString()
+  @MinLength(1)
+  url = process.env.DATABASE_URL;
+
+  @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
   host = process.env.POSTGRES_HOST!;
 
+  @ValidateIf((config: DatabaseConfig) => !config.url)
   @Type(() => Number)
   @IsDefined()
   @IsInt()
@@ -42,20 +54,28 @@ export class DatabaseConfig {
   @Max(65535)
   port = process.env.POSTGRES_PORT as unknown as number;
 
+  @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
   username = process.env.POSTGRES_USER!;
 
+  @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
   password = process.env.POSTGRES_PASSWORD!;
 
+  @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
   database = process.env.POSTGRES_DB!;
+
+  /** Neon requires TLS; defaults to true when `DATABASE_URL` is set. */
+  @TransformToBoolean()
+  @IsBoolean()
+  ssl = (process.env.DATABASE_SSL ?? (process.env.DATABASE_URL ? 'true' : 'false')) as unknown as boolean;
 
   @TransformToBoolean()
   @IsBoolean()
@@ -107,6 +127,16 @@ export class Config {
   @MinLength(1)
   otelServiceName = process.env.OTEL_SERVICE_NAME;
 
+  @TransformToBoolean()
+  @IsBoolean()
+  sentryEnabled = process.env.SENTRY_ENABLED as unknown as boolean;
+
+  @ValidateIf((config: Config) => config.sentryEnabled)
+  @IsDefined()
+  @IsString()
+  @MinLength(1)
+  sentryDsn = process.env.SENTRY_DSN;
+
   @Type(() => Number)
   @IsInt()
   @Min(1000)
@@ -125,6 +155,19 @@ export class Config {
         enabled: true,
         endpoint: this.otelEndpoint!,
         serviceName: this.otelServiceName!,
+      };
+    }
+
+    return { enabled: false };
+  }
+
+  get sentry(): SentryOptions {
+    if (this.sentryEnabled) {
+      return {
+        enabled: true,
+        dsn: this.sentryDsn!,
+        environment: this.nodeEnv,
+        release: this.appVersion,
       };
     }
 

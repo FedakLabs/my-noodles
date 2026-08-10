@@ -15,6 +15,8 @@ import commonEn from './common/en.json';
 import commonUk from './common/uk.json';
 import contactsEn from './contacts/en.json';
 import contactsUk from './contacts/uk.json';
+import errorEn from './error/en.json';
+import errorUk from './error/uk.json';
 import feedEn from './feed/en.json';
 import feedUk from './feed/uk.json';
 import homeEn from './home/en.json';
@@ -37,6 +39,7 @@ export const ukMessages = {
   common: commonUk,
   contacts: contactsUk,
   discoveryCard: discoveryCardMessages.uk,
+  error: errorUk,
   feed: feedUk,
   home: homeUk,
   metadata: metadataUk,
@@ -56,6 +59,7 @@ export const enMessages = {
   common: commonEn,
   contacts: contactsEn,
   discoveryCard: discoveryCardMessages.en,
+  error: errorEn,
   feed: feedEn,
   home: homeEn,
   metadata: metadataEn,

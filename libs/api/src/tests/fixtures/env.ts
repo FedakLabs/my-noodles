@@ -7,6 +7,7 @@ export const validEnv = {
   POSTGRES_PASSWORD: 'my_noodles',
   POSTGRES_DB: 'my_noodles',
   OTEL_ENABLED: 'false',
+  SENTRY_ENABLED: 'false',
   SHUTDOWN_TIMEOUT_MS: '30000',
   APP_NAME: 'my-noodles-api',
   APP_VERSION: 'dev',
@@ -17,4 +18,10 @@ export const validOtelEnv = {
   OTEL_ENABLED: 'true',
   OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318',
   OTEL_SERVICE_NAME: 'my-noodles-api',
+} as const;
+
+export const validSentryEnv = {
+  ...validEnv,
+  SENTRY_ENABLED: 'true',
+  SENTRY_DSN: 'https://public@o0.ingest.sentry.io/0',
 } as const;

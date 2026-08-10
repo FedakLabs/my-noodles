@@ -28,6 +28,11 @@
       "types": "./src/validators/index.ts",
       "import": "./src/validators/index.ts",
       "default": "./src/validators/index.ts"
+    },
+    "./sentry": {
+      "types": "./src/sentry/index.ts",
+      "import": "./src/sentry/index.ts",
+      "default": "./src/sentry/index.ts"
     }
   },
   "scripts": {
@@ -42,10 +47,12 @@
     "libphonenumber-js": "^1.13.7"
   },
   "peerDependencies": {
+    "@sentry/react": "^10.0.0",
     "@tanstack/react-query": "^5.0.0",
     "react": "^19.0.0"
   },
   "devDependencies": {
+    "@sentry/react": "^10.70.0",
     "@tanstack/react-query": "5.101.0",
     "@types/node": "22.15.3",
     "@types/react": "^19.0.0",

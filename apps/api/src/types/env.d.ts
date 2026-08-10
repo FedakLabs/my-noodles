@@ -9,5 +9,7 @@ declare namespace NodeJS {
     NOVA_POSHTA_API_BASE_URL?: string;
     MEEST_API_BASE_URL?: string;
     UKRPOSHTA_API_BASE_URL?: string;
+    SENTRY_ENABLED?: string;
+    SENTRY_DSN?: string;
   }
 }
