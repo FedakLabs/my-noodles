@@ -44,6 +44,21 @@ Hotjar has **no** env var — Site ID goes only into GTM. Same for the GA4 Measu
 4. **Consent** — Configure both GA4 and Hotjar tags to require Consent Mode: `analytics_storage` = granted (aligned with the storefront banner).
 5. **Other MVP keys** — Fill Tawk, Telegram, and Nova Poshta from the tables above.
 
+## Local verification
+
+Works on `localhost` — use GTM Preview + GA4 DebugView (not only standard reports).
+
+1. Set `NEXT_PUBLIC_GTM_ID=GTM-…` in `apps/web/.env.local` and restart `next dev`.
+2. Open the storefront; accept the consent banner (or use the Accept button on the test page).
+3. Visit `/uk/dev/analytics` (or `/en/dev/analytics`) — **dev only** (`notFound` in production builds).
+4. Click sample event buttons (`view_item`, `add_to_cart`, …). Confirm pushes in the on-page `dataLayer` preview.
+5. In [tagmanager.google.com](https://tagmanager.google.com) → **Preview**, connect to your local URL and confirm tags fire after Accept.
+6. In GA4 → **Admin** → **DebugView**, confirm the same events arrive.
+
+If `dataLayer` shows events but GA4 does not: check the GA4 Configuration tag, `G-…` ID, Consent Mode trigger (`analytics_storage` = granted), and that the GTM container is **Published**. Disable ad blockers on localhost.
+
+Custom events (`catalog_*`, `click_telegram_order`) need GA4 Event tags in GTM or they stay in `dataLayer` only.
+
 ## Free-tier note
 
 GTM and GA4 are free for normal storefront use. Hotjar Basic free (~35 session recordings/day) is enough for early traffic. The first real ceiling is usually the Hotjar plan, not GTM architecture.

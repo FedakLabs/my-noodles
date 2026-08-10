@@ -1,9 +1,19 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { removeCatalogProductsListQueries } from '@/api/products';
+import { useAnalyticsConsentGranted } from '@/hooks/analytics';
 import { useCatalogSearchParams } from '@/screens/catalog/search-params';
 import { trackCatalogBrowseMode } from '@/shared/analytics';
 
@@ -36,14 +46,21 @@ export function CatalogViewModeProvider({
 }: CatalogViewModeProviderProps) {
   const queryClient = useQueryClient();
   const { params, setParams } = useCatalogSearchParams();
+  const consentGranted = useAnalyticsConsentGranted();
+  const trackedInitialBrowseModeRef = useRef(false);
   const [viewMode, setViewModeState] = useState(initialViewMode);
   const [isViewModeResetting, setIsViewModeResetting] = useState(false);
   const [menuOpen, setMenuOpenState] = useState(() => !hasViewModePreference);
   const [hasSavedPreference, setHasSavedPreference] = useState(hasViewModePreference);
 
   useEffect(() => {
+    if (!consentGranted || trackedInitialBrowseModeRef.current) {
+      return;
+    }
+
+    trackedInitialBrowseModeRef.current = true;
     trackCatalogBrowseMode(initialViewMode, hasViewModePreference ? 'saved' : 'default');
-  }, [initialViewMode, hasViewModePreference]);
+  }, [consentGranted, hasViewModePreference, initialViewMode]);
 
   const clearViewModeReset = useCallback(() => {
     setIsViewModeResetting(false);

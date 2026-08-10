@@ -210,7 +210,7 @@ export function CheckoutForm({ checkoutId, checkout, onHoldExpired }: CheckoutFo
           currency: order.currency,
           items: checkout.order.items.map((item) =>
             cartLineToGa4Item({
-              slug: item.productId,
+              slug: item.product?.slug ?? item.productId,
               title: item.titleSnapshot,
               priceMinor: item.priceMinorSnapshot,
               qty: item.qty,

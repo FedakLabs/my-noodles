@@ -13,6 +13,8 @@ import {
   trackViewItemList,
 } from '@/shared/analytics';
 
+import { useAnalyticsConsentGranted } from './use-analytics-consent-granted';
+
 export function useViewItemList(
   listId: string,
   listName: string,
@@ -20,10 +22,11 @@ export function useViewItemList(
   enabled: boolean,
   catalogBrowseMode?: CatalogBrowseMode,
 ) {
+  const consentGranted = useAnalyticsConsentGranted();
   const lastKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled || !products?.length) {
+    if (!enabled || !consentGranted || !products?.length) {
       return;
     }
 
@@ -35,14 +38,15 @@ export function useViewItemList(
 
     lastKeyRef.current = key;
     trackViewItemList(listId, listName, products, { catalogBrowseMode });
-  }, [catalogBrowseMode, enabled, listId, listName, products]);
+  }, [catalogBrowseMode, consentGranted, enabled, listId, listName, products]);
 }
 
 export function useViewItem(product: Product | undefined, enabled: boolean) {
+  const consentGranted = useAnalyticsConsentGranted();
   const lastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled || !product) {
+    if (!enabled || !consentGranted || !product) {
       return;
     }
 
@@ -52,20 +56,21 @@ export function useViewItem(product: Product | undefined, enabled: boolean) {
 
     lastIdRef.current = product.id;
     trackViewItem(product);
-  }, [enabled, product]);
+  }, [consentGranted, enabled, product]);
 }
 
 export function useBeginCheckout(items: CartLine[], enabled: boolean) {
+  const consentGranted = useAnalyticsConsentGranted();
   const trackedRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || items.length === 0 || trackedRef.current) {
+    if (!enabled || !consentGranted || items.length === 0 || trackedRef.current) {
       return;
     }
 
     trackedRef.current = true;
     trackBeginCheckout(items);
-  }, [enabled, items]);
+  }, [consentGranted, enabled, items]);
 }
 
 export function useAnalyticsActions() {
