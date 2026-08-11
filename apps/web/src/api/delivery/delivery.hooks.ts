@@ -10,7 +10,7 @@ import { deliveryQueries } from './delivery';
 
 const SEARCH_DEBOUNCE_MS = 300;
 /** Minimum characters before city/warehouse search hits the API. */
-export const DELIVERY_SEARCH_MIN_LENGTH = 3;
+export const DELIVERY_SEARCH_MIN_LENGTH = 1;
 
 export function useDeliveryProviders() {
   return formatUseQuery(useQuery(deliveryQueries.providers()), 'deliveryProviders');

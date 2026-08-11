@@ -48,12 +48,6 @@
         "cwd": "packages/theme"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/theme",
-      "options": {
-        "cwd": "."
-      }
-    },
     "storybook": {
       "command": "pnpm storybook",
       "options": {
@@ -67,16 +61,17 @@
       },
       "outputs": ["{projectRoot}/dist/storybook"]
     },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/theme format",
-          "pnpm --dir packages/theme lint",
-          "pnpm --dir packages/theme type-check",
-          "pnpm --dir packages/theme test",
-          "knip --config configs/knip/knip.json --workspace packages/theme"
+          "nx run theme:format",
+          "nx run theme:lint",
+          "nx run theme:type-check",
+          "nx run theme:test",
+          "nx run theme:knip"
         ],
         "parallel": false
       }

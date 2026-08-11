@@ -42,21 +42,16 @@
         "cwd": "libs/locale"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace libs/locale",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir libs/locale format",
-          "pnpm --dir libs/locale lint",
-          "pnpm --dir libs/locale type-check",
-          "knip --config configs/knip/knip.json --workspace libs/locale"
+          "nx run locale:format",
+          "nx run locale:lint",
+          "nx run locale:type-check",
+          "nx run locale:knip"
         ],
         "parallel": false
       }

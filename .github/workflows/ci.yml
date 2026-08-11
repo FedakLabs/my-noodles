@@ -39,7 +39,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-monorepo
-      - name: Prettier (affected)
+      - name: oxfmt (affected)
         run: pnpm nx affected -t format-check --parallel=3
 
   lint-check:
@@ -51,7 +51,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-monorepo
-      - name: ESLint (affected)
+      - name: oxlint (affected)
         run: pnpm nx affected -t lint-check --parallel=3
 
   type-check:

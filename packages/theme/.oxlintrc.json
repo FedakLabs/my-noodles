@@ -1,23 +1,5 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["../../.oxlintrc.json"],
-  "plugins": ["typescript", "oxc", "import", "react"],
-  "env": {
-    "browser": true,
-    "es2024": true
-  },
-  "ignorePatterns": ["vitest.config.ts", "dist/**", ".storybook/**", "src/stories/**", "**/*.d.ts"],
-  "rules": {
-    "no-restricted-imports": [
-      "error",
-      {
-        "patterns": [
-          {
-            "group": ["**/apps/**"],
-            "message": "Packages must not import apps (@nx/enforce-module-boundaries replacement)."
-          }
-        ]
-      }
-    ]
-  }
+  "extends": ["../../configs/oxlint/react.json"],
+  "ignorePatterns": ["vitest.config.ts", ".storybook/**", "src/stories/**", "**/*.d.ts"]
 }

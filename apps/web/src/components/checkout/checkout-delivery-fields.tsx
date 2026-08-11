@@ -462,7 +462,7 @@ export function CheckoutDeliveryFields({
                   input: cityInput,
                   isError: deliveryCitiesIsError,
                   minLength: DELIVERY_SEARCH_MIN_LENGTH,
-                  startTyping: t('delivery.searchStartTyping', { min: DELIVERY_SEARCH_MIN_LENGTH }),
+                  startTyping: t('delivery.searchStartTyping'),
                   notFound: (query) => t('delivery.searchNotFound', { query }),
                   error: t('delivery.searchError'),
                 })}
@@ -513,7 +513,7 @@ export function CheckoutDeliveryFields({
                     input: warehouseInput,
                     isError: deliveryWarehousesIsError,
                     minLength: DELIVERY_SEARCH_MIN_LENGTH,
-                    startTyping: t('delivery.branchHint', { min: DELIVERY_SEARCH_MIN_LENGTH }),
+                    startTyping: t('delivery.branchHint'),
                     notFound: (query) => t('delivery.searchNotFound', { query }),
                     error: t('delivery.searchError'),
                   })}

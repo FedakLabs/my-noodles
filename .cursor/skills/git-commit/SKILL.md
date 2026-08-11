@@ -1,10 +1,10 @@
 ---
 name: git-commit
 description: >-
-  Git commits and pushes for my-noodles with husky pre-commit (nx validate) and commitlint
-  conventional messages. Use when the user asks to commit, push, amend, or write a commit
-  message — read configs/commitlint/commitlint.config.mjs and validate with commitlint
-  before git commit.
+  Git commits and pushes for my-noodles with husky pre-commit (lint-staged + nx affected
+  type-check,knip) and commitlint conventional messages. Use when the user asks to commit,
+  push, amend, or write a commit message — read configs/commitlint/commitlint.config.mjs
+  and validate with commitlint before git commit.
 ---
 
 # Git commit (my-noodles)
@@ -45,7 +45,8 @@ optional body — wrap lines at 100 chars
 pnpm exec commitlint --config configs/commitlint/commitlint.config.mjs --edit .git/COMMIT_EDITMSG_DRAFT
 ```
 
-Fix until exit 0. Pre-commit (`nx affected -t validate`) can pass while commit-msg still fails — always validate first.
+Fix until exit 0. Pre-commit (`lint-staged` + `nx affected -t type-check,knip`) can pass while
+commit-msg still fails — always validate the commit message first.
 
 ### 4. Stage and commit
 

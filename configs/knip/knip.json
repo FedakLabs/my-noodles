@@ -38,7 +38,6 @@
         "@svgr/webpack",
         "@next/third-parties",
         "@tanstack/react-query",
-        "motion",
         "next-intl",
         "nuqs",
         "react-hook-form",

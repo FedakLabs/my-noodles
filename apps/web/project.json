@@ -33,9 +33,18 @@
     "lint": {
       "command": "pnpm lint",
       "dependsOn": [
-        { "projects": "api-clients", "target": "build" },
-        { "projects": "web-lib", "target": "build" },
-        { "projects": "ui", "target": "build" }
+        {
+          "projects": "api-clients",
+          "target": "build"
+        },
+        {
+          "projects": "web-lib",
+          "target": "build"
+        },
+        {
+          "projects": "ui",
+          "target": "build"
+        }
       ],
       "options": {
         "cwd": "apps/web"
@@ -44,9 +53,18 @@
     "lint-check": {
       "command": "pnpm lint-check",
       "dependsOn": [
-        { "projects": "api-clients", "target": "build" },
-        { "projects": "web-lib", "target": "build" },
-        { "projects": "ui", "target": "build" }
+        {
+          "projects": "api-clients",
+          "target": "build"
+        },
+        {
+          "projects": "web-lib",
+          "target": "build"
+        },
+        {
+          "projects": "ui",
+          "target": "build"
+        }
       ],
       "options": {
         "cwd": "apps/web"
@@ -55,9 +73,18 @@
     "type-check": {
       "command": "pnpm type-check",
       "dependsOn": [
-        { "projects": "api-clients", "target": "build" },
-        { "projects": "web-lib", "target": "build" },
-        { "projects": "ui", "target": "build" }
+        {
+          "projects": "api-clients",
+          "target": "build"
+        },
+        {
+          "projects": "web-lib",
+          "target": "build"
+        },
+        {
+          "projects": "ui",
+          "target": "build"
+        }
       ],
       "options": {
         "cwd": "apps/web"
@@ -69,27 +96,17 @@
         "cwd": "apps/web"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace apps/web",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        { "projects": "api-clients", "target": "build" },
-        { "projects": "web-lib", "target": "build" },
-        { "projects": "ui", "target": "build" }
-      ],
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir apps/web format",
-          "pnpm --dir apps/web lint",
-          "pnpm --dir apps/web type-check",
-          "pnpm --dir apps/web test",
-          "knip --config configs/knip/knip.json --workspace apps/web"
+          "nx run web:format",
+          "nx run web:lint",
+          "nx run web:type-check",
+          "nx run web:test",
+          "nx run web:knip"
         ],
         "parallel": false
       }

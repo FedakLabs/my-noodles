@@ -7,56 +7,71 @@
   "targets": {
     "build": {
       "command": "pnpm build",
-      "options": { "cwd": "packages/ui" },
+      "options": {
+        "cwd": "packages/ui"
+      },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
       "command": "pnpm format",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "format-check": {
       "command": "pnpm format-check",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "lint": {
       "command": "pnpm lint",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "test": {
       "command": "pnpm test",
-      "options": { "cwd": "packages/ui" }
-    },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/ui",
-      "options": { "cwd": "." }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "storybook": {
       "command": "pnpm storybook",
-      "options": { "cwd": "packages/ui" }
+      "options": {
+        "cwd": "packages/ui"
+      }
     },
     "build-storybook": {
       "command": "pnpm build-storybook",
-      "options": { "cwd": "packages/ui" },
+      "options": {
+        "cwd": "packages/ui"
+      },
       "outputs": ["{projectRoot}/dist/storybook"]
     },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/ui format",
-          "pnpm --dir packages/ui lint",
-          "pnpm --dir packages/ui type-check",
-          "pnpm --dir packages/ui test",
-          "knip --config configs/knip/knip.json --workspace packages/ui"
+          "nx run ui:format",
+          "nx run ui:lint",
+          "nx run ui:type-check",
+          "nx run ui:test",
+          "nx run ui:knip"
         ],
         "parallel": false
       }

@@ -1,17 +1,4 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["../../.oxlintrc.json"],
-  "rules": {
-    "no-restricted-imports": [
-      "error",
-      {
-        "patterns": [
-          {
-            "group": ["**/apps/**"],
-            "message": "Packages must not import apps (@nx/enforce-module-boundaries replacement)."
-          }
-        ]
-      }
-    ]
-  }
+  "extends": ["../../configs/oxlint/packages.json"]
 }

@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["./react.json"],
+  "plugins": ["typescript", "oxc", "import", "react", "nextjs", "jsx-a11y"],
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "settings": {
+    "next": {
+      "rootDir": "."
+    }
+  }
+}

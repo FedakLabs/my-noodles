@@ -35,8 +35,9 @@ type UseInfiniteLoadMoreOptions = {
 
 export function useInfiniteLoadMore({ hasMore, isLoading, onLoadMore }: UseInfiniteLoadMoreOptions) {
   const wasLoadingRef = useRef(false);
-  const [messageKey, setMessageKey] = useState<InfiniteLoadMoreMessageKey>(() =>
-    pickRandom(INFINITE_LOAD_MORE_MESSAGE_KEYS),
+  // Stable SSR/client default — randomize only after mount to avoid hydration mismatches.
+  const [messageKey, setMessageKey] = useState<InfiniteLoadMoreMessageKey>(
+    INFINITE_LOAD_MORE_MESSAGE_KEYS[0],
   );
 
   const sentinelRef = useIntersectionObserver<HTMLDivElement>({
@@ -45,6 +46,10 @@ export function useInfiniteLoadMore({ hasMore, isLoading, onLoadMore }: UseInfin
     onIntersect: onLoadMore,
     rootMargin: SENTINEL_ROOT_MARGIN,
   });
+
+  useEffect(() => {
+    setMessageKey(pickRandom(INFINITE_LOAD_MORE_MESSAGE_KEYS));
+  }, []);
 
   useEffect(() => {
     if (wasLoadingRef.current && !isLoading) {

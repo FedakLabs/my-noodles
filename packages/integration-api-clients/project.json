@@ -7,6 +7,7 @@
   "targets": {
     "build": {
       "command": "pnpm build",
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/integration-api-clients"
       },
@@ -26,18 +27,21 @@
     },
     "lint": {
       "command": "pnpm lint",
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/integration-api-clients"
       }
     },
     "lint-check": {
       "command": "pnpm lint-check",
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/integration-api-clients"
       }
     },
     "type-check": {
       "command": "pnpm type-check",
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "packages/integration-api-clients"
       }
@@ -48,23 +52,16 @@
         "cwd": "packages/integration-api-clients"
       }
     },
-
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/integration-api-clients",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": "api-lib", "target": "build" }],
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/integration-api-clients format",
-          "pnpm --dir packages/integration-api-clients lint",
-          "pnpm --dir packages/integration-api-clients type-check",
-          "knip --config configs/knip/knip.json --workspace packages/integration-api-clients"
+          "nx run integration-api-clients:format",
+          "nx run integration-api-clients:lint",
+          "nx run integration-api-clients:type-check",
+          "nx run integration-api-clients:knip"
         ],
         "parallel": false
       }

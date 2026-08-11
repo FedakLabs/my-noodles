@@ -7,47 +7,58 @@
   "targets": {
     "build": {
       "command": "pnpm build",
-      "options": { "cwd": "libs/translit" },
+      "options": {
+        "cwd": "libs/translit"
+      },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
       "command": "pnpm format",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
     "format-check": {
       "command": "pnpm format-check",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
     "lint": {
       "command": "pnpm lint",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
     "test": {
       "command": "pnpm test",
-      "options": { "cwd": "libs/translit" }
+      "options": {
+        "cwd": "libs/translit"
+      }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace libs/translit",
-      "options": { "cwd": "." }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir libs/translit format",
-          "pnpm --dir libs/translit lint",
-          "pnpm --dir libs/translit type-check",
-          "pnpm --dir libs/translit test",
-          "knip --config configs/knip/knip.json --workspace libs/translit"
+          "nx run translit:format",
+          "nx run translit:lint",
+          "nx run translit:type-check",
+          "nx run translit:test",
+          "nx run translit:knip"
         ],
         "parallel": false
       }

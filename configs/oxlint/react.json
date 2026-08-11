@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["../../.oxlintrc.json"],
-  "plugins": ["typescript", "oxc", "import"],
+  "plugins": ["typescript", "oxc", "import", "react"],
   "env": {
     "browser": true,
     "es2024": true

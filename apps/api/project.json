@@ -13,13 +13,7 @@
     },
     "build": {
       "command": "pnpm build",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "locale", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       },
@@ -27,13 +21,7 @@
     },
     "generate:openapi": {
       "command": "pnpm generate:openapi",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "locale", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       },
@@ -53,74 +41,43 @@
     },
     "lint": {
       "command": "pnpm lint",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       }
     },
     "test": {
       "command": "pnpm test",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
+      "dependsOn": ["^build"],
       "options": {
         "cwd": "apps/api"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace apps/api",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        { "projects": "api-lib", "target": "build" },
-        { "projects": "integration-api-clients", "target": "build" },
-        { "projects": "translit", "target": "build" },
-        { "projects": "utils", "target": "build" }
-      ],
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir apps/api format",
-          "pnpm --dir apps/api lint",
-          "pnpm --dir apps/api type-check",
-          "pnpm --dir apps/api test",
-          "knip --config configs/knip/knip.json --workspace apps/api"
+          "nx run api:format",
+          "nx run api:lint",
+          "nx run api:type-check",
+          "nx run api:test",
+          "nx run api:knip"
         ],
         "parallel": false
       }

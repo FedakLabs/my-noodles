@@ -36,11 +36,11 @@
     "deliveryLocked": "Add your last name, first name, and phone first — then choose delivery"
   },
   "delivery": {
-    "searchStartTyping": "Type at least {min} characters to search",
+    "searchStartTyping": "Start typing to search",
     "searchNotFound": "No results for “{query}”",
     "searchLoading": "Searching…",
     "searchError": "Could not load results. Please try again.",
-    "branchHint": "Type at least {min} characters to find a branch or parcel locker",
+    "branchHint": "Start typing to find a branch or parcel locker",
     "branchDisabled": "Select a city first",
     "methods": {
       "warehouse": "Pickup point or parcel locker",

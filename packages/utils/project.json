@@ -42,21 +42,16 @@
         "cwd": "packages/utils"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/utils",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/utils format",
-          "pnpm --dir packages/utils lint",
-          "pnpm --dir packages/utils type-check",
-          "knip --config configs/knip/knip.json --workspace packages/utils"
+          "nx run utils:format",
+          "nx run utils:lint",
+          "nx run utils:type-check",
+          "nx run utils:knip"
         ],
         "parallel": false
       }

@@ -7,48 +7,63 @@
   "targets": {
     "build": {
       "command": "pnpm build",
-      "dependsOn": [{ "projects": "locale", "target": "build" }],
-      "options": { "cwd": "libs/api" },
+      "dependsOn": ["^build"],
+      "options": {
+        "cwd": "libs/api"
+      },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
       "command": "pnpm format",
-      "options": { "cwd": "libs/api" }
+      "options": {
+        "cwd": "libs/api"
+      }
     },
     "format-check": {
       "command": "pnpm format-check",
-      "options": { "cwd": "libs/api" }
+      "options": {
+        "cwd": "libs/api"
+      }
     },
     "lint": {
       "command": "pnpm lint",
-      "options": { "cwd": "libs/api" }
+      "dependsOn": ["^build"],
+      "options": {
+        "cwd": "libs/api"
+      }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "options": { "cwd": "libs/api" }
+      "dependsOn": ["^build"],
+      "options": {
+        "cwd": "libs/api"
+      }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "options": { "cwd": "libs/api" }
+      "dependsOn": ["^build"],
+      "options": {
+        "cwd": "libs/api"
+      }
     },
     "test": {
       "command": "pnpm test",
-      "options": { "cwd": "libs/api" }
+      "dependsOn": ["^build"],
+      "options": {
+        "cwd": "libs/api"
+      }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace libs/api",
-      "options": { "cwd": "." }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir libs/api format",
-          "pnpm --dir libs/api lint",
-          "pnpm --dir libs/api type-check",
-          "pnpm --dir libs/api test",
-          "knip --config configs/knip/knip.json --workspace libs/api"
+          "nx run api-lib:format",
+          "nx run api-lib:lint",
+          "nx run api-lib:type-check",
+          "nx run api-lib:test",
+          "nx run api-lib:knip"
         ],
         "parallel": false
       }

@@ -7,42 +7,51 @@
   "targets": {
     "build": {
       "command": "pnpm build",
-      "options": { "cwd": "libs/web" },
+      "options": {
+        "cwd": "libs/web"
+      },
       "outputs": ["{projectRoot}/dist"]
     },
     "format": {
       "command": "pnpm format",
-      "options": { "cwd": "libs/web" }
+      "options": {
+        "cwd": "libs/web"
+      }
     },
     "format-check": {
       "command": "pnpm format-check",
-      "options": { "cwd": "libs/web" }
+      "options": {
+        "cwd": "libs/web"
+      }
     },
     "lint": {
       "command": "pnpm lint",
-      "options": { "cwd": "libs/web" }
+      "options": {
+        "cwd": "libs/web"
+      }
     },
     "lint-check": {
       "command": "pnpm lint-check",
-      "options": { "cwd": "libs/web" }
+      "options": {
+        "cwd": "libs/web"
+      }
     },
     "type-check": {
       "command": "pnpm type-check",
-      "options": { "cwd": "libs/web" }
+      "options": {
+        "cwd": "libs/web"
+      }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace libs/web",
-      "options": { "cwd": "." }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir libs/web format",
-          "pnpm --dir libs/web lint",
-          "pnpm --dir libs/web type-check",
-          "knip --config configs/knip/knip.json --workspace libs/web"
+          "nx run web-lib:format",
+          "nx run web-lib:lint",
+          "nx run web-lib:type-check",
+          "nx run web-lib:knip"
         ],
         "parallel": false
       }

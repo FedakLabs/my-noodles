@@ -21,7 +21,7 @@ export function loadAppEnv(cwd = process.cwd()): void {
 
   const nodeEnv = process.env.NODE_ENV ?? DEFAULT_NODE_ENV;
 
-  for (const filename of [...new Set([`.env.${nodeEnv}`, '.env.local'])]) {
+  for (const filename of new Set([`.env.${nodeEnv}`, '.env.local'])) {
     loadDotenv({ path: resolve(cwd, filename), override: true });
   }
 }

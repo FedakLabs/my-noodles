@@ -150,7 +150,11 @@ function routeRequest(req: IncomingMessage, res: ServerResponse): void {
 
   if (req.method === 'GET' && pathname === '/api/delivery/warehouses') {
     const cityRef = url.searchParams.get('cityRef') ?? '';
-    const warehouses = cityRef.startsWith('city-kyiv') ? deliveryWarehouses : [];
+    const query = (url.searchParams.get('q') ?? '').trim().toLowerCase();
+    const warehouses =
+      cityRef.startsWith('city-kyiv') && query
+        ? deliveryWarehouses.filter((warehouse) => warehouse.name.toLowerCase().includes(query))
+        : [];
     sendJson(req, res, 200, warehouses);
     return;
   }

@@ -48,21 +48,16 @@
         "cwd": "packages/api-clients"
       }
     },
-    "knip": {
-      "command": "knip --config configs/knip/knip.json --workspace packages/api-clients",
-      "options": {
-        "cwd": "."
-      }
-    },
+    "knip": {},
     "validate": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": ".",
         "commands": [
-          "pnpm --dir packages/api-clients format",
-          "pnpm --dir packages/api-clients lint",
-          "pnpm --dir packages/api-clients type-check",
-          "knip --config configs/knip/knip.json --workspace packages/api-clients"
+          "nx run api-clients:format",
+          "nx run api-clients:lint",
+          "nx run api-clients:type-check",
+          "nx run api-clients:knip"
         ],
         "parallel": false
       }

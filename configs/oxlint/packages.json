@@ -3,7 +3,7 @@
   "extends": ["../../.oxlintrc.json"],
   "plugins": ["typescript", "oxc", "import"],
   "env": {
-    "browser": true,
     "es2024": true
-  }
+  },
+  "ignorePatterns": ["**/generated/**"]
 }

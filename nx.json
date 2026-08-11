@@ -9,7 +9,12 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/.oxlintrc.json"
     ],
-    "sharedGlobals": ["{workspaceRoot}/configs/typescript/*.json"]
+    "sharedGlobals": [
+      "{workspaceRoot}/configs/typescript/*.json",
+      "{workspaceRoot}/.oxlintrc.json",
+      "{workspaceRoot}/.oxfmtrc.json",
+      "{workspaceRoot}/configs/knip/knip.json"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -48,6 +53,11 @@
       "cache": true
     },
     "knip": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "knip --config configs/knip/knip.json --workspace {projectRoot}",
+        "cwd": "."
+      },
       "inputs": ["default", "{workspaceRoot}/configs/knip/knip.json"],
       "cache": true
     }
