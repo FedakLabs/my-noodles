@@ -5,8 +5,8 @@ import { ANALYTICS_ENABLED, env } from '@/shared/env';
 /** Must run before GTM so Consent Mode defaults to denied. */
 const CONSENT_DEFAULT_SCRIPT = `
 window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('consent', 'default', {
+window.gtag = function gtag(){dataLayer.push(arguments);};
+window.gtag('consent', 'default', {
   ad_storage: 'denied',
   ad_user_data: 'denied',
   ad_personalization: 'denied',

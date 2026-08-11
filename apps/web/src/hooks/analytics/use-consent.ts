@@ -4,6 +4,7 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
 import type { AnalyticsConsentChoice } from '@/shared/analytics';
 import { CONSENT_STORAGE_KEY, readStoredConsent } from '@/shared/analytics/consent';
+import { updateGtagConsent } from '@/shared/analytics/gtag-consent';
 import { ANALYTICS_ENABLED } from '@/shared/env';
 
 const consentListeners = new Set<() => void>();
@@ -28,13 +29,7 @@ function updateConsentMode(analyticsGranted: boolean) {
     return;
   }
 
-  window.dataLayer = window.dataLayer ?? [];
-
-  const gtag = (...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  };
-
-  gtag('consent', 'update', {
+  updateGtagConsent({
     ad_storage: 'denied',
     ad_user_data: 'denied',
     ad_personalization: 'denied',
@@ -53,11 +48,26 @@ function getConsentSnapshot(): AnalyticsConsentChoice {
 }
 
 function getConsentServerSnapshot(): AnalyticsConsentChoice {
+  // Must match SSR HTML; real value lives in localStorage (client-only).
   return 'pending';
+}
+
+/** false on SSR / hydration; true after client subscribe — avoids banner flash. */
+function subscribeIsClient() {
+  return () => {};
+}
+
+function getIsClientSnapshot() {
+  return true;
+}
+
+function getIsClientServerSnapshot() {
+  return false;
 }
 
 export function useConsent() {
   const choice = useSyncExternalStore(subscribeConsent, getConsentSnapshot, getConsentServerSnapshot);
+  const isClient = useSyncExternalStore(subscribeIsClient, getIsClientSnapshot, getIsClientServerSnapshot);
 
   useEffect(() => {
     if (!ANALYTICS_ENABLED) {
@@ -85,7 +95,8 @@ export function useConsent() {
 
   return {
     choice,
-    showBanner: ANALYTICS_ENABLED && choice === 'pending',
+    // Wait for client before showing — SSR always looks "pending" and caused a flicker.
+    showBanner: isClient && ANALYTICS_ENABLED && choice === 'pending',
     accept,
     reject,
   };
