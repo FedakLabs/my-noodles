@@ -34,6 +34,7 @@ import {
 } from './application/visitor-session';
 import { config } from './config';
 import './infrastructure/logging';
+import { ServerlessDbInstaller, ServerlessDbUtils } from './infrastructure/persistence';
 
 @Module({
   imports: [
@@ -42,6 +43,10 @@ import './infrastructure/logging';
     TypeOrmModule.forRoot({
       ...prepareDataSource(config),
       autoLoadEntities: true,
+      // Cold-start / wake while Nest is booting TypeORM.
+      retryAttempts: 5,
+      retryDelay: 1000,
+      toRetry: ServerlessDbUtils.isTransientError,
     }),
     VisitorSessionModule,
     UsersModule,
@@ -65,7 +70,7 @@ import './infrastructure/logging';
     AdminProductsModule,
     AdminSellersModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }, ServerlessDbInstaller],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

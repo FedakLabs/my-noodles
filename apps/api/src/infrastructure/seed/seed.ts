@@ -15,6 +15,7 @@ import { Product } from '@/application/products';
 import { Seller } from '@/application/sellers';
 import { User } from '@/application/users';
 import { config } from '@/config';
+import { ServerlessDbUtils } from '@/infrastructure/persistence';
 
 import { buildFeedCommentSeeds } from './feed-seed-data';
 import {
@@ -402,7 +403,7 @@ async function main(): Promise<void> {
   const dataSource = createAppDataSource(config);
 
   if (!dataSource.isInitialized) {
-    await dataSource.initialize();
+    await ServerlessDbUtils.retryOnTransientError(() => dataSource.initialize());
   }
 
   try {
