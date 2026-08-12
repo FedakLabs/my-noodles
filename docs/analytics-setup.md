@@ -1,6 +1,6 @@
 # Analytics setup (GTM + GA4 + Hotjar)
 
-Full external setup checklist (Telegram, Tawk, Nova Poshta, Sentry, prod accounts, all env tables) → [requirements.md](./requirements.md).
+Full external setup checklist (Telegram, Tawk, Nova Poshta, Sentry, prod accounts, all env tables) → [requirements.md](./todos/requirements.md).
 
 GTM-first: the storefront loads a single GTM container (`NEXT_PUBLIC_GTM_ID`). GA4 and Hotjar are tags inside that container — not separate scripts or env vars in Next.
 
