@@ -1,93 +1,91 @@
-# DevOps — production HA (local + prod)
+# DevOps
 
-**Topology:** Cloudflare → **Hetzner LB11** → **2× app VMs** (each: Caddy + web + api) + **Neon Postgres EU** + **Cloudflare Pages** (admin) + **Hetzner Object Storage** (`cdn.`). No staging env. No K8s.
+Production follows [the Cloudflare ADR](../docs/2026-08-17:infrastructure.md).
 
-Rough fixed cost ~€30–45/mo (2× CX33 + LB11 + Object Storage + Neon idle).
-
-| Hostname                 | Target                        |
-| ------------------------ | ----------------------------- |
-| `mynoodles.shop` / `www` | CF → **LB** → Caddy → **web** |
-| `api.mynoodles.shop`     | CF → **LB** → Caddy → **api** |
-| `admin.mynoodles.shop`   | **Cloudflare Pages**          |
-| `cdn.mynoodles.shop`     | CF → Hetzner Object Storage   |
-
-```mermaid
-flowchart LR
-  users[Users] --> cf[Cloudflare_proxy]
-  cf --> lb[Hetzner_LB11]
-  lb --> vm1[App_VM_1]
-  lb --> vm2[App_VM_2]
-  vm1 --> neon[(Neon_Postgres)]
-  vm2 --> neon
-  cf --> pages[Cloudflare_Pages_admin]
-  cf --> cdn[Object_Storage_cdn]
+```text
+Namecheap → Cloudflare DNS / Edge
+  ├── Next.js + OpenNext Worker       mynoodles.shop
+  ├── Admin Worker Static Assets      admin.mynoodles.shop
+  ├── API Worker → NestJS Container   api.mynoodles.shop
+  └── R2 public media                 cdn.mynoodles.shop
+                                      ↓
+                                Neon PostgreSQL
 ```
+
+OpenTofu manages durable resources: Cloudflare zone policy and DNSSEC, R2, Neon, and Grafana dashboards. Wrangler/OpenNext manages application artifacts and Worker Custom Domains. GitHub Actions is the production deployment entrypoint. Infisical is the portable secret source and is accessed from deployment jobs through GitHub OIDC; Cloudflare Worker secrets deliver API credentials at runtime.
 
 ## Layout
 
 ```text
 devops/
-  README.md           # this index
-  tofu/               # OpenTofu modules + envs/prod (see tofu/README.md)
-  compose/            # production Compose (caddy + web + api) — identical on each VM
-  caddy/              # Origin CA TLS reverse proxy config
-  scripts/            # bootstrap-host.sh, rolling-compose-deploy.sh
-  docs/               # runbooks (below)
+  cloudflare/       Worker and Container deployment configuration
+  envs/             Committed non-secret configuration by environment and application
+  tofu/             Durable infrastructure and encrypted production state
 ```
 
-## GitHub Actions
+## Boundaries
 
-| Workflow           | Path                                                                              | Trigger                    | What it does                                                         |
-| ------------------ | --------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------- |
-| **CI**             | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)                         | PR + `main`                | Quality gate (`nx affected`). Does **not** deploy.                   |
-| **tofu**           | [`.github/workflows/tofu.yml`](../.github/workflows/tofu.yml)                     | `workflow_dispatch`        | OpenTofu plan/apply · `envs/prod` · calls bootstrap-host after apply |
-| **bootstrap-host** | [`.github/workflows/bootstrap-host.yml`](../.github/workflows/bootstrap-host.yml) | `workflow_call` + dispatch | Sync compose / Origin CA / `.env` on **all** app VMs                 |
-| **deploy-web**     | [`.github/workflows/deploy-web.yml`](../.github/workflows/deploy-web.yml)         | `workflow_dispatch`        | build → GHCR → rolling `compose up --wait` web                       |
-| **deploy-api**     | [`.github/workflows/deploy-api.yml`](../.github/workflows/deploy-api.yml)         | `workflow_dispatch`        | migrate → GHCR → rolling `compose up --wait` api                     |
-| **deploy-admin**   | [`.github/workflows/deploy-admin.yml`](../.github/workflows/deploy-admin.yml)     | `workflow_dispatch`        | admin → Cloudflare Pages                                             |
+- Next.js owns SSR and frontend server behavior.
+- The admin Worker serves the Vite build as static assets.
+- The API Worker only routes requests to the NestJS Container.
+- The NestJS Container owns application logic and Neon access.
+- R2 is a public media origin and is not accessed by the NestJS Container.
+- Applications do not call Infisical at runtime; deployment jobs synchronize only the secrets each runtime needs.
+- Public application configuration comes from `envs/<environment>/<application>.json`; release identifiers remain deployment metadata.
 
-Nothing auto-deploys or auto-applies infra from `main`.
+## Production workflows
 
-### App deploy
+| Workflow           | Responsibility                                                                |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `ci.yml`           | Read-only application, OpenTofu, environment, and Wrangler validation         |
+| `infra.yml`        | Manual production plan/apply for Cloudflare, R2, Neon, and Grafana            |
+| `deploy-api.yml`   | Validate the API/Container, run Neon migrations, deploy, and smoke-test       |
+| `deploy-admin.yml` | Build and deploy the admin Static Assets Worker, then smoke-test SPA fallback |
+| `deploy-web.yml`   | Build and deploy the OpenNext Worker, then smoke-test SSR                     |
+| `rollback.yml`     | Rebuild and deploy one application from a previously known-good Git ref       |
 
-1. Open PR → **CI** must pass.
-2. Merge to `main` (or pick any commit).
-3. Actions → `deploy-web` / `deploy-api` / `deploy-admin` → **Run workflow**.
-4. Input **`ref`**: branch or git SHA (**without** `sha-` prefix).
-5. Hosts come from tofu `app_ipv4` (rolling: VM1 then VM2). Images: `ghcr.io/<owner>/my-noodles-{web,api}:sha-<short>`.
+Infrastructure and applications are deliberately independent. An infrastructure apply never builds an application, and an application deployment never changes OpenTofu resources. Production jobs are serialized per concern and use the checked-out commit SHA as release metadata.
 
-### Infra (OpenTofu)
+## First production setup
 
-1. One-time encrypted state bootstrap — [docs/state-backend.md](./docs/state-backend.md).
-2. Fill Environment `prod` — [docs/secrets.md](./docs/secrets.md).
-3. `pnpm tofu:plan` → review → `pnpm tofu:apply` (or Actions → **tofu**).
-4. After apply, **bootstrap-host** syncs every app VM. Re-run: `pnpm bootstrap:host`.
-5. **Never** `tofu apply` prod from a laptop — [tofu/README.md](./tofu/README.md).
+1. Create GitHub Environment `prod` and require approval for production jobs.
+2. Add GitHub environment variables `INFISICAL_IDENTITY_ID`, `INFISICAL_PROJECT_SLUG`, and optionally `INFISICAL_DOMAIN`.
+3. Authorize that Infisical machine identity to trust this repository through GitHub OIDC.
+4. Add the secrets listed below to their Infisical `prod` folders.
+5. Run `infra.yml` with `action=plan`, review it, then run it with `action=apply`.
+6. Ensure old DNSSEC/DS records are disabled at Namecheap, then copy the `cloudflare_name_servers` output there. After delegation is active, add the new `cloudflare_dnssec` DS values at Namecheap.
+7. Retrieve the sensitive Neon outputs and store the pooled URL as `/api/DATABASE_URL` and the direct URL as `/migrations/DATABASE_URL_DIRECT` in Infisical.
+8. Add the remaining `/api` runtime secrets, then deploy API, admin, and web independently.
 
-### Image tags
+The Worker deployments create and maintain DNS records and certificates for `mynoodles.shop`, `www`, `admin`, and `api` through Cloudflare Custom Domains. OpenTofu creates the R2 bucket and `cdn` custom domain. Do not add placeholder DNS records for Worker Custom Domains.
 
-| Concept        | Format                  | Example           |
-| -------------- | ----------------------- | ----------------- |
-| Workflow `ref` | branch or git SHA       | `main`, `a1b2c3d` |
-| GHCR tag       | `sha-<short>` (7 chars) | `sha-a1b2c3d`     |
+### Infisical `/cloudflare`
 
-Admin has no Docker image — static `dist/` on Cloudflare Pages.
+```text
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ZONE_ID
+```
 
-### Rollback
+### Infisical `/infra`
 
-Re-run the same deploy workflow with `ref=<previous-good-sha>`. See [docs/rollback.md](./docs/rollback.md).
+```text
+GRAFANA_SERVICE_ACCOUNT_TOKEN
+GRAFANA_URL
+NEON_API_KEY
+NEON_ORG_ID
+TF_STATE_PASSPHRASE
+MEDIA_BUCKET                 # optional; defaults to my-noodles-media
+```
 
-## Runbooks
+### Infisical `/migrations`
 
-| Doc                                                | Topic                                      |
-| -------------------------------------------------- | ------------------------------------------ |
-| [tofu/README.md](./tofu/README.md)                 | Modules, envs, CI-only apply, pnpm scripts |
-| [docs/state-backend.md](./docs/state-backend.md)   | Encrypted local state in git               |
-| [docs/secrets.md](./docs/secrets.md)               | GH Environment `prod` secrets / vars       |
-| [docs/neon.md](./docs/neon.md)                     | Neon IaC, wiring, scale-to-zero, PITR      |
-| [docs/edge.md](./docs/edge.md)                     | Cloudflare DNS → LB, Pages, `cdn.`         |
-| [docs/origin-ca.md](./docs/origin-ca.md)           | Full (strict) + Origin CA (edge TLS)       |
-| [docs/object-storage.md](./docs/object-storage.md) | Hetzner Object Storage bucket / prefixes   |
-| [docs/dns-namecheap.md](./docs/dns-namecheap.md)   | Namecheap NS → Cloudflare                  |
-| [docs/rollback.md](./docs/rollback.md)             | SHA rollback + migrations                  |
-| [docs/observability.md](./docs/observability.md)   | Grafana Cloud OTLP + Sentry errors         |
+```text
+DATABASE_URL_DIRECT
+```
+
+### Infisical `/api`
+
+This folder is exported directly to Cloudflare as Worker secrets. It must contain `DATABASE_URL` plus every private runtime value required by the API, including authentication, provider, and Grafana OTLP credentials. Public OTEL settings are committed in `envs/prod/api.json`.
+
+The media bucket is intentionally dedicated to public objects. Its custom domain exposes objects in that bucket; only public media under the documented `products/` namespace belongs there. The `r2.dev` hostname is disabled, browsers receive no R2 credentials, and the API Container has no R2 binding.

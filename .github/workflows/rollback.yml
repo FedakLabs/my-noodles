@@ -1,0 +1,86 @@
+name: Rollback application
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        required: true
+        type: choice
+        options: [web, admin, api]
+      ref:
+        description: Commit SHA or previously successful ref
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ inputs.component }}-prod
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/set-deployment-metadata
+      - uses: ./.github/actions/setup-monorepo
+        with:
+          configure-affected: 'false'
+      - uses: ./.github/actions/load-infisical-secrets
+        with:
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          environment-slug: prod
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          secret-path: /cloudflare
+      - uses: ./.github/actions/export-api-secrets
+        if: ${{ inputs.component == 'api' }}
+        with:
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          environment-slug: prod
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+      - uses: ./.github/actions/load-deployment-environment
+        with:
+          application: ${{ inputs.component }}
+          environment: prod
+      - name: Roll back web
+        if: ${{ inputs.component == 'web' }}
+        env:
+          NEXT_PUBLIC_APP_VERSION: ${{ env.DEPLOY_SHA }}
+        run: pnpm deploy:web
+      - name: Roll back admin
+        if: ${{ inputs.component == 'admin' }}
+        env:
+          VITE_APP_VERSION: ${{ env.DEPLOY_SHA }}
+        run: |
+          pnpm nx run admin:build
+          pnpm exec wrangler deploy \
+            --config devops/cloudflare/admin/wrangler.jsonc \
+            --strict \
+            --tag "$DEPLOY_SHA" \
+            --message "Rollback to $DEPLOY_SHA"
+      - name: Roll back api
+        if: ${{ inputs.component == 'api' }}
+        uses: ./.github/actions/deploy-api-worker
+      - name: Smoke test rolled-back web
+        if: ${{ inputs.component == 'web' }}
+        uses: ./.github/actions/smoke-test
+        with:
+          url: ${{ env.NEXT_PUBLIC_SITE_URL }}/api/health/live
+      - name: Smoke test rolled-back admin
+        if: ${{ inputs.component == 'admin' }}
+        uses: ./.github/actions/smoke-test
+        with:
+          url: ${{ env.ADMIN_PUBLIC_URL }}/
+      - name: Smoke test rolled-back API
+        if: ${{ inputs.component == 'api' }}
+        uses: ./.github/actions/smoke-test
+        with:
+          url: ${{ env.API_PUBLIC_URL }}/api/health/ready

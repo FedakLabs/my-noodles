@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deploy": "opennextjs-cloudflare deploy --config=wrangler.jsonc",
     "start": "next start",
     "format": "oxfmt",
     "format-check": "oxfmt --check",
@@ -43,6 +44,7 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.7.0",
     "@my-noodles/vite-config": "workspace:*",
     "@my-noodles/vitest-config": "workspace:*",
     "@svgr/webpack": "8.1.0",

@@ -1,15 +1,18 @@
-declare namespace NodeJS {
-  interface ProcessEnv {
-    TELEGRAM_BOT_TOKEN: string;
-    TELEGRAM_CHAT_ID: string;
-    TAWK_API_KEY: string;
-    TAWK_PROPERTY_ID: string;
-    TAWK_WIDGET_ID: string;
-    NOVA_POSHTA_API_KEY?: string;
-    NOVA_POSHTA_API_BASE_URL?: string;
-    MEEST_API_BASE_URL?: string;
-    UKRPOSHTA_API_BASE_URL?: string;
-    SENTRY_ENABLED?: string;
-    SENTRY_DSN?: string;
+import '@my-noodles/api-lib/types/env';
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      JWT_SECRET: string;
+      TELEGRAM_BOT_TOKEN: string;
+      TELEGRAM_CHAT_ID: string;
+      TAWK_API_KEY: string;
+      TAWK_PROPERTY_ID: string;
+      TAWK_WIDGET_ID: string;
+      NOVA_POSHTA_API_KEY?: string;
+      NOVA_POSHTA_API_BASE_URL?: string;
+      MEEST_API_BASE_URL?: string;
+      UKRPOSHTA_API_BASE_URL?: string;
+    }
   }
 }

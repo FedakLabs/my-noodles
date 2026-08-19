@@ -1,4 +1,5 @@
 import 'server-only';
+import '@/api/clients';
 import { productsQueries } from '@/api/products';
 import { runWithAppLocale } from '@/i18n/app-locale/server';
 import type { AppLocale } from '@/i18n/routing';

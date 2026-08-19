@@ -5,6 +5,8 @@ import { routing } from '@/i18n/routing';
 import { absoluteUrl, localePath } from '@/shared/seo';
 import { fetchAllProductSlugs } from '@/shared/seo/sitemap-data';
 
+export const dynamic = 'force-dynamic';
+
 const STATIC_INDEXABLE_PATHS = ['/catalog', '/collections', '/contacts'] as const;
 
 function buildStaticSitemapEntries(locale: AppLocale): MetadataRoute.Sitemap {

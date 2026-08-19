@@ -19,32 +19,65 @@ import {
 import { type OtelOptions } from '../otel';
 import { type SentryOptions } from '../sentry';
 import { TransformToBoolean } from '../transformers';
-import { DEFAULT_NODE_ENV, loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
+import { loadAppEnv, NODE_ENVS, type NodeEnv } from './env';
 
-export type ConfigOptions = {
-  /** Absolute path to the service `src/` (or `dist/` when compiled) — root for entity/migration globs. */
-  rootDirname: string;
-};
+export const DATABASE_DRIVERS = ['postgres'] as const;
+export type DatabaseDriver = (typeof DATABASE_DRIVERS)[number];
+
+type BooleanConfigValue = boolean | string | undefined;
+type NumberConfigValue = number | string | undefined;
+
+export type DatabaseConfigOptions = Readonly<{
+  driver: string | undefined;
+  url: string | undefined;
+  host: string | undefined;
+  port: NumberConfigValue;
+  username: string | undefined;
+  password: string | undefined;
+  name: string | undefined;
+  ssl: BooleanConfigValue;
+  logging: BooleanConfigValue;
+}>;
+
+export type ConfigOptions = Readonly<{
+  appName: string | undefined;
+  appVersion: string | undefined;
+  port: NumberConfigValue;
+  nodeEnv: string | undefined;
+  database: DatabaseConfigOptions;
+  otelEnabled: BooleanConfigValue;
+  otelEndpoint: string | undefined;
+  otelServiceName: string | undefined;
+  sentryEnabled: BooleanConfigValue;
+  sentryDsn: string | undefined;
+  shutdownTimeoutMs: NumberConfigValue;
+  responseDelayMs: NumberConfigValue;
+}>;
+
+export type ConfigFactory = (env: NodeJS.ProcessEnv) => ConfigOptions;
 
 type ValidateConfigOptions = {
   label: string;
 };
 
 export class DatabaseConfig {
+  @IsIn([...DATABASE_DRIVERS])
+  driver!: DatabaseDriver;
+
   /**
-   * Neon / managed Postgres URL. When set, discrete POSTGRES_* fields are unused.
+   * Managed database URL. When set, discrete DATABASE_* connection fields are unused.
    * Prod runtime: pooled URL. Migrations: direct (non-pooled) URL.
    */
   @ValidateIf((config: DatabaseConfig) => Boolean(config.url))
   @IsString()
   @MinLength(1)
-  url = process.env.DATABASE_URL;
+  url?: string;
 
   @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  host = process.env.POSTGRES_HOST!;
+  host!: string;
 
   @ValidateIf((config: DatabaseConfig) => !config.url)
   @Type(() => Number)
@@ -52,34 +85,41 @@ export class DatabaseConfig {
   @IsInt()
   @Min(1)
   @Max(65535)
-  port = process.env.POSTGRES_PORT as unknown as number;
+  port!: number;
 
   @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  username = process.env.POSTGRES_USER!;
+  username!: string;
 
   @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  password = process.env.POSTGRES_PASSWORD!;
+  password!: string;
 
   @ValidateIf((config: DatabaseConfig) => !config.url)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  database = process.env.POSTGRES_DB!;
-
-  /** Neon requires TLS; defaults to true when `DATABASE_URL` is set. */
-  @TransformToBoolean()
-  @IsBoolean()
-  ssl = (process.env.DATABASE_SSL ?? (process.env.DATABASE_URL ? 'true' : 'false')) as unknown as boolean;
+  name!: string;
 
   @TransformToBoolean()
+  @IsDefined()
   @IsBoolean()
-  logging = process.env.DATABASE_LOGGING as unknown as boolean;
+  ssl!: boolean;
+
+  @TransformToBoolean()
+  @IsDefined()
+  @IsBoolean()
+  logging!: boolean;
+
+  constructor(options?: DatabaseConfigOptions) {
+    if (options) {
+      Object.assign(this, options);
+    }
+  }
 }
 
 export class Config {
@@ -91,63 +131,65 @@ export class Config {
   @IsDefined()
   @IsString()
   @MinLength(1)
-  appName = process.env.APP_NAME ?? 'my-noodles-api';
+  appName!: string;
 
   @IsDefined()
   @IsString()
   @MinLength(1)
-  appVersion = process.env.APP_VERSION ?? 'dev';
+  appVersion!: string;
 
   @Type(() => Number)
   @IsDefined()
   @IsInt()
   @Min(1)
   @Max(65535)
-  port = process.env.PORT as unknown as number;
+  port!: number;
 
   @IsIn([...NODE_ENVS])
-  nodeEnv = (process.env.NODE_ENV ?? DEFAULT_NODE_ENV) as NodeEnv;
+  nodeEnv!: NodeEnv;
 
   @ValidateNested()
   @Type(() => DatabaseConfig)
-  database = new DatabaseConfig();
+  database!: DatabaseConfig;
 
   @TransformToBoolean()
+  @IsDefined()
   @IsBoolean()
-  otelEnabled = process.env.OTEL_ENABLED as unknown as boolean;
+  otelEnabled!: boolean;
 
   @ValidateIf((config: Config) => config.otelEnabled)
   @IsDefined()
   @IsUrl({ require_tld: false })
-  otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  otelEndpoint?: string;
 
   @ValidateIf((config: Config) => config.otelEnabled)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  otelServiceName = process.env.OTEL_SERVICE_NAME;
+  otelServiceName?: string;
 
   @TransformToBoolean()
+  @IsDefined()
   @IsBoolean()
-  sentryEnabled = process.env.SENTRY_ENABLED as unknown as boolean;
+  sentryEnabled!: boolean;
 
   @ValidateIf((config: Config) => config.sentryEnabled)
   @IsDefined()
   @IsString()
   @MinLength(1)
-  sentryDsn = process.env.SENTRY_DSN;
+  sentryDsn?: string;
 
   @Type(() => Number)
   @IsInt()
   @Min(1000)
   @Max(120_000)
-  shutdownTimeoutMs = (process.env.SHUTDOWN_TIMEOUT_MS ?? '30000') as unknown as number;
+  shutdownTimeoutMs!: number;
 
   @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(60_000)
-  responseDelayMs = (process.env.API_RESPONSE_DELAY_MS ?? '0') as unknown as number;
+  responseDelayMs!: number;
 
   get otel(): OtelOptions {
     if (this.otelEnabled) {
@@ -174,24 +216,29 @@ export class Config {
     return { enabled: false };
   }
 
-  constructor(options?: ConfigOptions) {
-    if (!options) {
+  constructor();
+  constructor(rootDirname: string, configFactory: ConfigFactory);
+  constructor(rootDirname?: string, configFactory?: ConfigFactory) {
+    if (rootDirname === undefined || configFactory === undefined) {
       return;
     }
 
-    loadAppEnv(resolve(options.rootDirname, '..'));
+    loadAppEnv(resolve(rootDirname, '..'));
 
-    const instance = new Config();
-    instance.rootDirname = options.rootDirname;
+    const options = configFactory(process.env);
+    Object.assign(this, options, {
+      rootDirname,
+      database: new DatabaseConfig(options.database),
+    });
 
-    return instance.validate(instance, 'Application configuration');
+    return this.validate(this, 'Application configuration');
   }
 
   /** Apply class-transformer decorators and class-validator rules to a populated config instance. */
   validate<T extends object>(instance: T, label: string): T {
     const ConfigClass = instance.constructor as ClassConstructor<T>;
     const plain = instanceToPlain(instance);
-    const validated = plainToInstance(ConfigClass, plain, { enableImplicitConversion: true });
+    const validated = plainToInstance(ConfigClass, plain);
     const errors = validateSync(validated, { forbidUnknownValues: false });
 
     if (errors.length > 0) {

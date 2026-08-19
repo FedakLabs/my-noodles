@@ -9,6 +9,7 @@ mcp.json
 # build outputs
 dist/
 .next/
+.open-next/
 out/
 coverage/
 .nx/
@@ -20,6 +21,7 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+.api-secrets.env
 
 # logs
 *.log
@@ -42,7 +44,7 @@ blob-report/
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
-# Encrypted prod state is committed by CI (see devops/docs/state-backend.md)
+# Production state is encrypted by OpenTofu and committed by CI.
 !devops/tofu/envs/prod/terraform.tfstate
 **/terraform.tfvars
 **/backend.hcl

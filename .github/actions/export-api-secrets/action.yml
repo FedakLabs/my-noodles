@@ -1,0 +1,34 @@
+name: Export API secrets
+description: Export the Infisical API folder for direct Wrangler consumption
+
+inputs:
+  identity-id:
+    description: Infisical machine identity ID
+    required: true
+  project-slug:
+    description: Infisical project slug
+    required: true
+  environment-slug:
+    description: Infisical environment slug
+    required: false
+    default: prod
+  domain:
+    description: Infisical Cloud or self-hosted base URL
+    required: false
+    default: https://app.infisical.com
+
+runs:
+  using: composite
+  steps:
+    - name: Export API secret file with OIDC
+      uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995 # v1.0.16
+      with:
+        method: oidc
+        identity-id: ${{ inputs.identity-id }}
+        project-slug: ${{ inputs.project-slug }}
+        env-slug: ${{ inputs.environment-slug }}
+        domain: ${{ inputs.domain }}
+        export-type: file
+        file-output-path: /.api-secrets.env
+        secret-path: /api
+        recursive: false

@@ -1,25 +1,23 @@
-# Production stack — wires domain modules. Add envs/stg later as a sibling copy.
+module "media" {
+  source = "../../modules/r2"
 
-locals {
-  # Empty list keeps GitHub-hosted deploy SSH working; set SSH_ALLOWED_CIDRS in GH prod vars to lock down.
-  ssh_allowed_cidrs = length(var.ssh_allowed_cidrs) > 0 ? var.ssh_allowed_cidrs : ["0.0.0.0/0", "::/0"]
+  account_id    = var.cloudflare_account_id
+  zone_id       = var.cloudflare_zone_id
+  bucket        = var.media_bucket
+  public_domain = "cdn.${var.domain}"
 }
 
-module "app" {
-  source = "../../modules/app"
+module "cloudflare" {
+  source = "../../modules/cloudflare"
 
-  project_name      = var.project_name
-  location          = var.location
-  server_type       = var.server_type
-  app_servers       = var.app_servers
-  ssh_public_key    = var.ssh_public_key
-  ssh_allowed_cidrs = local.ssh_allowed_cidrs
+  zone_id = var.cloudflare_zone_id
+  domain  = var.domain
 }
 
 module "neon" {
   source = "../../modules/neon"
 
-  project_name              = var.project_name
+  project_name              = "${var.domain}-${var.environment}"
   org_id                    = var.neon_org_id
   region_id                 = var.neon_region_id
   pg_version                = var.neon_pg_version
@@ -31,24 +29,8 @@ module "neon" {
   history_retention_seconds = var.neon_history_retention_seconds
 }
 
-module "object_storage" {
-  source = "../../modules/object_storage"
+module "grafana" {
+  source = "../../modules/grafana"
 
-  providers = {
-    aws = aws.hetzner_s3
-  }
-
-  bucket = var.object_storage_bucket
-}
-
-module "edge" {
-  source = "../../modules/edge"
-
-  domain                = var.domain
-  cloudflare_zone_id    = var.cloudflare_zone_id
-  cloudflare_account_id = var.cloudflare_account_id
-  origin_ipv4           = module.app.origin_ipv4
-  cdn_cname_target      = trimsuffix(replace(var.object_storage_endpoint, "https://", ""), "/")
-  admin_pages_project   = var.admin_pages_project
-  create_origin_ca      = var.create_origin_ca
+  api_service_name = var.grafana_api_service_name
 }

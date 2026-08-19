@@ -1,53 +1,60 @@
-name: deploy-admin
+name: Deploy admin
 
 on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Git ref to deploy (branch or SHA, without sha- prefix)'
         required: true
-        default: 'main'
+        default: main
         type: string
+
+permissions:
+  contents: read
+  id-token: write
 
 concurrency:
   group: deploy-admin-prod
   cancel-in-progress: false
 
-permissions:
-  contents: read
-
 jobs:
   deploy:
-    name: Build · Pages deploy · prod
     runs-on: ubuntu-latest
     environment: prod
-    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
-          fetch-depth: 0
-
+      - uses: ./.github/actions/set-deployment-metadata
       - uses: ./.github/actions/setup-monorepo
-
-      - name: Type-check admin
-        run: pnpm nx run admin:type-check
-
-      - name: Test admin
-        run: pnpm nx run admin:test
-
+        with:
+          configure-affected: 'false'
+      - uses: ./.github/actions/load-infisical-secrets
+        with:
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          environment-slug: prod
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          secret-path: /cloudflare
+      - uses: ./.github/actions/load-deployment-environment
+        with:
+          application: admin
+          environment: prod
       - name: Build admin
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-          VITE_AUTH_API_URL: ${{ vars.VITE_AUTH_API_URL }}
-          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
-          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_APP_VERSION: ${{ env.DEPLOY_SHA }}
         run: pnpm nx run admin:build
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Deploy Static Assets Worker
+        run: |
+          pnpm exec wrangler deploy \
+            --config devops/cloudflare/admin/wrangler.jsonc \
+            --strict \
+            --tag "$DEPLOY_SHA" \
+            --message "Deploy $DEPLOY_SHA"
+      - name: Smoke test admin
+        uses: ./.github/actions/smoke-test
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/admin/dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }} --commit-dirty=true
+          url: ${{ env.ADMIN_PUBLIC_URL }}/
+      - name: Smoke test SPA fallback
+        uses: ./.github/actions/smoke-test
+        with:
+          url: ${{ env.ADMIN_PUBLIC_URL }}/orders

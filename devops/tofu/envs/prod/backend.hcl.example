@@ -1,5 +1,0 @@
-# Prod no longer uses an S3-compatible remote backend.
-# State is local + OpenTofu encryption, committed at:
-#   devops/tofu/envs/prod/terraform.tfstate
-#
-# See ../../../docs/state-backend.md for bootstrap and a future S3 migration path.

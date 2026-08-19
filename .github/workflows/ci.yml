@@ -116,3 +116,38 @@ jobs:
         run: pnpm nx affected -t e2e --parallel=1
         env:
           CI: true
+
+  infrastructure:
+    name: Quality · Infrastructure
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-monorepo
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.10.0
+      - name: OpenTofu format check
+        run: tofu fmt -check -recursive devops/tofu
+      - name: OpenTofu validate
+        env:
+          TF_VAR_state_passphrase: local-validation-only-change-me
+        run: pnpm tofu:validate
+      - name: Deployment environment checks
+        run: |
+          for application in web admin api; do
+            GITHUB_ENV="$RUNNER_TEMP/$application.env" \
+              node .github/scripts/load-deployment-environment.mjs prod "$application"
+          done
+          for application in web admin api; do
+            node .github/scripts/load-deployment-environment.mjs prod "$application"
+          done
+      - name: Build OpenNext deployment bundle
+        run: pnpm --dir apps/web exec opennextjs-cloudflare build --config=wrangler.jsonc
+      - name: Build admin deployment assets
+        run: pnpm nx run admin:build
+      - name: Wrangler configuration checks
+        run: |
+          pnpm exec wrangler deploy --config apps/web/wrangler.jsonc --dry-run
+          pnpm exec wrangler deploy --config devops/cloudflare/admin/wrangler.jsonc --dry-run
+          pnpm exec wrangler deploy --config devops/cloudflare/api/wrangler.jsonc --dry-run

@@ -5,7 +5,6 @@ import { slugify } from '@my-noodles/api-lib/utils';
 import { DEFAULT_CURRENCY } from '@my-noodles/utils';
 import { type DataSource, type Repository } from 'typeorm';
 
-import { authConfig } from '@/application/auth';
 import { Brand } from '@/application/brands';
 import { Category } from '@/application/categories';
 import { Collection } from '@/application/collections';
@@ -33,6 +32,9 @@ type SeededProduct = {
   row: SeedProductRow;
   product: Product;
 };
+
+const LOCAL_ADMIN_EMAIL = 'admin@my-noodles.local';
+const LOCAL_ADMIN_PASSWORD = 'changeme123';
 
 async function upsertBrand(repository: Repository<Brand>, name: string): Promise<Brand> {
   const slug = slugify(name);
@@ -196,9 +198,9 @@ async function upsertCollection(
 }
 
 async function upsertAdminUser(repository: Repository<User>): Promise<User> {
-  const email = authConfig.adminEmail.toLowerCase();
+  const email = LOCAL_ADMIN_EMAIL;
   const existing = await repository.findOne({ where: { email } });
-  const passwordHash = await new PasswordHasher().hash(authConfig.adminPassword);
+  const passwordHash = await new PasswordHasher().hash(LOCAL_ADMIN_PASSWORD);
 
   if (existing) {
     existing.passwordHash = passwordHash;
@@ -400,6 +402,10 @@ function alternativeScore(current: SeedProductRow, candidate: SeedProductRow): n
 }
 
 async function main(): Promise<void> {
+  if (config.nodeEnv !== 'local') {
+    throw new Error('Database seed is restricted to NODE_ENV=local.');
+  }
+
   const dataSource = createAppDataSource(config);
 
   if (!dataSource.isInitialized) {

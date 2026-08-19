@@ -1,0 +1,44 @@
+name: Smoke test URL
+description: Retry an HTTP endpoint while a Cloudflare deployment becomes available
+
+inputs:
+  url:
+    description: Absolute URL to request
+    required: true
+  attempts:
+    description: Maximum request attempts
+    required: false
+    default: '12'
+  delay-seconds:
+    description: Delay between attempts
+    required: false
+    default: '5'
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for endpoint
+      shell: bash
+      env:
+        SMOKE_URL: ${{ inputs.url }}
+        SMOKE_ATTEMPTS: ${{ inputs.attempts }}
+        SMOKE_DELAY_SECONDS: ${{ inputs.delay-seconds }}
+      run: |
+        set -euo pipefail
+        for ((attempt = 1; attempt <= SMOKE_ATTEMPTS; attempt++)); do
+          if curl --fail --silent --show-error \
+            --connect-timeout 10 \
+            --max-time 30 \
+            "$SMOKE_URL" >/dev/null; then
+            echo "Smoke test passed: $SMOKE_URL"
+            exit 0
+          fi
+
+          if ((attempt < SMOKE_ATTEMPTS)); then
+            echo "Attempt $attempt/$SMOKE_ATTEMPTS failed; retrying in ${SMOKE_DELAY_SECONDS}s."
+            sleep "$SMOKE_DELAY_SECONDS"
+          fi
+        done
+
+        echo "::error::Smoke test failed after $SMOKE_ATTEMPTS attempts: $SMOKE_URL"
+        exit 1

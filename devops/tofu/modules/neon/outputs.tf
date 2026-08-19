@@ -15,13 +15,13 @@ output "database_user" {
 }
 
 output "database_url" {
-  description = "Pooled URL → GH secret DATABASE_URL"
+  description = "Pooled URL to store in Infisical as DATABASE_URL"
   value       = local.database_url
   sensitive   = true
 }
 
 output "database_url_direct" {
-  description = "Direct URL → GH secret DATABASE_URL_DIRECT"
+  description = "Direct URL to store in Infisical as DATABASE_URL_DIRECT"
   value       = local.database_url_direct
   sensitive   = true
 }

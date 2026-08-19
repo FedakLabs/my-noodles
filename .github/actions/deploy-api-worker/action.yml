@@ -1,0 +1,28 @@
+name: Deploy API Worker and Container
+description: Upload the scoped API runtime secrets and deploy through Wrangler
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy API Worker and Container
+      shell: bash
+      run: |
+        set -euo pipefail
+        secrets_file="$GITHUB_WORKSPACE/.api-secrets.env"
+        if [[ ! -s "$secrets_file" ]]; then
+          echo "::error::Infisical did not export the /api secret folder."
+          exit 1
+        fi
+        : "${DEPLOY_SHA:?Deployment metadata was not initialized.}"
+        chmod 600 "$secrets_file"
+        trap 'rm -f -- "$secrets_file"' EXIT
+        pnpm exec wrangler deploy \
+          --config devops/cloudflare/api/wrangler.jsonc \
+          --secrets-file "$secrets_file" \
+          --strict \
+          --tag "$DEPLOY_SHA" \
+          --message "Deploy $DEPLOY_SHA" \
+          --var "OTEL_ENABLED:$OTEL_ENABLED" \
+          --var "OTEL_EXPORTER_OTLP_PROTOCOL:$OTEL_EXPORTER_OTLP_PROTOCOL" \
+          --var "OTEL_RESOURCE_ATTRIBUTES:$OTEL_RESOURCE_ATTRIBUTES" \
+          --var "OTEL_SERVICE_NAME:$OTEL_SERVICE_NAME"

@@ -1,27 +1,39 @@
-export const validEnv = {
-  PORT: '3001',
-  NODE_ENV: 'local',
-  POSTGRES_HOST: 'localhost',
-  POSTGRES_PORT: '5432',
-  POSTGRES_USER: 'my_noodles',
-  POSTGRES_PASSWORD: 'my_noodles',
-  POSTGRES_DB: 'my_noodles',
-  OTEL_ENABLED: 'false',
-  SENTRY_ENABLED: 'false',
-  SHUTDOWN_TIMEOUT_MS: '30000',
-  APP_NAME: 'my-noodles-api',
-  APP_VERSION: 'dev',
-} as const;
+import { type ConfigOptions } from '../../config';
 
-export const validOtelEnv = {
-  ...validEnv,
-  OTEL_ENABLED: 'true',
-  OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318',
-  OTEL_SERVICE_NAME: 'my-noodles-api',
-} as const;
+export const validConfigOptions = {
+  appName: 'my-noodles-api',
+  appVersion: 'dev',
+  port: '3001',
+  nodeEnv: 'local',
+  database: {
+    driver: 'postgres',
+    url: undefined,
+    host: 'localhost',
+    port: '5432',
+    username: 'my_noodles',
+    password: 'my_noodles',
+    name: 'my_noodles',
+    ssl: 'false',
+    logging: 'false',
+  },
+  otelEnabled: 'false',
+  otelEndpoint: undefined,
+  otelServiceName: undefined,
+  sentryEnabled: 'false',
+  sentryDsn: undefined,
+  shutdownTimeoutMs: '30000',
+  responseDelayMs: '0',
+} as const satisfies ConfigOptions;
 
-export const validSentryEnv = {
-  ...validEnv,
-  SENTRY_ENABLED: 'true',
-  SENTRY_DSN: 'https://public@o0.ingest.sentry.io/0',
-} as const;
+export const validOtelConfigOptions = {
+  ...validConfigOptions,
+  otelEnabled: 'true',
+  otelEndpoint: 'http://localhost:4318',
+  otelServiceName: 'my-noodles-api',
+} as const satisfies ConfigOptions;
+
+export const validSentryConfigOptions = {
+  ...validConfigOptions,
+  sentryEnabled: 'true',
+  sentryDsn: 'https://public@o0.ingest.sentry.io/0',
+} as const satisfies ConfigOptions;

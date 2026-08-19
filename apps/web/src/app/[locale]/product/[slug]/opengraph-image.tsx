@@ -9,6 +9,7 @@ import { formatCurrency } from '@/utils/format-currency';
 
 export const size = OG_IMAGE_SIZE;
 export const contentType = OG_IMAGE_CONTENT_TYPE;
+export const alt = 'MyNoodles';
 
 type ProductOpenGraphImageProps = LocalePageProps<{ slug: string }>;
 
@@ -29,13 +30,4 @@ export default withPageLocaleResult<ProductOpenGraphImageProps, Awaited<ReturnTy
     });
   },
   ({ slug }) => createOgImage({ title: slug }),
-);
-
-export const generateImageMetadata = withPageLocaleResult<ProductOpenGraphImageProps, Array<{ alt: string }>>(
-  async ({ params }) => {
-    const product = await getQueryClient().fetchQuery(productsQueries.detail(params.slug));
-
-    return [{ alt: product.name }];
-  },
-  ({ slug }) => [{ alt: slug }],
 );

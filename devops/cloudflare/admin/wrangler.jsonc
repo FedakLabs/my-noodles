@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "my-noodles-admin",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-19",
+  "assets": {
+    "directory": "../../../apps/admin/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+  },
+  "routes": [{ "pattern": "admin.mynoodles.shop", "custom_domain": true }],
+}

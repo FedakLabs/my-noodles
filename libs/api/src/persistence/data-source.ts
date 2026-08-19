@@ -19,7 +19,7 @@ export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptio
   const defaults = defaultGlobs(appConfig.rootDirname);
 
   const shared = {
-    type: 'postgres' as const,
+    type: appConfig.database.driver,
     synchronize: false,
     // Timestamp-prefixed only — excludes CLI scripts (run/revert) that self-execute on import.
     migrations: globs?.migrations ?? defaults.migrations,
@@ -33,7 +33,7 @@ export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptio
     },
   };
 
-  // Neon / managed: connection string (+ SSL). Local: discrete POSTGRES_* fields.
+  // Managed services use a connection string; local development uses discrete DATABASE_* fields.
   if (appConfig.database.url) {
     return {
       ...shared,
@@ -48,7 +48,7 @@ export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptio
     port: appConfig.database.port,
     username: appConfig.database.username,
     password: appConfig.database.password,
-    database: appConfig.database.database,
+    database: appConfig.database.name,
     ssl: appConfig.database.ssl || undefined,
   };
 }

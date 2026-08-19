@@ -1,8 +1,5 @@
-# Local backend — encrypted state is committed to git by CI after apply.
-# See ../../../docs/state-backend.md.
-#
-# Prod apply must run via .github/workflows/tofu.yml (not a laptop).
-
+# Production state is encrypted by OpenTofu and committed by the CI workflow.
+# Never run production apply locally.
 terraform {
   backend "local" {
     path = "terraform.tfstate"

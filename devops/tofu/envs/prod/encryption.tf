@@ -1,7 +1,4 @@
-# OpenTofu state/plan encryption — orthogonal to the backend.
-# Passphrase from CI: TF_STATE_PASSPHRASE → TF_VAR_state_passphrase.
-# Docs: https://opentofu.org/docs/language/state/encryption/
-
+# The passphrase is supplied only by CI through TF_VAR_state_passphrase.
 terraform {
   encryption {
     key_provider "pbkdf2" "prod" {

@@ -1,6 +1,12 @@
 name: Setup monorepo
 description: pnpm, Node, install deps, nx affected SHAs, and Nx task cache
 
+inputs:
+  configure-affected:
+    description: Configure Nx base/head SHAs for affected commands
+    required: false
+    default: 'true'
+
 runs:
   using: composite
   steps:
@@ -20,6 +26,7 @@ runs:
       run: pnpm install --frozen-lockfile
 
     - name: Configure nx affected SHAs
+      if: ${{ inputs.configure-affected == 'true' }}
       uses: nrwl/nx-set-shas@v5
 
     - name: Restore Nx cache
