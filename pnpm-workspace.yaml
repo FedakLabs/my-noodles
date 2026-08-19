@@ -6,6 +6,10 @@ packages:
 
 minimumReleaseAge: 0
 
+injectWorkspacePackages: true
+syncInjectedDepsAfterScripts:
+  - build
+
 allowBuilds:
   '@parcel/watcher': true
   '@scarf/scarf': false

@@ -113,6 +113,12 @@
     },
     "e2e": {
       "command": "pnpm e2e",
+      "dependsOn": [
+        {
+          "projects": "locale",
+          "target": "build"
+        }
+      ],
       "options": {
         "cwd": "apps/web"
       }
