@@ -4,6 +4,7 @@ node_modules/
 .pnpm-store/
 
 mcp.json
+.codex/
 
 # build outputs
 dist/
