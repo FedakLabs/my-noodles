@@ -133,7 +133,11 @@
         "src/meest/client/openapi-ts.config.ts"
       ],
       "project": ["src/**/*.ts"],
-      "ignore": ["src/**/generated/**"]
+      "ignore": ["src/**/generated/**"],
+      "ignoreIssues": {
+        "src/meest/public/meest.api.ts": ["exports", "types"],
+        "src/nova-poshta/nova-poshta.api.ts": ["exports", "types"]
+      }
     },
     "packages/utils": {
       "entry": ["src/index.ts"],
