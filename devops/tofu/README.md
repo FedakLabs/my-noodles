@@ -25,6 +25,8 @@ The native Cloudflare provider owns R2 bucket provisioning. Separate S3 credenti
 
 The pinned Cloudflare provider does not support importing `cloudflare_r2_custom_domain`. The state-recovery workflow therefore fails before importing other resources if this domain is missing from state, instead of committing incomplete state that would make the next apply try to create an already-existing domain. To recover it, delete only the existing R2 custom domain in Cloudflare, run a successful apply so Terraform recreates and records it, and commit the resulting encrypted state.
 
+The state-recovery workflow imports all importable resources: Cloudflare DNSSEC, baseline zone settings, the shared `Public product media cache` ruleset, the R2 bucket, the Neon project, and Grafana resources. It discovers the cache ruleset by name and phase and leaves it for the next apply to create if it is absent. The Cloudflare R2 managed and custom domains do not support import with the pinned provider; recovery fails early if either is missing from state, requiring that resource to be recreated by a successful apply first.
+
 ```bash
 pnpm tofu:fmt
 TF_VAR_state_passphrase=local-validation-only-change-me pnpm tofu:validate

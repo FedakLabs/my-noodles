@@ -60,14 +60,19 @@ jobs:
         run: |
           set -euo pipefail
 
+          R2_MANAGED_DOMAIN_ADDRESS="module.media.cloudflare_r2_managed_domain.this"
           R2_CUSTOM_DOMAIN_ADDRESS="module.media.cloudflare_r2_custom_domain.this"
 
-          if ! tofu state show "$R2_CUSTOM_DOMAIN_ADDRESS" >/dev/null 2>&1; then
-            echo "The R2 custom domain is missing from state."
-            echo "cloudflare_r2_custom_domain cannot be imported by the pinned Cloudflare provider."
-            echo "Delete the existing R2 custom domain, run a successful tofu apply, and commit the resulting state before recovery."
+          for address in "$R2_MANAGED_DOMAIN_ADDRESS" "$R2_CUSTOM_DOMAIN_ADDRESS"; do
+            if tofu state show "$address" >/dev/null 2>&1; then
+              continue
+            fi
+
+            echo "The non-importable Cloudflare R2 resource is missing from state: $address"
+            echo "The pinned Cloudflare provider does not support importing this resource."
+            echo "Delete only the existing resource in Cloudflare, run a successful tofu apply, and commit the resulting state before recovery."
             exit 1
-          fi
+          done
 
           import_if_missing() {
             local address="$1"
@@ -83,6 +88,47 @@ jobs:
               -var-file="../envs/$DEPLOY_ENVIRONMENT/terraform.tfvars" \
               "$address" "$import_id"
           }
+
+          if [[ "$(tofu console -var-file="../envs/$DEPLOY_ENVIRONMENT/terraform.tfvars" <<< 'var.manage_cloudflare_zone')" == "true" ]]; then
+            import_if_missing \
+              'module.cloudflare[0].cloudflare_zone_dnssec.this' \
+              "$CLOUDFLARE_ZONE_ID"
+
+            for setting_id in 0rtt always_use_https automatic_https_rewrites brotli early_hints http3 min_tls_version ssl tls_1_3; do
+              import_if_missing \
+                "module.cloudflare[0].cloudflare_zone_setting.baseline[\"$setting_id\"]" \
+                "$CLOUDFLARE_ZONE_ID/$setting_id"
+            done
+
+            cache_rulesets_json="$(
+              curl --fail-with-body --silent --show-error \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H "Content-Type: application/json" \
+                "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/rulesets?per_page=100"
+            )"
+            mapfile -t cache_ruleset_ids < <(
+              jq -r '[.result[] | select(
+                  .kind == "zone" and
+                  .phase == "http_request_cache_settings" and
+                  .name == "Public product media cache"
+                ) | .id] | .[]' <<< "$cache_rulesets_json"
+            )
+
+            if (( ${#cache_ruleset_ids[@]} > 1 )); then
+              echo "::error::Found multiple Cloudflare media cache rulesets with the same name. Resolve the duplicate before recovery."
+              exit 1
+            fi
+
+            if (( ${#cache_ruleset_ids[@]} == 1 )); then
+              import_if_missing \
+                'module.cloudflare[0].cloudflare_ruleset.media_cache' \
+                "$CLOUDFLARE_ZONE_ID/${cache_ruleset_ids[0]}"
+            else
+              echo "No existing Cloudflare media cache ruleset found; OpenTofu can create it during apply."
+            fi
+          else
+            echo "Skipping shared Cloudflare imports because this environment does not manage the zone."
+          fi
 
           import_if_missing \
             module.media.cloudflare_r2_bucket.this \
