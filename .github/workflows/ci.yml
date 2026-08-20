@@ -139,6 +139,7 @@ jobs:
         run: |
           pnpm --dir devops/cloudflare run validate:environments
           for environment_path in devops/envs/*; do
+            [[ -d "$environment_path" ]] || continue
             environment="${environment_path##*/}"
             node .github/scripts/validate-deployment-environment.mjs "$environment" false
             for application in web admin api; do
