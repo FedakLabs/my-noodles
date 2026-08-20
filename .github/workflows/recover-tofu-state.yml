@@ -13,6 +13,11 @@ on:
         required: true
         default: prod
         type: string
+      neon-project-id:
+        description: Existing Neon project ID to import
+        required: true
+        default: noisy-cake-54444281
+        type: string
       r2-bucket-name:
         description: Existing R2 bucket name to import
         required: true
@@ -33,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      NEON_PROJECT_ID: ${{ inputs.neon-project-id }}
       R2_BUCKET_NAME: ${{ inputs.r2-bucket-name }}
     defaults:
       run:
@@ -72,6 +78,10 @@ jobs:
           import_if_missing \
             module.media.cloudflare_r2_bucket.this \
             "$CLOUDFLARE_ACCOUNT_ID/$R2_BUCKET_NAME/default"
+
+          import_if_missing \
+            module.neon.neon_project.main \
+            "$NEON_PROJECT_ID"
 
           import_if_missing \
             module.grafana.grafana_folder.observability \
