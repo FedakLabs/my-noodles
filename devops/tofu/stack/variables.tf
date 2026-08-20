@@ -69,7 +69,7 @@ variable "neon_region_id" {
 
 variable "neon_pg_version" {
   type    = number
-  default = 17
+  default = 18
 }
 
 variable "neon_database_name" {

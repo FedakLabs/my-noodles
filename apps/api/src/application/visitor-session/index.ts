@@ -1,3 +1,5 @@
+export * from './data-retention.config';
+export * from './data-retention.service';
 export * from './visitor-session.config';
 export * from './visitor-session.decorator';
 export * from './visitor-session.entity';

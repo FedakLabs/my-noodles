@@ -23,7 +23,7 @@ cp apps/web/.env.example apps/web/.env.local
 #   NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-Ensure the API is set up (Postgres, migrations, seed) and running before browsing catalog pages — see [`apps/api/README.md`](../api/README.md).
+Ensure the API is set up (Postgres and migrations) and running before browsing catalog pages — see [`apps/api/README.md`](../api/README.md).
 
 ## Run
 

@@ -4,13 +4,12 @@
   "private": true,
   "scripts": {
     "type-check": "tsc --noEmit",
-    "validate": "pnpm run type-check && pnpm run validate:environments",
+    "validate": "pnpm run type-check",
     "web:build": "node scripts/open-next.mjs build",
     "web:check": "node scripts/open-next.mjs deploy --dry-run",
     "web:deploy": "pnpm run web:build && node scripts/open-next.mjs deploy",
     "admin:deploy": "node scripts/wrangler.mjs admin",
-    "api:deploy": "node scripts/wrangler.mjs api",
-    "validate:environments": "node scripts/validate-environments.mjs"
+    "api:deploy": "node scripts/wrangler.mjs api"
   },
   "dependencies": {
     "@cloudflare/containers": "^0.0.25"

@@ -34,10 +34,6 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
-      - uses: ./.github/actions/validate-deployment-environment
-        with:
-          environment: ${{ inputs.environment }}
-          require-infrastructure: 'true'
       - uses: ./.github/actions/setup-infrastructure
         with:
           environment: ${{ inputs.environment }}
@@ -73,18 +69,6 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
-      - uses: ./.github/actions/validate-deployment-environment
-        with:
-          environment: ${{ inputs.environment }}
-          require-infrastructure: 'true'
-      - name: Enforce infrastructure apply ref policy
-        env:
-          REF: ${{ inputs.ref }}
-        run: |
-          if [[ -n "$DEPLOY_INFRASTRUCTURE_APPLY_REF" && "$REF" != "$DEPLOY_INFRASTRUCTURE_APPLY_REF" ]]; then
-            echo "::error::$DEPLOY_ENVIRONMENT apply must use ref=$DEPLOY_INFRASTRUCTURE_APPLY_REF."
-            exit 1
-          fi
       - uses: ./.github/actions/setup-infrastructure
         with:
           environment: ${{ inputs.environment }}

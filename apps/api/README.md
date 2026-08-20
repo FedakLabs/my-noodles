@@ -29,8 +29,6 @@ cp apps/api/.env.example apps/api/.env
 # 4. Apply migrations
 pnpm nx run api:migration:run
 
-# 5. Seed local catalog data
-pnpm nx run api:seed
 ```
 
 ## Run
@@ -52,7 +50,6 @@ API listens on `http://localhost:3001` (see `PORT` in `.env`).
 | ---------------------------------- | ----------------------------------------- |
 | `pnpm nx run api:migration:run`    | Apply pending migrations                  |
 | `pnpm nx run api:migration:revert` | Revert last migration                     |
-| `pnpm nx run api:seed`             | Seed products / feed data                 |
 | `pnpm nx run api:generate:openapi` | Write OpenAPI JSON from running API build |
 | `pnpm nx run api:validate`         | Format, lint, type-check, test, knip      |
 

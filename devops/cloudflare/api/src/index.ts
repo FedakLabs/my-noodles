@@ -22,6 +22,7 @@ interface ApiEnv {
 
 const workerEnv = env as unknown as ApiEnv;
 const workerVersion = workerEnv.CF_VERSION_METADATA.tag || workerEnv.CF_VERSION_METADATA.id;
+const DATA_RETENTION_PATH = '/api/internal/data-retention';
 
 export class ApiContainer extends Container<ApiEnv> {
   override defaultPort = 3001;
@@ -49,11 +50,28 @@ export class ApiContainer extends Container<ApiEnv> {
 
 export default {
   async fetch(request: Request, env: ApiEnv): Promise<Response> {
-    if (new URL(request.url).pathname === '/api/health/edge') {
+    const pathname = new URL(request.url).pathname;
+
+    if (pathname === '/api/health/edge') {
       return Response.json({ status: 'ok', service: 'api-worker' });
+    }
+
+    if (pathname === DATA_RETENTION_PATH) {
+      return new Response('Not Found', { status: 404 });
     }
 
     const id = env.API_CONTAINER.idFromName('production');
     return await env.API_CONTAINER.get(id).fetch(request);
+  },
+
+  async scheduled(_controller: ScheduledController, env: ApiEnv): Promise<void> {
+    const id = env.API_CONTAINER.idFromName('production');
+    const response = await env.API_CONTAINER.get(id).fetch(
+      new Request(`https://api-container.internal${DATA_RETENTION_PATH}`, { method: 'POST' }),
+    );
+
+    if (!response.ok) {
+      throw new Error(`Data retention failed with HTTP ${response.status}: ${await response.text()}`);
+    }
   },
 };

@@ -93,12 +93,6 @@
       "options": {
         "cwd": "apps/api"
       }
-    },
-    "seed": {
-      "command": "pnpm seed",
-      "options": {
-        "cwd": "apps/api"
-      }
     }
   }
 }

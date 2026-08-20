@@ -32,6 +32,7 @@ pnpm tofu:plan [environment] [ref]
 `pnpm tofu:plan` defaults to `prod main`. The workflow always creates a saved environment-specific
 plan first, then the selected protected GitHub Environment holds the apply job for manual approval.
 The apply job uses that exact plan artifact and commits state back to the selected environment path.
+Allowed apply refs are controlled by that GitHub Environment's deployment branch rules.
 
 The local validation value never protects deployed state; it only allows OpenTofu to initialize the
 encryption configuration during read-only validation. Deployed environments have no default

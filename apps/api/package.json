@@ -14,8 +14,7 @@
     "type-check": "tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "migration:run": "tsx src/infrastructure/migrations/scripts/run.ts",
-    "migration:revert": "tsx src/infrastructure/migrations/scripts/revert.ts",
-    "seed": "tsx src/infrastructure/seed/seed.ts"
+    "migration:revert": "tsx src/infrastructure/migrations/scripts/revert.ts"
   },
   "dependencies": {
     "@my-noodles/api-lib": "workspace:*",

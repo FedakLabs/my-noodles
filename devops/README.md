@@ -23,7 +23,7 @@ devops/
     admin/          Static Assets Worker configuration and entrypoint
     api/            Container Worker configuration, entrypoint, and Dockerfile
     scripts/        Deployment build orchestration
-  environment-config/ Shared parser and validation for deployment manifests
+  scripts/          Shared dependency-free deployment orchestration
   envs/             Committed non-secret manifest for each environment
   tofu/             Shared infrastructure stack with isolated environment state
 ```
@@ -36,7 +36,7 @@ devops/
 - The NestJS Container owns application logic and Neon access.
 - R2 is a public media origin and is not accessed by the NestJS Container.
 - Applications do not call Infisical at runtime; deployment jobs synchronize only the secrets each runtime needs.
-- Public application configuration, Worker names, domains, and deployment policy come from `envs/<environment>/environment.yaml`; release identifiers remain deployment metadata.
+- Public application configuration, Worker names, and domains come from `envs/<environment>/environment.json`; release identifiers remain deployment metadata.
 
 ## Deployment workflows
 
@@ -53,7 +53,7 @@ Infrastructure and applications are deliberately independent. An infrastructure 
 
 ## First production setup
 
-1. Create GitHub Environment `prod` and require approval for production jobs. Repeat this for every deployable environment before selecting it in a workflow.
+1. Create GitHub Environment `prod`, require approval for production jobs, and configure its deployment branch rules for the refs allowed to apply. Repeat this for every deployable environment before selecting it in a workflow.
 2. Add GitHub repository variables `INFISICAL_IDENTITY_ID`, `INFISICAL_PROJECT_SLUG`, and optionally `INFISICAL_DOMAIN`.
 3. Authorize that Infisical machine identity to trust this repository through GitHub OIDC.
 4. Add the secrets listed below to their Infisical `prod` folders.
@@ -90,6 +90,6 @@ DATABASE_URL_DIRECT
 
 ### Infisical `/api`
 
-This folder is exported directly to Cloudflare as Worker secrets. It must contain `DATABASE_URL` plus every private runtime value required by the API, including authentication, provider, and Grafana OTLP credentials. Public OTEL settings are committed under `applications.api` in `envs/<environment>/environment.yaml`.
+This folder is exported directly to Cloudflare as Worker secrets. It must contain `DATABASE_URL` plus every private runtime value required by the API, including authentication, provider, and Grafana OTLP credentials. Public OTEL settings are committed under `applications.api` in `envs/<environment>/environment.json`.
 
 The media bucket is intentionally dedicated to public objects. Its custom domain exposes objects in that bucket; only public media under the documented `products/` namespace belongs there. The `r2.dev` hostname is disabled, browsers receive no R2 credentials, and the API Container has no R2 binding.

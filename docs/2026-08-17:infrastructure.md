@@ -10,29 +10,29 @@ The application is a small public web application with intentionally low initial
 
 Expected initial usage:
 
-* approximately **5 users/day**
-* approximately **15 minutes of activity per user**
-* public deployment
-* potentially unpredictable traffic growth
-* up to approximately **100 products**
-* each product may have approximately **1–4 photos**
-* a server-backed **Next.js frontend requiring SSR**
-* a separate **simple SPA frontend**
-* a **NestJS monolithic API**
-* a relational **PostgreSQL database**
-* object storage for product photos and other potentially large files
+- approximately **5 users/day**
+- approximately **15 minutes of activity per user**
+- public deployment
+- potentially unpredictable traffic growth
+- up to approximately **100 products**
+- each product may have approximately **1–4 photos**
+- a server-backed **Next.js frontend requiring SSR**
+- a separate **simple SPA frontend**
+- a **NestJS monolithic API**
+- a relational **PostgreSQL database**
+- object storage for product photos and other potentially large files
 
 The infrastructure should:
 
-* minimize operational overhead
-* have low initial cost
-* provide adequate limits for the expected workload
-* tolerate reasonable traffic growth
-* use one primary infrastructure ecosystem where practical
-* provide clear usage and cost metrics
-* allow future infrastructure decisions to be based on real production data rather than hypothetical scale
+- minimize operational overhead
+- have low initial cost
+- provide adequate limits for the expected workload
+- tolerate reasonable traffic growth
+- use one primary infrastructure ecosystem where practical
+- provide clear usage and cost metrics
+- allow future infrastructure decisions to be based on real production data rather than hypothetical scale
 
-The application domain has already been purchased through **Namecheap**. 
+The application domain has already been purchased through **Namecheap**.
 
 ---
 
@@ -121,13 +121,13 @@ flowchart LR
 
 This is the frontend that requires server-side functionality such as:
 
-* SSR
-* App Router
-* React Server Components
-* Route Handlers
-* Server Actions
-* streaming
-* other functionality supported by the OpenNext adapter
+- SSR
+- App Router
+- React Server Components
+- Route Handlers
+- Server Actions
+- streaming
+- other functionality supported by the OpenNext adapter
 
 The application will therefore treat this frontend as a **server-backed application**, rather than a static website.
 
@@ -157,14 +157,14 @@ Static asset requests are free and do not consume the normal Worker request allo
 
 This makes Workers Static Assets the preferred location for:
 
-* HTML
-* JavaScript bundles
-* CSS
-* fonts
-* icons
-* logos
-* small static images
-* other deployment-time frontend assets
+- HTML
+- JavaScript bundles
+- CSS
+- fonts
+- icons
+- logos
+- small static images
+- other deployment-time frontend assets
 
 ---
 
@@ -174,12 +174,12 @@ This makes Workers Static Assets the preferred location for:
 
 Examples include:
 
-* product photos
-* user uploads
-* large downloads
-* PDFs
-* videos
-* other application-generated files
+- product photos
+- user uploads
+- large downloads
+- PDFs
+- videos
+- other application-generated files
 
 However, in the current architecture **the NestJS API does not access R2**.
 
@@ -244,8 +244,8 @@ Workers Static Assets have a current **25 MiB maximum individual file size**.
 
 Therefore:
 
-* small deployment assets → **Workers Static Assets**
-* large/persistent application objects → **R2**
+- small deployment assets → **Workers Static Assets**
+- large/persistent application objects → **R2**
 
 Workers Static Assets are preferred for small deployment files because their serving and storage do not incur additional R2 charges.
 
@@ -328,10 +328,10 @@ No separate CDN provider will be introduced initially.
 
 The Cloudflare edge network will handle delivery of appropriate:
 
-* Worker responses
-* static assets
-* cached content
-* R2 objects
+- Worker responses
+- static assets
+- cached content
+- R2 objects
 
 This keeps CDN configuration within the same ecosystem as the application runtime.
 
@@ -359,11 +359,11 @@ This avoids requiring the monolithic API to be adapted to the Workers runtime.
 
 The Container is responsible for:
 
-* NestJS
-* Node.js runtime
-* API business logic
-* database access
-* other backend operations requiring a conventional Node.js environment
+- NestJS
+- Node.js runtime
+- API business logic
+- database access
+- other backend operations requiring a conventional Node.js environment
 
 **R2 is deliberately excluded from this list.** The current application does not require the NestJS API to read or write product objects in R2.
 
@@ -413,10 +413,10 @@ flowchart LR
 
 This keeps:
 
-* database credentials
-* database access logic
-* authorization
-* business rules
+- database credentials
+- database access logic
+- authorization
+- business rules
 
 on the server side.
 
@@ -446,12 +446,12 @@ Cloudflare becomes the DNS provider by configuring the domain's nameservers at N
 
 This provides integration with:
 
-* custom domains
-* Cloudflare CDN
-* Workers
-* TLS
-* traffic management
-* Cloudflare security features
+- custom domains
+- Cloudflare CDN
+- Workers
+- TLS
+- traffic management
+- Cloudflare security features
 
 ---
 
@@ -479,7 +479,7 @@ Neon currently provides a Free plan with **50 CU-hours/month and 0.5 GB storage 
 | Namecheap domain        | Already purchased                               |     **$0 additional** |
 | **Expected total**      |                                                 |        **≈ $5/month** |
 
-* Actual Container consumption depends on the selected container resources and runtime behavior.
+- Actual Container consumption depends on the selected container resources and runtime behavior.
 
 R2's current Standard pricing after the free allowance is **$0.015/GB-month**, **$4.50/million Class A operations**, and **$0.36/million Class B operations**, with no Internet egress charge. ([Cloudflare Docs][3])
 
@@ -531,10 +531,10 @@ This is considered a **very low initial workload**.
 
 User activity time is not equivalent to CPU consumption. A request-driven Node.js API can spend much of its time waiting for:
 
-* network requests
-* database operations
-* user requests
-* other I/O
+- network requests
+- database operations
+- user requests
+- other I/O
 
 rather than continuously consuming CPU.
 
@@ -638,12 +638,12 @@ Each technology has a clear responsibility:
 
 This reduces the need to:
 
-* operate servers
-* configure operating systems
-* maintain Docker hosts
-* manage load balancers
-* operate a dedicated CDN
-* build infrastructure before actual requirements are known
+- operate servers
+- configure operating systems
+- maintain Docker hosts
+- manage load balancers
+- operate a dedicated CDN
+- build infrastructure before actual requirements are known
 
 ---
 
@@ -653,17 +653,17 @@ The initial infrastructure deliberately favors **measurement over premature opti
 
 Production usage will be monitored to determine:
 
-* Worker requests
-* Worker CPU consumption
-* Container CPU consumption
-* Container memory consumption
-* Container runtime
-* R2 storage
-* R2 operations
-* Neon database usage
-* traffic volume
-* CDN/cache behavior
-* total monthly infrastructure cost
+- Worker requests
+- Worker CPU consumption
+- Container CPU consumption
+- Container memory consumption
+- Container runtime
+- R2 storage
+- R2 operations
+- Neon database usage
+- traffic volume
+- CDN/cache behavior
+- total monthly infrastructure cost
 
 ```mermaid
 flowchart TD
@@ -703,22 +703,22 @@ A Hetzner VM was considered for the NestJS API.
 
 ### Advantages
 
-* very low fixed cost
-* excellent price/performance
-* full Linux environment
-* root access
-* unrestricted Docker usage
-* large amount of resources relative to this application's requirements
+- very low fixed cost
+- excellent price/performance
+- full Linux environment
+- root access
+- unrestricted Docker usage
+- large amount of resources relative to this application's requirements
 
 ### Disadvantages
 
-* continuously running
-* operating system maintenance
-* security updates
-* monitoring responsibility
-* deployment management
-* scaling infrastructure
-* separate infrastructure ecosystem
+- continuously running
+- operating system maintenance
+- security updates
+- monitoring responsibility
+- deployment management
+- scaling infrastructure
+- separate infrastructure ecosystem
 
 **Decision:** Rejected initially.
 
@@ -732,15 +732,15 @@ Vercel was considered for the Next.js frontend.
 
 ### Advantages
 
-* native Next.js ecosystem
-* mature Next.js deployment platform
-* strong framework integration
+- native Next.js ecosystem
+- mature Next.js deployment platform
+- strong framework integration
 
 ### Disadvantages
 
-* introduces another infrastructure provider
-* separates frontend infrastructure from backend infrastructure
-* reduces the value of having a single Cloudflare-based application platform
+- introduces another infrastructure provider
+- separates frontend infrastructure from backend infrastructure
+- reduces the value of having a single Cloudflare-based application platform
 
 **Decision:** Rejected in favor of Cloudflare Workers + OpenNext.
 
@@ -752,17 +752,17 @@ Cloudflare D1 was considered as the relational database.
 
 ### Advantages
 
-* integrated with Cloudflare
-* SQLite-based
-* simple deployment
-* low operational overhead
+- integrated with Cloudflare
+- SQLite-based
+- simple deployment
+- low operational overhead
 
 ### Disadvantages
 
-* application requires conventional PostgreSQL
-* Neon provides a managed PostgreSQL environment
-* PostgreSQL keeps the database layer more portable
-* existing PostgreSQL ecosystem and tooling are preferred
+- application requires conventional PostgreSQL
+- Neon provides a managed PostgreSQL environment
+- PostgreSQL keeps the database layer more portable
+- existing PostgreSQL ecosystem and tooling are preferred
 
 **Decision:** Rejected in favor of Neon PostgreSQL.
 
@@ -772,32 +772,32 @@ Cloudflare D1 was considered as the relational database.
 
 ## Positive
 
-* **One primary application infrastructure ecosystem**
-* Low initial infrastructure cost
-* Low operational overhead
-* Next.js SSR supported through OpenNext
-* Simple SPA served directly through Workers Static Assets
-* Static assets can be served without additional R2 cost
-* R2 provides appropriate storage for persistent/large files
-* Product photos are separated from application deployment assets
-* R2 delivery does not consume NestJS compute
-* Cloudflare provides CDN/edge delivery
-* NestJS can remain a conventional Node.js application
-* Neon provides conventional PostgreSQL
-* Infrastructure limits are substantially above the expected initial workload
-* Production usage can be measured before making future infrastructure decisions
-* No need to maintain a VM at the beginning
+- **One primary application infrastructure ecosystem**
+- Low initial infrastructure cost
+- Low operational overhead
+- Next.js SSR supported through OpenNext
+- Simple SPA served directly through Workers Static Assets
+- Static assets can be served without additional R2 cost
+- R2 provides appropriate storage for persistent/large files
+- Product photos are separated from application deployment assets
+- R2 delivery does not consume NestJS compute
+- Cloudflare provides CDN/edge delivery
+- NestJS can remain a conventional Node.js application
+- Neon provides conventional PostgreSQL
+- Infrastructure limits are substantially above the expected initial workload
+- Production usage can be measured before making future infrastructure decisions
+- No need to maintain a VM at the beginning
 
 ## Negative
 
-* Dependence on Cloudflare for application infrastructure
-* Next.js runs through OpenNext rather than Vercel's native platform
-* Cloudflare Containers have per-instance resource limits
-* Cloudflare-specific deployment knowledge is required
-* R2 and Container usage introduce usage-based billing
-* Neon introduces a second infrastructure provider
-* A dedicated VM may eventually become more economical for a continuously active workload
-* Migration away from Cloudflare may require removing Cloudflare-specific integrations
+- Dependence on Cloudflare for application infrastructure
+- Next.js runs through OpenNext rather than Vercel's native platform
+- Cloudflare Containers have per-instance resource limits
+- Cloudflare-specific deployment knowledge is required
+- R2 and Container usage introduce usage-based billing
+- Neon introduces a second infrastructure provider
+- A dedicated VM may eventually become more economical for a continuously active workload
+- Migration away from Cloudflare may require removing Cloudflare-specific integrations
 
 ---
 
@@ -805,17 +805,36 @@ Cloudflare D1 was considered as the relational database.
 
 The architecture should be reassessed when real production data demonstrates one or more of the following:
 
-* Container resource limits are being approached
-* Container costs become significant
-* Worker limits become restrictive
-* R2 storage or operation costs become significant
-* Neon costs become significant
-* Next.js/OpenNext compatibility creates practical limitations
-* the application requires infrastructure capabilities unavailable on Cloudflare
-* a permanently active workload makes a dedicated VM substantially more economical
-* operational requirements justify splitting the monolith
+- Container resource limits are being approached
+- Container costs become significant
+- Worker limits become restrictive
+- R2 storage or operation costs become significant
+- Neon costs become significant
+- Next.js/OpenNext compatibility creates practical limitations
+- the application requires infrastructure capabilities unavailable on Cloudflare
+- a permanently active workload makes a dedicated VM substantially more economical
+- operational requirements justify splitting the monolith
 
 Until such evidence exists, the selected architecture should remain unchanged.
+
+## Database retention and thresholds
+
+Transient visitor data is bounded independently from commerce history:
+
+- cart items are hard-deleted after the owning visitor's 30-day cart expiry
+- soft-deleted cart items and feed likes are hard-deleted after 30 days
+- feed views are retained for 90 days
+- visitor sessions inactive for 365 days are deleted only when they have no checkout or order
+- orders, delivery snapshots, order items, checkouts, and status history are retained
+
+A Cloudflare Scheduled Trigger runs retention daily at `03:00 UTC` and wakes the API Container even
+when it has scaled to zero. Each run logs deleted row counts, table/index sizes, and the total database
+size. The API emits a warning at **350 MiB**. Neon compute usage is reviewed in the Neon Console with
+an operational warning threshold of **80 CU-hours per month**, because billing consumption is not
+available from PostgreSQL itself on the Free plan.
+
+D1 is reconsidered only after measured production usage reaches one of those thresholds, or when
+removing Neon becomes more valuable than replacing the PostgreSQL/TypeORM persistence layer.
 
 ---
 
@@ -845,14 +864,14 @@ flowchart TD
 
 **Selected infrastructure:**
 
-* **Cloudflare DNS** — custom domain DNS
-* **Cloudflare CDN/Edge** — content delivery
-* **Cloudflare Workers + OpenNext** — server-backed Next.js frontend
-* **Workers Static Assets** — simple SPA and small static deployment assets
-* **Cloudflare Containers** — NestJS monolithic API
-* **Cloudflare R2** — product photos and other large/persistent objects, served through the Cloudflare edge
-* **Neon PostgreSQL** — relational database
-* **Workers Paid** — baseline Cloudflare compute plan
+- **Cloudflare DNS** — custom domain DNS
+- **Cloudflare CDN/Edge** — content delivery
+- **Cloudflare Workers + OpenNext** — server-backed Next.js frontend
+- **Workers Static Assets** — simple SPA and small static deployment assets
+- **Cloudflare Containers** — NestJS monolithic API
+- **Cloudflare R2** — product photos and other large/persistent objects, served through the Cloudflare edge
+- **Neon PostgreSQL** — relational database
+- **Workers Paid** — baseline Cloudflare compute plan
 
 **R2 is intentionally not a dependency of the NestJS Container in the initial architecture.**
 
@@ -860,6 +879,6 @@ The guiding principle is:
 
 > **Start with one primarily managed ecosystem that is comfortably sufficient for the expected workload, accept a small predictable baseline cost, collect real production usage data, and only introduce additional infrastructure complexity when actual data demonstrates that it is necessary.**
 
-[1]: https://developers.cloudflare.com/workers/platform/pricing/?utm_source=chatgpt.com "Pricing · Cloudflare Workers docs"
-[2]: https://neon.com/blog/new-usage-based-pricing?a=b51acb5c-d88f-4d95-b533-36b729ea05a1&utm_source=chatgpt.com "Neon’s New Pricing, Explained: Usage-Based, No Minimum - Neon"
-[3]: https://developers.cloudflare.com/r2/pricing/?utm_source=chatgpt.com "Pricing · Cloudflare R2 docs"
+[1]: https://developers.cloudflare.com/workers/platform/pricing/?utm_source=chatgpt.com 'Pricing · Cloudflare Workers docs'
+[2]: https://neon.com/blog/new-usage-based-pricing?a=b51acb5c-d88f-4d95-b533-36b729ea05a1&utm_source=chatgpt.com 'Neon’s New Pricing, Explained: Usage-Based, No Minimum - Neon'
+[3]: https://developers.cloudflare.com/r2/pricing/?utm_source=chatgpt.com 'Pricing · Cloudflare R2 docs'

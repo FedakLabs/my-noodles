@@ -16,7 +16,7 @@ test.describe('discovery funnel', () => {
         url: 'http://localhost:3000',
       },
     ]);
-    // Consent banner is fixed over the catalog ATC row in Desktop Chrome — seed a choice so it stays out of the funnel path.
+    // Consent banner is fixed over the catalog ATC row in Desktop Chrome — preselect a choice so it stays out of the funnel path.
     await context.addInitScript((key) => {
       localStorage.setItem(key, 'denied');
     }, CONSENT_STORAGE_KEY);
