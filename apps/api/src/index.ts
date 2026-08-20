@@ -89,7 +89,7 @@ async function bootstrap() {
     enabled: config.nodeEnv !== 'local',
   }).register();
 
-  await app.listen(config.port);
+  await app.listen(config.port, '0.0.0.0');
 
   const origin = `http://localhost:${config.port}`;
   logger.info({ msg: 'bootstrap.listening', origin, path: `/${API_GLOBAL_PREFIX}` });
