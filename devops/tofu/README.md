@@ -23,6 +23,8 @@ environment-specific values and names.
 
 The native Cloudflare provider owns R2 bucket provisioning. Separate S3 credentials are not required because this configuration does not manage R2 objects, S3 bucket policies, or unsupported S3 versioning. `cloudflare_r2_custom_domain` provides public media delivery and automatically manages `cdn.mynoodles.shop` TLS/DNS.
 
+The pinned Cloudflare provider does not support importing `cloudflare_r2_custom_domain`. The state-recovery workflow therefore fails before importing other resources if this domain is missing from state, instead of committing incomplete state that would make the next apply try to create an already-existing domain. To recover it, delete only the existing R2 custom domain in Cloudflare, run a successful apply so Terraform recreates and records it, and commit the resulting encrypted state.
+
 ```bash
 pnpm tofu:fmt
 TF_VAR_state_passphrase=local-validation-only-change-me pnpm tofu:validate

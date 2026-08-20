@@ -60,6 +60,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          R2_CUSTOM_DOMAIN_ADDRESS="module.media.cloudflare_r2_custom_domain.this"
+
+          if ! tofu state show "$R2_CUSTOM_DOMAIN_ADDRESS" >/dev/null 2>&1; then
+            echo "The R2 custom domain is missing from state."
+            echo "cloudflare_r2_custom_domain cannot be imported by the pinned Cloudflare provider."
+            echo "Delete the existing R2 custom domain, run a successful tofu apply, and commit the resulting state before recovery."
+            exit 1
+          fi
+
           import_if_missing() {
             local address="$1"
             local import_id="$2"

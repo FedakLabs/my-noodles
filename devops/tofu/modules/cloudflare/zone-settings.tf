@@ -4,7 +4,6 @@ locals {
     always_use_https         = "on"
     automatic_https_rewrites = "on"
     brotli                   = "on"
-    crawler_hints            = "on"
     early_hints              = "on"
     http3                    = "on"
     min_tls_version          = "1.2"
