@@ -53,7 +53,7 @@ Infrastructure and applications are deliberately independent. An infrastructure 
 
 ## First production setup
 
-1. Create GitHub Environment `prod`, require approval for production jobs, and configure its deployment branch rules for the refs allowed to apply. Repeat this for every deployable environment before selecting it in a workflow.
+1. Create GitHub Environment `prod`, require approval for production jobs, and configure its deployment branch rules for the refs allowed to apply. The OpenTofu plan runs before the protected apply job. Repeat this for every deployable environment before selecting it in a workflow.
 2. Add GitHub repository variables `INFISICAL_IDENTITY_ID`, `INFISICAL_PROJECT_SLUG`, and optionally `INFISICAL_DOMAIN`.
 3. Authorize that Infisical machine identity to trust this repository through GitHub OIDC.
 4. Add the secrets listed below to their Infisical `prod` folders.

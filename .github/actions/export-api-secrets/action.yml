@@ -13,8 +13,7 @@ inputs:
     required: true
   domain:
     description: Infisical Cloud or self-hosted base URL
-    required: false
-    default: https://app.infisical.com
+    required: true
 
 runs:
   using: composite

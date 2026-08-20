@@ -44,7 +44,7 @@ jobs:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
           environment-slug: ${{ inputs.environment }}
-          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
           secret-path: /cloudflare
       - uses: ./.github/actions/export-api-secrets
         if: ${{ inputs.component == 'api' }}
@@ -52,7 +52,7 @@ jobs:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
           environment-slug: ${{ inputs.environment }}
-          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
       - uses: ./.github/actions/load-deployment-environment
         with:
           application: ${{ inputs.component }}

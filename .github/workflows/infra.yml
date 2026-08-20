@@ -25,7 +25,6 @@ jobs:
   tofu-plan:
     name: OpenTofu plan
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     env:
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
     defaults:
@@ -40,7 +39,7 @@ jobs:
           environment: ${{ inputs.environment }}
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
       - name: OpenTofu validate
         run: tofu validate
       - name: OpenTofu plan
@@ -75,7 +74,7 @@ jobs:
           environment: ${{ inputs.environment }}
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+          domain: ${{ vars.INFISICAL_DOMAIN }}
       - name: Download OpenTofu plan
         uses: actions/download-artifact@v5
         with:
