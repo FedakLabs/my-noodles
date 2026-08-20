@@ -16,8 +16,7 @@ runs:
         : "${DEPLOY_SHA:?Deployment metadata was not initialized.}"
         chmod 600 "$secrets_file"
         trap 'rm -f -- "$secrets_file"' EXIT
-        pnpm exec wrangler deploy \
-          --config devops/cloudflare/api/wrangler.jsonc \
+        pnpm --dir devops/cloudflare run api:deploy -- \
           --secrets-file "$secrets_file" \
           --strict \
           --tag "$DEPLOY_SHA" \

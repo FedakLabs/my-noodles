@@ -5,6 +5,7 @@ provider "registry.opentofu.org/cloudflare/cloudflare" {
   version     = "5.23.0"
   constraints = "~> 5.23"
   hashes = [
+    "h1:AHGT3iXr4NMNymUXeRXu3WcKIVUbvHKpYRUbdgiQv/4=",
     "h1:C6JU7d5XoRQnksREiFD3hTgGRQ18ciV7ynKvpvGIteA=",
     "h1:Sixlatj4vbZGhJ9r7I5c0l4gWp5Bej0aNR3akDt7wig=",
     "zh:3492a18e8753c2734bb253b70b46c8ec66151198b5221dc7772dab76778a2c06",
@@ -23,6 +24,7 @@ provider "registry.opentofu.org/grafana/grafana" {
   version     = "4.45.1"
   constraints = "~> 4.42"
   hashes = [
+    "h1:Bi6P+goPtjInO7XWe4e8LcDmeTj3Apk9LHJ8OGzMg0o=",
     "h1:OzokYld3E8XJIn1OCv/QjiSkXOGgQe8nGsigm6kqXp4=",
     "h1:lQTzJquYLYpGvGAjLEWskM46urd/Rdz0EHDZgIB1+tc=",
     "zh:07e75aa317cdcd9d3fe8cb3ccd9cb9d11a43d310da5ded5b4d035e82775bed7e",
@@ -51,6 +53,7 @@ provider "registry.opentofu.org/kislerdm/neon" {
   version     = "0.15.0"
   constraints = "~> 0.15"
   hashes = [
+    "h1:2Y/MZe3z+FBWV/8UXXpnPLAsi5U/RNn2TgD7xAtaOKA=",
     "h1:8L/JzdTWaU8q6F0oC9szjl2kCXg3Vuie6rzvptb6+c0=",
     "h1:fWvpRA8InFeUC5/NLBbw14UDxbf+tXRUiKJzJlhv11w=",
     "zh:021e5c921309039e96fc51775c5ad11dd53437e2cb529b660e2c5896b3b3d38b",

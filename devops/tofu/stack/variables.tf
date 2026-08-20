@@ -18,13 +18,18 @@ variable "cloudflare_zone_id" {
 }
 
 variable "domain" {
-  type    = string
-  default = "mynoodles.shop"
+  type        = string
+  description = "Base domain for this environment."
 }
 
 variable "environment" {
-  type    = string
-  default = "prod"
+  type        = string
+  description = "Lowercase deployment environment identifier supplied by the workflow."
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]*$", var.environment))
+    error_message = "environment must be a lowercase path-safe identifier."
+  }
 }
 
 variable "grafana_url" {
@@ -44,8 +49,13 @@ variable "grafana_api_service_name" {
 }
 
 variable "media_bucket" {
-  type    = string
-  default = "my-noodles-media"
+  type        = string
+  description = "Environment-specific R2 media bucket name."
+}
+
+variable "manage_cloudflare_zone" {
+  type        = bool
+  description = "Whether this environment owns shared zone settings, DNSSEC, and media cache rules. Exactly one environment per zone should enable this."
 }
 
 variable "neon_org_id" {
@@ -70,6 +80,11 @@ variable "neon_database_name" {
 variable "neon_role_name" {
   type    = string
   default = "my_noodles"
+}
+
+variable "neon_branch_name" {
+  type        = string
+  description = "Name of the initial Neon branch for this environment."
 }
 
 variable "neon_min_cu" {

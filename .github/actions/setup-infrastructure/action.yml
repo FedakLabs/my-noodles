@@ -1,0 +1,37 @@
+name: Setup infrastructure
+description: Load environment-scoped infrastructure secrets and initialize OpenTofu
+
+inputs:
+  environment:
+    description: Infrastructure environment to initialize
+    required: true
+  identity-id:
+    description: Infisical machine identity ID
+    required: true
+  project-slug:
+    description: Infisical project slug
+    required: true
+  domain:
+    description: Infisical base URL
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/load-infisical-secrets
+      with:
+        identity-id: ${{ inputs.identity-id }}
+        project-slug: ${{ inputs.project-slug }}
+        environment-slug: ${{ inputs.environment }}
+        domain: ${{ inputs.domain }}
+        secret-path: /cloudflare
+    - uses: ./.github/actions/load-infisical-secrets
+      with:
+        identity-id: ${{ inputs.identity-id }}
+        project-slug: ${{ inputs.project-slug }}
+        environment-slug: ${{ inputs.environment }}
+        domain: ${{ inputs.domain }}
+        secret-path: /infra
+    - uses: ./.github/actions/setup-tofu
+      with:
+        environment: ${{ inputs.environment }}

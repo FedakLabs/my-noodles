@@ -1,0 +1,48 @@
+name: Setup OpenTofu
+description: Configure credentials and initialize the shared stack for one deployment environment
+
+inputs:
+  environment:
+    description: Infrastructure environment to initialize
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure OpenTofu environment
+      shell: bash
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -euo pipefail
+        required=(
+          CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN CLOUDFLARE_ZONE_ID GRAFANA_SERVICE_ACCOUNT_TOKEN
+          GRAFANA_URL NEON_API_KEY NEON_ORG_ID TF_STATE_PASSPHRASE
+        )
+        for name in "${required[@]}"; do
+          if [[ -z "${!name:-}" ]]; then
+            echo "::error::Missing required Infisical secret: $name"
+            exit 1
+          fi
+        done
+        {
+          printf 'GRAFANA_AUTH=%s\n' "$GRAFANA_SERVICE_ACCOUNT_TOKEN"
+          printf 'TF_VAR_state_passphrase=%s\n' "$TF_STATE_PASSPHRASE"
+          printf 'TF_VAR_cloudflare_api_token=%s\n' "$CLOUDFLARE_API_TOKEN"
+          printf 'TF_VAR_cloudflare_account_id=%s\n' "$CLOUDFLARE_ACCOUNT_ID"
+          printf 'TF_VAR_cloudflare_zone_id=%s\n' "$CLOUDFLARE_ZONE_ID"
+          printf 'TF_VAR_grafana_url=%s\n' "$GRAFANA_URL"
+          printf 'TF_VAR_neon_org_id=%s\n' "$NEON_ORG_ID"
+          printf 'TF_VAR_environment=%s\n' "$DEPLOY_ENVIRONMENT"
+        } >> "$GITHUB_ENV"
+    - uses: opentofu/setup-opentofu@v1
+      with:
+        tofu_version: 1.10.0
+    - name: OpenTofu init
+      shell: bash
+      env:
+        DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      working-directory: devops/tofu/stack
+      run: >-
+        tofu init -input=false -reconfigure
+        -backend-config="path=../envs/$DEPLOY_ENVIRONMENT/terraform.tfstate"

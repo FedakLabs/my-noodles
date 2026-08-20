@@ -1,9 +1,9 @@
-interface Env {
+interface AdminEnv {
   ASSETS: Fetcher;
 }
 
 export default {
-  fetch(request: Request, env: Env): Promise<Response> {
+  fetch(request: Request, env: AdminEnv): Promise<Response> {
     return env.ASSETS.fetch(request);
   },
 };

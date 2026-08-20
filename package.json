@@ -15,19 +15,16 @@
     "build": "nx run-many -t build",
     "format": "oxfmt",
     "validate": "nx run-many -t validate && nx run web:e2e",
-    "tofu:plan": "gh workflow run infra.yml -f action=plan -f ref=main",
-    "tofu:apply": "gh workflow run infra.yml -f action=apply -f ref=main",
+    "tofu:plan": "node devops/tofu/scripts/run-workflow.mjs",
     "tofu:fmt": "tofu fmt -recursive devops/tofu",
-    "tofu:validate": "tofu -chdir=devops/tofu/envs/prod init -backend=false -input=false && tofu -chdir=devops/tofu/envs/prod validate",
-    "deploy:web": "pnpm --dir apps/web deploy",
-    "deploy:admin": "wrangler deploy --config=devops/cloudflare/admin/wrangler.jsonc",
-    "deploy:api": "wrangler deploy --config=devops/cloudflare/api/wrangler.jsonc"
+    "tofu:validate": "tofu -chdir=devops/tofu/stack init -backend=false -input=false && tofu -chdir=devops/tofu/stack validate",
+    "deploy:web": "pnpm --dir devops/cloudflare run web:deploy",
+    "deploy:admin": "pnpm --dir devops/cloudflare run admin:deploy",
+    "deploy:api": "pnpm --dir devops/cloudflare run api:deploy"
   },
   "devDependencies": {
     "@commitlint/cli": "21.0.2",
     "@commitlint/config-conventional": "21.0.2",
-    "@cloudflare/containers": "^0.0.25",
-    "@cloudflare/workers-types": "^5.20260815.1",
     "@playwright/test": "1.61.0",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.3",
@@ -39,7 +36,6 @@
     "oxfmt": "0.59.0",
     "oxlint": "1.74.0",
     "oxlint-tsgolint": "0.24.0",
-    "wrangler": "^4.35.0",
     "typescript": "6.0.3"
   }
 }

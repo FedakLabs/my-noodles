@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../node_modules/wrangler/config-schema.json",
+  "name": "my-noodles-web-unconfigured",
+  "main": "../../../apps/web/.open-next/worker.js",
+  "compatibility_date": "2026-08-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../../../apps/web/.open-next/assets",
+    "binding": "ASSETS",
+  },
+}

@@ -1,0 +1,21 @@
+name: Validate deployment environment
+description: Validate a committed environment name and its required configuration directory
+
+inputs:
+  environment:
+    description: Deployment environment to validate
+    required: true
+  require-infrastructure:
+    description: Require a matching OpenTofu environment directory
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Validate environment configuration
+      shell: bash
+      run: >-
+        node .github/scripts/validate-deployment-environment.mjs
+        "${{ inputs.environment }}"
+        "${{ inputs.require-infrastructure }}"

@@ -7,23 +7,33 @@ on:
         required: true
         default: main
         type: string
+      environment:
+        description: Deployment environment configured under devops/envs
+        required: true
+        default: prod
+        type: string
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: deploy-api-prod
+  group: deploy-api-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: prod
+    environment: ${{ inputs.environment }}
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/validate-deployment-environment
+        with:
+          environment: ${{ inputs.environment }}
       - uses: ./.github/actions/set-deployment-metadata
       - uses: ./.github/actions/setup-monorepo
         with:
@@ -32,24 +42,24 @@ jobs:
         with:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
+          environment-slug: ${{ inputs.environment }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
           secret-path: /cloudflare
       - uses: ./.github/actions/load-infisical-secrets
         with:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
+          environment-slug: ${{ inputs.environment }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
           secret-path: /migrations
       - uses: ./.github/actions/load-deployment-environment
         with:
           application: api
-          environment: prod
+          environment: ${{ inputs.environment }}
       - name: Validate API application
         run: pnpm nx run api:build
       - name: Validate Worker and Container build
-        run: pnpm exec wrangler deploy --config devops/cloudflare/api/wrangler.jsonc --dry-run
+        run: pnpm --dir devops/cloudflare run api:deploy -- --dry-run
       - name: Run migrations
         run: |
           : "${DATABASE_URL_DIRECT:?Missing required Infisical secret: DATABASE_URL_DIRECT}"
@@ -58,7 +68,7 @@ jobs:
         with:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
+          environment-slug: ${{ inputs.environment }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
       - uses: ./.github/actions/deploy-api-worker
       - name: Smoke test edge

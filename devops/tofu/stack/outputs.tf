@@ -1,3 +1,7 @@
+output "environment" {
+  value = var.environment
+}
+
 output "media_bucket" {
   value = module.media.bucket
 }
@@ -11,17 +15,22 @@ output "media_public_domain_status" {
 }
 
 output "worker_hosts" {
-  value = module.cloudflare.worker_hosts
+  value = {
+    web   = var.domain
+    admin = "admin.${var.domain}"
+    api   = "api.${var.domain}"
+    cdn   = "cdn.${var.domain}"
+  }
 }
 
 output "cloudflare_name_servers" {
   description = "Cloudflare-assigned nameservers to configure once at Namecheap."
-  value       = module.cloudflare.name_servers
+  value       = try(module.cloudflare[0].name_servers, null)
 }
 
 output "cloudflare_dnssec" {
   description = "DS record values to add at Namecheap after Cloudflare nameservers are active."
-  value       = module.cloudflare.dnssec
+  value       = try(module.cloudflare[0].dnssec, null)
 }
 
 output "neon_database_url" {

@@ -7,23 +7,33 @@ on:
         required: true
         default: main
         type: string
+      environment:
+        description: Deployment environment configured under devops/envs
+        required: true
+        default: prod
+        type: string
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: deploy-admin-prod
+  group: deploy-admin-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: prod
+    environment: ${{ inputs.environment }}
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/validate-deployment-environment
+        with:
+          environment: ${{ inputs.environment }}
       - uses: ./.github/actions/set-deployment-metadata
       - uses: ./.github/actions/setup-monorepo
         with:
@@ -32,21 +42,20 @@ jobs:
         with:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
+          environment-slug: ${{ inputs.environment }}
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
           secret-path: /cloudflare
       - uses: ./.github/actions/load-deployment-environment
         with:
           application: admin
-          environment: prod
+          environment: ${{ inputs.environment }}
       - name: Build admin
         env:
           VITE_APP_VERSION: ${{ env.DEPLOY_SHA }}
         run: pnpm nx run admin:build
       - name: Deploy Static Assets Worker
         run: |
-          pnpm exec wrangler deploy \
-            --config devops/cloudflare/admin/wrangler.jsonc \
+          pnpm --dir devops/cloudflare run admin:deploy -- \
             --strict \
             --tag "$DEPLOY_SHA" \
             --message "Deploy $DEPLOY_SHA"

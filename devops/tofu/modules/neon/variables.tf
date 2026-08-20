@@ -39,6 +39,5 @@ variable "history_retention_seconds" {
 }
 
 variable "branch_name" {
-  type    = string
-  default = "production"
+  type = string
 }

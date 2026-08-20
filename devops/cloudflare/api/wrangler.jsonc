@@ -1,6 +1,6 @@
 {
   "$schema": "../../../node_modules/wrangler/config-schema.json",
-  "name": "my-noodles-api",
+  "name": "my-noodles-api-unconfigured",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
   "compatibility_flags": ["nodejs_compat"],
@@ -10,7 +10,7 @@
   "containers": [
     {
       "class_name": "ApiContainer",
-      "image": "../../../apps/api/Dockerfile",
+      "image": "Dockerfile",
       "image_build_context": "../../../",
       "max_instances": 1,
     },
@@ -19,5 +19,4 @@
     "bindings": [{ "name": "API_CONTAINER", "class_name": "ApiContainer" }],
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ApiContainer"] }],
-  "routes": [{ "pattern": "api.mynoodles.shop", "custom_domain": true }],
 }

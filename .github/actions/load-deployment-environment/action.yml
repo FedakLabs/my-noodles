@@ -7,8 +7,7 @@ inputs:
     required: true
   environment:
     description: Deployment environment to load
-    required: false
-    default: prod
+    required: true
 
 runs:
   using: composite

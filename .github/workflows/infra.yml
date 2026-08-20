@@ -7,14 +7,14 @@ on:
         required: true
         default: main
         type: string
-      action:
+      environment:
+        description: Infrastructure environment configured under devops/tofu/envs
         required: true
-        default: plan
-        type: choice
-        options: [plan, apply]
+        default: prod
+        type: string
 
 concurrency:
-  group: infrastructure-prod
+  group: infrastructure-${{ inputs.environment }}
   cancel-in-progress: false
 
 permissions:
@@ -22,95 +22,100 @@ permissions:
   id-token: write
 
 jobs:
-  tofu:
+  tofu-plan:
+    name: OpenTofu plan
     runs-on: ubuntu-latest
-    environment: prod
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
     defaults:
       run:
-        working-directory: devops/tofu/envs/prod
+        working-directory: devops/tofu/stack
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
-      - name: Require main for production apply
-        if: ${{ inputs.action == 'apply' }}
-        env:
-          REF: ${{ inputs.ref }}
-        run: |
-          if [[ "$REF" != "main" ]]; then
-            echo "::error::Production apply must use ref=main so encrypted state remains authoritative."
-            exit 1
-          fi
-      - uses: ./.github/actions/load-infisical-secrets
+      - uses: ./.github/actions/validate-deployment-environment
         with:
+          environment: ${{ inputs.environment }}
+          require-infrastructure: 'true'
+      - uses: ./.github/actions/setup-infrastructure
+        with:
+          environment: ${{ inputs.environment }}
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
           project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
           domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
-          secret-path: /cloudflare
-      - uses: ./.github/actions/load-infisical-secrets
-        with:
-          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
-          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
-          environment-slug: prod
-          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
-          secret-path: /infra
-      - name: Configure OpenTofu environment
-        shell: bash
-        run: |
-          set -euo pipefail
-          required=(
-            CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN CLOUDFLARE_ZONE_ID GRAFANA_SERVICE_ACCOUNT_TOKEN
-            GRAFANA_URL NEON_API_KEY NEON_ORG_ID TF_STATE_PASSPHRASE
-          )
-          for name in "${required[@]}"; do
-            if [[ -z "${!name:-}" ]]; then
-              echo "::error::Missing required Infisical secret: $name"
-              exit 1
-            fi
-          done
-          {
-            printf 'GRAFANA_AUTH=%s\n' "$GRAFANA_SERVICE_ACCOUNT_TOKEN"
-            printf 'TF_VAR_state_passphrase=%s\n' "$TF_STATE_PASSPHRASE"
-            printf 'TF_VAR_cloudflare_api_token=%s\n' "$CLOUDFLARE_API_TOKEN"
-            printf 'TF_VAR_cloudflare_account_id=%s\n' "$CLOUDFLARE_ACCOUNT_ID"
-            printf 'TF_VAR_cloudflare_zone_id=%s\n' "$CLOUDFLARE_ZONE_ID"
-            printf 'TF_VAR_grafana_url=%s\n' "$GRAFANA_URL"
-            printf 'TF_VAR_neon_org_id=%s\n' "$NEON_ORG_ID"
-          } >> "$GITHUB_ENV"
-          if [[ -n "${MEDIA_BUCKET:-}" ]]; then
-            printf 'TF_VAR_media_bucket=%s\n' "$MEDIA_BUCKET" >> "$GITHUB_ENV"
-          fi
-      - uses: opentofu/setup-opentofu@v1
-        with:
-          tofu_version: 1.10.0
-      - name: OpenTofu init
-        run: tofu init -input=false
       - name: OpenTofu validate
         run: tofu validate
       - name: OpenTofu plan
-        run: tofu plan -input=false -out="$RUNNER_TEMP/prod.tfplan"
+        run: >-
+          tofu plan -input=false
+          -var-file="../envs/$DEPLOY_ENVIRONMENT/terraform.tfvars"
+          -out="$RUNNER_TEMP/tofu.tfplan"
+      - name: Upload OpenTofu plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tofu-plan-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/tofu.tfplan
+          if-no-files-found: error
+          retention-days: 1
+
+  tofu-apply:
+    name: OpenTofu apply
+    needs: tofu-plan
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: devops/tofu/stack
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/validate-deployment-environment
+        with:
+          environment: ${{ inputs.environment }}
+          require-infrastructure: 'true'
+      - name: Enforce infrastructure apply ref policy
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          if [[ -n "$DEPLOY_INFRASTRUCTURE_APPLY_REF" && "$REF" != "$DEPLOY_INFRASTRUCTURE_APPLY_REF" ]]; then
+            echo "::error::$DEPLOY_ENVIRONMENT apply must use ref=$DEPLOY_INFRASTRUCTURE_APPLY_REF."
+            exit 1
+          fi
+      - uses: ./.github/actions/setup-infrastructure
+        with:
+          environment: ${{ inputs.environment }}
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          domain: ${{ vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
+      - name: Download OpenTofu plan
+        uses: actions/download-artifact@v5
+        with:
+          name: tofu-plan-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ runner.temp }}
       - name: OpenTofu apply
-        if: ${{ inputs.action == 'apply' }}
-        run: tofu apply -auto-approve -input=false "$RUNNER_TEMP/prod.tfplan"
+        run: tofu apply -auto-approve -input=false "$RUNNER_TEMP/tofu.tfplan"
       - name: Commit encrypted state
-        if: ${{ inputs.action == 'apply' }}
         working-directory: ${{ github.workspace }}
         env:
           REF: ${{ inputs.ref }}
         run: |
           set -euo pipefail
-          STATE_PATH="devops/tofu/envs/prod/terraform.tfstate"
-          cp "$STATE_PATH" "$RUNNER_TEMP/tofu-prod.tfstate"
+          STATE_PATH="devops/tofu/envs/$DEPLOY_ENVIRONMENT/terraform.tfstate"
+          STATE_COPY="$RUNNER_TEMP/tofu-$DEPLOY_ENVIRONMENT.tfstate"
+          cp "$STATE_PATH" "$STATE_COPY"
           git fetch origin "$REF"
           git checkout -B "$REF" "origin/$REF"
-          cp "$RUNNER_TEMP/tofu-prod.tfstate" "$STATE_PATH"
+          cp "$STATE_COPY" "$STATE_PATH"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add devops/tofu/envs/prod/terraform.tfstate
+          git add "$STATE_PATH"
           if git diff --staged --quiet; then
             echo "No encrypted state changes to commit."
             exit 0
           fi
-          git commit -m "chore(tofu): update encrypted prod state"
+          git commit -m "chore(tofu): update encrypted $DEPLOY_ENVIRONMENT state"
           git push origin "HEAD:$REF"

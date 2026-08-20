@@ -10,8 +10,7 @@ inputs:
     required: true
   environment-slug:
     description: Infisical environment slug
-    required: false
-    default: prod
+    required: true
   domain:
     description: Infisical Cloud or self-hosted base URL
     required: false

@@ -1,7 +1,7 @@
 import { Container } from '@cloudflare/containers';
 import { env } from 'cloudflare:workers';
 
-interface Env {
+interface ApiEnv {
   API_CONTAINER: DurableObjectNamespace<ApiContainer>;
   CF_VERSION_METADATA: WorkerVersionMetadata;
   DATABASE_URL: string;
@@ -20,13 +20,13 @@ interface Env {
   OTEL_SERVICE_NAME: string;
 }
 
-const workerEnv = env as unknown as Env;
+const workerEnv = env as unknown as ApiEnv;
 const workerVersion = workerEnv.CF_VERSION_METADATA.tag || workerEnv.CF_VERSION_METADATA.id;
 
-export class ApiContainer extends Container<Env> {
-  defaultPort = 3001;
-  sleepAfter = '5m';
-  envVars = {
+export class ApiContainer extends Container<ApiEnv> {
+  override defaultPort = 3001;
+  override sleepAfter = '5m';
+  override envVars = {
     NODE_ENV: 'prod',
     PORT: '3001',
     APP_VERSION: workerVersion,
@@ -48,12 +48,12 @@ export class ApiContainer extends Container<Env> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: ApiEnv): Promise<Response> {
     if (new URL(request.url).pathname === '/api/health/edge') {
       return Response.json({ status: 'ok', service: 'api-worker' });
     }
 
     const id = env.API_CONTAINER.idFromName('production');
-    return env.API_CONTAINER.get(id).fetch(request);
+    return await env.API_CONTAINER.get(id).fetch(request);
   },
 };

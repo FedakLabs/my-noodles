@@ -9,12 +9,6 @@ importers:
 
   .:
     devDependencies:
-      '@cloudflare/containers':
-        specifier: ^0.0.25
-        version: 0.0.25
-      '@cloudflare/workers-types':
-        specifier: ^5.20260815.1
-        version: 5.20260819.1
       '@commitlint/cli':
         specifier: 21.0.2
         version: 21.0.2(@types/node@22.15.3)(conventional-commits-parser@6.4.0)(typescript@6.0.3)
@@ -57,9 +51,6 @@ importers:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
-      wrangler:
-        specifier: ^4.35.0
-        version: 4.124.0(@cloudflare/workers-types@5.20260819.1)
 
   apps/admin:
     dependencies:
@@ -345,9 +336,6 @@ importers:
       '@my-noodles/vitest-config':
         specifier: workspace:*
         version: link:../../configs/vitest
-      '@opennextjs/cloudflare':
-        specifier: ^1.7.0
-        version: 1.20.2(next@16.2.10(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.101.0))(wrangler@4.124.0(@cloudflare/workers-types@5.20260819.1))
       '@svgr/webpack':
         specifier: 8.1.0
         version: 8.1.0(supports-color@5.5.0)(typescript@6.0.3)
@@ -389,6 +377,31 @@ importers:
       vite:
         specifier: 8.0.16
         version: 8.0.16(@types/node@22.15.3)(esbuild@0.28.1)(jiti@2.7.0)(less@4.5.1)(sass-embedded@1.100.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.19.4)(yaml@2.9.0)
+
+  devops/cloudflare:
+    dependencies:
+      '@cloudflare/containers':
+        specifier: ^0.0.25
+        version: 0.0.25
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20260815.1
+        version: 5.20260819.1
+      '@opennextjs/cloudflare':
+        specifier: ^1.7.0
+        version: 1.20.2(next@16.2.10(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.101.0))(wrangler@4.124.0(@cloudflare/workers-types@5.20260819.1))
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      wrangler:
+        specifier: ^4.35.0
+        version: 4.124.0(@cloudflare/workers-types@5.20260819.1)
+
+  devops/environment-config:
+    dependencies:
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
 
   libs/api:
     dependencies:

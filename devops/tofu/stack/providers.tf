@@ -1,3 +1,4 @@
+# Credentials are supplied by the selected deployment environment.
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }

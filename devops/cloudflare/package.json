@@ -1,0 +1,24 @@
+{
+  "name": "@my-noodles/cloudflare-deployment",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "validate": "pnpm run type-check && pnpm run validate:environments",
+    "web:build": "node scripts/open-next.mjs build",
+    "web:check": "node scripts/open-next.mjs deploy --dry-run",
+    "web:deploy": "pnpm run web:build && node scripts/open-next.mjs deploy",
+    "admin:deploy": "node scripts/wrangler.mjs admin",
+    "api:deploy": "node scripts/wrangler.mjs api",
+    "validate:environments": "node scripts/validate-environments.mjs"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.0.25"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260815.1",
+    "@opennextjs/cloudflare": "^1.7.0",
+    "typescript": "6.0.3",
+    "wrangler": "^4.35.0"
+  }
+}

@@ -3,6 +3,7 @@ packages:
   - 'libs/*'
   - 'packages/*'
   - 'configs/*'
+  - 'devops/*'
 
 minimumReleaseAge: 0
 

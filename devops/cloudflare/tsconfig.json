@@ -1,0 +1,7 @@
+{
+  "extends": "../../configs/typescript/library.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["admin/src/**/*.ts", "api/src/**/*.ts", "web/**/*.ts"]
+}

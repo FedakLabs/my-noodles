@@ -44,9 +44,10 @@ blob-report/
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
-# Production state is encrypted by OpenTofu and committed by CI.
-!devops/tofu/envs/prod/terraform.tfstate
+# Environment state is encrypted by OpenTofu and committed by CI.
+!devops/tofu/envs/*/terraform.tfstate
 **/terraform.tfvars
+!devops/tofu/envs/*/terraform.tfvars
 **/backend.hcl
 crash.log
 crash.*.log
@@ -57,6 +58,8 @@ override.tf.json
 
 # misc
 *.tsbuildinfo
+devops/cloudflare/**/wrangler.generated.jsonc
+**/.wrangler/
 .turbo
 
 *storybook.log

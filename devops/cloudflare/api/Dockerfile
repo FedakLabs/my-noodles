@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build from monorepo root:
-#   docker build -f apps/api/Dockerfile -t my-noodles-api .
+#   docker build -f devops/cloudflare/api/Dockerfile -t my-noodles-api .
 
 # Chainguard Wolfi builder — pin digest (latest-dev floats). Refresh: docker pull … && docker inspect.
 FROM cgr.dev/chainguard/node:latest-dev@sha256:1bd1aa2a03ffd28fff8f99f1330bbf3080e03d5c76e4758572a403dd71baa9e8 AS base
