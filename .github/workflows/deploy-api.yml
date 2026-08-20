@@ -60,7 +60,10 @@ jobs:
       - name: Run migrations
         run: |
           : "${DATABASE_URL_DIRECT:?Missing required Infisical secret: DATABASE_URL_DIRECT}"
-          DATABASE_URL="$DATABASE_URL_DIRECT" pnpm nx run api:migration:run
+          PORT=3001 \
+            OTEL_ENABLED=false \
+            DATABASE_URL="$DATABASE_URL_DIRECT" \
+            pnpm nx run api:migration:run
       - uses: ./.github/actions/export-api-secrets
         with:
           identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
