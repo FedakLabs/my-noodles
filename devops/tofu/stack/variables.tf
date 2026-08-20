@@ -98,8 +98,9 @@ variable "neon_max_cu" {
 }
 
 variable "neon_suspend_timeout_seconds" {
-  type    = number
-  default = 300
+  type        = number
+  default     = null
+  description = "Optional Neon compute suspend timeout for plans that support changing it."
 }
 
 variable "neon_history_retention_seconds" {

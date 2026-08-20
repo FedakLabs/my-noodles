@@ -31,7 +31,9 @@ variable "max_cu" {
 }
 
 variable "suspend_timeout_seconds" {
-  type = number
+  type        = number
+  default     = null
+  description = "Optional compute suspend timeout for Neon plans that support changing it."
 }
 
 variable "history_retention_seconds" {
