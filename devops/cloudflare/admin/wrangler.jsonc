@@ -3,6 +3,9 @@
   "name": "my-noodles-admin-unconfigured",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
+  "observability": {
+    "enabled": true,
+  },
   "assets": {
     "directory": "../../../apps/admin/dist",
     "binding": "ASSETS",
