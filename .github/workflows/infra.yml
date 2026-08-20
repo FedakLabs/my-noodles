@@ -25,6 +25,7 @@ jobs:
   tofu-plan:
     name: OpenTofu plan
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     env:
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
     defaults:
