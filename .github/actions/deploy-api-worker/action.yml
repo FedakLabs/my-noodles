@@ -18,7 +18,6 @@ runs:
         trap 'rm -f -- "$secrets_file"' EXIT
         pnpm --dir devops/cloudflare run api:deploy -- \
           --secrets-file "$secrets_file" \
-          --strict \
           --tag "$DEPLOY_SHA" \
           --message "Deploy $DEPLOY_SHA" \
           --var "OTEL_ENABLED:$OTEL_ENABLED" \

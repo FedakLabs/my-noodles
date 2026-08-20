@@ -16,20 +16,6 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm nx run api:build
 RUN pnpm --filter=api deploy --prod /deploy
 
-# `pnpm deploy` copies workspace package sources but not their generated output.
-# The API runtime resolves these packages through their production exports.
-RUN mkdir -p \
-      /deploy/node_modules/@my-noodles/api-lib/dist \
-      /deploy/node_modules/@my-noodles/integration-api-clients/dist \
-      /deploy/node_modules/@my-noodles/locale/dist \
-      /deploy/node_modules/@my-noodles/translit/dist \
-      /deploy/node_modules/@my-noodles/utils/dist \
-  && tar -C libs/api/dist -cf - . | tar -C /deploy/node_modules/@my-noodles/api-lib/dist -xf - \
-  && tar -C packages/integration-api-clients/dist -cf - . | tar -C /deploy/node_modules/@my-noodles/integration-api-clients/dist -xf - \
-  && tar -C libs/locale/dist -cf - . | tar -C /deploy/node_modules/@my-noodles/locale/dist -xf - \
-  && tar -C libs/translit/dist -cf - . | tar -C /deploy/node_modules/@my-noodles/translit/dist -xf - \
-  && tar -C packages/utils/dist -cf - . | tar -C /deploy/node_modules/@my-noodles/utils/dist -xf -
-
 # Distroless runtime: no shell/npm/apt.
 FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runner
 ENV NODE_ENV=prod

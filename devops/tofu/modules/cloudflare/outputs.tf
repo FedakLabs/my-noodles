@@ -1,12 +1,3 @@
-output "worker_hosts" {
-  value = {
-    web   = var.domain
-    admin = "admin.${var.domain}"
-    api   = "api.${var.domain}"
-    cdn   = "cdn.${var.domain}"
-  }
-}
-
 output "name_servers" {
   description = "Cloudflare-assigned authoritative nameservers to configure at the domain registrar."
   value       = data.cloudflare_zone.this.name_servers

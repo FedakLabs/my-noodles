@@ -14,15 +14,6 @@ output "media_public_domain_status" {
   value = module.media.public_domain_status
 }
 
-output "worker_hosts" {
-  value = {
-    web   = var.domain
-    admin = "admin.${var.domain}"
-    api   = "api.${var.domain}"
-    cdn   = "cdn.${var.domain}"
-  }
-}
-
 output "cloudflare_name_servers" {
   description = "Cloudflare-assigned nameservers to configure once at Namecheap."
   value       = try(module.cloudflare[0].name_servers, null)

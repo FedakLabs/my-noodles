@@ -2,6 +2,9 @@
   "name": "@my-noodles/translit",
   "version": "0.0.0",
   "private": true,
+  "files": [
+    "dist"
+  ],
   "type": "commonjs",
   "exports": {
     ".": {
