@@ -3,6 +3,7 @@
   "name": "my-noodles-admin-unconfigured",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
+  "keep_vars": false,
   "observability": {
     "enabled": true,
   },

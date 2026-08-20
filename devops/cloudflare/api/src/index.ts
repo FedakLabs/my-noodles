@@ -104,7 +104,6 @@ export default {
           version: workerVersion,
           versionMetadata: workerEnv.CF_VERSION_METADATA,
         },
-        envVars: env,
       });
     }
 
