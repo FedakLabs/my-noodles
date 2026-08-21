@@ -1,0 +1,223 @@
+<mxfile host="app.diagrams.net" agent="Codex">
+  <diagram id="my-noodles-infrastructure" name="Infrastructure topology">
+    <mxGraphModel dx="4044" dy="1408" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-13" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#f4f5f7;strokeColor=#97a0af;fontColor=#344563;fontStyle=1;rotation=90;" value="CI/CD" vertex="1">
+          <mxGeometry height="660" width="390" x="87" y="735" as="geometry" />
+        </mxCell>
+        <mxCell id="tofu" parent="cwzLuGAPNEvvjEVPuve3-13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="OpenTofu&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;zone policy · DNSSEC · R2 · Neon · Grafana&lt;/font&gt;" vertex="1">
+          <mxGeometry height="75" width="340" x="165" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="github" parent="cwzLuGAPNEvvjEVPuve3-13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="GitHub Actions&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;CI · infra · deploy · rollback&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="-105" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="e-github-tofu" edge="1" parent="cwzLuGAPNEvvjEVPuve3-13" source="github" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#666666;fontColor=#344563;" target="tofu" value="infra.yml">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="175" y="247.51" />
+              <mxPoint x="175" y="247.51" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="secrets" parent="cwzLuGAPNEvvjEVPuve3-13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="Infisical&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;deployment-only secrets · /cloudflare · /infra · /migrations · /api&lt;/font&gt;" vertex="1">
+          <mxGeometry height="75" width="340" x="165" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="e-github-secrets" edge="1" parent="cwzLuGAPNEvvjEVPuve3-13" source="github" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#666666;fontColor=#344563;" target="secrets" value="OIDC → secret sync">
+          <mxGeometry relative="1" x="-0.129" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="-10" y="422.54" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#172b4d;" value="My Noodles — production infrastructure topology" vertex="1">
+          <mxGeometry height="40" width="700" x="-50" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#5e6c84;" value="mynoodles.shop · Cloudflare Workers + Containers · Neon PostgreSQL · R2 public media" vertex="1">
+          <mxGeometry height="25" width="800" x="-48" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary-public" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#f4f5f7;strokeColor=#97a0af;fontColor=#344563;fontStyle=1;" value="PUBLIC / EXTERNAL WORLD" vertex="1">
+          <mxGeometry height="700" width="230" x="-50" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary-edge" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#fff4e5;strokeColor=#f08c46;fontColor=#8a3b12;fontStyle=1;" value="CLOUDFLARE EDGE &amp; DOMAIN" vertex="1">
+          <mxGeometry height="700" width="430" x="245" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="user" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;align=center;verticalAlign=middle;" value="👤&amp;nbsp;Customer / browser&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;catalog · checkout · media&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="160" x="-245" y="238.75" as="geometry" />
+        </mxCell>
+        <mxCell id="admin-user" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;align=center;verticalAlign=middle;" value="🛠&amp;nbsp;Operations user&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;admin.mynoodles.shop&lt;/font&gt;" vertex="1">
+          <mxGeometry height="65" width="160" x="-245" y="308.75" as="geometry" />
+        </mxCell>
+        <mxCell id="namecheap" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;align=center;verticalAlign=middle;" value="Namecheap&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;domain registrar&lt;/font&gt;" vertex="1">
+          <mxGeometry height="65" width="120" x="-245" y="98.75" as="geometry" />
+        </mxCell>
+        <mxCell id="dns" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare DNS&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;authoritative zone · DNSSEC&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="310" x="60" y="96.25" as="geometry" />
+        </mxCell>
+        <mxCell id="edge" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare CDN / Edge&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;TLS · cache · custom domains&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="310" x="60" y="278.75" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" parent="boundary-edge" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare R2&lt;br&gt;&lt;b&gt;my-noodles-media&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;public products/* · WEUR · r2.dev disabled&lt;/font&gt;" vertex="1">
+          <mxGeometry height="95" width="310" x="60" y="508.75" as="geometry" />
+        </mxCell>
+        <mxCell id="cache-note" parent="boundary-edge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffaf0;strokeColor=#d6b656;dashed=1;fontSize=11;align=center;verticalAlign=middle;" value="Media cache rule&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;GET/HEAD /products/* · immutable objects&lt;/font&gt;" vertex="1">
+          <mxGeometry height="65" width="310" x="60" y="433.75" as="geometry" />
+        </mxCell>
+        <mxCell id="e-user-dns" edge="1" parent="boundary-edge" source="user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7f8c8d;fontColor=#344563;exitX=1;exitY=1;exitDx=0;exitDy=0;" target="dns" value="HTTPS / DNS">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-15" y="308.75" />
+              <mxPoint x="-15" y="233.75" />
+              <mxPoint x="95" y="233.75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-namecheap" edge="1" parent="boundary-edge" source="namecheap" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#666666;fontColor=#344563;" target="dns" value="nameservers + DS records">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-5" y="128.75" />
+              <mxPoint x="-5" y="128.75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-dns-edge" edge="1" parent="boundary-edge" source="dns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontColor=#8a3b12;" target="edge" value="routes domains">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-edge-r2" edge="1" parent="boundary-edge" source="edge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontColor=#8a3b12;" target="r2" value="cdn.mynoodles.shop /products/*">
+          <mxGeometry relative="1" x="-0.375" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="boundary-runtime" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#eaf2ff;strokeColor=#6c8ebf;fontColor=#1d4f91;fontStyle=1;" value="APPLICATION RUNTIME" vertex="1">
+          <mxGeometry height="700" width="430" x="740" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="web" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare Worker&lt;br&gt;&lt;b&gt;my-noodles-web&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Next.js SSR · OpenNext · Workers Assets&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare Worker&lt;br&gt;&lt;b&gt;my-noodles-admin&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Vite SPA · Static Assets · SPA fallback&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="api-worker" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare Worker&lt;br&gt;&lt;b&gt;my-noodles-api&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;route · cron 03:00 UTC · Durable Object binding&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="container" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c6e0b4;strokeColor=#82b366;fontSize=13;align=center;verticalAlign=middle;" value="Cloudflare Container&lt;br&gt;&lt;b&gt;NestJS monolith · port 3001&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;application logic · TypeORM · data retention&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="320" x="90" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="routes" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Custom domains&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;mynoodles.shop · www&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="310" x="95" as="geometry" />
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-19" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Custom domains&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;admin.mynoodles.shop&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="310" x="90" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-20" parent="boundary-runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Custom domains&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;api.mynoodles.shop&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="310" x="90" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary-data" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#eaf7ed;strokeColor=#67a66a;fontColor=#256029;fontStyle=1;" value="MANAGED DATA &amp; OBSERVABILITY" vertex="1">
+          <mxGeometry height="840" width="410" x="1250" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="neon" parent="boundary-data" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;align=center;verticalAlign=middle;" value="Neon&lt;br&gt;&lt;b&gt;PostgreSQL · production branch&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;EU region · pooled runtime URL · direct migration URL&lt;/font&gt;" vertex="1">
+          <mxGeometry height="105" width="340" x="60" y="595" as="geometry" />
+        </mxCell>
+        <mxCell id="e-edge-web" edge="1" parent="1" source="edge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontColor=#8a3b12;" target="web" value="mynoodles.shop / www">
+          <mxGeometry relative="1" x="0.6" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="690.03" y="433.79" />
+              <mxPoint x="690.03" y="190.03" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-api-container" edge="1" parent="1" source="api-worker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontColor=#1d4f91;" target="container" value="Durable Object → internal fetch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-container-neon" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontColor=#256029;" target="neon" value="pooled PostgreSQL">
+          <mxGeometry relative="1" x="0.4947" y="18" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1200" y="690" />
+              <mxPoint x="1200" y="767.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-container-grafana" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#9673a6;fontColor=#614a70;" target="grafana" value="OTLP telemetry">
+          <mxGeometry relative="1" x="0.4545" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1200" y="690" />
+              <mxPoint x="1200" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=left;verticalAlign=middle;spacing=12;" value="&lt;b&gt;Key boundary&lt;/b&gt;&lt;br&gt;R2 is a public media origin. The NestJS Container has no R2 binding; product image bytes go browser → Cloudflare Edge → R2. API metadata and business data go Container → Neon.&lt;br&gt;&lt;br&gt;&lt;b&gt;Deployment boundary&lt;/b&gt;&lt;br&gt;Infrastructure and application deployments are independent. Secrets are read from Infisical by GitHub Actions and delivered to Workers; applications do not call Infisical at runtime." vertex="1">
+          <mxGeometry height="100" width="1500" x="-48" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;align=center;verticalAlign=middle;" value="Grafana Cloud&lt;br&gt;&lt;b&gt;API overview dashboard&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;OpenTelemetry metrics / traces / logs&lt;/font&gt;" vertex="1">
+          <mxGeometry height="95" width="340" x="1310" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="e-edge-api" edge="1" parent="1" source="edge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontColor=#8a3b12;" target="api-worker" value="api.mynoodles.shop">
+          <mxGeometry relative="1" x="0.6363" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="690.03" y="433.79" />
+              <mxPoint x="689.97" y="520.03" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-edge-admin" edge="1" parent="1" source="edge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontColor=#8a3b12;" target="admin" value="admin.mynoodles.shop">
+          <mxGeometry relative="1" x="0.4576" y="15" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="689.97" y="433.79" />
+              <mxPoint x="689.97" y="370.03" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-7" parent="1" style="swimlane;html=1;rounded=1;horizontal=0;startSize=34;fillColor=#f4f5f7;strokeColor=#97a0af;fontColor=#344563;fontStyle=1;rotation=90;align=left;" value="EXTERNAL WORLD" vertex="1">
+          <mxGeometry height="530" width="310" x="800" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="external-services" parent="cwzLuGAPNEvvjEVPuve3-7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="Delivery providers&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Nova Poshta · Meest&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;· Ukrposhta&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="210" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-22" parent="cwzLuGAPNEvvjEVPuve3-7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="&lt;font style=&quot;&quot;&gt;Messaging platforms&lt;br&gt;&lt;/font&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Telegram&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="-40" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-23" parent="cwzLuGAPNEvvjEVPuve3-7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;align=center;verticalAlign=middle;" value="CRM providers&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Tawk.to&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="70" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-26" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#344563;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cwzLuGAPNEvvjEVPuve3-22" value="">
+          <mxGeometry relative="1" x="0.0019" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="990" y="790" />
+              <mxPoint x="855" y="790" />
+            </Array>
+            <mxPoint x="1060" y="810" as="sourcePoint" />
+            <mxPoint x="1135" y="985" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cwzLuGAPNEvvjEVPuve3-27" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#344563;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cwzLuGAPNEvvjEVPuve3-23" value="">
+          <mxGeometry relative="1" x="-0.8" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="990" y="790" />
+              <mxPoint x="965" y="790" />
+            </Array>
+            <mxPoint x="1110.03" y="810" as="sourcePoint" />
+            <mxPoint x="1185.03" y="985" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-container-ext" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontColor=#344563;" target="external-services" value="providers APIs">
+          <mxGeometry relative="1" x="-0.7993" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="989.97" y="790" />
+              <mxPoint x="1065" y="790" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

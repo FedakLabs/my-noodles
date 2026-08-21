@@ -66,12 +66,12 @@ describe('Config', () => {
     );
   });
 
-  it('accepts a supported database driver', () => {
+  it('accepts the configured database driver', () => {
     expect(createConfig({ database: { driver: 'postgres' } }).database.driver).toBe('postgres');
   });
 
-  it('rejects an unsupported database driver', () => {
-    expect(() => createConfig({ database: { driver: 'mysql' } })).toThrow(
+  it('requires a database driver', () => {
+    expect(() => createConfig({ database: { driver: undefined } })).toThrow(
       /Invalid Application configuration/,
     );
   });

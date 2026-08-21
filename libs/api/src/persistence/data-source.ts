@@ -1,7 +1,7 @@
 import type { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
 
-import type { Config } from '../config';
+import { type Config } from '../config';
 
 export type DataSourceGlobOptions = Readonly<{
   migrations?: string[];
@@ -17,9 +17,10 @@ function defaultGlobs(rootDirname: string): Required<DataSourceGlobOptions> {
 
 export function prepareDataSource(appConfig: Config, globs?: DataSourceGlobOptions): DataSourceOptions {
   const defaults = defaultGlobs(appConfig.rootDirname);
+  const driver = appConfig.database.driver ?? 'postgres';
 
   const shared = {
-    type: appConfig.database.driver,
+    type: driver,
     synchronize: false,
     // Timestamp-prefixed only — excludes CLI scripts (run/revert) that self-execute on import.
     migrations: globs?.migrations ?? defaults.migrations,

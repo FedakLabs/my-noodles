@@ -1,14 +1,15 @@
 import 'reflect-metadata';
-import { createAppDataSource } from '@my-noodles/api-lib/persistence';
+import { createAppDataSource, DatabaseRetry, PostgresErrorClassifier } from '@my-noodles/api-lib/persistence';
 
 import { config } from '@/config';
-import { ServerlessDbUtils } from '@/infrastructure/persistence';
 
 const dataSource = createAppDataSource(config);
 
 async function main(): Promise<void> {
   if (!dataSource.isInitialized) {
-    await ServerlessDbUtils.retryOnTransientError(() => dataSource.initialize());
+    await new DatabaseRetry().run(() => dataSource.initialize(), {
+      shouldRetry: PostgresErrorClassifier.isTransient,
+    });
   }
 
   try {

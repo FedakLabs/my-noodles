@@ -28,7 +28,7 @@ type BooleanConfigValue = boolean | string | undefined;
 type NumberConfigValue = number | string | undefined;
 
 export type DatabaseConfigOptions = Readonly<{
-  driver: string | undefined;
+  driver: DatabaseDriver;
   url: string | undefined;
   host: string | undefined;
   port: NumberConfigValue;

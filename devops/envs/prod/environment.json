@@ -16,7 +16,8 @@
   "applications": {
     "web": {
       "NEXT_PUBLIC_API_URL": "https://api.mynoodles.shop",
-      "NEXT_PUBLIC_SITE_URL": "https://mynoodles.shop"
+      "NEXT_PUBLIC_SITE_URL": "https://mynoodles.shop",
+      "NEXT_PUBLIC_GTM_ID": "GTM-WWMDN774"
     },
     "admin": {
       "ADMIN_PUBLIC_URL": "https://admin.mynoodles.shop",

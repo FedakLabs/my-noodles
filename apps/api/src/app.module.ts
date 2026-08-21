@@ -1,4 +1,4 @@
-import { prepareDataSource } from '@my-noodles/api-lib/persistence';
+import { PostgresErrorClassifier, prepareDataSource } from '@my-noodles/api-lib/persistence';
 import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -34,7 +34,7 @@ import {
 } from './application/visitor-session';
 import { config } from './config';
 import './infrastructure/logging';
-import { ServerlessDbInstaller, ServerlessDbUtils } from './infrastructure/persistence';
+import { PostgresTypeOrmInstaller } from './infrastructure/persistence';
 
 @Module({
   imports: [
@@ -46,7 +46,7 @@ import { ServerlessDbInstaller, ServerlessDbUtils } from './infrastructure/persi
       // Cold-start / wake while Nest is booting TypeORM.
       retryAttempts: 5,
       retryDelay: 1000,
-      toRetry: ServerlessDbUtils.isTransientError,
+      toRetry: PostgresErrorClassifier.isTransient,
     }),
     VisitorSessionModule,
     UsersModule,
@@ -70,7 +70,7 @@ import { ServerlessDbInstaller, ServerlessDbUtils } from './infrastructure/persi
     AdminProductsModule,
     AdminSellersModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }, ServerlessDbInstaller],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }, PostgresTypeOrmInstaller],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

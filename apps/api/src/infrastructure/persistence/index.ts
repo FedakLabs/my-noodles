@@ -1,2 +1,1 @@
-export { ServerlessDbInstaller } from './serverless-db.installer';
-export { ServerlessDbUtils } from './serverless-db';
+export { PostgresTypeOrmInstaller } from './postgres-typeorm.installer';
